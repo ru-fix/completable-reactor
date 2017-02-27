@@ -1,0 +1,38 @@
+<idea-plugin version="2">
+  <id>ru.fix.cpapsm.completable.reactor.plugin.idea</id>
+  <name>Completable Reactor</name>
+  <version>1.0</version>
+  <vendor email="kasfandiyarov@gmail.com" url="https://github.com/ru-fix">FIX</vendor>
+
+  <description>
+    <![CDATA[
+      CompletableReactor framework makes it easier to create business flows that have concurrently running parts and complex execution branching.<br>
+      CompletableReactor provides DSL-like Builder-style API to describe business flows.<br>
+      Framework built on top of Fork Join Pool and CompletableFuture API.<br>
+      <br>
+      Completable Reactor plugin provide graph visualization and source code navigation within IDE.
+    ]]>
+  </description>
+
+  <change-notes>
+    <![CDATA[
+      1.0 Basic functionality of graph visualization and navigation.<br>
+    ]]>
+  </change-notes>
+
+  <idea-version since-build="145.0"/>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <fileTypeFactory implementation="ru.fix.cpapsm.completable.reactor.plugin.idea.ReactorGraphFileTypeFactory"/>
+    <fileEditorProvider implementation="ru.fix.cpapsm.completable.reactor.plugin.idea.ReacrotGraphEditorProvider"/>
+  </extensions>
+
+  <actions>
+    <action id="reactorGraphAction" class="ru.fix.cpapsm.completable.reactor.plugin.idea.ReactorGraphAction"
+            text="Reactor Graph">
+      <keyboard-shortcut first-keystroke="control alt R" keymap="$default"/>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+  </actions>
+
+</idea-plugin>

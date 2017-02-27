@@ -1,0 +1,61 @@
+.graphViewer {
+    -fx-background-color: white;
+}
+
+.processor {
+    -fx-background-color: #dddddd;
+    -fx-border-color: #bfbfbf;
+
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+
+    -fx-padding: 2, 2, 2, 2;
+}
+
+.startPoint {
+    -fx-background-color: #dddddd;
+    -fx-border-color: #bfbfbf;
+
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+}
+
+.endPoint {
+    -fx-background-color: #dddddd;
+    -fx-border-color: #bfbfbf;
+
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+
+    -fx-padding: 2, 2, 2, 2;
+}
+
+.transitionLine {
+    -fx-border-color: #bfbfbf;
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+}
+
+.pointerLine, .pointer {
+    -fx-fill: #909090;
+    -fx-stroke: #909090;
+}
+
+.processor .label {
+    -fx-text-fill: #000000;
+}
+
+.mergeGroup {
+    -fx-border-color: #bfbfbf;
+
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+}
+
+.mergePoint {
+    -fx-background-color: #dddddd;
+    -fx-border-color: #bfbfbf;
+
+    -fx-border-radius: 30 30 30 30;
+    -fx-background-radius: 30 30 30 30;
+}

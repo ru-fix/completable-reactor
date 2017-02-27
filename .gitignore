@@ -1,3 +1,6 @@
 .idea/
 *.iml
 target/
+completable-reactor-runtime/*.html
+completable-reactor-api/*.html
+completable-reactor-example/*.html

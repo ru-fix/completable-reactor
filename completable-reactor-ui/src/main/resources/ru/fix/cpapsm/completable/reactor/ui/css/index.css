@@ -1,0 +1,46 @@
+html, body {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.nav {
+    height: 40px;
+    z-index: 10;
+    position: relative;
+    background-color: white !important;
+}
+
+.tab-content {
+    margin-top: -40px;
+    height: calc(100% - 40px);
+}
+
+.tab-pane, .diagram {
+    height: 100%;
+}
+
+.diagram::before {
+    content: 'Ctrl+Click-and-hold for dragging. Double click on transiton for pulling. Double click on transiton for pulling.';
+    display: block;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    background-color: #eee;
+}
+
+.docs {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    width: 300px;
+    height: auto;
+    padding: 15px;
+    background-color: #eee;
+    overflow: scroll;
+    max-height: 500px;
+}
+
+.k-animation-container .k-toolbar {
+    display: none !important;
+}
