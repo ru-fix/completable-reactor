@@ -8,7 +8,6 @@ import lombok.experimental.Accessors;
 import ru.fix.commons.profiler.PrefixedProfiler;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
-import ru.fix.cpapsm.commons.lang.threads.NamedExecutors;
 import ru.fix.cpapsm.completable.reactor.runtime.immutability.ClonerWithReflectionImmutabilityChecker;
 import ru.fix.cpapsm.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.cpapsm.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
@@ -18,10 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.*;
 
 /**
  * @author Kamil Asfandiyarov
@@ -38,9 +34,9 @@ public class CompletableReactor implements AutoCloseable {
 
     private final Map<Class<?>, ReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
 
-    private final ScheduledExecutorService timeoutExecutorService = NamedExecutors.newScheduledThreadPool(
+    private final ScheduledExecutorService timeoutExecutorService = newScheduledThreadPool(
             1,
-            "continuous-reactor-timeout-executor");
+            "completable-reactor-check-timeout-");
 
     private volatile long executionTimeout = TimeUnit.MINUTES.toMillis(15);
 
@@ -137,6 +133,12 @@ public class CompletableReactor implements AutoCloseable {
     @Accessors(chain = true)
     public static class StatisticsReport {
         final Map<Class<?>, PayloadStatisticsReport> payloadStatisticsReports = new HashMap<>();
+    }
+
+    private static ScheduledThreadPoolExecutor newScheduledThreadPool(int poolSize, String threadsNamePrefix) {
+        AtomicInteger counter = new AtomicInteger();
+        ThreadFactory threadFactory = runnable -> new Thread(runnable, threadsNamePrefix + counter.getAndIncrement());
+        return new ScheduledThreadPoolExecutor(poolSize, threadFactory);
     }
 
 
