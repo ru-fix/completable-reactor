@@ -4,3 +4,6 @@ CompletableReactor framework makes it easier to create business flows that have 
 CompletableReactor provides DSL-like Builder-style API to describe business flows.
 
 Framework built on top of Fork Join Pool and CompletableFuture API.
+
+## Intellij Idea Plugin
+https://plugins.jetbrains.com/idea/plugin/9504-completable-reactor
