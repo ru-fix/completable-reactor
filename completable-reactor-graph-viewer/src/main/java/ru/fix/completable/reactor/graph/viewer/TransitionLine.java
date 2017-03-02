@@ -79,32 +79,46 @@ public class TransitionLine extends Group {
 
             if (transitionItem.isOnAny) {
                 Label anyStatusLabel = new Label("<Any>");
-                anyStatusLabel.setOnMouseClicked(mouseEvent -> {
-                    if (mouseEvent.getClickCount() == 2) {
-                        if (transitionItem.transitionOnAnySource != null) {
+                labelsPane.getChildren().add(anyStatusLabel);
+
+                if (transitionItem.transitionOnAnySource != null) {
+                    anyStatusLabel.setOnMouseClicked(mouseEvent -> {
+                        if (mouseEvent.getClickCount() == 2) {
                             actionListener.goToSource(transitionItem.transitionOnAnySource);
                         }
-                    }
-                });
-                labelsPane.getChildren().add(anyStatusLabel);
+                    });
+                    menuArea.setOnMouseClicked(mouseEvent -> {
+                        if (mouseEvent.getClickCount() == 2) {
+                            actionListener.goToSource(transitionItem.transitionOnAnySource);
+                        }
+                    });
+                }
 
             } else if (transitionItem.mergeStatuses != null) {
 
                 for (String status : transitionItem.mergeStatuses) {
                     Label statusLabel = new Label(status);
-                    statusLabel.setOnMouseClicked(mouseEvent -> {
-                        if (mouseEvent.getClickCount() == 2) {
+                    labelsPane.getChildren().add(statusLabel);
 
-                            if (transitionItem.transitionOnStatusSource != null) {
+                    if (transitionItem.transitionOnStatusSource != null && transitionItem.transitionOnStatusSource.get(status) != null) {
+                        statusLabel.setOnMouseClicked(mouseEvent -> {
+                            if (mouseEvent.getClickCount() == 2) {
                                 ReactorGraphModel.Source source = transitionItem.transitionOnStatusSource.get(status);
                                 if (source != null) {
                                     actionListener.goToSource(source);
                                 }
                             }
-                        }
-                    });
-                    labelsPane.getChildren().add(statusLabel);
+                        });
+                    }
                 }
+
+                Optional.ofNullable(transitionItem.transitionOnStatusSource)
+                        .flatMap(map -> map.values().stream().filter(Objects::nonNull).findAny())
+                        .ifPresent(source -> menuArea.setOnMouseClicked(mouseEvent -> {
+                            if (mouseEvent.getClickCount() == 2) {
+                                actionListener.goToSource(source);
+                            }
+                        }));
             }
 
 

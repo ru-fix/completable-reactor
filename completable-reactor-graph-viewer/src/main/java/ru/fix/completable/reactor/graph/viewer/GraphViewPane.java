@@ -143,7 +143,6 @@ public class GraphViewPane extends ScrollPane {
                 val mergeGroupNode = new MergeGroupNode(translator, mergeGroup, groupMergePoints, actionListener);
                 mergeGroups.add(mergeGroupNode);
                 pane.getChildren().add(mergeGroupNode);
-                mergeGroupNode.toBack();
             }
         }
 
@@ -211,6 +210,10 @@ public class GraphViewPane extends ScrollPane {
 
         for (val mergePointNode : mergePoints.values()) {
             mergePointNode.toFront();
+        }
+
+        for (val mergeGroupNode : mergeGroups) {
+            mergeGroupNode.toBack();
         }
 
         return this;
