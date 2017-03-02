@@ -77,18 +77,36 @@ public class TransitionLine extends Group {
 
         transition.ifPresent(transitionItem -> {
 
-            val conditionLabels = new ArrayList<String>();
-
             if (transitionItem.isOnAny) {
-                conditionLabels.add("<Any>");
+                Label anyStatusLabel = new Label("<Any>");
+                anyStatusLabel.setOnMouseClicked(mouseEvent -> {
+                    if (mouseEvent.getClickCount() == 2) {
+                        if (transitionItem.transitionOnAnySource != null) {
+                            actionListener.goToSource(transitionItem.transitionOnAnySource);
+                        }
+                    }
+                });
+                labelsPane.getChildren().add(anyStatusLabel);
+
             } else if (transitionItem.mergeStatuses != null) {
-                conditionLabels.addAll(transitionItem.mergeStatuses);
+
+                for (String status : transitionItem.mergeStatuses) {
+                    Label statusLabel = new Label(status);
+                    statusLabel.setOnMouseClicked(mouseEvent -> {
+                        if (mouseEvent.getClickCount() == 2) {
+
+                            if (transitionItem.transitionOnStatusSource != null) {
+                                ReactorGraphModel.Source source = transitionItem.transitionOnStatusSource.get(status);
+                                if (source != null) {
+                                    actionListener.goToSource(source);
+                                }
+                            }
+                        }
+                    });
+                    labelsPane.getChildren().add(statusLabel);
+                }
             }
 
-
-            for (val conditionLabel : conditionLabels) {
-                labelsPane.getChildren().add(new Label(conditionLabel));
-            }
 
             line.layoutBoundsProperty().addListener((observable, oldValue, newValue) -> {
                 val x = (newValue.getMinX() + newValue.getMaxX()) / 2;
@@ -288,9 +306,9 @@ public class TransitionLine extends Group {
                     .ifPresent(content.getChildren()::add);
         }
 
-        if(this.transition.isPresent()){
+        if (this.transition.isPresent()) {
             ReactorGraphModel.MergePointTransition transitionItem = this.transition.get();
-            if(transitionItem.isOnAny){
+            if (transitionItem.isOnAny) {
                 MenuItem onAnyMenuItem = new MenuItem();
 
                 VBox content = new VBox();
@@ -300,7 +318,7 @@ public class TransitionLine extends Group {
                 contextMenu.getItems().add(onAnyMenuItem);
 
                 ReactorGraphModel.Source source = transitionItem.transitionOnAnySource;
-                if(source != null){
+                if (source != null) {
                     onAnyMenuItem.setOnAction(event -> {
                         actionListener.goToSource(source);
                     });

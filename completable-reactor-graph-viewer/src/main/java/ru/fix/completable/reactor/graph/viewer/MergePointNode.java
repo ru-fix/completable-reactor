@@ -62,21 +62,25 @@ class MergePointNode extends VBox {
 
         initializePopupMenu();
 
-        this.setOnMouseClicked(mouseEvent -> {
-            if(mouseEvent.getClickCount() == 2){
-                actionListener.goToSource(mergePoint.coordinatesSource);
-                mouseEvent.consume();
-            }
-        });
+        if (mergePoint.mergeSource != null) {
+            this.setOnMouseClicked(mouseEvent -> {
+                if (mouseEvent.getClickCount() == 2) {
+                    actionListener.goToSource(mergePoint.mergeSource);
+                    mouseEvent.consume();
+                }
+            });
+        }
 
     }
 
-    void initializePopupMenu(){
+    void initializePopupMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem menuItem = new MenuItem("MergePoint");
         contextMenu.getItems().add(menuItem);
 
-        menuItem.setOnAction(event -> actionListener.goToSource(mergePoint.mergeSource));
+        if (mergePoint.mergeSource != null) {
+            menuItem.setOnAction(event -> actionListener.goToSource(mergePoint.mergeSource));
+        }
 
         this.setOnContextMenuRequested(contextMenuEvent -> {
             contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
