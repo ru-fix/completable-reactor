@@ -76,7 +76,7 @@ class MergePointNode extends VBox {
         MenuItem menuItem = new MenuItem("MergePoint");
         contextMenu.getItems().add(menuItem);
 
-        menuItem.setOnAction(event -> actionListener.goToSource(mergePoint.coordinatesSource));
+        menuItem.setOnAction(event -> actionListener.goToSource(mergePoint.mergeSource));
 
         this.setOnContextMenuRequested(contextMenuEvent -> {
             contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());

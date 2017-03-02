@@ -161,26 +161,26 @@ public class GraphViewPane extends ScrollPane {
 
                         pane.getChildren().addAll(endPointNode);
 
-                        val line = new TransitionLine(pane, mergePointNode, endPointNode, Optional.of(transition));
+                        val line = new TransitionLine(pane, mergePointNode, endPointNode, Optional.of(transition), actionListener);
                         pane.getChildren().add(line);
                         line.toBack();
 
                     } else if (transition.isOnAny) {
                         if (transition.handleByProcessor != null) {
-                            val line = new TransitionLine(pane, mergePointNode, processors.get(transition.handleByProcessor), Optional.of(transition));
+                            val line = new TransitionLine(pane, mergePointNode, processors.get(transition.handleByProcessor), Optional.of(transition), actionListener);
                             pane.getChildren().add(line);
                             line.toBack();
                         } else if (transition.mergeProcessor != null) {
-                            val line = new TransitionLine(pane, mergePointNode, mergePoints.get(transition.mergeProcessor), Optional.of(transition));
+                            val line = new TransitionLine(pane, mergePointNode, mergePoints.get(transition.mergeProcessor), Optional.of(transition), actionListener);
                             pane.getChildren().add(line);
                             line.toBack();
                         }
                     } else if (transition.handleByProcessor != null) {
-                        val line = new TransitionLine(pane, mergePointNode, processors.get(transition.handleByProcessor), Optional.of(transition));
+                        val line = new TransitionLine(pane, mergePointNode, processors.get(transition.handleByProcessor), Optional.of(transition), actionListener);
                         pane.getChildren().add(line);
                         line.toBack();
                     } else if (transition.mergeProcessor != null) {
-                        val line = new TransitionLine(pane, mergePointNode, mergePoints.get(transition.mergeProcessor), Optional.of(transition));
+                        val line = new TransitionLine(pane, mergePointNode, mergePoints.get(transition.mergeProcessor), Optional.of(transition), actionListener);
                         pane.getChildren().add(line);
                         line.toBack();
                     }
@@ -194,7 +194,7 @@ public class GraphViewPane extends ScrollPane {
                 return;
             }
 
-            val line = new TransitionLine(pane, processorNode, mergePointNode, Optional.empty());
+            val line = new TransitionLine(pane, processorNode, mergePointNode, Optional.empty(), actionListener);
             pane.getChildren().add(line);
             line.toBack();
         });
@@ -203,7 +203,7 @@ public class GraphViewPane extends ScrollPane {
         pane.getChildren().add(startPointNode);
 
         graphModel.startPoint.processors.forEach(processorName -> {
-            val transition = new TransitionLine(pane, startPointNode, processors.get(processorName), Optional.empty());
+            val transition = new TransitionLine(pane, startPointNode, processors.get(processorName), Optional.empty(), actionListener);
             pane.getChildren().add(transition);
             transition.toBack();
         });

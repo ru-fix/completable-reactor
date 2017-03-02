@@ -47,7 +47,7 @@ class StartPointNode extends VBox {
 
         this.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-//                actionListener.goToSource(model.payload.payload)
+                fireGoToSourceEvent();
             }
         });
 
@@ -75,10 +75,20 @@ class StartPointNode extends VBox {
         documentationMenuItem.setGraphic(buildTooltipContent());
         contextMenu.getItems().add(documentationMenuItem);
 
+        documentationMenuItem.setOnAction(event -> {
+            fireGoToSourceEvent();
+        });
+
         this.setOnContextMenuRequested(contextMenuEvent -> {
             contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
             contextMenuEvent.consume();
         });
+    }
+
+    private void fireGoToSourceEvent() {
+        ReactorGraphModel.Source payloadClassSource = new ReactorGraphModel.Source();
+        payloadClassSource.className = model.payload.payloadClass;
+        actionListener.goToSource(payloadClassSource);
     }
 
     VBox buildTooltipContent(){

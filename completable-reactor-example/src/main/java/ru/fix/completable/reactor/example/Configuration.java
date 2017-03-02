@@ -108,11 +108,11 @@ public class Configuration {
                 .withHandler(BankProcessor::withdrawMoneyWithMinus)
                 .withMerger((pld, withdraw) -> {
                     switch (withdraw.getStatus()) {
-                        case BankProcessor.Withdraw.Status.WALLET_NOT_FOUND:
-                        case BankProcessor.Withdraw.Status.USER_IS_BLOCKED:
+                        case WALLET_NOT_FOUND:
+                        case USER_IS_BLOCKED:
                             pld.response.setStatus(withdraw.getStatus());
                             return MergeStatus.STOP;
-                        case BankProcessor.Withdraw.Status.OK:
+                        case OK:
                             pld.response
                                     .setNewAmount(withdraw.getNewAmount())
                                     .setWithdrawalWasInMinus(withdraw.getNewAmount().compareTo(BigDecimal.ZERO) < 0)
@@ -203,11 +203,11 @@ public class Configuration {
                 .withHandler(BankProcessor::withdrawMoney)
                 .withMerger((pld, withdraw) -> {
                     switch (withdraw.getStatus()) {
-                        case BankProcessor.Withdraw.Status.WALLET_NOT_FOUND:
-                        case BankProcessor.Withdraw.Status.USER_IS_BLOCKED:
+                        case WALLET_NOT_FOUND:
+                        case USER_IS_BLOCKED:
                             pld.response.setStatus(withdraw.getStatus());
                             return MergeStatus.STOP;
-                        case BankProcessor.Withdraw.Status.OK:
+                        case OK:
                             pld.response.setNewAmount(withdraw.getNewAmount());
                             pld.response.setStatusIfNull(BankProcessor.Withdraw.Status.OK);
                             return MergeStatus.CONTINUE;

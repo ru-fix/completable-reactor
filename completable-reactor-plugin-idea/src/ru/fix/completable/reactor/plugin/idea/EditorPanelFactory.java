@@ -7,19 +7,23 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.ProjectAndLibrariesScope;
 import com.intellij.psi.search.PsiShortNamesCache;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.input.KeyCode;
 import org.jetbrains.annotations.NotNull;
-import ru.fix.cpapsm.completable.reactor.api.ReactorGraphModel;
-import ru.fix.cpapsm.completable.reactor.graph.viewer.GraphViewer;
-import ru.fix.cpapsm.completable.reactor.graph.viewer.Shortcut;
-import ru.fix.cpapsm.completable.reactor.graph.viewer.ShortcutType;
-import ru.fix.cpapsm.completable.reactor.graph.viewer.code.CodeUpdater;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.graph.viewer.GraphViewer;
+import ru.fix.completable.reactor.graph.viewer.Shortcut;
+import ru.fix.completable.reactor.graph.viewer.ShortcutType;
+import ru.fix.completable.reactor.graph.viewer.code.CodeUpdater;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,16 +45,33 @@ public class EditorPanelFactory {
             public void goToSource(@NotNull ReactorGraphModel.Source source) {
                 ApplicationManager.getApplication().invokeLater(
                         () -> ApplicationManager.getApplication().runReadAction(() -> {
-                            PsiFile[] foundFiles = PsiShortNamesCache.getInstance(project).getFilesByName(source.fileName);
-                            if (foundFiles.length == 0) {
-                                log.warn("No file with name " + source.fileName + " found");
+
+                            PsiFile foundFile = null;
+
+                            if(source.fileName != null) {
+                                foundFile = Arrays.stream(PsiShortNamesCache.getInstance(project).getFilesByName(source.fileName))
+                                        .findAny()
+                                        .orElse(null);
+
+                            } else if(source.className != null){
+
+                                ProjectAndLibrariesScope searchScope = new ProjectAndLibrariesScope(project);
+                                PsiClass payloadPsiClass = JavaPsiFacade.getInstance(project).findClass(source.className, searchScope);
+                                if(payloadPsiClass != null) {
+                                    foundFile = payloadPsiClass.getContainingFile();
+                                }
+                            }
+
+                            if(foundFile == null){
+                                log.warn("Can not find file for source: " + source);
                                 return;
                             }
-                            if (foundFiles.length > 1) {
-                                log.warn("Found more than one file with name " + source.fileName);
-                            }
-                            PsiFile foundFile = foundFiles[0];
-                            OpenFileDescriptor descriptor = new OpenFileDescriptor(project, foundFile.getVirtualFile(), source.fileNameLine - 1, 0);
+
+                            OpenFileDescriptor descriptor = new OpenFileDescriptor(
+                                    project,
+                                    foundFile.getVirtualFile(),
+                                    source.fileNameLine != null ? source.fileNameLine - 1 : 0,
+                                    0);
                             descriptor.navigate(true);
                         })
                 );

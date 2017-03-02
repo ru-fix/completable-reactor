@@ -11,6 +11,7 @@ import javafx.embed.swing.JFXPanel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.beans.PropertyChangeListener;
 
 /**

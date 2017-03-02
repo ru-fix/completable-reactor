@@ -58,6 +58,7 @@ public class ReactorGraph<PayloadType> {
         ReactorGraphModel.Coordinates coordinates;
         ReactorGraphModel.Source coordinatesSource;
 
+
         final List<Transition> transitions = new ArrayList<>();
         public ReactorGraphModel.MergePoint serialize() {
             ReactorGraphModel.MergePoint model = new ReactorGraphModel.MergePoint();
@@ -85,10 +86,22 @@ public class ReactorGraph<PayloadType> {
 
         ReactorGraphModel.Coordinates completeCoordinates;
         ReactorGraphModel.Source completeCoordinatesSource;
+        ReactorGraphModel.Source completeSource;
+
+        ReactorGraphModel.Source transitionOnAnySource;
+        Map<String, ReactorGraphModel.Source> transitionOnStatusSource;
+        Map<String, ReactorGraphModel.Source> mergeStatusSources;
+
+
         private Map<String, String[]> transitionsDoc;
 
         public Transition(Enum<?>... mergeStatuses) {
             this.mergeStatuses = new HashSet<>(Arrays.asList(mergeStatuses));
+
+            mergeStatusSources = new HashMap<>();
+            for (Enum<?> status : mergeStatuses) {
+                mergeStatusSources.put(status.name(), new ReactorGraphModel.Source().setClassName(status.getClass().getName()));
+            }
         }
 
         public ReactorGraphModel.MergePointTransition serialize() {
@@ -107,6 +120,12 @@ public class ReactorGraph<PayloadType> {
             model.completeCoordinates = completeCoordinates != null ? completeCoordinates : new ReactorGraphModel.Coordinates(100, 100);
 
             model.completeCoordinatesSource = completeCoordinatesSource;
+
+            model.completeSource = completeSource;
+
+            model.transitionOnAnySource = transitionOnAnySource;
+            model.transitionOnStatusSource = transitionOnStatusSource;
+            model.mergeStatusSources = mergeStatusSources;
 
             if (this.transitionsDoc != null) {
                 model.transitionsDoc = new ArrayList<>();

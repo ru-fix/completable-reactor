@@ -59,7 +59,12 @@ public class ReactorGraphModel {
         public String handleByProcessor;
         public Coordinates completeCoordinates;
         public Source completeCoordinatesSource;
+        public Source completeSource;
         public List<TransitionDocumentation> transitionsDoc;
+
+        public ReactorGraphModel.Source transitionOnAnySource;
+        public Map<String, ReactorGraphModel.Source> transitionOnStatusSource;
+        public Map<String, ReactorGraphModel.Source> mergeStatusSources;
     }
 
 
@@ -67,6 +72,9 @@ public class ReactorGraphModel {
         PLAIN,
         SUBGRAPH;
     }
+
+    @Data
+    @Accessors(chain = true)
     public static class Source {
 
         public String className;

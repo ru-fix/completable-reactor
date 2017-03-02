@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.graph.viewer.code;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import ru.fix.completable.reactor.graph.viewer.GraphViewer;
 
@@ -34,6 +35,7 @@ public class CodeUpdaterTest {
     }
 
     @Test
+    @Ignore
     public void updateCoordinates() throws Exception {
         String input = IOUtils.toString(getClass().getResource("/code-block-1.txt").toURI(), StandardCharsets.UTF_8);
         String expectedOutput = IOUtils.toString(getClass().getResource("/code-block-1-result.txt").toURI(), StandardCharsets.UTF_8);

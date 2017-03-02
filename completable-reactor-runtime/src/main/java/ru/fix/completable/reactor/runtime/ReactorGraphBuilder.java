@@ -2,11 +2,12 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.experimental.var;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import ru.fix.completable.reactor.api.*;
 import ru.fix.completable.reactor.runtime.validators.ProcessorsHaveIncomingFlowsValidator;
 import ru.fix.completable.reactor.runtime.validators.TerminalVertexExistValidator;
-import ru.fix.cpapsm.completable.reactor.api.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -195,14 +196,32 @@ public class ReactorGraphBuilder {
             if (mergeStatuses.length <= 0) {
                 throw new IllegalArgumentException("You should provide at least one merge status or use onAny predicate.");
             }
-            return new MergePointTransition<>(graph, this.mergePoint, () -> new ReactorGraph.Transition(mergeStatuses), this);
+
+            ReactorGraphModel.Source onSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
+
+            return new MergePointTransition<>(graph, this.mergePoint, () -> {
+                val transition = new ReactorGraph.Transition(mergeStatuses);
+                var map = transition.getTransitionOnStatusSource();
+                if(map == null){
+                    map = new HashMap<>();
+                }
+                for (Enum<?> status : mergeStatuses) {
+                    map.put(status.name(), onSource);
+                }
+                transition.setTransitionOnStatusSource(map);
+
+                return transition;
+
+            }, this);
         }
 
         public MergePointTransition<BuilderMultiMerge<PayloadType>> onAny() {
+            ReactorGraphModel.Source onAnySource = ReactorReflector.getMethodInvocationPoint().orElse(null);
+
             return new MergePointTransition<>(
                     graph,
                     this.mergePoint,
-                    () -> new ReactorGraph.Transition().setOnAny(true),
+                    () -> new ReactorGraph.Transition().setOnAny(true).setTransitionOnAnySource(onAnySource),
                     this);
         }
 
@@ -276,19 +295,33 @@ public class ReactorGraphBuilder {
                 throw new IllegalArgumentException("You should provide at least one merge status or use onAny predicate.");
             }
 
+            ReactorGraphModel.Source onSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
+
+
             return new MergePointTransition<>(
                     graph,
                     mergePoint,
-                    () -> new ReactorGraph.Transition(mergeStatuses),
+                    () -> {
+                        val transition = new ReactorGraph.Transition(mergeStatuses);
+                        var map = transition.getTransitionOnStatusSource();
+                        if(map == null){
+                            map = new HashMap<>();
+                        }
+                        for (Enum<?> status : mergeStatuses) {
+                            map.put(status.name(), onSource);
+                        }
+                        transition.setTransitionOnStatusSource(map);
+                        return transition;
+                    },
                     this);
         }
 
         public MergePointTransition<BuilderSingleMerge<PayloadType>> onAny() {
-
+            ReactorGraphModel.Source onAnySource = ReactorReflector.getMethodInvocationPoint().orElse(null);
             return new MergePointTransition<>(
                     graph,
                     this.mergePoint,
-                    () -> new ReactorGraph.Transition().setOnAny(true),
+                    () -> new ReactorGraph.Transition().setOnAny(true).setTransitionOnAnySource(onAnySource),
                     this);
         }
     }
@@ -361,8 +394,6 @@ public class ReactorGraphBuilder {
             }
             ReactorGraph.MergePoint mergePoint = matchedMergePoints.get(0);
             mergePoint.coordinates = new ReactorGraphModel.Coordinates(x, y);
-            mergePoint.coordinatesSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
-
             return this;
         }
 
@@ -586,7 +617,7 @@ public class ReactorGraphBuilder {
 
             this.mergePoint.getTransitions().add(
                     transitionSupplier.get()
-                            .setComplete(true));
+                            .setComplete(true).setCompleteSource(ReactorReflector.getMethodInvocationPoint().orElse(null)));
 
             return this.builderContext;
         }

@@ -36,13 +36,15 @@ public class TransitionLine extends Group {
     private final Line line;
     private final VBox labelsPane = new VBox();
     private final Polygon menuArea;
+    private final GraphViewer.ActionListener actionListener;
 
 
-    public TransitionLine(Node world, Node fromNode, Node toNode, Optional<ReactorGraphModel.MergePointTransition> transition) {
+    public TransitionLine(Node world, Node fromNode, Node toNode, Optional<ReactorGraphModel.MergePointTransition> transition, GraphViewer.ActionListener actionListener) {
         this.world = world;
         this.fromNode = fromNode;
         this.toNode = toNode;
         this.transition = transition;
+        this.actionListener = actionListener;
 
         this.getStyleClass().add("transitionLine");
 
@@ -261,6 +263,7 @@ public class TransitionLine extends Group {
                         }
                 ));
 
+
         //menu controls
 
         ContextMenu contextMenu = new ContextMenu();
@@ -273,12 +276,36 @@ public class TransitionLine extends Group {
             documentationMenuItem.setGraphic(content);
             contextMenu.getItems().add(documentationMenuItem);
 
+            this.transition
+                    .map(transitionItem -> transitionItem.transitionOnStatusSource)
+                    .map(onStatusSources -> onStatusSources.get(status))
+                    .ifPresent(source -> documentationMenuItem.setOnAction(event -> actionListener.goToSource(source)));
 
             //menu item content
             content.getChildren().add(new Text(status));
             Optional.ofNullable(mergeStatusDocumentation.get(status))
                     .map(statusDocs -> new Text(Arrays.stream(statusDocs).collect(Collectors.joining("\n"))))
                     .ifPresent(content.getChildren()::add);
+        }
+
+        if(this.transition.isPresent()){
+            ReactorGraphModel.MergePointTransition transitionItem = this.transition.get();
+            if(transitionItem.isOnAny){
+                MenuItem onAnyMenuItem = new MenuItem();
+
+                VBox content = new VBox();
+                onAnyMenuItem.setGraphic(content);
+                content.getChildren().add(new Text("<Any>"));
+                content.getChildren().add(new Text("Transition activated on any transition."));
+                contextMenu.getItems().add(onAnyMenuItem);
+
+                ReactorGraphModel.Source source = transitionItem.transitionOnAnySource;
+                if(source != null){
+                    onAnyMenuItem.setOnAction(event -> {
+                        actionListener.goToSource(source);
+                    });
+                }
+            }
         }
 
         return contextMenu;

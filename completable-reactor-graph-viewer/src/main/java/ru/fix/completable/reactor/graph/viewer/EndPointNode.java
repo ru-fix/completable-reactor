@@ -47,7 +47,7 @@ public class EndPointNode extends VBox {
 
         this.setOnMouseClicked(mouseEvent -> {
             if (mouseEvent.getClickCount() == 2) {
-                actionListener.goToSource(this.endPointTransition.completeCoordinatesSource);
+                actionListener.goToSource(this.endPointTransition.completeSource);
             }
         });
 
@@ -72,7 +72,7 @@ public class EndPointNode extends VBox {
 
         this.setOnMouseClicked(mouseEvent -> {
             if(mouseEvent.getClickCount() == 2){
-                actionListener.goToSource(endPointTransition.completeCoordinatesSource);
+                actionListener.goToSource(endPointTransition.completeSource);
                 mouseEvent.consume();
             }
         });
@@ -83,7 +83,7 @@ public class EndPointNode extends VBox {
         MenuItem menuItem = new MenuItem("EndPoint");
         contextMenu.getItems().add(menuItem);
 
-        menuItem.setOnAction(event -> actionListener.goToSource(endPointTransition.completeCoordinatesSource));
+        menuItem.setOnAction(event -> actionListener.goToSource(endPointTransition.completeSource));
 
         this.setOnContextMenuRequested(contextMenuEvent -> {
             contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
