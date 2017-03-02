@@ -141,9 +141,9 @@ public class GraphViewPane extends ScrollPane {
 
             if (groupMergePoints.size() > 1) {
                 val mergeGroupNode = new MergeGroupNode(translator, mergeGroup, groupMergePoints, actionListener);
-                mergeGroupNode.toBack();
                 mergeGroups.add(mergeGroupNode);
                 pane.getChildren().add(mergeGroupNode);
+                mergeGroupNode.toBack();
             }
         }
 
