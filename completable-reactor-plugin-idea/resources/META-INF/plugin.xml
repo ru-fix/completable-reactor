@@ -1,7 +1,7 @@
 <idea-plugin version="2">
-  <id>ru.fix.cpapsm.completable.reactor.plugin.idea</id>
+  <id>ru.fix.completable.reactor.plugin.idea</id>
   <name>Completable Reactor</name>
-  <version>1.0</version>
+  <version>1.1</version>
   <vendor email="kasfandiyarov@gmail.com" url="https://github.com/ru-fix">FIX</vendor>
 
   <description>
@@ -16,6 +16,7 @@
 
   <change-notes>
     <![CDATA[
+      1.1 Navigation to code from context menu and by double click<br>
       1.0 Basic functionality of graph visualization and navigation.<br>
     ]]>
   </change-notes>
@@ -23,12 +24,12 @@
   <idea-version since-build="145.0"/>
 
   <extensions defaultExtensionNs="com.intellij">
-    <fileTypeFactory implementation="ru.fix.cpapsm.completable.reactor.plugin.idea.ReactorGraphFileTypeFactory"/>
-    <fileEditorProvider implementation="ru.fix.cpapsm.completable.reactor.plugin.idea.ReacrotGraphEditorProvider"/>
+    <fileTypeFactory implementation="ru.fix.completable.reactor.plugin.idea.ReactorGraphFileTypeFactory"/>
+    <fileEditorProvider implementation="ru.fix.completable.reactor.plugin.idea.ReacrotGraphEditorProvider"/>
   </extensions>
 
   <actions>
-    <action id="reactorGraphAction" class="ru.fix.cpapsm.completable.reactor.plugin.idea.ReactorGraphAction"
+    <action id="reactorGraphAction" class="ru.fix.completable.reactor.plugin.idea.ReactorGraphAction"
             text="Reactor Graph">
       <keyboard-shortcut first-keystroke="control alt R" keymap="$default"/>
       <add-to-group group-id="ToolsMenu" anchor="last"/>
