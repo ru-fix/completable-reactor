@@ -10,6 +10,7 @@ import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,7 +30,7 @@ public class ReactorGraphExecutionBuilder {
     private final SubgraphRunner subgraphRunner;
 
     @FunctionalInterface
-    interface SubgraphRunner{
+    interface SubgraphRunner {
         CompletableFuture<?> run(Object paylaod);
     }
 
@@ -165,7 +166,6 @@ public class ReactorGraphExecutionBuilder {
     }
 
     /**
-     *
      * @param reactorGraph
      * @param <PayloadType>
      * @return
@@ -637,7 +637,7 @@ public class ReactorGraphExecutionBuilder {
             return invokeHandlingMethod(processorInfo,
                     (GraphProcessor) processingItem,
                     payload);
-        } else if (processingItem instanceof SubgraphProcessor){
+        } else if (processingItem instanceof SubgraphProcessor) {
             return invokeHandlingMethod(processorInfo,
                     (SubgraphProcessor) processingItem,
                     payload);
@@ -783,6 +783,14 @@ public class ReactorGraphExecutionBuilder {
         ReactorGraph.ProcessorInfo processorInfo = processingVertex.getProcessorInfo();
         Object payload = payloadContext.getPayload();
 
+        /**
+         * In case of detached merge point processor handling is just a passing payload through to the merge point.
+         */
+        if (processorInfo.getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+            processingVertex.getProcessorFuture().complete(new HandlePayloadContext().setPayload(payload));
+            return;
+        }
+
         ProfiledCall handleCall = profiler.profiledCall(ProfilerNames.PROCESSOR_HANDLE +
                 processingVertex.getProcessor().getProfilingName())
                 .start();
@@ -869,88 +877,105 @@ public class ReactorGraphExecutionBuilder {
 
         ReactorGraph.ProcessorInfo processorInfo = processingVertex.getProcessorInfo();
 
-        if (processorInfo.getMerger() == null) {
+        Supplier<Enum> mergerInvocation;
 
-            processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
-
-        } else {
-            try {
-                ProfiledCall mergeCall = profiler.profiledCall(ProfilerNames.PROCESSOR_MERGE + processingVertex.getProcessor().getProfilingName())
-                        .start();
-
-                Enum mergeStatus = (Enum) processorInfo.getMerger().apply(payload, processorResult);
-
-                mergeCall.stop();
-
-                /**
-                 * Select outgoing transitions that matches mergeStatus
-                 */
-                List<ReactorGraph.Transition> activeTransitions = processingVertex.getMergePointTransition().stream()
-                        .filter(transition -> transition.isOnAny() || transition.getMergeStatuses().contains(mergeStatus))
-                        .collect(Collectors.toList());
-
-                if (activeTransitions.size() <= 0) {
-                    throw new IllegalStateException(String.format("Merging process returned %s status." +
-                                    " But merge point of processor %s does not have matching transition for this status.",
-                            mergeStatus,
-                            processingVertex.getProcessor()));
-                }
-
-                /**
-                 * check if this merge point have terminal transitions that matches merge status
-                 */
-                if (activeTransitions.stream().anyMatch(ReactorGraph.Transition::isComplete)) {
-
+        switch (processorInfo.getProcessorType()) {
+            case SUBGRAPH:
+            case PLAIN:
+                if (processorInfo.getMerger() == null) {
                     /**
-                     * Handle terminal transition by completing execution result
+                     * This is GraphProcessor or SubgraphProcessor without merger
                      */
-                    if (!executionResultFuture.complete((PayloadType) payload)) {
+                    processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
+                    return;
+                } else {
+                    mergerInvocation = () -> (Enum) processorInfo.getMerger().apply(payload, processorResult);
+                }
+                break;
 
-                        Object previousResult = null;
-                        try {
-                            if (executionResultFuture.isDone()) {
-                                previousResult = executionResultFuture.get();
-                            } else {
-                                log.error("Illegal graph execution state. Completion failed for new result, but execution result from previous terminal step is not complete.");
-                            }
-                        } catch (Exception exc) {
-                            log.error("Failed to get completed execution result from previous terminal step.", exc);
+            case DETACHED_MERGE_POINT:
+                mergerInvocation = () -> (Enum) processorInfo.getDetachedMerger().apply(payload);
+                break;
+
+            default:
+                throw new IllegalArgumentException(String.format("Unknown processor type: %s", processorInfo.getProcessorType()));
+        }
+
+
+        try {
+            ProfiledCall mergeCall = profiler.profiledCall(ProfilerNames.PROCESSOR_MERGE + processingVertex.getProcessor().getProfilingName())
+                    .start();
+
+            Enum mergeStatus = mergerInvocation.get();
+
+            mergeCall.stop();
+
+            /**
+             * Select outgoing transitions that matches mergeStatus
+             */
+            List<ReactorGraph.Transition> activeTransitions = processingVertex.getMergePointTransition().stream()
+                    .filter(transition -> transition.isOnAny() || transition.getMergeStatuses().contains(mergeStatus))
+                    .collect(Collectors.toList());
+
+            if (activeTransitions.size() <= 0) {
+                throw new IllegalStateException(String.format("Merging process returned %s status." +
+                                " But merge point of processor %s does not have matching transition for this status.",
+                        mergeStatus,
+                        processingVertex.getProcessor()));
+            }
+
+            /**
+             * check if this merge point have terminal transitions that matches merge status
+             */
+            if (activeTransitions.stream().anyMatch(ReactorGraph.Transition::isComplete)) {
+
+                /**
+                 * Handle terminal transition by completing execution result
+                 */
+                if (!executionResultFuture.complete((PayloadType) payload)) {
+
+                    Object previousResult = null;
+                    try {
+                        if (executionResultFuture.isDone()) {
+                            previousResult = executionResultFuture.get();
+                        } else {
+                            log.error("Illegal graph execution state. Completion failed for new result, but execution result from previous terminal step is not complete.");
                         }
-
-                        log.error("Processing chain was completed by at least two different terminal steps." +
-                                        " Already completed with result {}." +
-                                        " New completion result {} in merge point for processor {}",
-                                previousResult,
-                                payload,
-                                processingVertex.getProcessor());
+                    } catch (Exception exc) {
+                        log.error("Failed to get completed execution result from previous terminal step.", exc);
                     }
 
-                    /**
-                     * Terminal state reached. Execution result completed.
-                     * Throw poison pill - terminal context. All following merge points should be deactivated.
-                     */
-                    processingVertex.getMergePointFuture().complete(new MergePayloadContext().setPayload(null).setMergeResult(mergeStatus).setTerminal(true));
-                } else {
-                    /**
-                     * There is no terminal state reached after merging.
-                     */
-                    processingVertex.getMergePointFuture().complete(new MergePayloadContext().setPayload(payload).setMergeResult(mergeStatus));
+                    log.error("Processing chain was completed by at least two different terminal steps." +
+                                    " Already completed with result {}." +
+                                    " New completion result {} in merge point for processor {}",
+                            previousResult,
+                            payload,
+                            processingVertex.getProcessor());
                 }
 
-            } catch (Exception exc) {
-                log.error("Failed to merge payload {} {} by processor {}  for result {}",
-                        payload.getClass(),
-                        payload,
-                        processingVertex.getProcessor(),
-                        processorResult,
-                        exc);
-
-                executionResultFuture.completeExceptionally(exc);
-
-                processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
+                /**
+                 * Terminal state reached. Execution result completed.
+                 * Throw poison pill - terminal context. All following merge points should be deactivated.
+                 */
+                processingVertex.getMergePointFuture().complete(new MergePayloadContext().setPayload(null).setMergeResult(mergeStatus).setTerminal(true));
+            } else {
+                /**
+                 * There is no terminal state reached after merging.
+                 */
+                processingVertex.getMergePointFuture().complete(new MergePayloadContext().setPayload(payload).setMergeResult(mergeStatus));
             }
+
+        } catch (Exception exc) {
+            log.error("Failed to merge payload {} {} by processor {}  for result {}",
+                    payload.getClass(),
+                    payload,
+                    processingVertex.getProcessor(),
+                    processorResult,
+                    exc);
+
+            executionResultFuture.completeExceptionally(exc);
+
+            processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
         }
     }
-
-
 }

@@ -197,6 +197,14 @@ public class ReactorGraph<PayloadType> {
             throw new IllegalStateException();
         }
 
+        Function getDetachedMerger(){
+            switch (processorType){
+                case DETACHED_MERGE_POINT:
+                    return detachedMergePointDescription.merger;
+            }
+            throw new IllegalStateException();
+        }
+
         public ReactorGraphModel.ProcessorInfo serialize() {
             ReactorGraphModel.ProcessorInfo model = new ReactorGraphModel.ProcessorInfo();
             model.coordinates = coordinates != null ? coordinates : new ReactorGraphModel.Coordinates(100, 100);

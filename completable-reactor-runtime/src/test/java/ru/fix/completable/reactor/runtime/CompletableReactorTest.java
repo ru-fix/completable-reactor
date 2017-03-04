@@ -705,7 +705,7 @@ public class CompletableReactorTest {
                 .getResultFuture()
                 .get(10, TimeUnit.SECONDS);
 
-        assertEquals(Arrays.asList(0, 1, 2), resultPayload.getIdSequence());
+        assertEquals(Arrays.asList(0, 1, 42), resultPayload.getIdSequence());
 
     }
 }
