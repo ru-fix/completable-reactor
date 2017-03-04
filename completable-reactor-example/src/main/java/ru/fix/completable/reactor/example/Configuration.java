@@ -107,9 +107,9 @@ public class Configuration {
                 .passArg(pld -> pld.intermediateData.getServiceInfo())
                 .withHandler(BankProcessor::withdrawMoneyWithMinus)
                 .withMerger(new String[]{
-                                "Check result of withdraw operation",
-                                "Set new amount and withdrawal status in payload",
-                                "Stop in case if operation is failed"
+                                "Checks result of withdraw operation",
+                                "Sets new amount and withdrawal status in payload",
+                                "Stops in case if operation is failed"
                         },
                         (pld, withdraw) -> {
                             switch (withdraw.getStatus()) {

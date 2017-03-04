@@ -42,6 +42,8 @@ public class ConfigurationTest {
         ReactorGraph.write(configuration.purchaseGraph());
         ReactorGraph.write(configuration.subscribeGraph());
 
+        ReactorGraph.write(configuration.purchaseGraph(), configuration.subscribeGraph());
+
         System.out.printf("Continuous reactor example graph available at:\n%s\n", path.toUri().toURL());
     }
 
@@ -59,6 +61,8 @@ public class ConfigurationTest {
         PurchasePayload result = reactor.submit(payload).getResultFuture().get(5, TimeUnit.SECONDS);
 
         assertEquals(UserProfileProcessor.Status.USER_NOT_FOUND, result.getStatus());
+
+
     }
 
 

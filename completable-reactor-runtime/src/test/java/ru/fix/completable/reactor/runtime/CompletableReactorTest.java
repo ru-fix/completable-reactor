@@ -97,6 +97,10 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .coordinates()
+                .start(500, 100)
+                .proc("IdProcessor@0", 100, 100)
+                .merge("IdProcessor@0", 390, 502)
+                .complete("IdProcessor@0", 100, 100)
 
                 .buildGraph();
 
@@ -219,6 +223,14 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .coordinates()
+                .start(500, 100)
+                .proc("IdProcessor@1", 100, 100)
+                .proc("IdProcessor@2", 100, 100)
+                .proc("IdProcessor@3", 100, 100)
+                .merge("IdProcessor@1", 457, 474)
+                .merge("IdProcessor@2", 100, 100)
+                .complete("IdProcessor@2", 100, 100)
+
                 .buildGraph();
 
         printGraph(graph);

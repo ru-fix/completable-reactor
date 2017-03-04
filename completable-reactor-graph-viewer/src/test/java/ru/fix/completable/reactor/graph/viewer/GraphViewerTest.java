@@ -42,7 +42,7 @@ public class GraphViewerTest extends Application {
 
         String graphModel;
 
-        try (val resource = getClass().getResourceAsStream("/example-graph.rg")) {
+        try (val resource = getClass().getResourceAsStream("/PurchasePayload.rg")) {
             graphModel = IOUtils.toString(resource, StandardCharsets.UTF_8);
         }
 

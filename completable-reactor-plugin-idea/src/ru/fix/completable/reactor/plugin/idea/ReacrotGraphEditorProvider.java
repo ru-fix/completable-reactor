@@ -28,7 +28,7 @@ public class ReacrotGraphEditorProvider implements ApplicationComponent, FileEdi
     @NotNull
     @Override
     public String getComponentName() {
-        return "ReacrotGraphEditorProvider";
+        return "ReactorGraphEditorProvider";
     }
 
     @Override
@@ -43,7 +43,7 @@ public class ReacrotGraphEditorProvider implements ApplicationComponent, FileEdi
             return new ReactorGraphEditor(project, new String(virtualFile.contentsToByteArray(), StandardCharsets.UTF_8));
         } catch (Exception exc) {
             log.error("Failed to create ReactorGraph editor", exc);
-            return new ReactorGraphEditor(project, new String());
+            return new ReactorGraphEditor(project, "");
         }
     }
 

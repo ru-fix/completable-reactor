@@ -9,7 +9,7 @@ import ru.fix.completable.reactor.example.processors.UserProfile;
 import java.math.BigDecimal;
 
 /**
- * Created by swarmshine on 16.10.2016.
+ * @author Kamil Asfandiyarov
  */
 @PayloadDescription(doc = {
         "Represent purchase request"
