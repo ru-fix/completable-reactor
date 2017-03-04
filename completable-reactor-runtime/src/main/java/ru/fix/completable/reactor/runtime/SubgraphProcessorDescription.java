@@ -23,6 +23,8 @@ public class SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> {
      */
     ReactorGraphModel.Source mergeSource;
 
+    String[] mergerDocs;
+
     /**
      * {@code Function<Payload, Arg>}
      */

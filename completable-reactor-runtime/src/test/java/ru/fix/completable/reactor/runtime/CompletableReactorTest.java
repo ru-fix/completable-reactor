@@ -632,4 +632,80 @@ public class CompletableReactorTest {
         assertEquals(Arrays.asList(0, 1), resultPayload.getIdSequence());
     }
 
+
+    @PayloadDescription(doc = {
+            "Detached Payload goes through processor chain and collect",
+            "all processors ids that merged their results to payload.",
+            "Detached merge point works as an regular merge point but there is no processor",
+            "or processors result to merge."
+
+    })
+    @Data
+    static class DetachedMergePointPayload extends IdListPaylaod {
+    }
+
+    @Test
+    public void detached_merge_point_from_start_point() throws Exception {
+        final int MERGE_POINT_ID = 42;
+
+        GraphProcessor<IdProcessor> idProcessor0 = graphBuilder.processor(new IdProcessor(0)).withId(0);
+        GraphProcessor<IdProcessor> idProcessor1 = graphBuilder.processor(new IdProcessor(1)).withId(1);
+
+        GraphMergePoint<DetachedMergePointPayload> mergePoint = graphBuilder.mergePoint(DetachedMergePointPayload.class).withId(0);
+
+
+        ReactorGraph<DetachedMergePointPayload> graph = graphBuilder.payload(DetachedMergePointPayload.class)
+                .processedBy(idProcessor0)
+                .withHandler(IdProcessor::handle)
+                .withMerger((pld, id) -> {
+                    pld.getIdSequence().add(id);
+                    return Status.OK;
+                })
+
+                .processedBy(idProcessor1)
+                .withHandler(IdProcessor::handle)
+                .withMerger((pld, id) -> {
+                    pld.getIdSequence().add(id);
+                    return Status.OK;
+                })
+
+                .processedBy(mergePoint)
+                .withMerger(new String[]{
+                                "merge point documentation",
+                                "here"},
+                        pld -> {
+                            pld.getIdSequence().add(MERGE_POINT_ID);
+                            return Status.OK;
+                        })
+
+                .startPoint()
+                .handleBy(idProcessor0, idProcessor1, mergePoint)
+
+                .multiMerge()
+                .merge(idProcessor0)
+                .onAny().merge(idProcessor1)
+
+                .merge(idProcessor1)
+                .onAny().merge(mergePoint)
+
+                .merge(mergePoint)
+                .onAny().complete()
+
+                .coordinates()
+
+                .buildGraph();
+
+        printGraph(graph);
+
+        reactor.registerReactorGraph(graph);
+
+        CompletableReactor.Execution<DetachedMergePointPayload> result = reactor.submit(new DetachedMergePointPayload());
+
+        DetachedMergePointPayload resultPayload = result
+                .getResultFuture()
+                .get(10, TimeUnit.SECONDS);
+
+        assertEquals(Arrays.asList(0, 1, 2), resultPayload.getIdSequence());
+
+    }
 }

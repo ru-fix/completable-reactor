@@ -56,6 +56,12 @@ public class ReactorGraph<PayloadType> {
     @Data
     @Accessors(chain = true)
     public static class MergePoint {
+        enum Type {
+            PROCESSOR,
+            DETACHED
+        }
+
+        Type type = Type.PROCESSOR;
 
         ProcessingGraphItem processor;
 
@@ -147,7 +153,7 @@ public class ReactorGraph<PayloadType> {
     }
 
     public enum ProcessorType {
-        PLAIN, SUBGRAPH;
+        PLAIN, SUBGRAPH, DETACHED_MERGE_POINT;
 
         public ReactorGraphModel.ProcessorType serialize() {
             switch (this) {
@@ -155,6 +161,8 @@ public class ReactorGraph<PayloadType> {
                     return ReactorGraphModel.ProcessorType.PLAIN;
                 case SUBGRAPH:
                     return ReactorGraphModel.ProcessorType.SUBGRAPH;
+                case DETACHED_MERGE_POINT:
+                    return ReactorGraphModel.ProcessorType.DETACHED_MERGE_POINT;
                 default:
                     throw new IllegalStateException(String.format("Invalid processor type: %s", this.name()));
             }
@@ -170,6 +178,7 @@ public class ReactorGraph<PayloadType> {
 
         GraphProcessorDescription description;
         SubgraphProcessorDescription subgraphDescription;
+        GraphMergePointDescription detachedMergePointDescription;
 
         ReactorGraphModel.Coordinates coordinates;
 
@@ -288,6 +297,9 @@ public class ReactorGraph<PayloadType> {
         if (processingGraphItem instanceof SubgraphProcessor) {
             return serialize((SubgraphProcessor) processingGraphItem);
         }
+        if (processingGraphItem instanceof GraphMergePoint){
+            return serialize((GraphMergePoint) processingGraphItem);
+        }
         throw new IllegalArgumentException(String.format("Instance of class %s not supported.", processingGraphItem.getClass()));
     }
 
@@ -298,11 +310,15 @@ public class ReactorGraph<PayloadType> {
 
         ReactorReflector reflector = new ReactorReflector();
 
-
         return String.format("%s@%d",
                 reflector.lookupProcessorIdentityClass(graphProcessor.getProcessorClass()).getSimpleName(),
                 graphProcessor.getId());
     }
+
+    static String serialize(GraphMergePoint graphMergePoint) {
+        return String.format("MergePoint@%d", graphMergePoint.id);
+    }
+
 
     static String serialize(SubgraphProcessor subgraphProcessor) {
         return subgraphProcessor == null ? null :

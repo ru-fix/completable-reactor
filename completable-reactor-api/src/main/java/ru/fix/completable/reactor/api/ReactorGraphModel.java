@@ -71,7 +71,8 @@ public class ReactorGraphModel {
 
     public enum ProcessorType{
         PLAIN,
-        SUBGRAPH;
+        SUBGRAPH,
+        DETACHED_MERGE_POINT
     }
 
     @Data

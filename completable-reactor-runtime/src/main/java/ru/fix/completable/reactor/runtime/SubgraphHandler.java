@@ -24,6 +24,7 @@ public class SubgraphHandler<ContextResult, PayloadType, SubgraphPayloadType> {
         return new ArgMethodMerger<>(contextResult, mergerInfo -> {
             this.processorInfo.subgraphDescription.merger = mergerInfo.merger;
             this.processorInfo.subgraphDescription.mergeSource = mergerInfo.mergerSource;
+            this.processorInfo.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;
         });
     }
 
@@ -33,6 +34,7 @@ public class SubgraphHandler<ContextResult, PayloadType, SubgraphPayloadType> {
         return new ArgMethodMerger<>(contextResult, mergerInfo -> {
             this.processorInfo.subgraphDescription.merger = mergerInfo.merger;
             this.processorInfo.subgraphDescription.mergeSource = mergerInfo.mergerSource;
+            this.processorInfo.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;
         });
     }
 }
