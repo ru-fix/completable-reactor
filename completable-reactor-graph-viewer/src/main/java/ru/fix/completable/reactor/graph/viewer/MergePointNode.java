@@ -6,7 +6,10 @@ import javafx.scene.layout.VBox;
 import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by swarmshine on 29.01.2017.
@@ -75,7 +78,13 @@ class MergePointNode extends VBox {
 
     void initializePopupMenu() {
         ContextMenu contextMenu = new ContextMenu();
-        MenuItem menuItem = new MenuItem("MergePoint");
+
+        val menueText = Optional.ofNullable(mergePoint.mergerDocs)
+                .map(Arrays::stream)
+                .map(stream -> stream.collect(Collectors.joining("\n")))
+                .orElse("MergePoint");
+
+        MenuItem menuItem = new MenuItem(menueText);
         contextMenu.getItems().add(menuItem);
 
         if (mergePoint.mergeSource != null) {

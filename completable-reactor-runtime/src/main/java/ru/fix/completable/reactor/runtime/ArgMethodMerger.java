@@ -14,8 +14,9 @@ public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
 
     @Data
     @Accessors(chain = true)
-    public static class MergerInfo<PayloadType, ProcessorResult>{
+    public static class MergerInfo<PayloadType, ProcessorResult> {
         ReactorGraphModel.Source mergerSource;
+        String[] mergerDocs;
         BiFunction<PayloadType, ProcessorResult, Enum> merger;
     }
 
@@ -28,9 +29,14 @@ public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
     }
 
     public ContextResult withMerger(BiFunction<PayloadType, ProcessorResult, Enum> merger) {
+        return withMerger(null, merger);
+    }
+
+    public ContextResult withMerger(String[] docs, BiFunction<PayloadType, ProcessorResult, Enum> merger) {
         MergerInfo<PayloadType, ProcessorResult> mergerInfo = new MergerInfo<>();
         mergerInfo.merger = merger;
         mergerInfo.mergerSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
+        mergerInfo.mergerDocs = docs;
 
         mergerConsumer.accept(mergerInfo);
         return contextResult;

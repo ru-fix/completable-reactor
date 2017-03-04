@@ -89,4 +89,9 @@ public class GraphProcessorDescription<ProcessorType, PayloadType> {
      * Source where {@code withMerger} or {@code withoutMerger}  method was used
      */
     ReactorGraphModel.Source mergeSource;
+
+    /**
+     * Merger documentation
+     */
+    String[] mergerDocs;
 }

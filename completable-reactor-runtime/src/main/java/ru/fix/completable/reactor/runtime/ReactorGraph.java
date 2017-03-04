@@ -41,6 +41,10 @@ public class ReactorGraph<PayloadType> {
                         .map(GraphProcessorDescription::getMergeSource)
                         .orElse(null);
 
+                mergePointModel.mergerDocs = Optional.ofNullable(processorInfo.description)
+                        .map(GraphProcessorDescription::getMergerDocs)
+                        .orElse(null);
+
                 model.mergePoints.add(mergePointModel);
             });
 

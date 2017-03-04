@@ -106,23 +106,28 @@ public class Configuration {
                 .passArg(pld -> pld.intermediateData.getUserInfo())
                 .passArg(pld -> pld.intermediateData.getServiceInfo())
                 .withHandler(BankProcessor::withdrawMoneyWithMinus)
-                .withMerger((pld, withdraw) -> {
-                    switch (withdraw.getStatus()) {
-                        case WALLET_NOT_FOUND:
-                        case USER_IS_BLOCKED:
-                            pld.response.setStatus(withdraw.getStatus());
-                            return MergeStatus.STOP;
-                        case OK:
-                            pld.response
-                                    .setNewAmount(withdraw.getNewAmount())
-                                    .setWithdrawalWasInMinus(withdraw.getNewAmount().compareTo(BigDecimal.ZERO) < 0)
-                                    .setStatus(BankProcessor.Withdraw.Status.OK);
-                            return MergeStatus.CONTINUE;
+                .withMerger(new String[]{
+                                "Check result of withdraw operation",
+                                "Set new amount and withdrawal status in payload",
+                                "Stop in case if operation is failed"
+                        },
+                        (pld, withdraw) -> {
+                            switch (withdraw.getStatus()) {
+                                case WALLET_NOT_FOUND:
+                                case USER_IS_BLOCKED:
+                                    pld.response.setStatus(withdraw.getStatus());
+                                    return MergeStatus.STOP;
+                                case OK:
+                                    pld.response
+                                            .setNewAmount(withdraw.getNewAmount())
+                                            .setWithdrawalWasInMinus(withdraw.getNewAmount().compareTo(BigDecimal.ZERO) < 0)
+                                            .setStatus(BankProcessor.Withdraw.Status.OK);
+                                    return MergeStatus.CONTINUE;
 
-                        default:
-                            throw new IllegalArgumentException("Status: " + withdraw.getStatus());
-                    }
-                })
+                                default:
+                                    throw new IllegalArgumentException("Status: " + withdraw.getStatus());
+                            }
+                        })
 
                 .processedBy(gTxLog)
                 .passArg(pld -> pld.request.getUserId())
@@ -211,7 +216,7 @@ public class Configuration {
                             pld.response.setNewAmount(withdraw.getNewAmount());
                             pld.response.setStatusIfNull(BankProcessor.Withdraw.Status.OK);
                             return MergeStatus.CONTINUE;
-                        
+
                         default:
                             throw new IllegalArgumentException("Status: " + withdraw.getStatus());
                     }
@@ -235,7 +240,6 @@ public class Configuration {
                 .copyArg(pld -> pld.request.getUserId())
                 .withHandler(NotificationProcessor::sendPurchaseNotification)
                 .withoutMerger()
-
 
 
                 .startPoint()

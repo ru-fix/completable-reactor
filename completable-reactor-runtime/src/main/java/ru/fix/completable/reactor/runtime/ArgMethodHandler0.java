@@ -19,6 +19,7 @@ public class ArgMethodHandler0<ContextResult, PayloadType, ProcessorType> extend
         return new ArgMethodMerger<>(contextResult, mergerInfo -> {
             processorDescription.merger = mergerInfo.merger;
             processorDescription.mergeSource = mergerInfo.mergerSource;
+            processorDescription.mergerDocs = mergerInfo.mergerDocs;
         });
     }
 
