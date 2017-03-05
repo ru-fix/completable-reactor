@@ -693,13 +693,13 @@ public class CompletableReactorTest {
 
 
                 .coordinates()
-                .start(27, -1)
-                .proc("IdProcessor@0", 100, 100)
-                .proc("IdProcessor@1", 100, 100)
-                .merge("IdProcessor@0", 100, 100)
-                .merge("IdProcessor@1", 100, 100)
-                .merge("MergePoint@0", 100, 100)
-                .complete("IdProcessor@0", 100, 100)
+                .start(107, 9)
+                .proc("IdProcessor@0", 22, 78)
+                .proc("IdProcessor@1", 211, 79)
+                .merge("IdProcessor@0", 126, 215)
+                .merge("IdProcessor@1", 267, 187)
+                .merge("MergePoint@0", 424, 160)
+                .complete("IdProcessor@0", 57, 274)
 
                 .buildGraph();
 
