@@ -643,7 +643,7 @@ public class ReactorGraphExecutionBuilder {
                                     /**
                                      * There is no active incoming merge flow for given merge point.
                                      */
-                                    merge(vertex, Optional.of(handlePayloadContext.getProcessorResult()), handlePayloadContext.getPayload(), executionResultFuture);
+                                    merge(vertex, handlePayloadContext.getProcessorResult(), handlePayloadContext.getPayload(), executionResultFuture);
 
                                 } else {
                                     if (activeIncomingMergeFlows.size() > 1) {
@@ -655,7 +655,7 @@ public class ReactorGraphExecutionBuilder {
                                                 vertex.getProcessor());
                                     }
 
-                                    merge(vertex, Optional.of(handlePayloadContext.getProcessorResult()), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
+                                    merge(vertex, handlePayloadContext.getProcessorResult(), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
                                 }
                             }
                         }
@@ -962,7 +962,7 @@ public class ReactorGraphExecutionBuilder {
      * @param <PayloadType>
      */
     private <PayloadType> void merge(ProcessingVertex processingVertex,
-                                     Optional<Object> processorResult,
+                                     Object processorResult,
                                      Object payload,
                                      CompletableFuture<PayloadType> executionResultFuture) {
 
@@ -980,7 +980,7 @@ public class ReactorGraphExecutionBuilder {
                     processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
                     return;
                 } else {
-                    mergerInvocation = () -> (Enum) processorInfo.getMerger().apply(payload, processorResult.get());
+                    mergerInvocation = () -> (Enum) processorInfo.getMerger().apply(payload, processorResult);
                 }
                 break;
 
