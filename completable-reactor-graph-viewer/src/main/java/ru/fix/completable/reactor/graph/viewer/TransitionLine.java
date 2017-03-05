@@ -328,7 +328,7 @@ public class TransitionLine extends Group {
                 VBox content = new VBox();
                 onAnyMenuItem.setGraphic(content);
                 content.getChildren().add(new Text("<Any>"));
-                content.getChildren().add(new Text("Transition activated on any transition."));
+                content.getChildren().add(new Text("Transition activated by any status."));
                 contextMenu.getItems().add(onAnyMenuItem);
 
                 ReactorGraphModel.Source source = transitionItem.transitionOnAnySource;

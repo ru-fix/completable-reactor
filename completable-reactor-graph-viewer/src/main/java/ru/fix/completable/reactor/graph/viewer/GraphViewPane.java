@@ -122,6 +122,14 @@ public class GraphViewPane extends ScrollPane {
         coordinateItems.clear();
 
         graphModel.processors.forEach((processorName, processorInfo) -> {
+
+            if (processorInfo.processorType == ReactorGraphModel.ProcessorType.DETACHED_MERGE_POINT) {
+                /**
+                 * Detached merge point does not have ProcessorNode
+                 */
+                return;
+            }
+
             val processorNode = new ProcessorNode(translator, processorName, processorInfo, actionListener, coordinateItems);
             processors.put(processorName, processorNode);
             pane.getChildren().add(processorNode);
@@ -198,11 +206,21 @@ public class GraphViewPane extends ScrollPane {
             line.toBack();
         });
 
+        /**
+         * StartPoint with outgoing transitions
+         */
         val startPointNode = new StartPointNode(translator, graphModel, actionListener, coordinateItems);
         pane.getChildren().add(startPointNode);
 
         graphModel.startPoint.processors.forEach(processorName -> {
-            val transition = new TransitionLine(pane, startPointNode, processors.get(processorName), Optional.empty(), actionListener);
+            TransitionLine transition;
+
+            if (graphModel.processors.get(processorName).processorType == ReactorGraphModel.ProcessorType.DETACHED_MERGE_POINT) {
+                transition = new TransitionLine(pane, startPointNode, mergePoints.get(processorName), Optional.empty(), actionListener);
+            } else {
+                transition = new TransitionLine(pane, startPointNode, processors.get(processorName), Optional.empty(), actionListener);
+            }
+
             pane.getChildren().add(transition);
             transition.toBack();
         });
