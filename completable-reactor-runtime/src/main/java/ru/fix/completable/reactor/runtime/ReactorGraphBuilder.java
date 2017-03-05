@@ -142,7 +142,7 @@ public class ReactorGraphBuilder {
             return this;
         }
 
-        public BuilderSingleMerge<PayloadType> singleMerge(ProcessingGraphItem processor) {
+        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem processor) {
             if (!this.startPoint.processors.contains(processor)) {
                 throw new IllegalArgumentException(String.format("Processor %s is not registered", processor.getClass()));
             }
@@ -180,7 +180,7 @@ public class ReactorGraphBuilder {
             this.mergePoint = mergePoint;
         }
 
-        public BuilderMultiMerge<PayloadType> merge(ProcessingGraphItem processor) {
+        public BuilderMultiMerge<PayloadType> merge(MergeableProcessingGraphItem processor) {
 
             if(processor instanceof GraphProcessor || processor instanceof SubgraphProcessor) {
                 if (!Optional.ofNullable(this.graph.processors.get(processor))
@@ -246,7 +246,7 @@ public class ReactorGraphBuilder {
                     this);
         }
 
-        public BuilderSingleMerge<PayloadType> singleMerge(ProcessingGraphItem processor) {
+        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem processor) {
 
             if (!Optional.ofNullable(this.graph.processors.get(processor))
                     .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?
@@ -281,7 +281,7 @@ public class ReactorGraphBuilder {
             this.mergePoint.processor = processor;
         }
 
-        public BuilderSingleMerge<PayloadType> singleMerge(ProcessingGraphItem processor) {
+        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem processor) {
 
             if (!Optional.ofNullable(this.graph.processors.get(processor))
                     .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?
@@ -705,7 +705,7 @@ public class ReactorGraphBuilder {
             }
         }
 
-        public BuilderContext merge(ProcessingGraphItem... processors) {
+        public BuilderContext merge(MergeableProcessingGraphItem... processors) {
             for (ProcessingGraphItem processor : processors) {
                 if (!graph.processors.containsKey(processor)) {
                     throw new IllegalArgumentException(String.format("Processor %s not registered for payload %s", processor, graph.getPayloadClass()));
@@ -720,7 +720,7 @@ public class ReactorGraphBuilder {
             return this.builderContext;
         }
 
-        public BuilderContext handleBy(ProcessingGraphItem... processors) {
+        public BuilderContext handleBy(HandleableProcessingGraphItem... processors) {
             for (ProcessingGraphItem processor : processors) {
                 if (!graph.processors.containsKey(processor)) {
                     throw new IllegalArgumentException(String.format("Processor %s not registered for payload %s", processor, graph.getPayloadClass()));

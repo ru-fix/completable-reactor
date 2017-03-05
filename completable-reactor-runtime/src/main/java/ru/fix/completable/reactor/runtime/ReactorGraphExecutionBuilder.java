@@ -12,7 +12,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Slf4j
@@ -123,7 +122,7 @@ public class ReactorGraphExecutionBuilder {
         final List<ReactorGraph.Transition> mergePointTransition = new ArrayList<>();
 
         /**
-         * Completes when all processors handling is complete.
+         * Completes when all incoming transitions to merge group from processors is complete.
          * Merging process within merge group starts only after this future is completes.
          */
         CompletableFuture<Void> beforeMergeGroupMergingFuture;
@@ -195,20 +194,45 @@ public class ReactorGraphExecutionBuilder {
          * Init Processing Vertices.
          */
         reactorGraph.processors.forEach((proc, info) -> {
-            processingVertices.put(proc, new ProcessingVertex()
+            ProcessingVertex vertex = new ProcessingVertex()
                     .setProcessor(proc)
-                    .setProcessorInfo(info)
-            );
+                    .setProcessorInfo(info);
+
+            if (info.getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+                /**
+                 * Detached merge point does not uses {@code {@link ProcessingVertex#getProcessorFuture()}
+                 */
+                vertex.getProcessorFuture().completeExceptionally(new IllegalStateException(
+                        String.format("Detached Merge Point %s should not use processorFuture.", vertex.getProcessor())));
+            }
+
+            processingVertices.put(proc, vertex);
         });
 
         /**
          * Populate start point transition
          */
         for (ProcessingGraphItem processor : reactorGraph.startPoint.processors) {
-            processingVertices
-                    .get(processor)
-                    .getIncomingProcessorFlows()
-                    .add(new TransitionFuture<>(startPointTransitionFuture));
+            ProcessingVertex vertex = processingVertices.get(processor);
+
+            if (vertex.getProcessorInfo().getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+                /**
+                 * In case of Detached merge point transition from start point is being converted to a {@link MergePayloadContext}
+                 */
+                vertex.incomingMergeFlows.add(new TransitionFuture<>(
+                        startPointTransitionFuture.thenApplyAsync(
+                                transitionPayloadContext ->
+                                        new MergePayloadContext()
+                                                .setDeadTransition(transitionPayloadContext.isDeadTransition())
+                                                .setTerminal(transitionPayloadContext.isTerminal())
+                                                .setPayload(transitionPayloadContext.getPayload())
+                                                .setMergeResult(null))));
+
+
+            } else {
+                vertex.getIncomingProcessorFlows()
+                        .add(new TransitionFuture<>(startPointTransitionFuture));
+            }
         }
 
         /**
@@ -234,6 +258,7 @@ public class ReactorGraphExecutionBuilder {
                 CompletableFuture<Void> beforeMergeGroupMergingFuture = CompletableFuture.allOf(
                         mergeGroup.getMergePoints().stream()
                                 .map(mergePoint -> processingVertices.get(mergePoint.getProcessor()))
+                                .filter(vertex -> vertex.getProcessorInfo().getProcessorType() != ReactorGraph.ProcessorType.DETACHED_MERGE_POINT)
                                 .map(ProcessingVertex::getProcessorFuture)
                                 .toArray(CompletableFuture[]::new)
                 );
@@ -381,6 +406,18 @@ public class ReactorGraphExecutionBuilder {
          */
         processingVertices.forEach((processor, processingItem) -> {
 
+            if (processingItem.getProcessorInfo().getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+                /**
+                 * Detached merge point does not have graph processor, only merge point.
+                 * No processor invocation is needed
+                 */
+                if (processingItem.getIncomingProcessorFlows().size() != 0) {
+                    throw new IllegalStateException(String.format("Invalid graph state. Detached merge point %s have more than 0 incoming flows.",
+                            processor));
+                }
+                return;
+            }
+
             if (processingItem.getIncomingProcessorFlows().size() <= 0) {
                 throw new IllegalArgumentException(String.format(
                         "Invalid graph descriptor. Processor %s does not have incoming flows.",
@@ -451,7 +488,11 @@ public class ReactorGraphExecutionBuilder {
                                     }
                                 }
                             }
-                    );
+                    )
+                    .exceptionally(throwable -> {
+                        log.error("Join incoming processor flows failed.", throwable);
+                        return null;
+                    });
 
         });//processingVertices
 
@@ -460,69 +501,85 @@ public class ReactorGraphExecutionBuilder {
          */
         processingVertices.forEach((processor, vertex) -> {
 
-            CompletableFuture.allOf(
-                    Stream.concat(
-                            vertex.getIncomingMergeFlows().stream().map(TransitionFuture::getFuture),
-                            vertex.isInMergeGroup() ?
-                                    Stream.of(vertex.beforeMergeGroupMergingFuture, vertex.getProcessorFuture()) :
-                                    Stream.of(vertex.getProcessorFuture())
+            List<CompletableFuture> incomingFlows = new ArrayList<>();
+            vertex.getIncomingMergeFlows()
+                    .stream()
+                    .map(TransitionFuture::getFuture)
+                    .forEach(incomingFlows::add);
+            if (vertex.isInMergeGroup()) {
+                incomingFlows.add(vertex.beforeMergeGroupMergingFuture);
+            }
 
-                    ).toArray(CompletableFuture[]::new))
+            if (vertex.getProcessorInfo().getProcessorType() != ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+                /**
+                 * Ignore processor future for detached merge point
+                 * And use it for all other cases
+                 */
+                incomingFlows.add(vertex.getProcessorFuture());
+            }
 
+            CompletableFuture.allOf(incomingFlows.toArray(new CompletableFuture[incomingFlows.size()]))
                     .thenRunAsync(() -> {
+
                         /**
                          * Processor result, could be INVALID_HANDLE_PAYLOAD_CONTEXT in case of exception
+                         * Could be NULL in case of detached merge point
                          */
-                        final HandlePayloadContext handlePayloadContext = Optional.of(vertex.getProcessorFuture())
-                                .map(future -> {
-                                    try {
-                                        if (!future.isDone()) {
-                                            log.error("Illegal graph execution state. Processor future is not completed. Processor {}",
-                                                    vertex.getProcessor());
+                        HandlePayloadContext handlePayloadContext = null;
+
+                        if (vertex.getProcessorInfo().getProcessorType() != ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+
+                            handlePayloadContext = Optional.of(vertex.getProcessorFuture())
+                                    .map(future -> {
+                                        try {
+                                            if (!future.isDone()) {
+                                                log.error("Illegal graph execution state. Processor future is not completed. Processor {}",
+                                                        vertex.getProcessor());
+                                                return INVALID_HANDLE_PAYLOAD_CONTEXT;
+                                            } else {
+                                                return future.get();
+                                            }
+                                        } catch (Exception exc) {
+                                            RuntimeException resultException = new RuntimeException(String.format(
+                                                    "Failed to get processor future result for processor: %s",
+                                                    vertex.getProcessor()), exc);
+
+                                            log.error(resultException.getMessage(), resultException);
+                                            executionResultFuture.completeExceptionally(resultException);
+
                                             return INVALID_HANDLE_PAYLOAD_CONTEXT;
-                                        } else {
-                                            return future.get();
                                         }
-                                    } catch (Exception exc) {
-                                        RuntimeException resultException = new RuntimeException(String.format(
-                                                "Failed to get processor future result for processor: %s",
-                                                vertex.getProcessor()), exc);
+                                    })
+                                    .orElseGet(() -> INVALID_HANDLE_PAYLOAD_CONTEXT);
 
-                                        log.error(resultException.getMessage(), resultException);
-                                        executionResultFuture.completeExceptionally(resultException);
+                            if (handlePayloadContext == INVALID_HANDLE_PAYLOAD_CONTEXT) {
+                                /**
+                                 * Failed to get processor result.
+                                 * Merging will not be applied to payload.
+                                 * All outgoing flows from merge point will be marked as terminal.
+                                 * executionResult completed by exception
+                                 */
+                                vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
+                                return;
 
-                                        return INVALID_HANDLE_PAYLOAD_CONTEXT;
-                                    }
-                                })
-                                .orElseGet(() -> INVALID_HANDLE_PAYLOAD_CONTEXT);
+                            } else if (handlePayloadContext.isTerminal()) {
+                                /**
+                                 * Processor was marked as terminal during flow by terminal transition.
+                                 * Merging will not be applied to payload.
+                                 * All outgoing flows from merge point will be marked as terminal.
+                                 */
+                                vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
+                                return;
 
-                        if (handlePayloadContext == INVALID_HANDLE_PAYLOAD_CONTEXT) {
-                            /**
-                             * Failed to get processor result.
-                             * Merging will not be applied to payload.
-                             * All outgoing flows from merge point will be marked as terminal.
-                             * executionResult completed by exception
-                             */
-                            vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
-                            return;
-
-                        } else if (handlePayloadContext.isTerminal()) {
-                            /**
-                             * Processor was marked as terminal during flow by terminal transition.
-                             * Merging will not be applied to payload.
-                             * All outgoing flows from merge point will be marked as terminal.
-                             */
-                            vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
-                            return;
-
-                        } else if (handlePayloadContext.isDeadTransition()) {
-                            /**
-                             * Processor was disabled during flow by dead transition.
-                             * Merging will not be applied to payload.
-                             * All outgoing flows from merge point will be marked as dead.
-                             */
-                            vertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
-                            return;
+                            } else if (handlePayloadContext.isDeadTransition()) {
+                                /**
+                                 * Processor was disabled during flow by dead transition.
+                                 * Merging will not be applied to payload.
+                                 * All outgoing flows from merge point will be marked as dead.
+                                 */
+                                vertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
+                                return;
+                            }
                         }
 
                         /**
@@ -562,28 +619,50 @@ public class ReactorGraphExecutionBuilder {
                                     .filter(context -> !context.isDeadTransition())
                                     .collect(Collectors.toList());
 
-
-                            if (activeIncomingMergeFlows.size() <= 0) {
+                            if (vertex.getProcessorInfo().getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
                                 /**
-                                 * There is no active incoming merge flow for given merge point.
+                                 * Detached merge point
                                  */
-                                merge(vertex, handlePayloadContext.getProcessorResult(), handlePayloadContext.getPayload(), executionResultFuture);
+                                if(activeIncomingMergeFlows.size() == 0){
+                                    throw new IllegalStateException(String.format("There is no incoming merge flows for detached merge point %s", vertex.getProcessor()));
 
-                            } else if (activeIncomingMergeFlows.size() > 0) {
+                                } else {
+                                    if (activeIncomingMergeFlows.size() > 1) {
+                                        log.warn("There is more than one active incoming flow for detached merge point for processor {}." +
+                                                        " Payload context will be used only from one of active flows." +
+                                                        " Other active flows will be ignored." +
+                                                        " Possible loss of computation results." +
+                                                        " Possible concurrent modifications of payload.",
+                                                vertex.getProcessor());
+                                    }
 
-                                if (activeIncomingMergeFlows.size() > 1) {
-                                    log.warn("There is more than one active incoming flow for merge point for processor {}." +
-                                                    " Payload context will be used only from one of active flows." +
-                                                    " Other active flows will be ignored." +
-                                                    " Possible loss of computation results." +
-                                                    " Possible concurrent modifications of payload.",
-                                            vertex.getProcessor());
+                                    merge(vertex, Optional.empty(), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
                                 }
+                            } else {
+                                if (activeIncomingMergeFlows.size() == 0) {
+                                    /**
+                                     * There is no active incoming merge flow for given merge point.
+                                     */
+                                    merge(vertex, Optional.of(handlePayloadContext.getProcessorResult()), handlePayloadContext.getPayload(), executionResultFuture);
 
+                                } else {
+                                    if (activeIncomingMergeFlows.size() > 1) {
+                                        log.warn("There is more than one active incoming flow for merge point for processor {}." +
+                                                        " Payload context will be used only from one of active flows." +
+                                                        " Other active flows will be ignored." +
+                                                        " Possible loss of computation results." +
+                                                        " Possible concurrent modifications of payload.",
+                                                vertex.getProcessor());
+                                    }
 
-                                merge(vertex, handlePayloadContext.getProcessorResult(), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
+                                    merge(vertex, Optional.of(handlePayloadContext.getProcessorResult()), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
+                                }
                             }
                         }
+                    })
+                    .exceptionally(throwable -> {
+                        log.error("Joining incoming merge flows failed.", throwable);
+                        return null;
                     });
 
         });//processingVertices
@@ -606,6 +685,9 @@ public class ReactorGraphExecutionBuilder {
                     .flatMap(Collection::stream)
                     .map(TransitionFuture::getFuture)
                     .forEach(future -> future.complete(new TransitionPayloadContext().setDeadTransition(true)));
+        }).exceptionally(throwable -> {
+            log.error("Marking transitions as dead is failed.", throwable);
+            return null;
         });
 
         /**
@@ -784,11 +866,12 @@ public class ReactorGraphExecutionBuilder {
         Object payload = payloadContext.getPayload();
 
         /**
-         * In case of detached merge point processor handling is just a passing payload through to the merge point.
+         * In case of detached merge point processor should not have incoming handling transition.
          */
         if (processorInfo.getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
-            processingVertex.getProcessorFuture().complete(new HandlePayloadContext().setPayload(payload));
-            return;
+            throw new IllegalStateException(String.format("Processor %s is of type %s and should not have any incoming handling transition",
+                    processingVertex.getProcessor(),
+                    processorInfo.getProcessorType()));
         }
 
         ProfiledCall handleCall = profiler.profiledCall(ProfilerNames.PROCESSOR_HANDLE +
@@ -870,8 +953,16 @@ public class ReactorGraphExecutionBuilder {
         });
     }
 
+    /**
+     *
+     * @param processingVertex
+     * @param processorResult empty in case of detached merge point
+     * @param payload
+     * @param executionResultFuture
+     * @param <PayloadType>
+     */
     private <PayloadType> void merge(ProcessingVertex processingVertex,
-                                     Object processorResult,
+                                     Optional<Object> processorResult,
                                      Object payload,
                                      CompletableFuture<PayloadType> executionResultFuture) {
 
@@ -889,7 +980,7 @@ public class ReactorGraphExecutionBuilder {
                     processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
                     return;
                 } else {
-                    mergerInvocation = () -> (Enum) processorInfo.getMerger().apply(payload, processorResult);
+                    mergerInvocation = () -> (Enum) processorInfo.getMerger().apply(payload, processorResult.get());
                 }
                 break;
 

@@ -1,10 +1,7 @@
 package ru.fix.completable.reactor.runtime.validators;
 
 
-import ru.fix.completable.reactor.runtime.GraphValidator;
-import ru.fix.completable.reactor.runtime.ProcessingGraphItem;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
-import ru.fix.completable.reactor.runtime.ValidationException;
+import ru.fix.completable.reactor.runtime.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +24,15 @@ public class ProcessorsHaveIncomingFlowsValidator implements GraphValidator {
                 .collect(Collectors.toSet());
 
         processorsWithIncomingTransitions.addAll(graph.getStartPoint().getProcessors());
+
+        graph.getMergeGroups().stream()
+                .map(ReactorGraph.MergeGroup::getMergePoints)
+                .flatMap(List::stream)
+                .flatMap(mergePoint -> mergePoint.getTransitions().stream())
+                .map(ReactorGraph.Transition::getMerge)
+                .filter(Objects::nonNull)
+                .filter(processingItem -> processingItem instanceof GraphMergePoint<?>)
+                .forEach(processorsWithIncomingTransitions::add);
 
         Optional<ProcessingGraphItem> processorWithoutIncomingTransitions = graph.getProcessors().keySet().stream()
                 .filter(processor -> !processorsWithIncomingTransitions.contains(processor))

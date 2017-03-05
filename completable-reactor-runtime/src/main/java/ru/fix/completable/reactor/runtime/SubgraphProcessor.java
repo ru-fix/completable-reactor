@@ -9,7 +9,7 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString
-public class SubgraphProcessor<PayloadType> implements ProcessingGraphItem{
+public class SubgraphProcessor<PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem, HandleableProcessingGraphItem{
     final Class<PayloadType> payloadClass;
     int id = 0;
 

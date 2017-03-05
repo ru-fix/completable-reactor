@@ -682,14 +682,15 @@ public class CompletableReactorTest {
                 .handleBy(idProcessor0, idProcessor1, mergePoint)
 
                 .multiMerge()
-                .merge(idProcessor0)
+                .merge(mergePoint)
                 .onAny().merge(idProcessor1)
 
                 .merge(idProcessor1)
-                .onAny().merge(mergePoint)
+                .onAny().merge(idProcessor0)
 
-                .merge(mergePoint)
+                .merge(idProcessor0)
                 .onAny().complete()
+
 
                 .coordinates()
 
@@ -705,7 +706,7 @@ public class CompletableReactorTest {
                 .getResultFuture()
                 .get(10, TimeUnit.SECONDS);
 
-        assertEquals(Arrays.asList(0, 1, 42), resultPayload.getIdSequence());
+        assertEquals(Arrays.asList(42, 1, 0), resultPayload.getIdSequence());
 
     }
 
