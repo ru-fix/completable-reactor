@@ -776,6 +776,13 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .coordinates()
+                .start(95, 62)
+                .proc("IdProcessor@0", 164, 131)
+                .proc("IdProcessor@1", 330, 127)
+                .merge("IdProcessor@0", 235, 224)
+                .merge("IdProcessor@1", 357, 241)
+                .merge("MergePoint@0", 461, 289)
+                .complete("MergePoint@0", 406, 369)
 
                 .buildGraph();
 
