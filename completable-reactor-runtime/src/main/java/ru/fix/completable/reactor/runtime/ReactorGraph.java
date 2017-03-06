@@ -37,13 +37,27 @@ public class ReactorGraph<PayloadType> {
                 ReactorGraphModel.MergePoint mergePointModel = mergePoint.serialize();
                 ProcessorInfo processorInfo = processorInfoSupplier.apply(mergePoint.getProcessor());
 
-                mergePointModel.mergeSource = Optional.ofNullable(processorInfo.description)
-                        .map(GraphProcessorDescription::getMergeSource)
-                        .orElse(null);
 
-                mergePointModel.mergerDocs = Optional.ofNullable(processorInfo.description)
-                        .map(GraphProcessorDescription::getMergerDocs)
-                        .orElse(null);
+                String[] mergerDocs = null;
+                ReactorGraphModel.Source mergerSource = null;
+
+                switch (processorInfo.getProcessorType()){
+                    case PLAIN:
+                        mergerDocs = processorInfo.description.getMergerDocs();
+                        mergerSource = processorInfo.description.getMergeSource();
+                        break;
+                    case SUBGRAPH:
+                        mergerDocs = processorInfo.subgraphDescription.mergerDocs;
+                        mergerSource = processorInfo.subgraphDescription.mergeSource;
+                        break;
+                    case DETACHED_MERGE_POINT:
+                        mergerDocs = processorInfo.detachedMergePointDescription.mergerDocs;
+                        mergerSource = processorInfo.detachedMergePointDescription.mergerSource;
+                        break;
+                }
+
+                mergePointModel.mergeSource = mergerSource;
+                mergePointModel.mergerDocs = mergerDocs;
 
                 model.mergePoints.add(mergePointModel);
             });
