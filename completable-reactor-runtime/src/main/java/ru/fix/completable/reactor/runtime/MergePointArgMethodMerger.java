@@ -15,11 +15,11 @@ public class MergePointArgMethodMerger<ContextResult, PayloadType> {
         this.description = description;
     }
 
-    ContextResult withMerger(Function<PayloadType, Enum> merger){
+    public ContextResult withMerger(Function<PayloadType, Enum> merger){
         return withMerger(null, merger);
     }
 
-    ContextResult withMerger(String[] docs, Function<PayloadType, Enum> merger){
+    public ContextResult withMerger(String[] docs, Function<PayloadType, Enum> merger){
 
         description.merger = merger;
         description.mergerSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
