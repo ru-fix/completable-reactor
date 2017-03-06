@@ -3,7 +3,6 @@ package ru.fix.completable.reactor.graph.viewer.code;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import ru.fix.completable.reactor.graph.viewer.GraphViewer;
 
@@ -30,15 +29,19 @@ public class CodeUpdaterTest {
         coordinateItems.add(new GraphViewer.CoordinateItem(GraphViewer.CoordinateItem.Type.END_POINT, "SmsRequestConstructProcessor@6", 1500, 511));
     }
 
-    public static void main(String[] args) throws Exception {
-        new CodeUpdaterTest().updateCoordinates();
+    @Test
+    public void update_code_block() throws Exception {
+        String input = IOUtils.toString(getClass().getResource("/code-block-1.txt").toURI(), StandardCharsets.UTF_8);
+        String expectedOutput = IOUtils.toString(getClass().getResource("/code-block-1-result.txt").toURI(), StandardCharsets.UTF_8);
+
+        String output = updater.updateCoordinates(input, coordinateItems);
+        Assert.assertEquals(expectedOutput, output);
     }
 
     @Test
-    @Ignore
-    public void updateCoordinates() throws Exception {
-        String input = IOUtils.toString(getClass().getResource("/code-block-1.txt").toURI(), StandardCharsets.UTF_8);
-        String expectedOutput = IOUtils.toString(getClass().getResource("/code-block-1-result.txt").toURI(), StandardCharsets.UTF_8);
+    public void code_after_code_Block_should_not_be_changed() throws Exception {
+        String input = IOUtils.toString(getClass().getResource("/code-block-2.txt").toURI(), StandardCharsets.UTF_8);
+        String expectedOutput = IOUtils.toString(getClass().getResource("/code-block-2-result.txt").toURI(), StandardCharsets.UTF_8);
 
         String output = updater.updateCoordinates(input, coordinateItems);
         Assert.assertEquals(expectedOutput, output);
