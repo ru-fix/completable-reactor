@@ -9,20 +9,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static ru.fix.completable.reactor.example.processors.UserProfileProcessor.Status.OK;
-import static ru.fix.completable.reactor.example.processors.UserProfileProcessor.Status.USER_NOT_FOUND;
+import static ru.fix.completable.reactor.example.processors.UserProfileService.Status.OK;
+import static ru.fix.completable.reactor.example.processors.UserProfileService.Status.USER_NOT_FOUND;
 
 /**
  * @author Kamil Asfandiyarov
  */
 
 @ProcessorDescription(doc = {
-        "UserProfileProcessor load information about user",
-        "from remote database.",
+        "UserProfileServices loads information about user from remote database.",
         "User profile contains information whether user is blocked or not."
 
 })
-public class UserProfileProcessor  {
+public class UserProfileService {
 
     public static final Long USER_ID_JOHN = 1L;
     public static final Long USER_ID_JACK = 2L;
@@ -68,7 +67,7 @@ public class UserProfileProcessor  {
 
 
     @HandlerDescription(doc = {
-            "Load user profile from database by user id  - lambda.",
+            "Load user profile from database by user id.",
     })
     public CompletableFuture<UserProfileResult> loadUserProfileById(long userId, String nonNullUnusedParam) {
 

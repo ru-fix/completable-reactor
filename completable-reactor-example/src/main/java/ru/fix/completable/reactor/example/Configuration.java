@@ -23,7 +23,7 @@ public class Configuration {
     /**
      * Processors
      */
-    UserProfileProcessor userProfile = new UserProfileProcessor();
+    UserProfileService userProfile = new UserProfileService();
     ServiceInfoProcessor serviceInfo = new ServiceInfoProcessor();
     BankProcessor bank = new BankProcessor();
     TransactionLogProcessor txLog = new TransactionLogProcessor();
@@ -33,12 +33,12 @@ public class Configuration {
     /**
      * Graph processors
      */
-    GraphProcessor<UserProfileProcessor> gUserProfile = graphBuilder.processor(userProfile);
-    GraphProcessorDescription<UserProfileProcessor, UserProfilePayloadMixin> gUserProfileDescription =
-            graphBuilder.describe(UserProfileProcessor.class, UserProfilePayloadMixin.class)
+    GraphProcessor<UserProfileService> gUserProfile = graphBuilder.processor(userProfile);
+    GraphProcessorDescription<UserProfileService, UserProfilePayloadMixin> gUserProfileDescription =
+            graphBuilder.describe(UserProfileService.class, UserProfilePayloadMixin.class)
                     .passArg(pld -> pld.getUserId())
                     .passArg(pld -> pld.getUserId().toString())
-                    .withHandler(UserProfileProcessor::loadUserProfileById)
+                    .withHandler(UserProfileService::loadUserProfileById)
                     .withMerger((pld, result) -> {
                         if (pld.getStatus() != null) {
                             return MergeStatus.STOP;
@@ -177,14 +177,14 @@ public class Configuration {
                 .proc("ServiceInfoProcessor@0", 480, 120)
                 .proc("TransactionLogProcessor@0", 420, 650)
                 .proc("UserLogProcessor@0", 680, 820)
-                .proc("UserProfileProcessor@0", 770, 120)
-                .merge("UserProfileProcessor@0", 830, 250)
+                .proc("UserProfileService@0", 770, 120)
+                .merge("UserProfileService@0", 830, 250)
                 .merge("ServiceInfoProcessor@0", 640, 280)
                 .merge("BankProcessor@0", 480, 550)
                 .merge("TransactionLogProcessor@0", 530, 770)
                 .merge("UserLogProcessor@0", 760, 930)
                 .start(680, 60)
-                .complete("UserProfileProcessor@0", 920, 300)
+                .complete("UserProfileService@0", 920, 300)
                 .complete("ServiceInfoProcessor@0", 480, 310)
                 .complete("UserLogProcessor@0", 740, 1020)
 
@@ -273,14 +273,14 @@ public class Configuration {
                 .proc("ServiceInfoProcessor@0", 480, 120)
                 .proc("TransactionLogProcessor@0", 420, 650)
                 .proc("UserLogProcessor@0", 680, 820)
-                .proc("UserProfileProcessor@0", 770, 120)
-                .merge("UserProfileProcessor@0", 830, 250)
+                .proc("UserProfileService@0", 770, 120)
+                .merge("UserProfileService@0", 830, 250)
                 .merge("ServiceInfoProcessor@0", 640, 280)
                 .merge("BankProcessor@0", 480, 550)
                 .merge("TransactionLogProcessor@0", 530, 770)
                 .merge("UserLogProcessor@0", 760, 930)
                 .start(680, 60)
-                .complete("UserProfileProcessor@0", 920, 300)
+                .complete("UserProfileService@0", 920, 300)
                 .complete("ServiceInfoProcessor@0", 480, 310)
                 .complete("UserLogProcessor@0", 740, 1020)
 

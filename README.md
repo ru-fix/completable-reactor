@@ -7,3 +7,7 @@ Framework built on top of Fork Join Pool and CompletableFuture API.
 
 ## Intellij Idea Plugin
 https://plugins.jetbrains.com/plugin/9526-completable-reactor
+
+Completable Reactor Intellij Idea plugin provides graph visualization and source code navigation within IDE.
+ 
+ ![Alt cr-idea-plugin-graph-example.png](docs/cr-idea-plugin-graph-example.png?raw=true "Graph View")
