@@ -223,13 +223,13 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .coordinates()
-                .start(500, 100)
-                .proc("IdProcessor@1", 100, 100)
-                .proc("IdProcessor@2", 100, 100)
-                .proc("IdProcessor@3", 100, 100)
-                .merge("IdProcessor@1", 457, 474)
-                .merge("IdProcessor@2", 100, 100)
-                .complete("IdProcessor@2", 100, 100)
+                .start(489, 96)
+                .proc("IdProcessor@1", 364, 178)
+                .proc("IdProcessor@2", 530, 180)
+                .proc("IdProcessor@3", 701, 172)
+                .merge("IdProcessor@1", 414, 268)
+                .merge("IdProcessor@2", 589, 341)
+                .complete("IdProcessor@2", 701, 378)
 
                 .buildGraph();
 
@@ -755,8 +755,8 @@ public class CompletableReactorTest {
 
                 .processedBy(mergePoint)
                 .withMerger(new String[]{
-                                "merge point documentation",
-                                "here"},
+                                "Adds merge point id",
+                                "to payload sequence"},
                         pld -> {
                             pld.getIdSequence().add(MERGE_POINT_ID);
                             return Status.OK;
