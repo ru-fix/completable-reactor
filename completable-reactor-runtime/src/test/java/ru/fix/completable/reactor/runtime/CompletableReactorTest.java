@@ -659,7 +659,16 @@ public class CompletableReactorTest {
         GraphProcessor<IdProcessor> idProcessor0 = graphBuilder.processor(new IdProcessor(0)).withId(0);
         GraphProcessor<IdProcessor> idProcessor1 = graphBuilder.processor(new IdProcessor(1)).withId(1);
 
-        GraphMergePoint<DetachedMergePointFromStartPointPayload> mergePoint = graphBuilder.mergePoint(DetachedMergePointFromStartPointPayload.class).withId(0);
+        GraphMergePoint<DetachedMergePointFromStartPointPayload> mergePoint = graphBuilder.describeMergePoint(DetachedMergePointFromStartPointPayload.class)
+                .withMerger(new String[]{
+                                "merge point documentation",
+                                "here"},
+                        pld -> {
+                            pld.getIdSequence().add(MERGE_POINT_ID);
+                            return Status.OK;
+                        })
+                .buildMergePoint()
+                .withId(0);
 
 
         ReactorGraph<DetachedMergePointFromStartPointPayload> graph = graphBuilder.payload(DetachedMergePointFromStartPointPayload.class)
@@ -677,14 +686,7 @@ public class CompletableReactorTest {
                     return Status.OK;
                 })
 
-                .processedBy(mergePoint)
-                .withMerger(new String[]{
-                                "merge point documentation",
-                                "here"},
-                        pld -> {
-                            pld.getIdSequence().add(MERGE_POINT_ID);
-                            return Status.OK;
-                        })
+
 
                 .startPoint()
                 .handleBy(idProcessor0, idProcessor1, mergePoint)
@@ -743,8 +745,17 @@ public class CompletableReactorTest {
         GraphProcessor<IdProcessor> idProcessor0 = graphBuilder.processor(new IdProcessor(0)).withId(0);
         GraphProcessor<IdProcessor> idProcessor1 = graphBuilder.processor(new IdProcessor(1)).withId(1);
 
-        GraphMergePoint<DetachedMergePointFromStartPointPayload> mergePoint = graphBuilder.mergePoint(DetachedMergePointFromStartPointPayload.class).withId(0);
+        GraphMergePoint<DetachedMergePointFromProcessorsMergePointPayload> mergePoint = graphBuilder.describeMergePoint(DetachedMergePointFromProcessorsMergePointPayload.class)
+                .withMerger(new String[]{
+                                "Adds merge point id",
+                                "to payload sequence"},
+                        pld -> {
+                            pld.getIdSequence().add(MERGE_POINT_ID);
+                            return Status.OK;
+                        })
 
+                .buildMergePoint()
+                .withId(0);
 
         ReactorGraph<DetachedMergePointFromProcessorsMergePointPayload> graph = graphBuilder.payload(DetachedMergePointFromProcessorsMergePointPayload.class)
                 .processedBy(idProcessor0)
@@ -760,15 +771,6 @@ public class CompletableReactorTest {
                     pld.getIdSequence().add(id);
                     return Status.OK;
                 })
-
-                .processedBy(mergePoint)
-                .withMerger(new String[]{
-                                "Adds merge point id",
-                                "to payload sequence"},
-                        pld -> {
-                            pld.getIdSequence().add(MERGE_POINT_ID);
-                            return Status.OK;
-                        })
 
                 .startPoint()
                 .handleBy(idProcessor0, idProcessor1)

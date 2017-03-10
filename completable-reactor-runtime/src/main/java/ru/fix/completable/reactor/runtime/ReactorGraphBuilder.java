@@ -33,6 +33,20 @@ public class ReactorGraphBuilder {
         graphValidators.add(new ProcessorsHaveIncomingFlowsValidator());
     }
 
+    private static <PayloadType> void ensureProcessingItemRegistered(GraphMergePoint graphMergePoint, ReactorGraph<PayloadType> graph){
+        Objects.requireNonNull(graphMergePoint);
+
+        if(graph.processors.containsKey(graphMergePoint)){
+            return;
+        }
+
+        ReactorGraph.ProcessorInfo processorInfo = new ReactorGraph.ProcessorInfo()
+                .setProcessorType(ReactorGraph.ProcessorType.DETACHED_MERGE_POINT)
+                .setDetachedMergePointDescription(graphMergePoint.mergePointDescription);
+
+        graph.processors.put(graphMergePoint, processorInfo);
+    }
+
 
     public class BuilderPayload<PayloadType> {
         final Class<PayloadType> payloadClass;
@@ -44,19 +58,6 @@ public class ReactorGraphBuilder {
             this.graph = graph;
         }
 
-
-
-        public MergePointArgMethodMerger<BuilderPayload<PayloadType>, PayloadType> processedBy(GraphMergePoint graphMergePoint) {
-            Objects.requireNonNull(graphMergePoint);
-
-            ReactorGraph.ProcessorInfo processorInfo = new ReactorGraph.ProcessorInfo()
-                    .setProcessorType(ReactorGraph.ProcessorType.DETACHED_MERGE_POINT)
-                    .setDetachedMergePointDescription(new GraphMergePointDescription());
-
-
-            this.graph.processors.put(graphMergePoint, processorInfo);
-            return new MergePointArgMethodBuilder<>(this, processorInfo);
-        }
 
         public <ProcessorType> ArgMethodHandler<BuilderPayload<PayloadType>, PayloadType, ProcessorType> processedBy(GraphProcessor<ProcessorType> graphProcessor) {
             Objects.requireNonNull(graphProcessor);
@@ -180,7 +181,23 @@ public class ReactorGraphBuilder {
             this.mergePoint = mergePoint;
         }
 
-        public BuilderMultiMerge<PayloadType> merge(MergeableProcessingGraphItem processor) {
+        public BuilderMultiMerge<PayloadType> merge(GraphMergePoint<PayloadType> mergePoint) {
+            return mergeItem(mergePoint);
+        }
+
+        public BuilderMultiMerge<PayloadType> merge(GraphProcessor<?> processor) {
+            return mergeItem(processor);
+        }
+
+        public BuilderMultiMerge<PayloadType> merge(SubgraphProcessor<?> subgraph) {
+            return mergeItem(subgraph);
+        }
+
+        private BuilderMultiMerge<PayloadType> mergeItem(MergeableProcessingGraphItem processor) {
+
+            if(processor instanceof GraphMergePoint){
+                ensureProcessingItemRegistered((GraphMergePoint)processor, this.graph);
+            }
 
             if(processor instanceof GraphProcessor || processor instanceof SubgraphProcessor) {
                 if (!Optional.ofNullable(this.graph.processors.get(processor))
@@ -213,7 +230,7 @@ public class ReactorGraphBuilder {
             return new BuilderMultiMerge<>(this.graph, newMergeGroup, null);
         }
 
-        public MergePointTransition<BuilderMultiMerge<PayloadType>> on(Enum<?>... mergeStatuses) {
+        public MergePointTransition<BuilderMultiMerge<PayloadType>, PayloadType> on(Enum<?>... mergeStatuses) {
             if (mergeStatuses.length <= 0) {
                 throw new IllegalArgumentException("You should provide at least one merge status or use onAny predicate.");
             }
@@ -236,7 +253,7 @@ public class ReactorGraphBuilder {
             }, this);
         }
 
-        public MergePointTransition<BuilderMultiMerge<PayloadType>> onAny() {
+        public MergePointTransition<BuilderMultiMerge<PayloadType>, PayloadType> onAny() {
             ReactorGraphModel.Source onAnySource = ReactorReflector.getMethodInvocationPoint().orElse(null);
 
             return new MergePointTransition<>(
@@ -311,7 +328,7 @@ public class ReactorGraphBuilder {
         }
 
 
-        public MergePointTransition<BuilderSingleMerge<PayloadType>> on(Enum<?>... mergeStatuses) {
+        public MergePointTransition<BuilderSingleMerge<PayloadType>, PayloadType> on(Enum<?>... mergeStatuses) {
             if (mergeStatuses.length <= 0) {
                 throw new IllegalArgumentException("You should provide at least one merge status or use onAny predicate.");
             }
@@ -337,7 +354,7 @@ public class ReactorGraphBuilder {
                     this);
         }
 
-        public MergePointTransition<BuilderSingleMerge<PayloadType>> onAny() {
+        public MergePointTransition<BuilderSingleMerge<PayloadType>, PayloadType> onAny() {
             ReactorGraphModel.Source onAnySource = ReactorReflector.getMethodInvocationPoint().orElse(null);
             return new MergePointTransition<>(
                     graph,
@@ -613,14 +630,15 @@ public class ReactorGraphBuilder {
         }
     }
 
-    public static class MergePointTransition<BuilderContext> {
-        final ReactorGraph graph;
+    public static class MergePointTransition<BuilderContext, PayloadType> {
+        final ReactorGraph<PayloadType> graph;
         final ReactorGraph.MergePoint mergePoint;
         final Supplier<ReactorGraph.Transition> transitionSupplier;
         final BuilderContext builderContext;
 
 
-        public MergePointTransition(ReactorGraph graph, ReactorGraph.MergePoint mergePoint, Supplier<ReactorGraph.Transition> transitionSupplier, BuilderContext builderContext) {
+        public MergePointTransition(ReactorGraph<PayloadType> graph, ReactorGraph.MergePoint mergePoint, Supplier<ReactorGraph.Transition> transitionSupplier, BuilderContext
+                builderContext) {
             this.graph = graph;
             this.mergePoint = mergePoint;
             this.transitionSupplier = transitionSupplier;
@@ -705,17 +723,30 @@ public class ReactorGraphBuilder {
             }
         }
 
-        public BuilderContext merge(MergeableProcessingGraphItem... processors) {
-            for (ProcessingGraphItem processor : processors) {
-                if (!graph.processors.containsKey(processor)) {
-                    throw new IllegalArgumentException(String.format("Processor %s not registered for payload %s", processor, graph.getPayloadClass()));
-                }
+        public BuilderContext merge(GraphMergePoint<PayloadType> mergePoint){
+            ensureProcessingItemRegistered(mergePoint, this.graph);
+            return mergeItem(mergePoint);
+        }
 
-                ReactorGraph.Transition newTransition = transitionSupplier.get()
-                        .setMerge(processor);
+        public BuilderContext merge(GraphProcessor<?> processor){
+            return mergeItem(processor);
+        }
 
-                checkMergeOrAddNewTransition(newTransition, this.mergePoint, TransitionType.MERGE);
+        public BuilderContext merge(SubgraphProcessor<?> subgraph){
+            return mergeItem(subgraph);
+        }
+
+        private BuilderContext mergeItem(MergeableProcessingGraphItem processor) {
+
+            if (!graph.processors.containsKey(processor)) {
+                throw new IllegalArgumentException(String.format("Processor %s not registered for payload %s", processor, graph.getPayloadClass()));
             }
+
+            ReactorGraph.Transition newTransition = transitionSupplier.get()
+                    .setMerge(processor);
+
+            checkMergeOrAddNewTransition(newTransition, this.mergePoint, TransitionType.MERGE);
+
 
             return this.builderContext;
         }
@@ -752,9 +783,6 @@ public class ReactorGraphBuilder {
         return new GraphProcessor<>(processor);
     }
 
-    public <PayloadType> GraphMergePoint<PayloadType> mergePoint(Class<PayloadType> payloadType){
-        return new GraphMergePoint<>();
-    }
 
     public <ProcessorType, PayloadType> ArgMethodHandler0<
             GraphProcessorDescription<ProcessorType, PayloadType>, PayloadType, ProcessorType> describe(Class<ProcessorType> processorType, Class<PayloadType> payloadType) {
@@ -764,7 +792,7 @@ public class ReactorGraphBuilder {
         return new ArgMethodHandler0<>(description, description);
     }
 
-    public <PayloadType> MergePointArgMethodMerger<GraphMergePointDescription<PayloadType>, PayloadType> describe(Class<PayloadType> payloadType) {
+    public <PayloadType> MergePointArgMethodMerger<GraphMergePointDescription<PayloadType>, PayloadType> describeMergePoint(Class<PayloadType> payloadType) {
         GraphMergePointDescription<PayloadType> description = new GraphMergePointDescription<>();
         return new MergePointArgMethodMerger<>(description, description);
     }

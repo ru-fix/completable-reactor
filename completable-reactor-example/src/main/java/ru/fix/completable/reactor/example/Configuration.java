@@ -192,7 +192,17 @@ public class Configuration {
     ReactorGraph<SubscribePayload> subscribeGraph() throws Exception {
 
 
-        GraphMergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.mergePoint(SubscribePayload.class);
+
+        GraphMergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint(SubscribePayload.class)
+                .withMerger(new String[]{"Checks whether service supports trial period"},
+                        payload -> {
+                            if(payload.getServiceInfo().isSupportTrialPeriod()) {
+                                return MergeStatus.WITHDRAWAL;
+                            } else {
+                                return MergeStatus.NO_WITHDRAWAL;
+                            }
+                        })
+                .buildMergePoint();
 
         return graphBuilder.payload(SubscribePayload.class)
 
@@ -225,16 +235,6 @@ public class Configuration {
                     }
                     return MergeStatus.CONTINUE;
                 })
-
-                .processedBy(trialPeriodCheck)
-                .withMerger(new String[]{"Checks whether service supports trial period"},
-                        payload -> {
-                            if(payload.getServiceInfo().isSupportTrialPeriod()) {
-                                return MergeStatus.WITHDRAWAL;
-                            } else {
-                                return MergeStatus.NO_WITHDRAWAL;
-                            }
-                        })
 
                 .processedBy(gBank)
                 .passArg(pld -> pld.intermediateData.getUserInfo())

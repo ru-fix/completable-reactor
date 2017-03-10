@@ -24,4 +24,8 @@ public class GraphMergePointDescription<PayloadType> {
      */
     String[] mergerDocs;
 
+    public GraphMergePoint<PayloadType> buildMergePoint(){
+        return new GraphMergePoint<>(this);
+    }
+
 }
