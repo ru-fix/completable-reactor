@@ -122,7 +122,7 @@ public class ReactorReflector {
             try {
                 return extractMethodByProxyCall(clazz, proxy -> handlerInvoker.accept(proxy, parameters.getParameters()));
 
-            } catch (ReactorGraphException reactorException){
+            } catch (ReactorGraphException reactorException) {
                 throw reactorException;
 
             } catch (Exception exception) {
@@ -224,19 +224,33 @@ public class ReactorReflector {
         return methodInterceptor.getMethod();
     }
 
+    static final String[] methodInvocationClassNamePrefixSkipList = Arrays.stream(
+            new Class[]{
+                    ReactorGraphBuilder.class,
+                    ArgMethodMerger.class,
+                    ArgMethodHandler0.class,
+                    ArgMethodHandler1.class,
+                    ArgMethodHandler2.class,
+                    ArgMethodHandler3.class,
+                    ArgMethodHandler4.class,
+                    ArgMethodHandler5.class,
+                    MergePointArgMethodBuilder.class,
+                    MergePointArgMethodMerger.class
+            })
+            .map(Class::getName).toArray(String[]::new);
+
     /**
      * @return location where method was called in format class_name:line_number
      */
     public static Optional<ReactorGraphModel.Source> getMethodInvocationPoint() {
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
 
-        final String[] packageSkipList = new String[]{ReactorGraphBuilder.class.getName()};
 
-
-        stackTrace: for (int i = 3; i < trace.length; i++) {
+        stackTrace:
+        for (int i = 3; i < trace.length; i++) {
             //skip package
-            for (String skipPackage : packageSkipList) {
-                if(trace[i].getClassName().startsWith(skipPackage)){
+            for (String skipPackage : methodInvocationClassNamePrefixSkipList) {
+                if (trace[i].getClassName().startsWith(skipPackage)) {
                     continue stackTrace;
                 }
             }

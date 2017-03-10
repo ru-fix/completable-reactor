@@ -15,5 +15,6 @@ public class ServiceInfo {
     String serviceName;
     boolean isActive;
     BigDecimal servicePrice;
+    boolean isSupportTrialPeriod;
 
 }
