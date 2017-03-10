@@ -97,10 +97,10 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .coordinates()
-                .start(500, 100)
-                .proc("IdProcessor@0", 100, 100)
-                .merge("IdProcessor@0", 390, 502)
-                .complete("IdProcessor@0", 100, 100)
+                .start(226, 98)
+                .proc("IdProcessor@0", 261, 163)
+                .merge("IdProcessor@0", 300, 251)
+                .complete("IdProcessor@0", 308, 336)
 
                 .buildGraph();
 
@@ -154,12 +154,12 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .coordinates()
-                .proc("IdProcessor@1", 254, 214)
-                .proc("IdProcessor@2", 643, 215)
-                .merge("IdProcessor@1", 421, 409)
-                .merge("IdProcessor@2", 615, 434)
-                .start(500, 100)
-                .complete("IdProcessor@2", 620, 560)
+                .start(366, 103)
+                .proc("IdProcessor@1", 358, 184)
+                .proc("IdProcessor@2", 549, 183)
+                .merge("IdProcessor@1", 427, 291)
+                .merge("IdProcessor@2", 571, 356)
+                .complete("IdProcessor@2", 610, 454)
 
                 .buildGraph();
 
@@ -311,6 +311,14 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .coordinates()
+                .start(500, 100)
+                .proc("IdProcessor@1", 100, 100)
+                .proc("IdProcessor@2", 100, 100)
+                .proc("IdProcessor@3", 638, 179)
+                .merge("IdProcessor@1", 100, 100)
+                .merge("IdProcessor@2", 100, 100)
+                .merge("IdProcessor@3", 100, 100)
+                .complete("IdProcessor@3", 100, 100)
 
                 .buildGraph();
 
