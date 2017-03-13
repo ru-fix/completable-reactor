@@ -182,10 +182,12 @@ public class ReactorGraphBuilder {
         }
 
         public BuilderMultiMerge<PayloadType> merge(GraphMergePoint<PayloadType> mergePoint) {
+            ensureProcessingItemRegistered(mergePoint, this.graph);
+
             return mergeItem(mergePoint);
         }
 
-        public BuilderMultiMerge<PayloadType> merge(GraphProcessor<?> processor) {
+        public BuilderMultiMerge<PayloadType> merge(GraphProcessor<?,?> processor) {
             return mergeItem(processor);
         }
 
@@ -195,9 +197,7 @@ public class ReactorGraphBuilder {
 
         private BuilderMultiMerge<PayloadType> mergeItem(MergeableProcessingGraphItem processor) {
 
-            if(processor instanceof GraphMergePoint){
-                ensureProcessingItemRegistered((GraphMergePoint)processor, this.graph);
-            }
+
 
             if(processor instanceof GraphProcessor || processor instanceof SubgraphProcessor) {
                 if (!Optional.ofNullable(this.graph.processors.get(processor))
@@ -728,7 +728,7 @@ public class ReactorGraphBuilder {
             return mergeItem(mergePoint);
         }
 
-        public BuilderContext merge(GraphProcessor<?> processor){
+        public BuilderContext merge(GraphProcessor<?,?> processor){
             return mergeItem(processor);
         }
 
@@ -778,14 +778,7 @@ public class ReactorGraphBuilder {
         return new BuilderPayload<>(payloadClass, graph);
     }
 
-
-    public <ProcessorType> GraphProcessor<ProcessorType> processor(ProcessorType processor) {
-        return new GraphProcessor<>(processor);
-    }
-
-
-    public <ProcessorType, PayloadType> ArgMethodHandler0<
-            GraphProcessorDescription<ProcessorType, PayloadType>, PayloadType, ProcessorType> describe(Class<ProcessorType> processorType, Class<PayloadType> payloadType) {
+    public <ProcessorType, PayloadType> ArgMethodHandler0<GraphProcessorDescription<ProcessorType, PayloadType>, PayloadType, ProcessorType> describeProcessor(Class<ProcessorType> processorType, Class<PayloadType> payloadType) {
 
         GraphProcessorDescription<ProcessorType, PayloadType> description = new GraphProcessorDescription<>();
 

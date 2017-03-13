@@ -9,15 +9,18 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString
-public class GraphProcessor<ProcessorType> implements ProcessingGraphItem, MergeableProcessingGraphItem, HandleableProcessingGraphItem {
+public class GraphProcessor<ProcessorType, PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem, HandleableProcessingGraphItem {
     final ProcessorType processor;
+    final GraphProcessorDescription<ProcessorType, PayloadType> processorDescription;
+
     int id = 0;
 
-    public GraphProcessor(ProcessorType processor) {
+    GraphProcessor(ProcessorType processor, GraphProcessorDescription<ProcessorType, PayloadType> description) {
         this.processor = processor;
+        this.processorDescription = description;
     }
 
-    public GraphProcessor<ProcessorType> withId(int id){
+    public GraphProcessor<ProcessorType, PayloadType> withId(int id){
         this.id = id;
         return this;
     }
