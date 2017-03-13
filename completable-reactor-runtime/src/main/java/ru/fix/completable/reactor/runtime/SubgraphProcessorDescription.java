@@ -11,6 +11,9 @@ import java.util.function.Function;
  * @author Kamil Asfandiyarov
  */
 public class SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> {
+
+    final Class<SubgraphPayloadType> subgraphPayload;
+
     /**
      * Null if there is no merger provided.
      * In that case Processor does not modify payload.
@@ -37,4 +40,11 @@ public class SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> {
      */
     Function<SubgraphPayloadType, CompletableFuture<SubgraphPayloadType>> handler;
 
+    public SubgraphProcessorDescription(Class<SubgraphPayloadType> subgraphPayload) {
+        this.subgraphPayload = subgraphPayload;
+    }
+
+    public SubgraphProcessor<SubgraphPayloadType, PayloadType> buildSubgraph() {
+        return new SubgraphProcessor<>(this);
+    }
 }

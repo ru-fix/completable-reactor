@@ -43,8 +43,8 @@ public class ReactorGraph<PayloadType> {
 
                 switch (processorInfo.getProcessorType()){
                     case PLAIN:
-                        mergerDocs = processorInfo.description.getMergerDocs();
-                        mergerSource = processorInfo.description.getMergeSource();
+                        mergerDocs = processorInfo.description.mergerDocs;
+                        mergerSource = processorInfo.description.mergeSource;
                         break;
                     case SUBGRAPH:
                         mergerDocs = processorInfo.subgraphDescription.mergerDocs;
@@ -228,7 +228,7 @@ public class ReactorGraph<PayloadType> {
             model.handlerName = handlerName;
             model.processorType = this.processorType.serialize();
             model.handleBySource = Optional.ofNullable(this.description)
-                    .map(GraphProcessorDescription::getHandleBySource)
+                    .map(graphProcessorDescription ->  graphProcessorDescription.handleBySource)
                     .orElse(null);
             return model;
         }

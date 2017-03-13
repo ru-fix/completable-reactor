@@ -57,32 +57,31 @@ public class Configuration {
     GraphProcessor<UserProfileService, UserProfilePayloadMixin> gUserProfile = gUserProfileDescription.buildProcessor(userProfile);
 
 
-    GraphProcessor<ServiceInfoProcessor, ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.describeProcessor(ServiceInfoProcessor.class, ServiceInfoPayloadMixin.class)
-            .passArg(pld -> pld.getServiceId())
-            .withHandler(ServiceInfoProcessor::loadServiceInformation)
-            .withMerger((pld, result) -> {
-                if (pld.getStatus() != null) {
-                    return MergeStatus.STOP;
-                }
+    GraphProcessor<TransactionLogProcessor, UserProfilePayloadMixin> gTxLog = graphBuilder.describeProcessor(TransactionLogProcessor.class, UserProfilePayloadMixin.class)
+            .passArg(pld -> pld.getUserId())
+            .withHandler(TransactionLogProcessor::logTransactioin)
+            .withMerger((pld, any) -> MergeStatus.CONTINUE)
+            .buildProcessor(txLog);
 
-                switch (result.getStatus()) {
-                    case SERVICE_NOT_FOUND:
-                        pld.setStatus(result.getStatus());
-                        return MergeStatus.STOP;
-                    case OK:
-                        pld.setServiceInfo(result.getServiceInfo());
 
-                        if (result.getServiceInfo().isActive()) {
-                            return MergeStatus.WITHDRAWAL;
-                        } else {
-                            return MergeStatus.NO_WITHDRAWAL;
-                        }
-                }
-                return MergeStatus.CONTINUE;
-            })
-            .buildProcessor(serviceInfo);
+    GraphProcessor<UserLogProcessor, UserProfilePayloadMixin> gUserLog = graphBuilder.describeProcessor(UserLogProcessor.class, UserProfilePayloadMixin.class)
+            .passArg(pld -> pld.getUserId())
+            .passArg(pld -> String.format("Request type: %s", pld.getClass().getSimpleName()))
+            .withHandler(UserLogProcessor::logAction)
+            .withMerger((pld, result) -> MergeStatus.CONTINUE)
+            .buildProcessor(userLog);
 
-    GraphProcessor<BankProcessor, PurchasePayload> gBank = graphBuilder.describeProcessor(BankProcessor.class, PurchasePayload.class)
+
+    GraphProcessor<NotificationProcessor, UserProfilePayloadMixin> gNotification = graphBuilder.describeProcessor(NotificationProcessor.class, UserProfilePayloadMixin.class)
+            .copyArg(pld -> pld.getUserId())
+            .withHandler(NotificationProcessor::sendPurchaseNotification)
+            .withoutMerger()
+            .buildProcessor(notification1);
+
+    enum Status {OK}
+
+
+    GraphProcessor<BankProcessor, PurchasePayload> gBankPurchase = graphBuilder.describeProcessor(BankProcessor.class, PurchasePayload.class)
             .passArg(pld -> pld.intermediateData.getUserInfo())
             .passArg(pld -> pld.intermediateData.getServiceInfo())
             .withHandler(BankProcessor::withdrawMoneyWithMinus)
@@ -110,36 +109,60 @@ public class Configuration {
                     })
             .buildProcessor(bank);
 
+    GraphProcessor<BankProcessor, SubscribePayload> gBankSubsribe = graphBuilder.describeProcessor(BankProcessor.class, SubscribePayload.class)
+            .passArg(pld -> pld.intermediateData.getUserInfo())
+            .passArg(pld -> pld.intermediateData.getServiceInfo())
+            .withHandler(BankProcessor::withdrawMoney)
+            .withMerger((pld, withdraw) -> {
+                switch (withdraw.getStatus()) {
+                    case WALLET_NOT_FOUND:
+                    case USER_IS_BLOCKED:
+                        pld.response.setStatus(withdraw.getStatus());
+                        return MergeStatus.STOP;
+                    case OK:
+                        pld.response.setNewAmount(withdraw.getNewAmount());
+                        pld.response.setStatusIfNull(BankProcessor.Withdraw.Status.OK);
+                        return MergeStatus.CONTINUE;
 
-    GraphProcessor<TransactionLogProcessor, PurchasePayload> gTxLog = graphBuilder.describeProcessor(TransactionLogProcessor.class, PurchasePayload.class)
-            .passArg(pld -> pld.request.getUserId())
-            .withHandler(TransactionLogProcessor::logTransactioin)
-            .withMerger((pld, any) -> MergeStatus.CONTINUE)
-            .buildProcessor(txLog);
-
-
-    GraphProcessor<UserLogProcessor, PurchasePayload> gUserLog = graphBuilder.describeProcessor(UserLogProcessor.class, PurchasePayload.class)
-            .passArg(pld -> pld.request.getUserId())
-            .passArg(pld -> String.format("Request type: %s", pld.request.getClass().getSimpleName()))
-            .withHandler(UserLogProcessor::logAction)
-            .withMerger((pld, result) -> MergeStatus.CONTINUE)
-            .buildProcessor(userLog);
-
-
-    GraphProcessor<NotificationProcessor, PurchasePayload> gNotification = graphBuilder.describeProcessor(NotificationProcessor.class, PurchasePayload.class)
-            .copyArg(pld -> pld.request.getUserId())
-            .withHandler(NotificationProcessor::sendPurchaseNotification)
-            .withoutMerger()
-            .buildProcessor(notification1);
-
-    enum Status {OK}
+                    default:
+                        throw new IllegalArgumentException("Status: " + withdraw.getStatus());
+                }
+            })
+            .buildProcessor(bank);
 
 
     ReactorGraph<PurchasePayload> purchaseGraph() throws Exception {
 
+        GraphProcessor<ServiceInfoProcessor, ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.describeProcessor(ServiceInfoProcessor.class, ServiceInfoPayloadMixin.class)
+                .passArg(pld -> pld.getServiceId())
+                .withHandler(ServiceInfoProcessor::loadServiceInformation)
+                .withMerger((pld, result) -> {
+                    if (pld.getStatus() != null) {
+                        return MergeStatus.STOP;
+                    }
+
+                    switch (result.getStatus()) {
+                        case SERVICE_NOT_FOUND:
+                            pld.setStatus(result.getStatus());
+                            return MergeStatus.STOP;
+                        case OK:
+                            pld.setServiceInfo(result.getServiceInfo());
+
+                            if (result.getServiceInfo().isActive()) {
+                                return MergeStatus.WITHDRAWAL;
+                            } else {
+                                return MergeStatus.NO_WITHDRAWAL;
+                            }
+                    }
+                    return MergeStatus.CONTINUE;
+                })
+                .buildProcessor(serviceInfo);
+
+
         return graphBuilder.payload(PurchasePayload.class)
                 .startPoint()
-                .handleBy(gUserProfile, gServiceInfo)
+                .handleBy(gUserProfile)
+                .handleBy(gServiceInfo)
 
                 .multiMerge()
                 .merge(gUserProfile)
@@ -148,11 +171,12 @@ public class Configuration {
 
 
                 .merge(gServiceInfo)
-                .on(MergeStatus.WITHDRAWAL).handleBy(gBank)
-                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gUserLog, gNotification)
+                .on(MergeStatus.WITHDRAWAL).handleBy(gBankPurchase)
+                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gUserLog)
+                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gNotification)
                 .on(MergeStatus.STOP).complete()
 
-                .singleMerge(gBank)
+                .singleMerge(gBankPurchase)
                 .onAny()
                 .handleBy(gTxLog)
 
@@ -186,137 +210,94 @@ public class Configuration {
 
     ReactorGraph<SubscribePayload> subscribeGraph() throws Exception {
 
+        GraphProcessor<ServiceInfoProcessor, ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.describeProcessor(ServiceInfoProcessor.class, ServiceInfoPayloadMixin.class)
+                .passArg(pld -> pld.getServiceId())
+                .withHandler(ServiceInfoProcessor::loadServiceInformation)
+                .withMerger((pld, result) -> {
+                    if (pld.getStatus() != null) {
+                        return MergeStatus.STOP;
+                    }
 
-//        GraphMergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint(SubscribePayload.class)
-//                .withMerger(new String[]{"Checks whether service supports trial period"},
-//                        payload -> {
-//                            if (payload.getServiceInfo().isSupportTrialPeriod()) {
-//                                return MergeStatus.WITHDRAWAL;
-//                            } else {
-//                                return MergeStatus.NO_WITHDRAWAL;
-//                            }
-//                        })
-//                .buildMergePoint();
-//
-//        return graphBuilder.payload(SubscribePayload.class)
-//
-//                .processedBy(gServiceInfo)
-//                /**
-//                 * Subscription Service Info Merge Point
-//                 */
-//                .passArg(pld -> pld.getServiceId())
-//                .withHandler(ServiceInfoProcessor::loadServiceInformation)
-//                .withMerger((pld, result) -> {
-//                    if (pld.getStatus() != null) {
-//                        return MergeStatus.STOP;
-//                    }
-//
-//                    switch (result.getStatus()) {
-//                        case SERVICE_NOT_FOUND:
-//                            pld.setStatus(result.getStatus());
-//                            return MergeStatus.STOP;
-//                        case OK:
-//                            pld.setServiceInfo(result.getServiceInfo());
-//
-//                            if (result.getServiceInfo().isActive()) {
-//                                return MergeStatus.CONTINUE;
-//                            } else {
-//                                return MergeStatus.NO_WITHDRAWAL;
-//                            }
-//                    }
-//                    return MergeStatus.CONTINUE;
-//                })
-//
-//                .processedBy(gBank)
-//                .passArg(pld -> pld.intermediateData.getUserInfo())
-//                .passArg(pld -> pld.intermediateData.getServiceInfo())
-//                .withHandler(BankProcessor::withdrawMoney)
-//                .withMerger((pld, withdraw) -> {
-//                    switch (withdraw.getStatus()) {
-//                        case WALLET_NOT_FOUND:
-//                        case USER_IS_BLOCKED:
-//                            pld.response.setStatus(withdraw.getStatus());
-//                            return MergeStatus.STOP;
-//                        case OK:
-//                            pld.response.setNewAmount(withdraw.getNewAmount());
-//                            pld.response.setStatusIfNull(BankProcessor.Withdraw.Status.OK);
-//                            return MergeStatus.CONTINUE;
-//
-//                        default:
-//                            throw new IllegalArgumentException("Status: " + withdraw.getStatus());
-//                    }
-//                })
-//
-//                .processedBy(gTxLog)
-//                .passArg(pld -> pld.request.getUserId())
-//                .withHandler(TransactionLogProcessor::logTransactioin)
-//                .withMerger((pld, any) -> MergeStatus.CONTINUE)
-//
-//                .processedBy(gUserLog)
-//                .passArg(pld -> pld.request.getUserId())
-//                .passArg(pld -> String.format("Request type: %s", pld.request.getClass().getSimpleName()))
-//                .withHandler(UserLogProcessor::logAction)
-//                .withMerger((pld, result) -> {
-//                    pld.response.setStatusIfNull(Status.OK);
-//                    return MergeStatus.CONTINUE;
-//                })
-//
-//                .processedBy(gNotification)
-//                .copyArg(pld -> pld.request.getUserId())
-//                .withHandler(NotificationProcessor::sendPurchaseNotification)
-//                .withoutMerger()
-//
-//
-//                .startPoint()
-//                .handleBy(gUserProfile, gServiceInfo)
-//
-//                .multiMerge()
-//                .merge(gUserProfile)
-//                .on(MergeStatus.STOP).complete()
-//                .on(MergeStatus.CONTINUE).merge(gServiceInfo)
-//
-//                .merge(gServiceInfo)
-//                .on(MergeStatus.CONTINUE).merge(trialPeriodCheck)
-//                .on(MergeStatus.STOP).complete()
-//
-//                .merge(trialPeriodCheck)
-//                .on(MergeStatus.WITHDRAWAL).handleBy(gBank)
-//                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gUserLog, gNotification)
-//
-//
-//                .singleMerge(gBank)
-//                .onAny()
-//                .handleBy(gTxLog)
-//
-//                .singleMerge(gTxLog)
-//                .onAny()
-//                .handleBy(gUserLog)
-//
-//                .singleMerge(gUserLog)
-//                .onAny()
-//                .complete()
-//
-//                .coordinates()
-//                .start(680, 60)
-//                .proc("BankProcessor@0", 410, 440)
-//                .proc("NotificationProcessor@0", 889, 465)
-//                .proc("ServiceInfoProcessor@0", 480, 120)
-//                .proc("TransactionLogProcessor@0", 420, 650)
-//                .proc("UserLogProcessor@0", 680, 820)
-//                .proc("UserProfileService@0", 770, 120)
-//                .merge("BankProcessor@0", 480, 550)
-//                .merge("MergePoint@0", 702, 363)
-//                .merge("ServiceInfoProcessor@0", 640, 280)
-//                .merge("TransactionLogProcessor@0", 530, 770)
-//                .merge("UserLogProcessor@0", 760, 930)
-//                .merge("UserProfileService@0", 830, 250)
-//                .complete("ServiceInfoProcessor@0", 480, 310)
-//                .complete("UserLogProcessor@0", 740, 1020)
-//                .complete("UserProfileService@0", 920, 300)
-//
-//                .buildGraph();
+                    switch (result.getStatus()) {
+                        case SERVICE_NOT_FOUND:
+                            pld.setStatus(result.getStatus());
+                            return MergeStatus.STOP;
+                        case OK:
+                            pld.setServiceInfo(result.getServiceInfo());
 
-        return null;
+                            if (result.getServiceInfo().isActive()) {
+                                return MergeStatus.CONTINUE;
+                            } else {
+                                return MergeStatus.NO_WITHDRAWAL;
+                            }
+                    }
+                    return MergeStatus.CONTINUE;
+                }).buildProcessor(serviceInfo);
+
+
+        GraphMergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint(SubscribePayload.class)
+                .withMerger(new String[]{"Checks whether service supports trial period"},
+                        payload -> {
+                            if (payload.getServiceInfo().isSupportTrialPeriod()) {
+                                return MergeStatus.WITHDRAWAL;
+                            } else {
+                                return MergeStatus.NO_WITHDRAWAL;
+                            }
+                        })
+                .buildMergePoint();
+
+        return graphBuilder.payload(SubscribePayload.class)
+
+                .startPoint()
+                .handleBy(gUserProfile)
+                .handleBy(gServiceInfo)
+
+                .multiMerge()
+                .merge(gUserProfile)
+                .on(MergeStatus.STOP).complete()
+                .on(MergeStatus.CONTINUE).merge(gServiceInfo)
+
+                .merge(gServiceInfo)
+                .on(MergeStatus.CONTINUE).merge(trialPeriodCheck)
+                .on(MergeStatus.STOP).complete()
+
+                .merge(trialPeriodCheck)
+                .on(MergeStatus.WITHDRAWAL).handleBy(gBankSubsribe)
+                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gUserLog)
+                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gNotification)
+
+                .singleMerge(gBankSubsribe)
+                .onAny()
+                .handleBy(gTxLog)
+
+                .singleMerge(gTxLog)
+                .onAny()
+                .handleBy(gUserLog)
+
+                .singleMerge(gUserLog)
+                .onAny()
+                .complete()
+
+                .coordinates()
+                .start(680, 60)
+                .proc("BankProcessor@0", 410, 440)
+                .proc("NotificationProcessor@0", 889, 465)
+                .proc("ServiceInfoProcessor@0", 480, 120)
+                .proc("TransactionLogProcessor@0", 420, 650)
+                .proc("UserLogProcessor@0", 680, 820)
+                .proc("UserProfileService@0", 770, 120)
+                .merge("BankProcessor@0", 480, 550)
+                .merge("MergePoint@0", 702, 363)
+                .merge("ServiceInfoProcessor@0", 640, 280)
+                .merge("TransactionLogProcessor@0", 530, 770)
+                .merge("UserLogProcessor@0", 760, 930)
+                .merge("UserProfileService@0", 830, 250)
+                .complete("ServiceInfoProcessor@0", 480, 310)
+                .complete("UserLogProcessor@0", 740, 1020)
+                .complete("UserProfileService@0", 920, 300)
+
+                .buildGraph();
+
     }
 
 

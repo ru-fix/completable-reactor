@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.runtime;
 /**
  * @author Kamil Asfandiyarov
  */
-public class GraphMergePoint<PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem {
+public class GraphMergePoint<PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem<PayloadType> {
     int id = 0;
 
     GraphMergePointDescription<PayloadType> mergePointDescription;

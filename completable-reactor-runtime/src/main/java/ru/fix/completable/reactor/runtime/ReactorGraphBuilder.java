@@ -33,10 +33,10 @@ public class ReactorGraphBuilder {
         graphValidators.add(new ProcessorsHaveIncomingFlowsValidator());
     }
 
-    private static <PayloadType> void ensureProcessingItemRegistered(GraphMergePoint graphMergePoint, ReactorGraph<PayloadType> graph){
+    private static <PayloadType> void ensureMergePointRegistered(GraphMergePoint graphMergePoint, ReactorGraph<PayloadType> graph) {
         Objects.requireNonNull(graphMergePoint);
 
-        if(graph.processors.containsKey(graphMergePoint)){
+        if (graph.processors.containsKey(graphMergePoint)) {
             return;
         }
 
@@ -45,6 +45,56 @@ public class ReactorGraphBuilder {
                 .setDetachedMergePointDescription(graphMergePoint.mergePointDescription);
 
         graph.processors.put(graphMergePoint, processorInfo);
+    }
+
+
+    private static <ProcessorType, PayloadType> void ensureProcessorRegistered(
+            GraphProcessor<ProcessorType, ? super PayloadType> graphProcessor,
+            ReactorGraph<PayloadType> graph) {
+
+        Objects.requireNonNull(graphProcessor);
+
+        if (graph.processors.containsKey(graphProcessor)) {
+            return;
+        }
+
+        if (graph.processors.keySet().stream().anyMatch(processor -> processor.equals(graphProcessor))) {
+
+            throw new IllegalArgumentException(
+                    String.format("Processor of the same class %s and id %s already exist in the graph.",
+                            graphProcessor.getProcessorClass(),
+                            graphProcessor.getId()));
+        }
+
+        ReactorGraph.ProcessorInfo processorInfo = new ReactorGraph.ProcessorInfo();
+        processorInfo.description = new GraphProcessorDescription();
+
+        Optional.ofNullable(ReactorReflector.lookupProcessorDescription(graphProcessor.getProcessorClass()))
+                .map(ProcessorDescription::doc)
+                .ifPresent(doc -> processorInfo.processorDoc = doc);
+
+        graph.processors.put(graphProcessor, processorInfo);
+    }
+
+    private static <SubgraphPayloadType, PayloadType> void ensureSubgraphRegistered(
+            SubgraphProcessor<SubgraphPayloadType, ? super PayloadType> subgraphProcessor,
+            ReactorGraph<PayloadType> graph) {
+
+        Objects.requireNonNull(subgraphProcessor);
+
+        if(graph.processors.containsKey(subgraphProcessor)){
+            return;
+        }
+
+        ReactorGraph.ProcessorInfo processorInfo = new ReactorGraph.ProcessorInfo()
+                .setProcessorType(ReactorGraph.ProcessorType.SUBGRAPH)
+                .setSubgraphDescription(subgraphProcessor.subgraphDescription);
+
+        Optional.ofNullable(subgraphProcessor.getPayloadClass().getAnnotation(PayloadDescription.class))
+                .map(PayloadDescription::doc)
+                .ifPresent(doc -> processorInfo.processorDoc = doc);
+
+        graph.processors.put(subgraphProcessor, processorInfo);
     }
 
 
@@ -59,61 +109,10 @@ public class ReactorGraphBuilder {
         }
 
 
-        public <ProcessorType> ArgMethodHandler<BuilderPayload<PayloadType>, PayloadType, ProcessorType> processedBy(GraphProcessor<ProcessorType> graphProcessor) {
-            Objects.requireNonNull(graphProcessor);
-
-            if (this.graph.processors.keySet().stream()
-                    .anyMatch(processor -> processor.equals(graphProcessor))) {
-
-                throw new IllegalArgumentException(String.format("Processor of the same class %s and id %s already exist in the graph.",
-                        graphProcessor.getProcessorClass(),
-                        graphProcessor.getId()));
-            }
-
-            ReactorGraph.ProcessorInfo processorInfo = new ReactorGraph.ProcessorInfo();
-            processorInfo.description = new GraphProcessorDescription();
-
-            Optional.ofNullable(ReactorReflector.lookupProcessorDescription(graphProcessor.getProcessorClass()))
-                    .map(ProcessorDescription::doc)
-                    .ifPresent(doc -> processorInfo.processorDoc = doc);
-
-            this.graph.processors.put(graphProcessor, processorInfo);
-            return new ArgMethodHandler<>(this, processorInfo);
-        }
-
-
-        public <SubgraphPayloadType> SubgraphHandler<BuilderPayload<PayloadType>, PayloadType, SubgraphPayloadType> processedBy(
-                SubgraphProcessor<SubgraphPayloadType> subgraphProcessor) {
-
-            Objects.requireNonNull(subgraphProcessor);
-
-            if (this.graph.processors.keySet().stream()
-                    .anyMatch(processor -> processor.equals(subgraphProcessor))) {
-
-                throw new IllegalArgumentException(String.format("SubgraphProcessor of the same class %s and id %s already exist in the graph.",
-                        subgraphProcessor.getPayloadClass(),
-                        subgraphProcessor.getId()));
-            }
-
-            ReactorGraph.ProcessorInfo processorInfo = new ReactorGraph.ProcessorInfo()
-                    .setProcessorType(ReactorGraph.ProcessorType.SUBGRAPH)
-                    .setSubgraphDescription(new SubgraphProcessorDescription());
-
-            Optional.ofNullable(subgraphProcessor.getPayloadClass().getAnnotation(PayloadDescription.class))
-                    .map(PayloadDescription::doc)
-                    .ifPresent(doc -> processorInfo.processorDoc = doc);
-
-            this.graph.processors.put(subgraphProcessor, processorInfo);
-
-            return new SubgraphHandler<>(this, processorInfo);
-        }
-
-
         public BuilderStartPoint<PayloadType> startPoint() {
             graph.startPoint = new ReactorGraph.StartPoint();
             return new BuilderStartPoint<>(graph, graph.startPoint);
         }
-
 
     }
 
@@ -126,7 +125,23 @@ public class ReactorGraphBuilder {
             this.graph = graph;
         }
 
-        public BuilderStartPoint<PayloadType> handleBy(ProcessingGraphItem... processors) {
+        public  BuilderStartPoint<PayloadType> handleBy(GraphProcessor<?, ? super PayloadType> processor){
+            ensureProcessorRegistered(processor, this.graph);
+            return handleByItem(processor);
+        }
+
+        public  BuilderStartPoint<PayloadType>  handleBy(SubgraphProcessor<?, ? super PayloadType> subgraph){
+            ensureSubgraphRegistered(subgraph, this.graph);
+            return handleByItem(subgraph);
+        }
+
+        public  BuilderStartPoint<PayloadType>  merge(GraphMergePoint<? super PayloadType> mergePoint){
+            ensureMergePointRegistered(mergePoint, this.graph);
+            return handleByItem(mergePoint);
+        }
+
+
+        private BuilderStartPoint<PayloadType> handleByItem(ProcessingGraphItem... processors) {
             if (Arrays.stream(processors).anyMatch(this.startPoint.processors::contains)) {
                 throw new IllegalArgumentException(String.format(
                         "Could not add twice same processor to ReactorGraph." +
@@ -181,25 +196,26 @@ public class ReactorGraphBuilder {
             this.mergePoint = mergePoint;
         }
 
-        public BuilderMultiMerge<PayloadType> merge(GraphMergePoint<PayloadType> mergePoint) {
-            ensureProcessingItemRegistered(mergePoint, this.graph);
+        public BuilderMultiMerge<PayloadType> merge(GraphMergePoint<? super PayloadType> mergePoint) {
+            ensureMergePointRegistered(mergePoint, this.graph);
 
             return mergeItem(mergePoint);
         }
 
-        public BuilderMultiMerge<PayloadType> merge(GraphProcessor<?,?> processor) {
+        public BuilderMultiMerge<PayloadType> merge(GraphProcessor<?, ? super PayloadType> processor) {
+            ensureProcessorRegistered(processor, this.graph);
             return mergeItem(processor);
         }
 
-        public BuilderMultiMerge<PayloadType> merge(SubgraphProcessor<?> subgraph) {
+        public BuilderMultiMerge<PayloadType> merge(SubgraphProcessor<?, ? super PayloadType> subgraph) {
+            ensureSubgraphRegistered(subgraph, this.graph);
             return mergeItem(subgraph);
         }
 
         private BuilderMultiMerge<PayloadType> mergeItem(MergeableProcessingGraphItem processor) {
 
 
-
-            if(processor instanceof GraphProcessor || processor instanceof SubgraphProcessor) {
+            if (processor instanceof GraphProcessor || processor instanceof SubgraphProcessor) {
                 if (!Optional.ofNullable(this.graph.processors.get(processor))
                         .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?
                                 processorInfo.description.merger :
@@ -216,7 +232,7 @@ public class ReactorGraphBuilder {
             this.mergePoint = new ReactorGraph.MergePoint()
                     .setProcessor(processor);
 
-            if(processor instanceof GraphMergePoint){
+            if (processor instanceof GraphMergePoint) {
                 this.mergePoint.setType(ReactorGraph.MergePoint.Type.DETACHED);
             }
 
@@ -240,7 +256,7 @@ public class ReactorGraphBuilder {
             return new MergePointTransition<>(graph, this.mergePoint, () -> {
                 val transition = new ReactorGraph.Transition(mergeStatuses);
                 var map = transition.getTransitionOnStatusSource();
-                if(map == null){
+                if (map == null) {
                     map = new HashMap<>();
                 }
                 for (Enum<?> status : mergeStatuses) {
@@ -263,7 +279,7 @@ public class ReactorGraphBuilder {
                     this);
         }
 
-        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem processor) {
+        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<PayloadType> processor) {
 
             if (!Optional.ofNullable(this.graph.processors.get(processor))
                     .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?
@@ -342,7 +358,7 @@ public class ReactorGraphBuilder {
                     () -> {
                         val transition = new ReactorGraph.Transition(mergeStatuses);
                         var map = transition.getTransitionOnStatusSource();
-                        if(map == null){
+                        if (map == null) {
                             map = new HashMap<>();
                         }
                         for (Enum<?> status : mergeStatuses) {
@@ -723,20 +739,20 @@ public class ReactorGraphBuilder {
             }
         }
 
-        public BuilderContext merge(GraphMergePoint<PayloadType> mergePoint){
-            ensureProcessingItemRegistered(mergePoint, this.graph);
+        public BuilderContext merge(GraphMergePoint<? super PayloadType> mergePoint) {
+            ensureMergePointRegistered(mergePoint, this.graph);
             return mergeItem(mergePoint);
         }
 
-        public BuilderContext merge(GraphProcessor<?,?> processor){
+        public BuilderContext merge(GraphProcessor<?, ? super PayloadType> processor) {
             return mergeItem(processor);
         }
 
-        public BuilderContext merge(SubgraphProcessor<?> subgraph){
+        public BuilderContext merge(SubgraphProcessor<?, ? super PayloadType> subgraph) {
             return mergeItem(subgraph);
         }
 
-        private BuilderContext mergeItem(MergeableProcessingGraphItem processor) {
+        private BuilderContext mergeItem(MergeableProcessingGraphItem<? super PayloadType> processor) {
 
             if (!graph.processors.containsKey(processor)) {
                 throw new IllegalArgumentException(String.format("Processor %s not registered for payload %s", processor, graph.getPayloadClass()));
@@ -751,12 +767,18 @@ public class ReactorGraphBuilder {
             return this.builderContext;
         }
 
-        public BuilderContext handleBy(HandleableProcessingGraphItem... processors) {
-            for (ProcessingGraphItem processor : processors) {
-                if (!graph.processors.containsKey(processor)) {
-                    throw new IllegalArgumentException(String.format("Processor %s not registered for payload %s", processor, graph.getPayloadClass()));
-                }
-            }
+        public  BuilderContext handleBy(GraphProcessor<?, ? super PayloadType> processor){
+            ensureProcessorRegistered(processor, this.graph);
+            return handleByItem(processor);
+        }
+
+        public  BuilderContext handleBy(SubgraphProcessor<?, ? super PayloadType> subgraph){
+            ensureSubgraphRegistered(subgraph, this.graph);
+            return handleByItem(subgraph);
+        }
+
+        private BuilderContext handleByItem(HandleableProcessingGraphItem... processors) {
+
             for (ProcessingGraphItem processor : processors) {
 
                 ReactorGraph.Transition newTransition = transitionSupplier.get()
@@ -791,7 +813,10 @@ public class ReactorGraphBuilder {
     }
 
 
-    public <PayloadType> SubgraphProcessor<PayloadType> subgraphProcessor(Class<PayloadType> subgraphPayload) {
-        return new SubgraphProcessor<>(subgraphPayload);
+    public <SubgraphPayloadType, PayloadType> SubgraphHandler<SubgraphProcessorDescription<SubgraphPayloadType, PayloadType>, PayloadType, SubgraphPayloadType> describeSubgraph(Class<SubgraphPayloadType> subgraphPayload,
+                                                                                                                                                                                 Class<PayloadType> payloadType){
+        SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> description = new SubgraphProcessorDescription<>(subgraphPayload);
+        return new SubgraphHandler<>(description, description);
+
     }
 }

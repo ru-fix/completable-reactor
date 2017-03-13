@@ -7,34 +7,29 @@ import java.util.function.Function;
  */
 public class SubgraphHandler<ContextResult, PayloadType, SubgraphPayloadType> {
     final ContextResult contextResult;
-    final ReactorGraph.ProcessorInfo processorInfo;
+    final SubgraphProcessorDescription subgraphDescription;
 
-    public SubgraphHandler(ContextResult contextResult, ReactorGraph.ProcessorInfo processorInfo) {
+    public SubgraphHandler(ContextResult contextResult, SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> subgraphDescription) {
         this.contextResult = contextResult;
-        this.processorInfo = processorInfo;
-        this.processorInfo.subgraphDescription = new SubgraphProcessorDescription();
-    }
-    public <SubgraphPayloadType> ContextResult describe(SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> description) {
-        this.processorInfo.subgraphDescription = description;
-        return contextResult;
+        this.subgraphDescription = subgraphDescription;
     }
 
     public ArgMethodMerger<ContextResult, PayloadType, SubgraphPayloadType> passArg(Function<PayloadType, SubgraphPayloadType> arg) {
-        this.processorInfo.subgraphDescription.arg = arg;
+        this.subgraphDescription.arg = arg;
         return new ArgMethodMerger<>(contextResult, mergerInfo -> {
-            this.processorInfo.subgraphDescription.merger = mergerInfo.merger;
-            this.processorInfo.subgraphDescription.mergeSource = mergerInfo.mergerSource;
-            this.processorInfo.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;
+            this.subgraphDescription.merger = mergerInfo.merger;
+            this.subgraphDescription.mergeSource = mergerInfo.mergerSource;
+            this.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;
         });
     }
 
     public ArgMethodMerger<ContextResult, PayloadType, SubgraphPayloadType> copyArg(Function<PayloadType, SubgraphPayloadType> arg) {
-        this.processorInfo.subgraphDescription.arg = arg;
-        this.processorInfo.subgraphDescription.isCopyArg = true;
+        this.subgraphDescription.arg = arg;
+        this.subgraphDescription.isCopyArg = true;
         return new ArgMethodMerger<>(contextResult, mergerInfo -> {
-            this.processorInfo.subgraphDescription.merger = mergerInfo.merger;
-            this.processorInfo.subgraphDescription.mergeSource = mergerInfo.mergerSource;
-            this.processorInfo.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;
+            this.subgraphDescription.merger = mergerInfo.merger;
+            this.subgraphDescription.mergeSource = mergerInfo.mergerSource;
+            this.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;
         });
     }
 }

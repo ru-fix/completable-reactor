@@ -9,19 +9,21 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString
-public class SubgraphProcessor<PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem, HandleableProcessingGraphItem{
-    final Class<PayloadType> payloadClass;
+public class SubgraphProcessor<SubgraphPayloadType, PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem<PayloadType>, HandleableProcessingGraphItem{
+
     int id = 0;
 
-    public SubgraphProcessor(Class<PayloadType> payloadClass) {
-        this.payloadClass = payloadClass;
+    final SubgraphProcessorDescription subgraphDescription;
+
+    public SubgraphProcessor(SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> subgraphDescription) {
+        this.subgraphDescription = subgraphDescription;
     }
 
     public Class<PayloadType> getPayloadClass() {
-        return payloadClass;
+        return subgraphDescription.subgraphPayload;
     }
 
-    public SubgraphProcessor<PayloadType> withId(int id){
+    public SubgraphProcessor<SubgraphPayloadType, PayloadType> withId(int id){
         this.id = id;
         return this;
     }
@@ -32,6 +34,6 @@ public class SubgraphProcessor<PayloadType> implements ProcessingGraphItem, Merg
 
     @Override
     public String getProfilingName() {
-        return payloadClass.getSimpleName();
+        return getPayloadClass().getSimpleName();
     }
 }
