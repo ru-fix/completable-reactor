@@ -814,11 +814,20 @@ public class ReactorGraphBuilder {
         return new MergePointArgMethodMerger<>(description, description);
     }
 
+    public static class DescribeSubgraphBuilder<SubgraphPayloadType>{
+        final Class<SubgraphPayloadType> subgraphPayloadType;
 
-    public <SubgraphPayloadType, PayloadType> SubgraphHandler<SubgraphProcessorDescription<SubgraphPayloadType, PayloadType>, PayloadType, SubgraphPayloadType> describeSubgraph(Class<SubgraphPayloadType> subgraphPayload,
-                                                                                                                                                                                 Class<PayloadType> payloadType){
-        SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> description = new SubgraphProcessorDescription<>(subgraphPayload);
-        return new SubgraphHandler<>(description, description);
+        DescribeSubgraphBuilder(Class<SubgraphPayloadType> subgraphPayloadType) {
+            this.subgraphPayloadType = subgraphPayloadType;
+        }
 
+        public <PayloadType> SubgraphHandler<SubgraphProcessorDescription<SubgraphPayloadType, PayloadType>, PayloadType, SubgraphPayloadType>  forPayload(Class<PayloadType> payloadType){
+            SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> description = new SubgraphProcessorDescription<>(subgraphPayloadType);
+            return new SubgraphHandler<>(description, description);
+        }
+    }
+
+    public <SubgraphPayloadType> DescribeSubgraphBuilder<SubgraphPayloadType> describeSubgraph(Class<SubgraphPayloadType> subgraphPayload){
+        return new DescribeSubgraphBuilder<>(subgraphPayload);
     }
 }

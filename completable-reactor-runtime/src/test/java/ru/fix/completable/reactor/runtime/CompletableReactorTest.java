@@ -358,7 +358,8 @@ public class CompletableReactorTest {
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor2 = idListProcessorDescription.buildProcessor(new IdProcessor(2)).withId(2);
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor3 = idListProcessorDescription.buildProcessor(new IdProcessor(3)).withId(3);
 
-        SubgraphProcessor<SubgraphPayload, ParentGraphPayload> subgraphProcessor = graphBuilder.describeSubgraph(SubgraphPayload.class, ParentGraphPayload.class)
+        SubgraphProcessor<SubgraphPayload, ParentGraphPayload> subgraphProcessor = graphBuilder.describeSubgraph(SubgraphPayload.class)
+                .forPayload(ParentGraphPayload.class)
                 .passArg(payload -> new SubgraphPayload())
                 .withMerger((payload, result) -> {
                     payload.getIdSequence().addAll(result.getIdSequence());
