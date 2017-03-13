@@ -32,7 +32,8 @@ public class Configuration {
      * Graph processors
      */
     GraphProcessorDescription<UserProfileService, UserProfilePayloadMixin> gUserProfileDescription =
-            graphBuilder.describeProcessor(UserProfileService.class, UserProfilePayloadMixin.class)
+            graphBuilder.describeProcessor(UserProfileService.class)
+                    .forPayload(UserProfilePayloadMixin.class)
                     .passArg(pld -> pld.getUserId())
                     .passArg(pld -> pld.getUserId().toString())
                     .withHandler(UserProfileService::loadUserProfileById)
@@ -57,14 +58,16 @@ public class Configuration {
     GraphProcessor<UserProfileService, UserProfilePayloadMixin> gUserProfile = gUserProfileDescription.buildProcessor(userProfile);
 
 
-    GraphProcessor<TransactionLogProcessor, UserProfilePayloadMixin> gTxLog = graphBuilder.describeProcessor(TransactionLogProcessor.class, UserProfilePayloadMixin.class)
+    GraphProcessor<TransactionLogProcessor, UserProfilePayloadMixin> gTxLog = graphBuilder.describeProcessor(TransactionLogProcessor.class)
+            .forPayload(UserProfilePayloadMixin.class)
             .passArg(pld -> pld.getUserId())
             .withHandler(TransactionLogProcessor::logTransactioin)
             .withMerger((pld, any) -> MergeStatus.CONTINUE)
             .buildProcessor(txLog);
 
 
-    GraphProcessor<UserLogProcessor, UserProfilePayloadMixin> gUserLog = graphBuilder.describeProcessor(UserLogProcessor.class, UserProfilePayloadMixin.class)
+    GraphProcessor<UserLogProcessor, UserProfilePayloadMixin> gUserLog = graphBuilder.describeProcessor(UserLogProcessor.class)
+            .forPayload(UserProfilePayloadMixin.class)
             .passArg(pld -> pld.getUserId())
             .passArg(pld -> String.format("Request type: %s", pld.getClass().getSimpleName()))
             .withHandler(UserLogProcessor::logAction)
@@ -72,7 +75,8 @@ public class Configuration {
             .buildProcessor(userLog);
 
 
-    GraphProcessor<NotificationProcessor, UserProfilePayloadMixin> gNotification = graphBuilder.describeProcessor(NotificationProcessor.class, UserProfilePayloadMixin.class)
+    GraphProcessor<NotificationProcessor, UserProfilePayloadMixin> gNotification = graphBuilder.describeProcessor(NotificationProcessor.class)
+            .forPayload(UserProfilePayloadMixin.class)
             .copyArg(pld -> pld.getUserId())
             .withHandler(NotificationProcessor::sendPurchaseNotification)
             .withoutMerger()
@@ -81,7 +85,8 @@ public class Configuration {
     enum Status {OK}
 
 
-    GraphProcessor<BankProcessor, PurchasePayload> gBankPurchase = graphBuilder.describeProcessor(BankProcessor.class, PurchasePayload.class)
+    GraphProcessor<BankProcessor, PurchasePayload> gBankPurchase = graphBuilder.describeProcessor(BankProcessor.class)
+            .forPayload(PurchasePayload.class)
             .passArg(pld -> pld.intermediateData.getUserInfo())
             .passArg(pld -> pld.intermediateData.getServiceInfo())
             .withHandler(BankProcessor::withdrawMoneyWithMinus)
@@ -109,7 +114,8 @@ public class Configuration {
                     })
             .buildProcessor(bank);
 
-    GraphProcessor<BankProcessor, SubscribePayload> gBankSubsribe = graphBuilder.describeProcessor(BankProcessor.class, SubscribePayload.class)
+    GraphProcessor<BankProcessor, SubscribePayload> gBankSubsribe = graphBuilder.describeProcessor(BankProcessor.class)
+            .forPayload(SubscribePayload.class)
             .passArg(pld -> pld.intermediateData.getUserInfo())
             .passArg(pld -> pld.intermediateData.getServiceInfo())
             .withHandler(BankProcessor::withdrawMoney)
@@ -133,7 +139,8 @@ public class Configuration {
 
     ReactorGraph<PurchasePayload> purchaseGraph() throws Exception {
 
-        GraphProcessor<ServiceInfoProcessor, ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.describeProcessor(ServiceInfoProcessor.class, ServiceInfoPayloadMixin.class)
+        GraphProcessor<ServiceInfoProcessor, ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.describeProcessor(ServiceInfoProcessor.class)
+                .forPayload(ServiceInfoPayloadMixin.class)
                 .passArg(pld -> pld.getServiceId())
                 .withHandler(ServiceInfoProcessor::loadServiceInformation)
                 .withMerger((pld, result) -> {
@@ -210,7 +217,8 @@ public class Configuration {
 
     ReactorGraph<SubscribePayload> subscribeGraph() throws Exception {
 
-        GraphProcessor<ServiceInfoProcessor, ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.describeProcessor(ServiceInfoProcessor.class, ServiceInfoPayloadMixin.class)
+        GraphProcessor<ServiceInfoProcessor, ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.describeProcessor(ServiceInfoProcessor.class)
+                .forPayload(ServiceInfoPayloadMixin.class)
                 .passArg(pld -> pld.getServiceId())
                 .withHandler(ServiceInfoProcessor::loadServiceInformation)
                 .withMerger((pld, result) -> {

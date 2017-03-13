@@ -51,7 +51,8 @@ public class CompletableReactorTest {
 
         graphBuilder = new ReactorGraphBuilder();
 
-        idListProcessorDescription = graphBuilder.describeProcessor(IdProcessor.class, IdListPaylaod.class)
+        idListProcessorDescription = graphBuilder.describeProcessor(IdProcessor.class)
+                .forPayload(IdListPaylaod.class)
                 .withHandler(IdProcessor::handle)
                 .withMerger((pld, id) -> {
                     pld.getIdSequence().add(id);
@@ -183,7 +184,8 @@ public class CompletableReactorTest {
 
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor1 = idListProcessorDescription.buildProcessor(new IdProcessor(1)).withId(1);
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor2 = idListProcessorDescription.buildProcessor(new IdProcessor(2)).withId(2);
-        GraphProcessor<IdProcessor, DetachedProcessorPayload> idProcessor3 = graphBuilder.describeProcessor(IdProcessor.class, DetachedProcessorPayload.class)
+        GraphProcessor<IdProcessor, DetachedProcessorPayload> idProcessor3 = graphBuilder.describeProcessor(IdProcessor.class)
+                .forPayload(DetachedProcessorPayload.class)
                 .withHandler(IdProcessor::handle)
                 .withoutMerger()
                 .buildProcessor(new IdProcessor(3).withLaunchingLatch()).withId(3);
@@ -244,7 +246,8 @@ public class CompletableReactorTest {
 
         AtomicBoolean mergingIsDone = new AtomicBoolean();
 
-        GraphProcessor<IdProcessor, PayloadWithMergeGroup> idProcessor1 = graphBuilder.describeProcessor(IdProcessor.class, PayloadWithMergeGroup.class)
+        GraphProcessor<IdProcessor, PayloadWithMergeGroup> idProcessor1 = graphBuilder.describeProcessor(IdProcessor.class)
+                .forPayload(PayloadWithMergeGroup.class)
                 .withHandler(IdProcessor::handle)
                 .withMerger((pld, id) -> {
                     mergingIsDone.set(true);
@@ -414,7 +417,8 @@ public class CompletableReactorTest {
         Mockito.when(processorInterface.handle()).thenReturn(CompletableFuture.completedFuture(42));
 
 
-        GraphProcessor<IdProcessorInterface, SingleInterfaceProcessorPayload> idProcessor1 = graphBuilder.describeProcessor(IdProcessorInterface.class, SingleInterfaceProcessorPayload.class)
+        GraphProcessor<IdProcessorInterface, SingleInterfaceProcessorPayload> idProcessor1 = graphBuilder.describeProcessor(IdProcessorInterface.class)
+                .forPayload(SingleInterfaceProcessorPayload.class)
                 .withHandler(IdProcessorInterface::handle)
                 .withMerger((pld, id) -> {
                     pld.getIdSequence().add(id);
@@ -455,7 +459,8 @@ public class CompletableReactorTest {
         IdProcessor processor = Mockito.mock(IdProcessor.class);
         Mockito.when(processor.handle()).thenReturn(CompletableFuture.completedFuture(78));
 
-        GraphProcessor<IdProcessorInterface, SingleInterfaceProcessorPayload> idProcessor1 = graphBuilder.describeProcessor(IdProcessorInterface.class, SingleInterfaceProcessorPayload.class)
+        GraphProcessor<IdProcessorInterface, SingleInterfaceProcessorPayload> idProcessor1 = graphBuilder.describeProcessor(IdProcessorInterface.class)
+                .forPayload(SingleInterfaceProcessorPayload.class)
                 .withHandler(IdProcessorInterface::handle)
                 .withMerger((pld, id) -> {
                     pld.getIdSequence().add(id);
@@ -505,7 +510,8 @@ public class CompletableReactorTest {
 
     @Test
     public void parallel_processors_with_one_dead_branch_way() throws Exception {
-        GraphProcessor<IdProcessor, DeadBranchPayload> idProcessor0 = graphBuilder.describeProcessor(IdProcessor.class, DeadBranchPayload.class)
+        GraphProcessor<IdProcessor, DeadBranchPayload> idProcessor0 = graphBuilder.describeProcessor(IdProcessor.class)
+                .forPayload(DeadBranchPayload.class)
                 .withHandler(IdProcessor::handle)
                 .withMerger((pld, id) -> {
                     pld.getIdSequence().add(id);
@@ -515,7 +521,8 @@ public class CompletableReactorTest {
                 .buildProcessor(new IdProcessor(0)).withId(0);
 
 
-        GraphProcessor<IdProcessor, DeadBranchPayload> idProcessor1 = graphBuilder.describeProcessor(IdProcessor.class, DeadBranchPayload.class)
+        GraphProcessor<IdProcessor, DeadBranchPayload> idProcessor1 = graphBuilder.describeProcessor(IdProcessor.class)
+                .forPayload(DeadBranchPayload.class)
                 .withHandler(IdProcessor::handle)
                 .withMerger((pld, id) -> {
                     pld.getIdSequence().add(id);
@@ -523,7 +530,8 @@ public class CompletableReactorTest {
                 })
                 .buildProcessor(new IdProcessor(1)).withId(1);
 
-        GraphProcessor<IdProcessor, DeadBranchPayload> idProcessor2 = graphBuilder.describeProcessor(IdProcessor.class, DeadBranchPayload.class)
+        GraphProcessor<IdProcessor, DeadBranchPayload> idProcessor2 = graphBuilder.describeProcessor(IdProcessor.class)
+                .forPayload(DeadBranchPayload.class)
                 .withHandler(IdProcessor::handle)
                 .withMerger((pld, id) -> {
                     pld.getIdSequence().add(id);

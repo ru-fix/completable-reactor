@@ -792,11 +792,21 @@ public class ReactorGraphBuilder {
         return new BuilderPayload<>(payloadClass, graph);
     }
 
-    public <ProcessorType, PayloadType> ArgMethodHandler0<GraphProcessorDescription<ProcessorType, PayloadType>, PayloadType, ProcessorType> describeProcessor(Class<ProcessorType> processorType, Class<PayloadType> payloadType) {
+    public static class DescribeProcesorBuilder<ProcessorType> {
+        final Class<ProcessorType> processorType;
 
-        GraphProcessorDescription<ProcessorType, PayloadType> description = new GraphProcessorDescription<>();
+        DescribeProcesorBuilder(Class<ProcessorType> processorType) {
+            this.processorType = processorType;
+        }
 
-        return new ArgMethodHandler0<>(description, description);
+        public <PayloadType> ArgMethodHandler0<GraphProcessorDescription<ProcessorType, PayloadType>, PayloadType, ProcessorType> forPayload(Class<PayloadType> payloadType){
+            GraphProcessorDescription<ProcessorType, PayloadType> description = new GraphProcessorDescription<>();
+            return new ArgMethodHandler0<>(description, description);
+        }
+    }
+
+    public <ProcessorType> DescribeProcesorBuilder<ProcessorType> describeProcessor(Class<ProcessorType> processorType) {
+        return new DescribeProcesorBuilder<>(processorType);
     }
 
     public <PayloadType> MergePointArgMethodMerger<GraphMergePointDescription<PayloadType>, PayloadType> describeMergePoint(Class<PayloadType> payloadType) {
