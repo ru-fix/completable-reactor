@@ -79,9 +79,6 @@ public class CompletableReactorTest {
     }
 
 
-
-
-
     @PayloadDescription(doc = {
             "Payload goes through processor chain and collect",
             " all processors ids that merged their results to payload.",
@@ -327,7 +324,6 @@ public class CompletableReactorTest {
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor11 = idListProcessorDescription.buildProcessor(new IdProcessor(11)).withId(11);
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor12 = idListProcessorDescription.buildProcessor(new IdProcessor(12)).withId(12);
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor13 = idListProcessorDescription.buildProcessor(new IdProcessor(13)).withId(13);
-
 
 
         ReactorGraph<SubgraphPayload> childGraph = graphBuilder.payload(SubgraphPayload.class)
@@ -608,7 +604,8 @@ public class CompletableReactorTest {
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor0 = idListProcessorDescription.buildProcessor(new IdProcessor(0)).withId(0);
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor1 = idListProcessorDescription.buildProcessor(new IdProcessor(1)).withId(1);
 
-        GraphMergePoint<DetachedMergePointFromStartPointPayload> mergePoint = graphBuilder.describeMergePoint(DetachedMergePointFromStartPointPayload.class)
+        GraphMergePoint<DetachedMergePointFromStartPointPayload> mergePoint = graphBuilder.describeMergePoint()
+                .forPayload(DetachedMergePointFromStartPointPayload.class)
                 .withMerger(new String[]{
                                 "merge point documentation",
                                 "here"},
@@ -680,7 +677,8 @@ public class CompletableReactorTest {
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor0 = idListProcessorDescription.buildProcessor(new IdProcessor(0)).withId(0);
         GraphProcessor<IdProcessor, IdListPaylaod> idProcessor1 = idListProcessorDescription.buildProcessor(new IdProcessor(1)).withId(1);
 
-        GraphMergePoint<DetachedMergePointFromProcessorsMergePointPayload> mergePoint = graphBuilder.describeMergePoint(DetachedMergePointFromProcessorsMergePointPayload.class)
+        GraphMergePoint<DetachedMergePointFromProcessorsMergePointPayload> mergePoint = graphBuilder.describeMergePoint()
+                .forPayload(DetachedMergePointFromProcessorsMergePointPayload.class)
                 .withMerger(new String[]{
                                 "Adds merge point id",
                                 "to payload sequence"},

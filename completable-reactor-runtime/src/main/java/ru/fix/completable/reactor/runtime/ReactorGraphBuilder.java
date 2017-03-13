@@ -809,9 +809,18 @@ public class ReactorGraphBuilder {
         return new DescribeProcesorBuilder<>(processorType);
     }
 
-    public <PayloadType> MergePointArgMethodMerger<GraphMergePointDescription<PayloadType>, PayloadType> describeMergePoint(Class<PayloadType> payloadType) {
-        GraphMergePointDescription<PayloadType> description = new GraphMergePointDescription<>();
-        return new MergePointArgMethodMerger<>(description, description);
+    public static class DescribeMergePointBuilder {
+        DescribeMergePointBuilder() {
+        }
+
+        public <PayloadType> MergePointArgMethodMerger<GraphMergePointDescription<PayloadType>, PayloadType> forPayload(Class<PayloadType> payloadType) {
+            GraphMergePointDescription<PayloadType> description = new GraphMergePointDescription<>();
+            return new MergePointArgMethodMerger<>(description, description);
+        }
+    }
+
+    public DescribeMergePointBuilder describeMergePoint() {
+        return new DescribeMergePointBuilder();
     }
 
     public static class DescribeSubgraphBuilder<SubgraphPayloadType>{

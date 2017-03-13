@@ -243,7 +243,8 @@ public class Configuration {
                 }).buildProcessor(serviceInfo);
 
 
-        GraphMergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint(SubscribePayload.class)
+        GraphMergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint()
+                .forPayload(SubscribePayload.class)
                 .withMerger(new String[]{"Checks whether service supports trial period"},
                         payload -> {
                             if (payload.getServiceInfo().isSupportTrialPeriod()) {
