@@ -93,6 +93,8 @@ public class GraphProcessorDescription<ProcessorType, PayloadType> {
      */
     String[] mergerDocs;
 
+    GraphProcessorDescription() {
+    }
 
     public GraphProcessor<ProcessorType, PayloadType> buildProcessor(ProcessorType processor) {
         return new GraphProcessor<>(processor, this);

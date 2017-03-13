@@ -40,7 +40,7 @@ public class SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> {
      */
     Function<SubgraphPayloadType, CompletableFuture<SubgraphPayloadType>> handler;
 
-    public SubgraphProcessorDescription(Class<SubgraphPayloadType> subgraphPayload) {
+    SubgraphProcessorDescription(Class<SubgraphPayloadType> subgraphPayload) {
         this.subgraphPayload = subgraphPayload;
     }
 

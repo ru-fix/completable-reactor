@@ -58,16 +58,8 @@ public class ReactorGraphBuilder {
             return;
         }
 
-        if (graph.processors.keySet().stream().anyMatch(processor -> processor.equals(graphProcessor))) {
-
-            throw new IllegalArgumentException(
-                    String.format("Processor of the same class %s and id %s already exist in the graph.",
-                            graphProcessor.getProcessorClass(),
-                            graphProcessor.getId()));
-        }
-
         ReactorGraph.ProcessorInfo processorInfo = new ReactorGraph.ProcessorInfo();
-        processorInfo.description = new GraphProcessorDescription();
+        processorInfo.description = graphProcessor.processorDescription;
 
         Optional.ofNullable(ReactorReflector.lookupProcessorDescription(graphProcessor.getProcessorClass()))
                 .map(ProcessorDescription::doc)
@@ -279,7 +271,7 @@ public class ReactorGraphBuilder {
                     this);
         }
 
-        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<PayloadType> processor) {
+        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<? super PayloadType> processor) {
 
             if (!Optional.ofNullable(this.graph.processors.get(processor))
                     .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?

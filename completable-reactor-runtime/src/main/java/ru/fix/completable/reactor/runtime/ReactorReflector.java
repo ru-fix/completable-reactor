@@ -234,7 +234,6 @@ public class ReactorReflector {
                     ArgMethodHandler3.class,
                     ArgMethodHandler4.class,
                     ArgMethodHandler5.class,
-                    MergePointArgMethodBuilder.class,
                     MergePointArgMethodMerger.class
             })
             .map(Class::getName).toArray(String[]::new);
