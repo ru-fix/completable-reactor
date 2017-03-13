@@ -224,7 +224,7 @@ public class ReactorReflector {
         return methodInterceptor.getMethod();
     }
 
-    static final String[] methodInvocationClassNamePrefixSkipList = Arrays.stream(
+    static private final String[] methodInvocationClassNamePrefixSkipList = Arrays.stream(
             new Class[]{
                     ReactorGraphBuilder.class,
                     ArgMethodMerger.class,

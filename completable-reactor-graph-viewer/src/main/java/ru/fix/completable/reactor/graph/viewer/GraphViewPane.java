@@ -42,7 +42,9 @@ public class GraphViewPane extends ScrollPane {
     private final Function<ShortcutType, Optional<Shortcut>> shortcutProvider;
 
 
-    public GraphViewPane(GraphViewer.ActionListener actionListener, Function<ShortcutType, Optional<Shortcut>> shortcutProvider) {
+    public GraphViewPane(GraphViewer.ActionListener actionListener,
+                         Function<ShortcutType, Optional<Shortcut>> shortcutProvider) {
+
         this.actionListener = actionListener;
         this.shortcutProvider = shortcutProvider;
 
@@ -130,7 +132,13 @@ public class GraphViewPane extends ScrollPane {
                 return;
             }
 
-            val processorNode = new ProcessorNode(translator, processorName, processorInfo, actionListener, coordinateItems);
+            val processorNode = new ProcessorNode(
+                    translator,
+                    processorName,
+                    processorInfo,
+                    actionListener,
+                    coordinateItems);
+
             processors.put(processorName, processorNode);
             pane.getChildren().add(processorNode);
 
@@ -164,30 +172,65 @@ public class GraphViewPane extends ScrollPane {
                 for (val transition : mergePoint.transitions) {
                     if (transition.isComplete) {
 
-                        val endPointNode = new EndPointNode(translator, mergePoint, transition, actionListener, coordinateItems);
+                        val endPointNode = new EndPointNode(
+                                translator,
+                                mergePoint,
+                                transition,
+                                actionListener,
+                                coordinateItems);
 
                         pane.getChildren().addAll(endPointNode);
 
-                        val line = new TransitionLine(pane, mergePointNode, endPointNode, Optional.of(transition), actionListener);
+                        val line = new TransitionLine(
+                                pane,
+                                mergePointNode,
+                                endPointNode,
+                                Optional.of(transition),
+                                actionListener);
+
                         pane.getChildren().add(line);
                         line.toBack();
 
                     } else if (transition.isOnAny) {
                         if (transition.handleByProcessor != null) {
-                            val line = new TransitionLine(pane, mergePointNode, processors.get(transition.handleByProcessor), Optional.of(transition), actionListener);
+                            val line = new TransitionLine(
+                                    pane,
+                                    mergePointNode,
+                                    processors.get(transition.handleByProcessor),
+                                    Optional.of(transition),
+                                    actionListener);
+
                             pane.getChildren().add(line);
                             line.toBack();
                         } else if (transition.mergeProcessor != null) {
-                            val line = new TransitionLine(pane, mergePointNode, mergePoints.get(transition.mergeProcessor), Optional.of(transition), actionListener);
+                            val line = new TransitionLine(
+                                    pane,
+                                    mergePointNode,
+                                    mergePoints.get(transition.mergeProcessor),
+                                    Optional.of(transition),
+                                    actionListener);
+
                             pane.getChildren().add(line);
                             line.toBack();
                         }
                     } else if (transition.handleByProcessor != null) {
-                        val line = new TransitionLine(pane, mergePointNode, processors.get(transition.handleByProcessor), Optional.of(transition), actionListener);
+                        val line = new TransitionLine(
+                                pane,
+                                mergePointNode,
+                                processors.get(transition.handleByProcessor),
+                                Optional.of(transition),
+                                actionListener);
+
                         pane.getChildren().add(line);
                         line.toBack();
                     } else if (transition.mergeProcessor != null) {
-                        val line = new TransitionLine(pane, mergePointNode, mergePoints.get(transition.mergeProcessor), Optional.of(transition), actionListener);
+                        val line = new TransitionLine(
+                                pane,
+                                mergePointNode,
+                                mergePoints.get(transition.mergeProcessor),
+                                Optional.of(transition),
+                                actionListener);
+
                         pane.getChildren().add(line);
                         line.toBack();
                     }
@@ -216,9 +259,20 @@ public class GraphViewPane extends ScrollPane {
             TransitionLine transition;
 
             if (graphModel.processors.get(processorName).processorType == ReactorGraphModel.ProcessorType.DETACHED_MERGE_POINT) {
-                transition = new TransitionLine(pane, startPointNode, mergePoints.get(processorName), Optional.empty(), actionListener);
+                transition = new TransitionLine(
+                        pane,
+                        startPointNode,
+                        mergePoints.get(processorName),
+                        Optional.empty(),
+                        actionListener);
+
             } else {
-                transition = new TransitionLine(pane, startPointNode, processors.get(processorName), Optional.empty(), actionListener);
+                transition = new TransitionLine(
+                        pane,
+                        startPointNode,
+                        processors.get(processorName),
+                        Optional.empty(),
+                        actionListener);
             }
 
             pane.getChildren().add(transition);
