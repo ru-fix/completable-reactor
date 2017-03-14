@@ -150,7 +150,19 @@ public class ReactorGraphBuilder {
             return this;
         }
 
-        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem processor) {
+        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<? super PayloadType> processor) {
+
+            if (!Optional.ofNullable(this.graph.processors.get(processor))
+                    .filter(ReactorGraph.ProcessorInfo::isMergerExist)
+                    .isPresent()) {
+
+                throw new IllegalArgumentException(String.format(
+                        "Single merge point added to processor %s, but it does not have merger." +
+                                " Use 'withMerger' clause to attach merger to processor.",
+                        processor));
+            }
+
+
             if (!this.startPoint.processors.contains(processor)) {
                 throw new IllegalArgumentException(String.format("Processor %s is not registered", processor.getClass()));
             }
@@ -306,12 +318,10 @@ public class ReactorGraphBuilder {
             this.mergePoint.processor = processor;
         }
 
-        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem processor) {
+        public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<? super PayloadType> processor) {
 
             if (!Optional.ofNullable(this.graph.processors.get(processor))
-                    .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?
-                            processorInfo.description.merger :
-                            processorInfo.subgraphDescription.merger)
+                    .filter(ReactorGraph.ProcessorInfo::isMergerExist)
                     .isPresent()) {
 
                 throw new IllegalArgumentException(String.format(

@@ -201,6 +201,20 @@ public class ReactorGraph<PayloadType> {
         String[] requestDoc;
         String handlerName;
         ReactorGraphModel.Source coordinatesSource;
+
+        boolean isMergerExist(){
+            switch (processorType){
+                case PLAIN:
+                    return description.merger != null;
+                case SUBGRAPH:
+                    return subgraphDescription.merger != null;
+                case DETACHED_MERGE_POINT:
+                    return detachedMergePointDescription.merger != null;
+                default:
+                    throw new IllegalArgumentException(String.format("Invalid processor type: %s", processorType));
+            }
+        }
+
         BiFunction getMerger() {
             switch (processorType) {
                 case PLAIN:
