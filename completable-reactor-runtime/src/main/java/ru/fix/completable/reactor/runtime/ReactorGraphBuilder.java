@@ -48,9 +48,9 @@ public class ReactorGraphBuilder {
     }
 
 
-    private static <ProcessorType, PayloadType> void ensureProcessorRegistered(
-            GraphProcessor<ProcessorType, ? super PayloadType> graphProcessor,
-            ReactorGraph<PayloadType> graph) {
+    private static void ensureProcessorRegistered(
+            GraphProcessor<?, ?> graphProcessor,
+            ReactorGraph<?> graph) {
 
         Objects.requireNonNull(graphProcessor);
 
@@ -68,9 +68,9 @@ public class ReactorGraphBuilder {
         graph.processors.put(graphProcessor, processorInfo);
     }
 
-    private static <SubgraphPayloadType, PayloadType> void ensureSubgraphRegistered(
-            SubgraphProcessor<SubgraphPayloadType, ? super PayloadType> subgraphProcessor,
-            ReactorGraph<PayloadType> graph) {
+    private static void ensureSubgraphRegistered(
+            SubgraphProcessor<?, ?> subgraphProcessor,
+            ReactorGraph<?> graph) {
 
         Objects.requireNonNull(subgraphProcessor);
 
@@ -89,6 +89,20 @@ public class ReactorGraphBuilder {
         graph.processors.put(subgraphProcessor, processorInfo);
     }
 
+    private static <PayloadType> void ensureGraphItemRegistered(MergeableProcessingGraphItem<PayloadType> item, ReactorGraph<?> graph){
+        Objects.requireNonNull(item);
+        Objects.requireNonNull(graph);
+
+        if(item instanceof GraphProcessor){
+            ensureProcessorRegistered((GraphProcessor)item, graph);
+        } else if(item instanceof SubgraphProcessor){
+            ensureSubgraphRegistered((SubgraphProcessor) item, graph);
+        } else if(item instanceof GraphMergePoint){
+            ensureMergePointRegistered((GraphMergePoint)item, graph);
+        } else {
+            throw new IllegalArgumentException("Invalid processing graph item type: " + item.getClass());
+        }
+    }
 
     public class BuilderPayload<PayloadType> {
         final Class<PayloadType> payloadClass;
@@ -151,6 +165,7 @@ public class ReactorGraphBuilder {
         }
 
         public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<? super PayloadType> processor) {
+            ensureGraphItemRegistered(processor, this.graph);
 
             if (!Optional.ofNullable(this.graph.processors.get(processor))
                     .filter(ReactorGraph.ProcessorInfo::isMergerExist)
@@ -218,7 +233,6 @@ public class ReactorGraphBuilder {
 
         private BuilderMultiMerge<PayloadType> mergeItem(MergeableProcessingGraphItem processor) {
 
-
             if (processor instanceof GraphProcessor || processor instanceof SubgraphProcessor) {
                 if (!Optional.ofNullable(this.graph.processors.get(processor))
                         .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?
@@ -285,6 +299,8 @@ public class ReactorGraphBuilder {
 
         public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<? super PayloadType> processor) {
 
+            ensureGraphItemRegistered(processor, this.graph);
+
             if (!Optional.ofNullable(this.graph.processors.get(processor))
                     .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?
                             processorInfo.description.merger :
@@ -319,6 +335,7 @@ public class ReactorGraphBuilder {
         }
 
         public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<? super PayloadType> processor) {
+            ensureGraphItemRegistered(processor, this.graph);
 
             if (!Optional.ofNullable(this.graph.processors.get(processor))
                     .filter(ReactorGraph.ProcessorInfo::isMergerExist)
