@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.runtime;
 
+import lombok.ToString;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 
 import java.util.concurrent.CompletableFuture;
@@ -10,6 +11,7 @@ import java.util.function.Function;
  * Describe subgraph handing and merging
  * @author Kamil Asfandiyarov
  */
+@ToString
 public class SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> {
 
     final Class<SubgraphPayloadType> subgraphPayload;

@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.runtime;
 
+import lombok.ToString;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 
 import java.util.function.Function;
@@ -7,6 +8,7 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
+@ToString
 public class GraphMergePointDescription<PayloadType> {
 
     /**

@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.runtime;
 
+import lombok.ToString;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 
 import java.util.function.BiFunction;
@@ -11,6 +12,7 @@ import java.util.function.Function;
  * @author Kamil Asfandiyarov
  */
 
+@ToString
 public class GraphProcessorDescription<ProcessorType, PayloadType> {
     /**
      * Null if there is no merger provided.
