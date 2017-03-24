@@ -656,7 +656,6 @@ public class CompletableReactorTest {
                 .get(10, TimeUnit.SECONDS);
 
         assertEquals(Arrays.asList(42, 1, 0), resultPayload.getIdSequence());
-
     }
 
     @PayloadDescription(doc = {
@@ -729,4 +728,88 @@ public class CompletableReactorTest {
         assertEquals(Arrays.asList(0, 1, 42), resultPayload.getIdSequence());
 
     }
+
+
+    @PayloadDescription(doc = {
+            "OptionalProcessorExecution shows how to use detached merge point to avoid unnesessary processor execution"
+    })
+
+    @Accessors(chain = true)
+    @Data
+    static class OptionalProcessorExecutionPayload extends IdListPaylaod {
+        OPTIONAL_DECISION whereToGo;
+    }
+
+    enum OPTIONAL_DECISION {
+        LEFT, RIGHT
+    }
+
+    @Test
+    public void optional_processor_execution() throws Exception {
+
+        GraphProcessor<IdProcessor, IdListPaylaod> idProcessor1 = idListProcessorDescription.buildProcessor(new IdProcessor(1)).withId(1);
+        GraphProcessor<IdProcessor, IdListPaylaod> idProcessor2 = idListProcessorDescription.buildProcessor(new IdProcessor(2)).withId(2);
+
+        GraphMergePoint<OptionalProcessorExecutionPayload> mergePoint = graphBuilder.describeMergePoint()
+                .forPayload(OptionalProcessorExecutionPayload.class)
+                .withMerger(new String[]{
+                                "always returns LEFT"
+                        },
+                        pld -> {
+                            return pld.getWhereToGo();
+                        })
+                .buildMergePoint()
+                .withId(0);
+
+
+        ReactorGraph<OptionalProcessorExecutionPayload> graph = graphBuilder.payload(OptionalProcessorExecutionPayload.class)
+                .startPoint()
+                .merge(mergePoint)
+
+                .singleMerge(mergePoint)
+                .on(OPTIONAL_DECISION.LEFT).handleBy(idProcessor2)
+                .on(OPTIONAL_DECISION.RIGHT).handleBy(idProcessor1)
+
+                .singleMerge(idProcessor1)
+                .onAny().handleBy(idProcessor2)
+
+                .singleMerge(idProcessor2)
+                .onAny().complete()
+
+                .coordinates()
+                .start(0, 17)
+                .proc("IdProcessor@1", 189, 164)
+                .proc("IdProcessor@2", 46, 269)
+                .merge("IdProcessor@1", 221, 233)
+                .merge("IdProcessor@2", 81, 354)
+                .merge("MergePoint@0", 114, 82)
+                .complete("IdProcessor@2", 87, 432)
+
+                .buildGraph();
+
+        printGraph(graph);
+
+        reactor.registerReactorGraph(graph);
+
+        CompletableReactor.Execution<OptionalProcessorExecutionPayload> result = reactor.submit(new OptionalProcessorExecutionPayload()
+                .setWhereToGo(OPTIONAL_DECISION.RIGHT));
+
+        OptionalProcessorExecutionPayload resultPayload = result
+                .getResultFuture()
+                .get(10, TimeUnit.SECONDS);
+
+        assertEquals(Arrays.asList(1, 2), resultPayload.getIdSequence());
+
+
+        result = reactor.submit(new OptionalProcessorExecutionPayload()
+                .setWhereToGo(OPTIONAL_DECISION.LEFT));
+
+
+        resultPayload = result
+                .getResultFuture()
+                .get(10, TimeUnit.SECONDS);
+
+        assertEquals(Arrays.asList(2), resultPayload.getIdSequence());
+    }
+
 }
