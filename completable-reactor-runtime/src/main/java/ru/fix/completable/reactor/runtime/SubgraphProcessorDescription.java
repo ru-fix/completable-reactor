@@ -2,9 +2,9 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.ToString;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.runtime.function.ProcessorMerger;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -21,7 +21,7 @@ public class SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> {
      * In that case Processor does not modify payload.
      * {@code BiFunction<Payload, ProcessorResult, Enum>}
      */
-    BiFunction<PayloadType, SubgraphPayloadType, Enum> merger;
+    ProcessorMerger<PayloadType, SubgraphPayloadType> merger;
 
     /**
      * Source where {@code withMerger} or {@code withoutMerger}  method was used

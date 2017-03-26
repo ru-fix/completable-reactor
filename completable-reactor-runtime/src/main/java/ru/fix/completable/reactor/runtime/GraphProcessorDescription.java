@@ -2,8 +2,8 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.ToString;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.runtime.function.ProcessorMerger;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -19,7 +19,7 @@ public class GraphProcessorDescription<ProcessorType, PayloadType> {
      * In that case Processor does not modify payload.
      * {@code BiFunction<Payload, ProcessorResult, Enum>}
      */
-    BiFunction merger;
+    ProcessorMerger merger;
 
     /**
      * {@code Function<Payload, Arg1>}

@@ -606,7 +606,9 @@ public class CompletableReactorTest {
 
         GraphMergePoint<DetachedMergePointFromStartPointPayload> mergePoint = graphBuilder.describeMergePoint()
                 .forPayload(DetachedMergePointFromStartPointPayload.class)
-                .withMerger(new String[]{
+                .withMerger(
+                        "mergePointTitle",
+                        new String[]{
                                 "merge point documentation",
                                 "here"},
                         pld -> {
@@ -678,7 +680,9 @@ public class CompletableReactorTest {
 
         GraphMergePoint<DetachedMergePointFromProcessorsMergePointPayload> mergePoint = graphBuilder.describeMergePoint()
                 .forPayload(DetachedMergePointFromProcessorsMergePointPayload.class)
-                .withMerger(new String[]{
+                .withMerger(
+                        "addMergePointId",
+                        new String[]{
                                 "Adds merge point id",
                                 "to payload sequence"},
                         pld -> {
@@ -752,8 +756,10 @@ public class CompletableReactorTest {
 
         GraphMergePoint<OptionalProcessorExecutionPayload> mergePoint = graphBuilder.describeMergePoint()
                 .forPayload(OptionalProcessorExecutionPayload.class)
-                .withMerger(new String[]{
-                                "always returns LEFT"
+                .withMerger(
+                        "getWhereToGo",
+                        new String[]{
+                                "returns destination from payload"
                         },
                         pld -> {
                             return pld.getWhereToGo();

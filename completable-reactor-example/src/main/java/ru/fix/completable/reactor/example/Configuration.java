@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.example;
 
+import ru.fix.completable.reactor.api.Description;
 import ru.fix.completable.reactor.example.chain.PurchasePayload;
 import ru.fix.completable.reactor.example.chain.ServiceInfoPayloadMixin;
 import ru.fix.completable.reactor.example.chain.SubscribePayload;
@@ -85,33 +86,34 @@ public class Configuration {
     enum Status {OK}
 
 
+    @Description({
+            "Checks result of withdraw operation",
+            "Sets new amount and withdrawal status in payload",
+            "Stops in case if operation is failed"})
+    static Enum checkWinthdrawResult(PurchasePayload pld, BankProcessor.Withdraw withdraw) {
+        switch (withdraw.getStatus()) {
+            case WALLET_NOT_FOUND:
+            case USER_IS_BLOCKED:
+                pld.response.setStatus(withdraw.getStatus());
+                return MergeStatus.STOP;
+            case OK:
+                pld.response
+                        .setNewAmount(withdraw.getNewAmount())
+                        .setWithdrawalWasInMinus(withdraw.getNewAmount().compareTo(BigDecimal.ZERO) < 0)
+                        .setStatus(BankProcessor.Withdraw.Status.OK);
+                return MergeStatus.CONTINUE;
+
+            default:
+                throw new IllegalArgumentException("Status: " + withdraw.getStatus());
+        }
+    }
+
     GraphProcessor<BankProcessor, PurchasePayload> gBankPurchase = graphBuilder.describeProcessor(BankProcessor.class)
             .forPayload(PurchasePayload.class)
             .passArg(pld -> pld.intermediateData.getUserInfo())
             .passArg(pld -> pld.intermediateData.getServiceInfo())
             .withHandler(BankProcessor::withdrawMoneyWithMinus)
-            .withMerger(new String[]{
-                            "Checks result of withdraw operation",
-                            "Sets new amount and withdrawal status in payload",
-                            "Stops in case if operation is failed"
-                    },
-                    (pld, withdraw) -> {
-                        switch (withdraw.getStatus()) {
-                            case WALLET_NOT_FOUND:
-                            case USER_IS_BLOCKED:
-                                pld.response.setStatus(withdraw.getStatus());
-                                return MergeStatus.STOP;
-                            case OK:
-                                pld.response
-                                        .setNewAmount(withdraw.getNewAmount())
-                                        .setWithdrawalWasInMinus(withdraw.getNewAmount().compareTo(BigDecimal.ZERO) < 0)
-                                        .setStatus(BankProcessor.Withdraw.Status.OK);
-                                return MergeStatus.CONTINUE;
-
-                            default:
-                                throw new IllegalArgumentException("Status: " + withdraw.getStatus());
-                        }
-                    })
+            .withMerger(Configuration::checkWinthdrawResult)
             .buildProcessor(bank);
 
     GraphProcessor<BankProcessor, SubscribePayload> gBankSubsribe = graphBuilder.describeProcessor(BankProcessor.class)
@@ -245,7 +247,9 @@ public class Configuration {
 
         GraphMergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint()
                 .forPayload(SubscribePayload.class)
-                .withMerger(new String[]{"Checks whether service supports trial period"},
+                .withMerger(
+                        "checkTrialPeriod",
+                        new String[]{"Checks whether service supports trial period"},
                         payload -> {
                             if (payload.getServiceInfo().isSupportTrialPeriod()) {
                                 return MergeStatus.WITHDRAWAL;

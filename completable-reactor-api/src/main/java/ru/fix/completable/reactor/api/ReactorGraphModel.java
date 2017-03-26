@@ -43,6 +43,7 @@ public class ReactorGraphModel {
         public Coordinates coordinates;
         public Source coordinatesSource;
         public Source mergeSource;
+        public String mergerTitle;
         public String[] mergerDocs;
         public List<MergePointTransition> transitions;
     }

@@ -2,9 +2,12 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import ru.fix.completable.reactor.api.Description;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.runtime.function.ProcessorMerger;
 
-import java.util.function.BiFunction;
+import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -17,7 +20,7 @@ public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
     public static class MergerInfo<PayloadType, ProcessorResult> {
         ReactorGraphModel.Source mergerSource;
         String[] mergerDocs;
-        BiFunction<PayloadType, ProcessorResult, Enum> merger;
+        ProcessorMerger<PayloadType, ProcessorResult> merger;
     }
 
     final ContextResult contextResult;
@@ -28,11 +31,31 @@ public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
         this.mergerConsumer = mergerConsumer;
     }
 
-    public ContextResult withMerger(BiFunction<PayloadType, ProcessorResult, Enum> merger) {
-        return withMerger(null, merger);
+    public ContextResult withMerger(ProcessorMerger<PayloadType, ProcessorResult> merger) {
+        return withMerger(null, null, merger);
     }
 
-    public ContextResult withMerger(String[] docs, BiFunction<PayloadType, ProcessorResult, Enum> merger) {
+    public ContextResult withMerger(String title, ProcessorMerger<PayloadType, ProcessorResult> merger) {
+        return withMerger(title, null, merger);
+    }
+
+    public ContextResult withMerger(String title, String[] docs, ProcessorMerger<PayloadType, ProcessorResult> merger) {
+
+        Optional<Method> mergerMethod = LambdaReflector.methodReference(merger);
+
+        if(title == null) {
+            title = mergerMethod
+                    .map(Method::getName)
+                    .orElse(null);
+        }
+
+        if(docs == null) {
+            docs = mergerMethod
+                    .map(method -> method.getAnnotation(Description.class))
+                    .map(Description::value)
+                    .orElse(null);
+        }
+
         MergerInfo<PayloadType, ProcessorResult> mergerInfo = new MergerInfo<>();
         mergerInfo.merger = merger;
         mergerInfo.mergerSource = ReactorReflector.getMethodInvocationPoint().orElse(null);

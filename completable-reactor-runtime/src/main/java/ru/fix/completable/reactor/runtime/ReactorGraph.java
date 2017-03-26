@@ -6,12 +6,13 @@ import lombok.experimental.Accessors;
 import lombok.val;
 import ru.fix.completable.reactor.api.PayloadDescription;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.runtime.function.MergePointMerger;
+import ru.fix.completable.reactor.runtime.function.ProcessorMerger;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,7 @@ public class ReactorGraph<PayloadType> {
                 ProcessorInfo processorInfo = processorInfoSupplier.apply(mergePoint.getProcessor());
 
 
+                String mergerTitle = null;
                 String[] mergerDocs = null;
                 ReactorGraphModel.Source mergerSource = null;
 
@@ -51,6 +53,7 @@ public class ReactorGraph<PayloadType> {
                         mergerSource = processorInfo.subgraphDescription.mergeSource;
                         break;
                     case DETACHED_MERGE_POINT:
+                        mergerTitle = processorInfo.detachedMergePointDescription.mergerTitle;
                         mergerDocs = processorInfo.detachedMergePointDescription.mergerDocs;
                         mergerSource = processorInfo.detachedMergePointDescription.mergerSource;
                         break;
@@ -58,6 +61,7 @@ public class ReactorGraph<PayloadType> {
 
                 mergePointModel.mergeSource = mergerSource;
                 mergePointModel.mergerDocs = mergerDocs;
+                mergePointModel.mergerTitle = mergerTitle;
 
                 model.mergePoints.add(mergePointModel);
             });
@@ -215,7 +219,7 @@ public class ReactorGraph<PayloadType> {
             }
         }
 
-        BiFunction getMerger() {
+        ProcessorMerger getMerger() {
             switch (processorType) {
                 case PLAIN:
                     return description.merger;
@@ -225,7 +229,7 @@ public class ReactorGraph<PayloadType> {
             throw new IllegalStateException();
         }
 
-        Function getDetachedMerger(){
+        MergePointMerger getDetachedMerger(){
             switch (processorType){
                 case DETACHED_MERGE_POINT:
                     return detachedMergePointDescription.merger;

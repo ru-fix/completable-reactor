@@ -980,12 +980,12 @@ public class ReactorGraphExecutionBuilder {
                     processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
                     return;
                 } else {
-                    mergerInvocation = () -> (Enum) processorInfo.getMerger().apply(payload, processorResult);
+                    mergerInvocation = () -> (Enum) processorInfo.getMerger().merge(payload, processorResult);
                 }
                 break;
 
             case DETACHED_MERGE_POINT:
-                mergerInvocation = () -> (Enum) processorInfo.getDetachedMerger().apply(payload);
+                mergerInvocation = () -> (Enum) processorInfo.getDetachedMerger().merge(payload);
                 break;
 
             default:
