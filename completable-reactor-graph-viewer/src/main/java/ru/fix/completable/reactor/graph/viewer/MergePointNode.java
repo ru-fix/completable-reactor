@@ -1,8 +1,11 @@
 package ru.fix.completable.reactor.graph.viewer;
 
+import javafx.geometry.Bounds;
+import javafx.geometry.Pos;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
@@ -15,11 +18,13 @@ import java.util.stream.Collectors;
 /**
  * Created by swarmshine on 29.01.2017.
  */
-class MergePointNode extends VBox {
+class MergePointNode extends VBox  implements CentrableNode{
 
     final CoordinateTranslator coordinateTranslator;
     final ReactorGraphModel.MergePoint mergePoint;
     final GraphViewer.ActionListener actionListener;
+
+    final Pane mergePointCircle = new Pane();
 
     private Double radius = 20.0;
 
@@ -33,13 +38,18 @@ class MergePointNode extends VBox {
         this.mergePoint = mergePoint;
         this.actionListener = actionListener;
 
-        this.getStyleClass().add("mergePoint");
+        this.getChildren().add(mergePointCircle);
+        this.mergePointCircle.getStyleClass().add("mergePoint");
 
         this.setLayoutX(translator.translateX(mergePoint.coordinates.x));
         this.setLayoutY(translator.translateY(mergePoint.coordinates.y));
 
-        this.setPrefWidth(radius * 2);
-        this.setPrefHeight(radius * 2);
+
+        this.mergePointCircle.setPrefWidth(radius * 2);
+        this.mergePointCircle.setMaxWidth(radius * 2);
+        this.mergePointCircle.setPrefHeight(radius * 2);
+        this.mergePointCircle.setMaxHeight(radius * 2);
+        this.setAlignment(Pos.CENTER);
 
         this.setOnMouseClicked(mouseEvent -> {
             if (mouseEvent.getClickCount() == 2) {
@@ -75,10 +85,8 @@ class MergePointNode extends VBox {
             });
         }
 
-        if(mergePoint.mergerTitle != null) {
-            Label title = new Label(mergePoint.mergerTitle);
-            this.getChildren().add(title);
-        }
+        Label title = new Label(Optional.ofNullable(mergePoint.mergerTitle).orElse(""));
+        this.getChildren().add(title);
     }
 
     void initializePopupMenu() {
@@ -106,5 +114,17 @@ class MergePointNode extends VBox {
             contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
             contextMenuEvent.consume();
         });
+    }
+
+    @Override
+    public double getCenterX() {
+        Bounds bounds = this.mergePointCircle.getBoundsInParent();
+        return this.getLayoutX() + bounds.getMinX() + bounds.getWidth() / 2;
+    }
+
+    @Override
+    public double getCenterY() {
+        Bounds bounds = this.mergePointCircle.getBoundsInParent();
+        return this.getLayoutY() + bounds.getMinY() + bounds.getHeight() / 2;
     }
 }

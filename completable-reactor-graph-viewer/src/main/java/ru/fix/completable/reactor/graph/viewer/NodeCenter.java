@@ -5,6 +5,8 @@ import javafx.scene.Node;
 import lombok.Getter;
 import lombok.experimental.var;
 
+import java.util.Optional;
+
 /**
  * @author Kamil Asfandiyarov
  */
@@ -12,6 +14,7 @@ class NodeCenter {
 
     final Node world;
     final Node node;
+    final Optional<CentrableNode> centrableNode;
 
     @Getter
     ReadOnlyDoubleWrapper centerX = new ReadOnlyDoubleWrapper();
@@ -23,10 +26,13 @@ class NodeCenter {
         this.world = world;
         this.node = node;
 
-        node.boundsInParentProperty().addListener(
-                (observableValue, oldBounds, newBounds)
-                        ->
-                {
+        if (node instanceof CentrableNode) {
+            centrableNode = Optional.of((CentrableNode) node);
+        } else {
+            centrableNode = Optional.empty();
+        }
+
+        node.boundsInParentProperty().addListener((observableValue, oldBounds, newBounds) -> {
 
                     var pNode = node.getParent();
                     var diffx = 0.0;
@@ -38,8 +44,19 @@ class NodeCenter {
                         pNode = pNode.getParent();
                     }
 
-                    centerX.set(newBounds.getMinX() + newBounds.getWidth() / 2 + diffx);
-                    centerY.set(newBounds.getMinY() + newBounds.getHeight() / 2 + diffy);
+                    double nodeCenterX;
+                    double nodeCenterY;
+
+                    if (centrableNode.isPresent()) {
+                        nodeCenterX = centrableNode.get().getCenterX();
+                        nodeCenterY = centrableNode.get().getCenterY();
+                    } else {
+                        nodeCenterX = newBounds.getMinX() + newBounds.getWidth() / 2;
+                        nodeCenterY = newBounds.getMinY() + newBounds.getHeight() / 2;
+                    }
+
+                    centerX.set(nodeCenterX + diffx);
+                    centerY.set(nodeCenterY + diffy);
                 }
         );
     }
