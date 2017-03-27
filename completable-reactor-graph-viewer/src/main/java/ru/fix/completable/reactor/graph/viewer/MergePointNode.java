@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.graph.viewer;
 
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.VBox;
 import lombok.val;
@@ -74,17 +75,27 @@ class MergePointNode extends VBox {
             });
         }
 
+        if(mergePoint.mergerTitle != null) {
+            Label title = new Label(mergePoint.mergerTitle);
+            this.getChildren().add(title);
+        }
     }
 
     void initializePopupMenu() {
         ContextMenu contextMenu = new ContextMenu();
 
-        val menueText = Optional.ofNullable(mergePoint.mergerDocs)
+        StringBuilder textBuilder = new StringBuilder();
+
+        if(mergePoint.mergerTitle != null){
+            textBuilder.append(mergePoint.mergerTitle).append("\n");
+        }
+
+        Optional.ofNullable(mergePoint.mergerDocs)
                 .map(Arrays::stream)
                 .map(stream -> stream.collect(Collectors.joining("\n")))
-                .orElse("MergePoint");
+                .ifPresent(textBuilder::append);
 
-        MenuItem menuItem = new MenuItem(menueText);
+        MenuItem menuItem = new MenuItem(textBuilder.length() > 0 ? textBuilder.toString() : "MergePoint");
         contextMenu.getItems().add(menuItem);
 
         if (mergePoint.mergeSource != null) {

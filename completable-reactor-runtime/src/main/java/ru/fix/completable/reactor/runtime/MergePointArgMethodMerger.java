@@ -29,16 +29,18 @@ public class MergePointArgMethodMerger<ContextResult, PayloadType> {
 
     public ContextResult withMerger(String title, String[] docs, MergePointMerger<PayloadType> merger){
 
-        Optional<Method> mergerMethod = LambdaReflector.methodReference(merger);
+        Optional<LambdaReflector.AnnotatedMethod> mergerMethod = LambdaReflector.annotatedMethodReference(merger, Description.class);
 
         if(title == null) {
             title = mergerMethod
+                    .map(LambdaReflector.AnnotatedMethod::getMethod)
                     .map(Method::getName)
                     .orElse(null);
         }
 
         if(docs == null) {
             docs = mergerMethod
+                    .map(LambdaReflector.AnnotatedMethod::getMethod)
                     .map(method -> method.getAnnotation(Description.class))
                     .map(Description::value)
                     .orElse(null);
