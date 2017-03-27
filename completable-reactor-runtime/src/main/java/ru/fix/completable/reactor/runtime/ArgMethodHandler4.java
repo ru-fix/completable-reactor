@@ -30,6 +30,7 @@ public class ArgMethodHandler4<ContextResult, PayloadType, ProcessorType , Arg1,
             processorDescription.merger = mergerInfo.merger;
             processorDescription.mergeSource = mergerInfo.mergerSource;
             processorDescription.mergerDocs = mergerInfo.mergerDocs;
+            processorDescription.mergerTitle = mergerInfo.mergerTitle;
         });
     }
 }

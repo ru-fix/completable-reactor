@@ -38,23 +38,25 @@ public class Configuration {
                     .passArg(pld -> pld.getUserId())
                     .passArg(pld -> pld.getUserId().toString())
                     .withHandler(UserProfileService::loadUserProfileById)
-                    .withMerger((pld, result) -> {
-                        if (pld.getStatus() != null) {
-                            return MergeStatus.STOP;
-                        }
+                    .withMerger(
+                            "updateUserProfile",
+                            (pld, result) -> {
+                                if (pld.getStatus() != null) {
+                                    return MergeStatus.STOP;
+                                }
 
-                        switch (result.status) {
-                            case USER_NOT_FOUND:
-                            case USER_IS_BLOCKED:
-                                pld.setStatus(result.status);
-                                return MergeStatus.STOP;
+                                switch (result.status) {
+                                    case USER_NOT_FOUND:
+                                    case USER_IS_BLOCKED:
+                                        pld.setStatus(result.status);
+                                        return MergeStatus.STOP;
 
-                            case OK:
-                                pld.setUserProfile(result.userProfile);
-                                return MergeStatus.CONTINUE;
-                        }
-                        throw new IllegalArgumentException("result.status = " + result.status);
-                    });
+                                    case OK:
+                                        pld.setUserProfile(result.userProfile);
+                                        return MergeStatus.CONTINUE;
+                                }
+                                throw new IllegalArgumentException("result.status = " + result.status);
+                            });
 
     GraphProcessor<UserProfileService, UserProfilePayloadMixin> gUserProfile = gUserProfileDescription.buildProcessor(userProfile);
 
@@ -121,21 +123,23 @@ public class Configuration {
             .passArg(pld -> pld.intermediateData.getUserInfo())
             .passArg(pld -> pld.intermediateData.getServiceInfo())
             .withHandler(BankProcessor::withdrawMoney)
-            .withMerger((pld, withdraw) -> {
-                switch (withdraw.getStatus()) {
-                    case WALLET_NOT_FOUND:
-                    case USER_IS_BLOCKED:
-                        pld.response.setStatus(withdraw.getStatus());
-                        return MergeStatus.STOP;
-                    case OK:
-                        pld.response.setNewAmount(withdraw.getNewAmount());
-                        pld.response.setStatusIfNull(BankProcessor.Withdraw.Status.OK);
-                        return MergeStatus.CONTINUE;
+            .withMerger(
+                    "updateNewAmount",
+                    (pld, withdraw) -> {
+                        switch (withdraw.getStatus()) {
+                            case WALLET_NOT_FOUND:
+                            case USER_IS_BLOCKED:
+                                pld.response.setStatus(withdraw.getStatus());
+                                return MergeStatus.STOP;
+                            case OK:
+                                pld.response.setNewAmount(withdraw.getNewAmount());
+                                pld.response.setStatusIfNull(BankProcessor.Withdraw.Status.OK);
+                                return MergeStatus.CONTINUE;
 
-                    default:
-                        throw new IllegalArgumentException("Status: " + withdraw.getStatus());
-                }
-            })
+                            default:
+                                throw new IllegalArgumentException("Status: " + withdraw.getStatus());
+                        }
+                    })
             .buildProcessor(bank);
 
 
@@ -145,26 +149,28 @@ public class Configuration {
                 .forPayload(ServiceInfoPayloadMixin.class)
                 .passArg(pld -> pld.getServiceId())
                 .withHandler(ServiceInfoProcessor::loadServiceInformation)
-                .withMerger((pld, result) -> {
-                    if (pld.getStatus() != null) {
-                        return MergeStatus.STOP;
-                    }
-
-                    switch (result.getStatus()) {
-                        case SERVICE_NOT_FOUND:
-                            pld.setStatus(result.getStatus());
-                            return MergeStatus.STOP;
-                        case OK:
-                            pld.setServiceInfo(result.getServiceInfo());
-
-                            if (result.getServiceInfo().isActive()) {
-                                return MergeStatus.WITHDRAWAL;
-                            } else {
-                                return MergeStatus.NO_WITHDRAWAL;
+                .withMerger(
+                        "updateServiceInfo",
+                        (pld, result) -> {
+                            if (pld.getStatus() != null) {
+                                return MergeStatus.STOP;
                             }
-                    }
-                    return MergeStatus.CONTINUE;
-                })
+
+                            switch (result.getStatus()) {
+                                case SERVICE_NOT_FOUND:
+                                    pld.setStatus(result.getStatus());
+                                    return MergeStatus.STOP;
+                                case OK:
+                                    pld.setServiceInfo(result.getServiceInfo());
+
+                                    if (result.getServiceInfo().isActive()) {
+                                        return MergeStatus.WITHDRAWAL;
+                                    } else {
+                                        return MergeStatus.NO_WITHDRAWAL;
+                                    }
+                            }
+                            return MergeStatus.CONTINUE;
+                        })
                 .buildProcessor(serviceInfo);
 
 
@@ -223,26 +229,28 @@ public class Configuration {
                 .forPayload(ServiceInfoPayloadMixin.class)
                 .passArg(pld -> pld.getServiceId())
                 .withHandler(ServiceInfoProcessor::loadServiceInformation)
-                .withMerger((pld, result) -> {
-                    if (pld.getStatus() != null) {
-                        return MergeStatus.STOP;
-                    }
-
-                    switch (result.getStatus()) {
-                        case SERVICE_NOT_FOUND:
-                            pld.setStatus(result.getStatus());
-                            return MergeStatus.STOP;
-                        case OK:
-                            pld.setServiceInfo(result.getServiceInfo());
-
-                            if (result.getServiceInfo().isActive()) {
-                                return MergeStatus.CONTINUE;
-                            } else {
-                                return MergeStatus.NO_WITHDRAWAL;
+                .withMerger(
+                        "updateServiceInfo",
+                        (pld, result) -> {
+                            if (pld.getStatus() != null) {
+                                return MergeStatus.STOP;
                             }
-                    }
-                    return MergeStatus.CONTINUE;
-                }).buildProcessor(serviceInfo);
+
+                            switch (result.getStatus()) {
+                                case SERVICE_NOT_FOUND:
+                                    pld.setStatus(result.getStatus());
+                                    return MergeStatus.STOP;
+                                case OK:
+                                    pld.setServiceInfo(result.getServiceInfo());
+
+                                    if (result.getServiceInfo().isActive()) {
+                                        return MergeStatus.CONTINUE;
+                                    } else {
+                                        return MergeStatus.NO_WITHDRAWAL;
+                                    }
+                            }
+                            return MergeStatus.CONTINUE;
+                        }).buildProcessor(serviceInfo);
 
 
         GraphMergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint()

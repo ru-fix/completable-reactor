@@ -20,6 +20,7 @@ public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
     public static class MergerInfo<PayloadType, ProcessorResult> {
         ReactorGraphModel.Source mergerSource;
         String[] mergerDocs;
+        String mergerTitle;
         ProcessorMerger<PayloadType, ProcessorResult> merger;
     }
 
@@ -59,6 +60,7 @@ public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
         MergerInfo<PayloadType, ProcessorResult> mergerInfo = new MergerInfo<>();
         mergerInfo.merger = merger;
         mergerInfo.mergerSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
+        mergerInfo.mergerTitle =  title;
         mergerInfo.mergerDocs = docs;
 
         mergerConsumer.accept(mergerInfo);

@@ -20,6 +20,7 @@ public class SubgraphHandler<ContextResult, PayloadType, SubgraphPayloadType> {
             this.subgraphDescription.merger = mergerInfo.merger;
             this.subgraphDescription.mergeSource = mergerInfo.mergerSource;
             this.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;
+            this.subgraphDescription.mergerTitle = mergerInfo.mergerTitle;
         });
     }
 
@@ -30,6 +31,7 @@ public class SubgraphHandler<ContextResult, PayloadType, SubgraphPayloadType> {
             this.subgraphDescription.merger = mergerInfo.merger;
             this.subgraphDescription.mergeSource = mergerInfo.mergerSource;
             this.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;
+            this.subgraphDescription.mergerTitle = mergerInfo.mergerTitle;
         });
     }
 }

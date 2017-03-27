@@ -95,6 +95,11 @@ public class GraphProcessorDescription<ProcessorType, PayloadType> {
      */
     String[] mergerDocs;
 
+    /**
+     * Merger title
+     */
+    String mergerTitle;
+
     GraphProcessorDescription() {
     }
 

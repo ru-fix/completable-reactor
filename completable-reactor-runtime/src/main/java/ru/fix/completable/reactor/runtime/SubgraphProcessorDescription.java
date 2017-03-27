@@ -30,6 +30,8 @@ public class SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> {
 
     String[] mergerDocs;
 
+    String mergerTitle;
+
     /**
      * {@code Function<Payload, Arg>}
      */

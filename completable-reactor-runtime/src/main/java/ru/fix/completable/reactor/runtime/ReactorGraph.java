@@ -46,15 +46,17 @@ public class ReactorGraph<PayloadType> {
                 switch (processorInfo.getProcessorType()){
                     case PLAIN:
                         mergerDocs = processorInfo.description.mergerDocs;
+                        mergerTitle = processorInfo.description.mergerTitle;
                         mergerSource = processorInfo.description.mergeSource;
                         break;
                     case SUBGRAPH:
                         mergerDocs = processorInfo.subgraphDescription.mergerDocs;
+                        mergerTitle = processorInfo.subgraphDescription.mergerTitle;
                         mergerSource = processorInfo.subgraphDescription.mergeSource;
                         break;
                     case DETACHED_MERGE_POINT:
-                        mergerTitle = processorInfo.detachedMergePointDescription.mergerTitle;
                         mergerDocs = processorInfo.detachedMergePointDescription.mergerDocs;
+                        mergerTitle = processorInfo.detachedMergePointDescription.mergerTitle;
                         mergerSource = processorInfo.detachedMergePointDescription.mergerSource;
                         break;
                 }
