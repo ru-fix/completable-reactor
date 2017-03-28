@@ -36,4 +36,9 @@ public class SubgraphProcessor<SubgraphPayloadType, PayloadType> implements Proc
     public String getProfilingName() {
         return getPayloadClass().getSimpleName();
     }
+
+    @Override
+    public String getDebugName() {
+        return getPayloadClass().getName();
+    }
 }
