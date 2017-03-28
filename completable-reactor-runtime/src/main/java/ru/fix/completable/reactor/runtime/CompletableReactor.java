@@ -35,6 +35,9 @@ public class CompletableReactor implements AutoCloseable {
 
     private final Map<Class<?>, ReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
 
+    /**
+     * {@code Function<PayloadType, CompletableFuture<PayloadType>>}
+     */
     private final Map<Class<?>, Function> inlinePayloadGraphs = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService timeoutExecutorService = newScheduledThreadPool(
@@ -112,15 +115,30 @@ public class CompletableReactor implements AutoCloseable {
         executionTimeout = value;
     }
 
+    /**
+     * Register reactor graph
+     * @param reactorGraph
+     */
     public void registerReactorGraph(ReactorGraph reactorGraph) {
         payloadGraphs.put(reactorGraph.getPayloadClass(), reactorGraph);
+        inlinePayloadGraphs.remove(reactorGraph.getPayloadClass());
     }
 
+    /**
+     * Register functional graph implementation.
+     * For test subgraph mocking purpose.
+     * If graph with same payload already registered by {@link #registerReactorGraph(ReactorGraph)} it will be unregistered.
+     *
+     * @param payloadType
+     * @param payloadProcessingFunction
+     * @param <PayloadType>
+     */
     public <PayloadType> void registerReactorGraph(
             Class<PayloadType> payloadType,
             Function<PayloadType, CompletableFuture<PayloadType>> payloadProcessingFunction) {
 
         inlinePayloadGraphs.put(payloadType, payloadProcessingFunction);
+        payloadGraphs.remove(payloadType);
     }
 
     @Data
@@ -226,6 +244,25 @@ public class CompletableReactor implements AutoCloseable {
         ProfiledCall payloadCall = profiler.profiledCall(ProfilerNames.PAYLOAD + payload.getClass().getSimpleName())
                 .start();
 
+        /**
+         * Inline graph execution scenario
+         */
+        Function inlineGraphFunction = inlinePayloadGraphs.get(payload.getClass());
+        if(inlineGraphFunction != null){
+            CompletableFuture<PayloadType> inlineGraphResult = (CompletableFuture<PayloadType>) inlineGraphFunction.apply(payload);
+            inlineGraphResult.thenAcceptAsync(any -> payloadCall.stop());
+
+            return Optional.of(
+                    Execution.<PayloadType>builder()
+                            .chainExecutionFuture(inlineGraphResult.thenAccept(any -> {}))
+                            .resultFuture(inlineGraphResult)
+                            .build());
+
+        }
+
+        /**
+         * Standard graph execution scenario
+         */
 
         ReactorGraph<PayloadType> graph = payloadGraphs.get(payload.getClass());
         if (graph == null) {

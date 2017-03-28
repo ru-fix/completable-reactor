@@ -11,8 +11,10 @@ import ru.fix.completable.reactor.api.ProcessorDescription;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Kamil Asfandiyarov
@@ -64,7 +66,7 @@ public class MockSubgraphTest {
 
         val subgraph = graphBuilder.describeSubgraph(SubgraphPayload.class)
                 .forPayload(MainPayload.class)
-                .passArg(pld -> new SubgraphPayload())
+                .passArg(pld -> new SubgraphPayload().setData(pld.getData()))
                 .withMerger((mainPayload, subgraphPayload) -> {
                     mainPayload.setData(subgraphPayload.getData());
                     return Status.OK;
@@ -85,17 +87,30 @@ public class MockSubgraphTest {
                 .buildGraph();
 
         ReactorGraph.write(graph);
+        reactor.registerReactorGraph(graph);
 
 
+        // mocking subgraph behaviour
 
-        reactor.registerReactorGraph(SubgraphPayload.class, payload -> payload);
+        AtomicReference<SubgraphPayload> subgraphCapture = new AtomicReference<>();
+
+        reactor.registerReactorGraph(SubgraphPayload.class, payload -> {
+            subgraphCapture.set(payload);
+            return CompletableFuture.completedFuture(new SubgraphPayload()
+                    .setData("mock-subgraph-data"));
+        });
+
+        // override subgraph implementation by async method
 
         CompletableReactor.Execution<MainPayload> result = reactor.submit(new MainPayload().setData("main-payload-data"));
-        MainPayload resultPayload = result
+        MainPayload mainGraphResultPayload = result
                 .getResultFuture()
                 .get(10, TimeUnit.SECONDS);
 
-        assertEquals("mock-subgraph-data", resultPayload.getData());
+        assertNotNull(subgraphCapture.get());
+        assertEquals("main-payload-data", subgraphCapture.get().getData());
+
+        assertEquals("mock-subgraph-data", mainGraphResultPayload.getData());
 
     }
 }
