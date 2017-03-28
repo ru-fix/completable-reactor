@@ -254,7 +254,7 @@ public class CompletableReactor implements AutoCloseable {
 
             return Optional.of(
                     Execution.<PayloadType>builder()
-                            .chainExecutionFuture(inlineGraphResult.thenAccept(any -> {}))
+                            .chainExecutionFuture(inlineGraphResult.thenAccept(any -> {/* do nothing */}))
                             .resultFuture(inlineGraphResult)
                             .build());
 
