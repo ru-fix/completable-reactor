@@ -204,21 +204,21 @@ public class Configuration {
                 .complete()
 
                 .coordinates()
+                .start(680, 60)
                 .proc("BankProcessor@0", 410, 440)
                 .proc("NotificationProcessor@0", 880, 430)
                 .proc("ServiceInfoProcessor@0", 480, 120)
                 .proc("TransactionLogProcessor@0", 420, 650)
                 .proc("UserLogProcessor@0", 680, 820)
                 .proc("UserProfileService@0", 770, 120)
-                .merge("UserProfileService@0", 830, 250)
-                .merge("ServiceInfoProcessor@0", 640, 280)
                 .merge("BankProcessor@0", 480, 550)
+                .merge("ServiceInfoProcessor@0", 640, 280)
                 .merge("TransactionLogProcessor@0", 530, 770)
                 .merge("UserLogProcessor@0", 760, 930)
-                .start(680, 60)
-                .complete("UserProfileService@0", 920, 300)
+                .merge("UserProfileService@0", 806, 201)
                 .complete("ServiceInfoProcessor@0", 480, 310)
                 .complete("UserLogProcessor@0", 740, 1020)
+                .complete("UserProfileService@0", 963, 258)
 
                 .buildGraph();
     }
