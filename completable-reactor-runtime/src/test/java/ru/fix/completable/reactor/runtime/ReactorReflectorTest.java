@@ -2,7 +2,7 @@ package ru.fix.completable.reactor.runtime;
 
 import org.junit.Before;
 import org.junit.Test;
-import ru.fix.completable.reactor.api.ProcessorDescription;
+import ru.fix.completable.reactor.api.Reactored;
 
 import java.lang.reflect.Method;
 import java.util.function.BiFunction;
@@ -23,7 +23,7 @@ public class ReactorReflectorTest {
     }
 
 
-    @ProcessorDescription(doc = "none")
+    @Reactored("none")
     static class ProcessorClassWithMethods {
 
         public Object noArgMethod(){
@@ -35,7 +35,7 @@ public class ReactorReflectorTest {
         }
     }
 
-    @ProcessorDescription(doc = "none")
+    @Reactored("none")
     public interface ProcessorInterfaceWithMethod {
         Object noArgMethod();
     }

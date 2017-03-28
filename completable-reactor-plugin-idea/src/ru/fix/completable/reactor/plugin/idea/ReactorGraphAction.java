@@ -18,7 +18,7 @@ import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBList;
-import ru.fix.completable.reactor.api.PayloadDescription;
+import ru.fix.completable.reactor.api.Reactored;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,10 +38,10 @@ public class ReactorGraphAction extends AnAction {
 
         ProjectAndLibrariesScope searchScope = new ProjectAndLibrariesScope(project);
 
-        PsiClass payloadDescriptionPsiClass = JavaPsiFacade.getInstance(project).findClass(PayloadDescription.class.getName(), searchScope);
+        PsiClass payloadDescriptionPsiClass = JavaPsiFacade.getInstance(project).findClass(Reactored.class.getName(), searchScope);
 
         if(payloadDescriptionPsiClass == null){
-            log.warn("Can not found psi class for annotation: " + PayloadDescription.class);
+            log.warn("Can not found psi class for annotation: " + Reactored.class);
             return;
         }
 

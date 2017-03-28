@@ -85,8 +85,6 @@ public class Configuration {
             .withoutMerger()
             .buildProcessor(notification1);
 
-    enum Status {OK}
-
 
     @Reactored({
             "Checks result of withdraw operation",

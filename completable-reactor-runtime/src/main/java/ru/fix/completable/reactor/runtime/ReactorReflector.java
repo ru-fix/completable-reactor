@@ -8,7 +8,7 @@ import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import ru.fix.completable.reactor.api.ProcessorDescription;
+import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 
 import java.lang.reflect.Constructor;
@@ -268,7 +268,7 @@ public class ReactorReflector {
 
     /**
      * Due to mocking framework we have to search for real identity of processor.
-     * Look for interface or class that have  {@link ProcessorDescription} annotation
+     * Look for interface or class that have  {@link Reactored} annotation
      * If no such interface or class is found - return current class instance.
      *
      * @param processorClass
@@ -292,11 +292,11 @@ public class ReactorReflector {
         throw new ReactorGraphException(String.format("Processor of class %s can not be used in CompletableReactor." +
                         " Processor's class or one of subclasses or one of interfaces that processor implements should be annotated" +
                         " by %s annotation.",
-                processorClass, ProcessorDescription.class));
+                processorClass, Reactored.class));
     }
 
     private static Class<?> lookupProcessorIdentityClassInImplementationHierarchy(Class<?> clazz) {
-        if (clazz.getDeclaredAnnotation(ProcessorDescription.class) != null) {
+        if (clazz.getDeclaredAnnotation(Reactored.class) != null) {
             return clazz;
         }
 
@@ -307,8 +307,8 @@ public class ReactorReflector {
                 .orElse(null);
     }
 
-    public static ProcessorDescription lookupProcessorDescription(Class<?> processorClass) throws ReactorGraphException {
+    public static Reactored lookupProcessorDescription(Class<?> processorClass) throws ReactorGraphException {
         Class<?> identityClass = lookupProcessorIdentityClass(processorClass);
-        return identityClass.getAnnotation(ProcessorDescription.class);
+        return identityClass.getAnnotation(Reactored.class);
     }
 }

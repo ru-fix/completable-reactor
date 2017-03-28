@@ -1,7 +1,7 @@
 package ru.fix.completable.reactor.example.processors;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.fix.completable.reactor.api.ProcessorDescription;
+import ru.fix.completable.reactor.api.Reactored;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -9,11 +9,9 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author Kamil Asfandiyarov
  */
-@ProcessorDescription(doc = {
-        "Описание процессора №4",
-        "Тоже многострочное",
-        "Тоже довольно подробное",
-        "которое выглядит, например, как tooltip"
+@Reactored({
+        "Store information about transactions.",
+        "Each transaction have user id and money amount"
 
 })
 @Slf4j

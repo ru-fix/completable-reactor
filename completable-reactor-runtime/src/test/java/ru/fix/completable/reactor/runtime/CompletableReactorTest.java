@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
-import ru.fix.completable.reactor.api.PayloadDescription;
+import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.ui.ReactorHtmlUIBuilder;
 
 import java.nio.file.Paths;
@@ -79,7 +79,7 @@ public class CompletableReactorTest {
     }
 
 
-    @PayloadDescription(doc = {
+    @Reactored({
             "Payload goes through processor chain and collect",
             " all processors ids that merged their results to payload.",
             "Test will check that single processor id end up at payloads idList."
@@ -118,7 +118,7 @@ public class CompletableReactorTest {
         assertEquals(Arrays.asList(1), resultPayload.getIdSequence());
     }
 
-    @PayloadDescription(doc = {
+    @Reactored({
             "Payload goes through processor chain and collect",
             " all processors ids that merged their results to payload.",
             "Test will check that two processor ids end up at payloads idList in correct order."
@@ -166,7 +166,7 @@ public class CompletableReactorTest {
         assertEquals(Arrays.asList(1, 2), resultPayload.getIdSequence());
     }
 
-    @PayloadDescription(doc = {
+    @Reactored({
             "Payload goes through processor chain and collect",
             " all processors ids that merged their results to payload.",
             "Detached processor will complete deferred.",
@@ -227,7 +227,7 @@ public class CompletableReactorTest {
         assertTrue("execution chain is complete when detached processor is finished", result.getChainExecutionFuture().isDone());
     }
 
-    @PayloadDescription(doc = {
+    @Reactored({
             "Payload goes through processor chain and collect",
             " all processors ids that merged their results to payload.",
             "Merge group joins merge points in a way that all outgoing transitions",
@@ -399,7 +399,7 @@ public class CompletableReactorTest {
         assertEquals(Arrays.asList(1, 11, 12, 13, 2, 3), resultPaylaod.getIdSequence());
     }
 
-    @PayloadDescription(doc = {
+    @Reactored({
             "Payload goes through processor chain and collect",
             " all processors ids that merged their results to payload.",
             "Test will check that single processor id end up at payloads idList."
@@ -492,7 +492,7 @@ public class CompletableReactorTest {
     }
 
 
-    @PayloadDescription(doc = {
+    @Reactored({
             "Payload goes through processor chain and collect",
             " all processors ids that merged their results to payload.",
             "Test will check that parallel processors work fine when only one of",
@@ -586,7 +586,7 @@ public class CompletableReactorTest {
     }
 
 
-    @PayloadDescription(doc = {
+    @Reactored({
             "Detached Payload goes through processor chain and collect",
             "all processors ids that merged their results to payload.",
             "Detached merge point works as an regular merge point but there is no processor",
@@ -660,7 +660,7 @@ public class CompletableReactorTest {
         assertEquals(Arrays.asList(42, 1, 0), resultPayload.getIdSequence());
     }
 
-    @PayloadDescription(doc = {
+    @Reactored({
             "Detached Payload goes through processor chain and collect",
             "all processors ids that merged their results to payload.",
             "Detached merge point works as an regular merge point but there is no processor",
@@ -734,7 +734,7 @@ public class CompletableReactorTest {
     }
 
 
-    @PayloadDescription(doc = {
+    @Reactored({
             "OptionalProcessorExecution shows how to use detached merge point to avoid unnesessary processor execution"
     })
 

@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.val;
-import ru.fix.completable.reactor.api.PayloadDescription;
+import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.function.MergePointMerger;
 import ru.fix.completable.reactor.runtime.function.ProcessorMerger;
@@ -303,8 +303,8 @@ public class ReactorGraph<PayloadType> {
         ReactorGraphModel.Payload payload = new ReactorGraphModel.Payload();
         payload.payloadClass = payloadClass.getName();
         payload.payloadName = payloadClass.getSimpleName();
-        payload.payloadDoc = Optional.ofNullable(payloadClass.getDeclaredAnnotation(PayloadDescription.class))
-                .map(PayloadDescription::doc)
+        payload.payloadDoc = Optional.ofNullable(payloadClass.getDeclaredAnnotation(Reactored.class))
+                .map(Reactored::value)
                 .orElse(null);
         return payload;
     }

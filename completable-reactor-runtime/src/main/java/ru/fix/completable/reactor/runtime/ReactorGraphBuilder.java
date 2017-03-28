@@ -62,7 +62,7 @@ public class ReactorGraphBuilder {
         processorInfo.description = graphProcessor.processorDescription;
 
         Optional.ofNullable(ReactorReflector.lookupProcessorDescription(graphProcessor.getProcessorClass()))
-                .map(ProcessorDescription::doc)
+                .map(Reactored::value)
                 .ifPresent(doc -> processorInfo.processorDoc = doc);
 
         graph.processors.put(graphProcessor, processorInfo);
@@ -82,8 +82,8 @@ public class ReactorGraphBuilder {
                 .setProcessorType(ReactorGraph.ProcessorType.SUBGRAPH)
                 .setSubgraphDescription(subgraphProcessor.subgraphDescription);
 
-        Optional.ofNullable(subgraphProcessor.getPayloadClass().getAnnotation(PayloadDescription.class))
-                .map(PayloadDescription::doc)
+        Optional.ofNullable(subgraphProcessor.getPayloadClass().getAnnotation(Reactored.class))
+                .map(Reactored::value)
                 .ifPresent(doc -> processorInfo.processorDoc = doc);
 
         graph.processors.put(subgraphProcessor, processorInfo);
@@ -552,8 +552,8 @@ public class ReactorGraphBuilder {
                     Class<?> subgraphPayloadClass = ((SubgraphProcessor) entry.getKey()).getPayloadClass();
                     ReactorGraph.ProcessorInfo processorInfo = entry.getValue();
 
-                    processorInfo.processorDoc = Optional.ofNullable(subgraphPayloadClass.getDeclaredAnnotation(PayloadDescription.class))
-                            .map(PayloadDescription::doc)
+                    processorInfo.processorDoc = Optional.ofNullable(subgraphPayloadClass.getDeclaredAnnotation(Reactored.class))
+                            .map(Reactored::value)
                             .orElse(null);
 
                 } else if (entry.getKey() instanceof GraphMergePoint) {
@@ -608,8 +608,8 @@ public class ReactorGraphBuilder {
 
                     transitionsDoc.put(status.name(),
                             Optional.ofNullable(mergeStatusEnumField)
-                                    .map(field -> field.getAnnotation(TransitionDescription.class))
-                                    .map(TransitionDescription::doc)
+                                    .map(field -> field.getAnnotation(Reactored.class))
+                                    .map(Reactored::value)
                                     .orElse(null));
                 });
 
@@ -658,8 +658,8 @@ public class ReactorGraphBuilder {
 
             return new HandlerDocumentation()
                     .setHandlerName(method.getName())
-                    .setDocumentation(Optional.ofNullable(method.getAnnotation(HandlerDescription.class))
-                            .map(HandlerDescription::doc)
+                    .setDocumentation(Optional.ofNullable(method.getAnnotation(Reactored.class))
+                            .map(Reactored::value)
                             .orElse(null)
                     );
         }

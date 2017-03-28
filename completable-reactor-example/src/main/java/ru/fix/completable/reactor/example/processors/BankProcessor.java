@@ -2,8 +2,7 @@ package ru.fix.completable.reactor.example.processors;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import ru.fix.completable.reactor.api.HandlerDescription;
-import ru.fix.completable.reactor.api.ProcessorDescription;
+import ru.fix.completable.reactor.api.Reactored;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -15,14 +14,11 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author Kamil Asfandiyarov
  */
-@ProcessorDescription(
-        title = "BankProcessor",
-        doc = {
-                "Withdraw money from Bank account ",
-                "for given user."
-
-        })
-public class BankProcessor  {
+@Reactored({
+        "Withdraw money from Bank account ",
+        "for given user."
+})
+public class BankProcessor {
 
 
     /**
@@ -50,7 +46,7 @@ public class BankProcessor  {
     }
 
 
-    @HandlerDescription(doc = {
+    @Reactored({
             "Withdraw money from account and print it to stdout",
             "If there is no money on account no withdrawing would be applied",
             "so account balance will always stay positive."
@@ -64,7 +60,7 @@ public class BankProcessor  {
                         return new Withdraw().setStatus(Withdraw.Status.WALLET_NOT_FOUND);
                     }
 
-                    if(userProfile.isBlocked){
+                    if (userProfile.isBlocked) {
                         return new Withdraw().setStatus(Withdraw.Status.USER_IS_BLOCKED);
                     }
 
@@ -81,7 +77,7 @@ public class BankProcessor  {
                 });
     }
 
-    @HandlerDescription(doc = {
+    @Reactored({
             "Withdraw money from account and print it to stdout",
             "If there is no money on account then withdrawing would be applied anyway",
             "and account balance became negative"
@@ -95,7 +91,7 @@ public class BankProcessor  {
                         return new Withdraw().setStatus(Withdraw.Status.WALLET_NOT_FOUND);
                     }
 
-                    if(userProfile.isBlocked){
+                    if (userProfile.isBlocked) {
                         return new Withdraw().setStatus(Withdraw.Status.USER_IS_BLOCKED);
                     }
 
@@ -107,9 +103,6 @@ public class BankProcessor  {
                             .setStatus(Withdraw.Status.OK);
                 });
     }
-
-
-
 
 
 }
