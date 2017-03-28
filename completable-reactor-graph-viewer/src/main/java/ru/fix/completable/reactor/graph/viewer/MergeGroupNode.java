@@ -31,6 +31,7 @@ class MergeGroupNode extends Pane {
         this.getStyleClass().add("mergeGroup");
 
         for (var mergePointNode : mergePointNodes) {
+            mergePointNode.layoutBoundsProperty().addListener((observable, oldValue, newValue) -> updateLayout());
             mergePointNode.layoutXProperty().addListener((observable, oldValue, newValue) -> updateLayout());
             mergePointNode.layoutYProperty().addListener((observable, oldValue, newValue) -> updateLayout());
         }
@@ -47,14 +48,24 @@ class MergeGroupNode extends Pane {
         for (var mergePointNode : mergePointNodes) {
             minx  = Math.min(minx, mergePointNode.getLayoutX() - padding);
             miny  = Math.min(miny, mergePointNode.getLayoutY() - padding);
-            maxx  = Math.max(maxx, mergePointNode.getLayoutX() + mergePointNode.getPrefWidth() + padding);
-            maxy  = Math.max(maxy, mergePointNode.getLayoutY() + mergePointNode.getPrefHeight() + padding);
+            maxx  = Math.max(maxx, mergePointNode.getLayoutX() + mergePointNode.getLayoutBounds().getWidth() + padding);
+            maxy  = Math.max(maxy, mergePointNode.getLayoutY() + mergePointNode.getLayoutBounds().getHeight() + padding);
         }
 
         this.setLayoutX(minx);
         this.setLayoutY(miny);
-        this.setPrefWidth(maxx - minx);
-        this.setPrefHeight(maxy - miny);
+
+        double width = maxx - minx;
+        this.setPrefWidth(width);
+        this.setMaxWidth(width);
+        this.setMinWidth(width);
+
+        double height = maxy - miny;
+        this.setPrefHeight(height);
+        this.setMaxHeight(height);
+        this.setMinHeight(height);
+
+        this.resize(width, height);
 
     }
 }
