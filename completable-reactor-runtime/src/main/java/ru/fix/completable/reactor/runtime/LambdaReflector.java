@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -80,11 +81,77 @@ public class LambdaReflector {
                 return Optional.of(methods.get(0));
             }
 
-            throw new UnsupportedOperationException("singnature matching not implemented yet");
+            List<Method> methodsWithMatchedSignatures = methods.stream()
+                    .filter(method -> compareSignatures(method, methodSignature))
+                    .collect(Collectors.toList());
+
+            if(methodsWithMatchedSignatures.size() == 0){
+                return Optional.empty();
+            } else if (methodsWithMatchedSignatures.size() == 1) {
+                return Optional.of(methodsWithMatchedSignatures.get(0));
+            } else {
+                throw new UnsupportedOperationException("To many methods matched same signature: " + methodSignature);
+            }
 
         } catch (Exception exc) {
-            log.warn("Failed to reflect method {} of class {} with signature {}", methodName, className, methodSignature);
+            log.warn("Failed to reflect method {} of class {} with signature {}", methodName, className, methodSignature, exc);
             return Optional.empty();
         }
+    }
+
+
+    static String signatureMapType(Class type){
+        if(type.isArray()){
+            //hope stack size will be enough
+            return "[" + signatureMapType(type.getComponentType());
+        }
+        if(type.equals(Boolean.TYPE)){
+            return "Z";
+        }
+        if(type.equals(Byte.TYPE)){
+            return "B";
+        }
+        if(type.equals(Character.TYPE)){
+            return "C";
+        }
+        if(type.equals(Double.TYPE)){
+            return "D";
+        }
+        if(type.equals(Float.TYPE)){
+            return "F";
+        }
+        if(type.equals(Integer.TYPE)){
+            return "I";
+        }
+        if(type.equals(Long.TYPE)){
+            return "J";
+        }
+        if(type.equals(Short.TYPE)){
+            return "S";
+        }
+        if(type.equals(Void.TYPE)) {
+            return "V";
+        }
+        //Object
+        return "L" + type.getName().replace('.','/') + ";";
+    }
+
+    static String signature(Method method){
+        StringBuilder signature = new StringBuilder();
+
+        Parameter[] parameters = method.getParameters();
+        signature.append("(");
+        for (Parameter parameter : parameters) {
+            signature.append(signatureMapType(parameter.getType()));
+        }
+        signature.append(")");
+
+        signature.append(signatureMapType(method.getReturnType()));
+
+        return signature.toString();
+    }
+
+    static boolean compareSignatures(Method method, String signature) {
+        return signature(method).equals(signature);
     }
 }

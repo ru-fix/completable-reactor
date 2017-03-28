@@ -92,7 +92,7 @@ public class Configuration {
             "Checks result of withdraw operation",
             "Sets new amount and withdrawal status in payload",
             "Stops in case if operation is failed"})
-    static Enum checkWinthdrawResult(PurchasePayload pld, BankProcessor.Withdraw withdraw) {
+    static Enum checkWithdrawResult(PurchasePayload pld, BankProcessor.Withdraw withdraw) {
         switch (withdraw.getStatus()) {
             case WALLET_NOT_FOUND:
             case USER_IS_BLOCKED:
@@ -115,7 +115,7 @@ public class Configuration {
             .passArg(pld -> pld.intermediateData.getUserInfo())
             .passArg(pld -> pld.intermediateData.getServiceInfo())
             .withHandler(BankProcessor::withdrawMoneyWithMinus)
-            .withMerger(Configuration::checkWinthdrawResult)
+            .withMerger(Configuration::checkWithdrawResult)
             .buildProcessor(bank);
 
     GraphProcessor<BankProcessor, SubscribePayload> gBankSubsribe = graphBuilder.describeProcessor(BankProcessor.class)
