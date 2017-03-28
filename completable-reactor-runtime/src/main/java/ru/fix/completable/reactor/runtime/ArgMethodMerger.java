@@ -2,7 +2,7 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import ru.fix.completable.reactor.api.Description;
+import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.function.ProcessorMerger;
 
@@ -42,7 +42,7 @@ public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
 
     public ContextResult withMerger(String title, String[] docs, ProcessorMerger<PayloadType, ProcessorResult> merger) {
 
-        Optional<LambdaReflector.AnnotatedMethod> mergerMethod = LambdaReflector.annotatedMethodReference(merger, Description.class);
+        Optional<LambdaReflector.AnnotatedMethod> mergerMethod = LambdaReflector.annotatedMethodReference(merger, Reactored.class);
 
         if(title == null) {
             title = mergerMethod
@@ -54,8 +54,8 @@ public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
         if(docs == null) {
             docs = mergerMethod
                     .map(LambdaReflector.AnnotatedMethod::getMethod)
-                    .map(method -> method.getAnnotation(Description.class))
-                    .map(Description::value)
+                    .map(method -> method.getAnnotation(Reactored.class))
+                    .map(Reactored::value)
                     .orElse(null);
         }
 

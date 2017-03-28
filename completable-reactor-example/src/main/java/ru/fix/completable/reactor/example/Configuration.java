@@ -1,6 +1,6 @@
 package ru.fix.completable.reactor.example;
 
-import ru.fix.completable.reactor.api.Description;
+import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.example.chain.PurchasePayload;
 import ru.fix.completable.reactor.example.chain.ServiceInfoPayloadMixin;
 import ru.fix.completable.reactor.example.chain.SubscribePayload;
@@ -88,7 +88,7 @@ public class Configuration {
     enum Status {OK}
 
 
-    @Description({
+    @Reactored({
             "Checks result of withdraw operation",
             "Sets new amount and withdrawal status in payload",
             "Stops in case if operation is failed"})

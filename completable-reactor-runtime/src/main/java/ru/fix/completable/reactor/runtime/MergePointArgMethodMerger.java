@@ -1,6 +1,6 @@
 package ru.fix.completable.reactor.runtime;
 
-import ru.fix.completable.reactor.api.Description;
+import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.function.MergePointMerger;
 
 import java.lang.reflect.Method;
@@ -29,7 +29,7 @@ public class MergePointArgMethodMerger<ContextResult, PayloadType> {
 
     public ContextResult withMerger(String title, String[] docs, MergePointMerger<PayloadType> merger){
 
-        Optional<LambdaReflector.AnnotatedMethod> mergerMethod = LambdaReflector.annotatedMethodReference(merger, Description.class);
+        Optional<LambdaReflector.AnnotatedMethod> mergerMethod = LambdaReflector.annotatedMethodReference(merger, Reactored.class);
 
         if(title == null) {
             title = mergerMethod
@@ -41,8 +41,8 @@ public class MergePointArgMethodMerger<ContextResult, PayloadType> {
         if(docs == null) {
             docs = mergerMethod
                     .map(LambdaReflector.AnnotatedMethod::getMethod)
-                    .map(method -> method.getAnnotation(Description.class))
-                    .map(Description::value)
+                    .map(method -> method.getAnnotation(Reactored.class))
+                    .map(Reactored::value)
                     .orElse(null);
         }
 
