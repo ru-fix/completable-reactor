@@ -8,9 +8,9 @@ import lombok.experimental.Accessors;
 import ru.fix.commons.profiler.PrefixedProfiler;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.immutability.ClonerWithReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
+import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
+import java.util.function.Function;
 
 /**
  * @author Kamil Asfandiyarov
@@ -33,6 +34,8 @@ public class CompletableReactor implements AutoCloseable {
     private final ReactorGraphExecutionBuilder executionBuilder;
 
     private final Map<Class<?>, ReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
+
+    private final Map<Class<?>, Function> inlinePayloadGraphs = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService timeoutExecutorService = newScheduledThreadPool(
             1,
@@ -111,6 +114,13 @@ public class CompletableReactor implements AutoCloseable {
 
     public void registerReactorGraph(ReactorGraph reactorGraph) {
         payloadGraphs.put(reactorGraph.getPayloadClass(), reactorGraph);
+    }
+
+    public <PayloadType> void registerReactorGraph(
+            Class<PayloadType> payloadType,
+            Function<PayloadType, CompletableFuture<PayloadType>> payloadProcessingFunction) {
+
+        inlinePayloadGraphs.put(payloadType, payloadProcessingFunction);
     }
 
     @Data

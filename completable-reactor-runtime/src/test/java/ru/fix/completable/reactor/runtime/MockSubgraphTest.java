@@ -86,7 +86,9 @@ public class MockSubgraphTest {
 
         ReactorGraph.write(graph);
 
-        reactor.registerReactorGraph(graph);
+
+
+        reactor.registerReactorGraph(SubgraphPayload.class, payload -> payload);
 
         CompletableReactor.Execution<MainPayload> result = reactor.submit(new MainPayload().setData("main-payload-data"));
         MainPayload resultPayload = result
