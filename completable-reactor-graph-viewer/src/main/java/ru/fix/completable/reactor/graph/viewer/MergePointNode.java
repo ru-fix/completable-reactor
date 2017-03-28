@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * Created by swarmshine on 29.01.2017.
  */
-class MergePointNode extends VBox  implements CentrableNode{
+class MergePointNode extends VBox  implements CentrableNode, BorderableNode{
 
     final CoordinateTranslator coordinateTranslator;
     final ReactorGraphModel.MergePoint mergePoint;
@@ -126,5 +126,25 @@ class MergePointNode extends VBox  implements CentrableNode{
     public double getCenterY() {
         Bounds bounds = this.mergePointCircle.getBoundsInParent();
         return this.getLayoutY() + bounds.getMinY() + bounds.getHeight() / 2;
+    }
+
+    @Override
+    public double getBorderableX() {
+        return this.getLayoutX() + mergePointCircle.getLayoutX();
+    }
+
+    @Override
+    public double getBorderableY() {
+        return this.getLayoutY() + mergePointCircle.getLayoutY();
+    }
+
+    @Override
+    public double getBorderableWidth() {
+        return mergePointCircle.getPrefWidth();
+    }
+
+    @Override
+    public double getBorderableHeight() {
+        return mergePointCircle.getPrefHeight();
     }
 }

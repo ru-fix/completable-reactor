@@ -28,6 +28,8 @@ public class TransitionLine extends Group {
     final Node world;
     final Node fromNode;
     final Node toNode;
+    final Optional<BorderableNode> toNodeBorderable;
+
     final Optional<ReactorGraphModel.MergePointTransition> transition;
     private final Polygon pointer;
 
@@ -43,6 +45,8 @@ public class TransitionLine extends Group {
         this.world = world;
         this.fromNode = fromNode;
         this.toNode = toNode;
+        toNodeBorderable = toNode instanceof BorderableNode ? Optional.of((BorderableNode) toNode) : Optional.empty();
+
         this.transition = transition;
         this.actionListener = actionListener;
 
@@ -145,11 +149,24 @@ public class TransitionLine extends Group {
                 toCenter.getCenterX().doubleValue(),
                 toCenter.getCenterY().doubleValue());
 
+        double minx;
+        double miny;
+        double maxx;
+        double maxy;
 
-        double minx = toNode.getLayoutX();
-        double miny = toNode.getLayoutY();
-        double maxx = toNode.getLayoutX() + toNode.getLayoutBounds().getWidth();
-        double maxy = toNode.getLayoutY() + toNode.getLayoutBounds().getHeight();
+        if(toNodeBorderable.isPresent()){
+            val node = toNodeBorderable.get();
+            minx = node.getBorderableX();
+            miny = node.getBorderableY();
+            maxx = node.getBorderableX() + node.getBorderableWidth();
+            maxy = node.getBorderableY() + node.getBorderableHeight();
+
+        } else {
+            minx = toNode.getLayoutX();
+            miny = toNode.getLayoutY();
+            maxx = toNode.getLayoutX() + toNode.getLayoutBounds().getWidth();
+            maxy = toNode.getLayoutY() + toNode.getLayoutBounds().getHeight();
+        }
 
         val toNodeBorders = new Point2D[][]{
                 {new Point2D(minx, miny), new Point2D(maxx, miny)},
