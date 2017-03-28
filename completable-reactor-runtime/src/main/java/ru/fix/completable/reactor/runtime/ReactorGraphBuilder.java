@@ -819,11 +819,8 @@ public class ReactorGraphBuilder {
         return new BuilderPayload<>(payloadClass, graph);
     }
 
-    public static class DescribeProcesorBuilder<ProcessorType> {
-        final Class<ProcessorType> processorType;
-
-        DescribeProcesorBuilder(Class<ProcessorType> processorType) {
-            this.processorType = processorType;
+    public static class DescribeProcesorBuilder{
+        DescribeProcesorBuilder() {
         }
 
         public <PayloadType> ArgMethodHandler0<GraphProcessorDescription<ProcessorType, PayloadType>, PayloadType, ProcessorType> forPayload(Class<PayloadType> payloadType){
@@ -832,8 +829,8 @@ public class ReactorGraphBuilder {
         }
     }
 
-    public <ProcessorType> DescribeProcesorBuilder<ProcessorType> describeProcessor(Class<ProcessorType> processorType) {
-        return new DescribeProcesorBuilder<>(processorType);
+    public <ProcessorType> DescribeProcesorBuilder<ProcessorType> processor() {
+        return new DescribeProcesorBuilder();
     }
 
     public static class DescribeMergePointBuilder {

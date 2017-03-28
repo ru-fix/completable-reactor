@@ -2,7 +2,7 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.ToString;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
-import ru.fix.completable.reactor.runtime.function.ProcessorMerger;
+import ru.fix.completable.reactor.runtime.function.*;
 
 import java.util.function.Function;
 
@@ -51,34 +51,36 @@ public class GraphProcessorDescription<ProcessorType, PayloadType> {
     boolean isCopyArg5 = false;
 
     /**
-     * {@code MethodReference0Args<Processor, CompletableFuture<ProcessorResult>>}
+     * {@code Handler0Args<Processor, CompletableFuture<ProcessorResult>>}
      */
-    MethodReference0Args handler0;
+    Handler0Args handler0;
 
     /**
-     * {@code MethodReference1Arg<Processor, Arg1, CompletableFuture<ProcessorResult>>}
+     * {@code Handler1Arg<Processor, Arg1, CompletableFuture<ProcessorResult>>}
      */
-    MethodReference1Arg handler1;
+    Handler1Arg handler1;
 
     /**
      * {@code MethodReference2Arg<Processor, Arg1, Arg2, CompletableFuture<ProcessorResult>>}
      */
-    MethodReference2Args handler2;
+    Handler2Args handler2;
 
     /**
      * {@code MethodReference3Arg<Processor, Arg1, Arg2, Arg3, CompletableFuture<ProcessorResult>>}
      */
-    MethodReference3Args handler3;
+    Handler3Args handler3;
 
     /**
      * {@code MethodReference4Arg<Processor, Arg1, Arg2, Arg3, Arg4, CompletableFuture<ProcessorResult>>}
      */
-    MethodReference4Args handler4;
+    Handler4Args handler4;
 
     /**
-     * {@code MethodReference5Arg<Processor, Arg1, Arg2, Arg3, Arg4, Arg5, CompletableFuture<ProcessorResult>>}
+     * {@code Handler<Arg1, Arg2, Arg3, Arg4, Arg5, CompletableFuture<ProcessorResult>>}
      */
-    MethodReference5Args handler5;
+    Handler5Args handler5;
+
+    Handler6Args handler6;
 
     /**
      * Source where {@code handleBy} method was used

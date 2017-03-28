@@ -1,5 +1,7 @@
 package ru.fix.completable.reactor.runtime;
 
+import ru.fix.completable.reactor.runtime.function.Handler0Args;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -13,10 +15,14 @@ public class ArgMethodHandler0<ContextResult, PayloadType, ProcessorType> extend
     }
 
     public <ProcessorResult> ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> withHandler(
-            MethodReference0Args<ProcessorType, CompletableFuture<ProcessorResult>> methodReference) {
+            Handler0Args<CompletableFuture<ProcessorResult>> handler) {
 
-        processorDescription.handler0 = methodReference;
+        processorDescription.handler0 = handler;
         ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.handleBySource = source);
+
+        LambdaReflector.methodReference(handler).ifPresent(method -> {
+            method.getName()
+        });
 
         return new ArgMethodMerger<>(contextResult, mergerInfo -> {
             processorDescription.merger = mergerInfo.merger;

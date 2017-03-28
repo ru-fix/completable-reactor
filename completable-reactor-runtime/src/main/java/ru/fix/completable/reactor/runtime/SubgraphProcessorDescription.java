@@ -40,7 +40,7 @@ public class SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> {
     boolean isCopyArg = false;
 
     /**
-     * {@code MethodReference1Arg<Processor, Arg1, CompletableFuture<ProcessorResult>>}
+     * {@code Handler1Arg<Processor, Arg1, CompletableFuture<ProcessorResult>>}
      */
     Function<SubgraphPayloadType, CompletableFuture<SubgraphPayloadType>> handler;
 
