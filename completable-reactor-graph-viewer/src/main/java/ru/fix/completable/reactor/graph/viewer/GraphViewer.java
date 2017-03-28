@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.graph.viewer;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.scene.Scene;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class GraphViewer {
     ObjectMapper marshaller = new ObjectMapper();
+    {
+        marshaller.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
     Scene scene;
     CopyOnWriteArrayList<ActionListener> actionListeners = new CopyOnWriteArrayList<>();
     GraphViewPane graphViewPane;
