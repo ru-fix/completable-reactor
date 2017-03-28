@@ -41,7 +41,11 @@ public class TransitionLine extends Group {
     private final GraphViewer.ActionListener actionListener;
 
 
-    public TransitionLine(Node world, Node fromNode, Node toNode, Optional<ReactorGraphModel.MergePointTransition> transition, GraphViewer.ActionListener actionListener) {
+    public TransitionLine(Node world,
+                          Node fromNode,
+                          Node toNode,
+                          Optional<ReactorGraphModel.MergePointTransition> transition,
+                          GraphViewer.ActionListener actionListener) {
         this.world = world;
         this.fromNode = fromNode;
         this.toNode = toNode;

@@ -12,7 +12,9 @@ public class ArgMethodHandler0<ContextResult, PayloadType, ProcessorType> extend
         super(contextResult, processorDescription);
     }
 
-    public <ProcessorResult> ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> withHandler(MethodReference0Args<ProcessorType, CompletableFuture<ProcessorResult>> methodReference) {
+    public <ProcessorResult> ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> withHandler(
+            MethodReference0Args<ProcessorType, CompletableFuture<ProcessorResult>> methodReference) {
+
         processorDescription.handler0 = methodReference;
         ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.handleBySource = source);
 

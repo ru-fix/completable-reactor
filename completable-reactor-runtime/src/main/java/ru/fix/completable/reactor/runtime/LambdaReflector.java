@@ -49,10 +49,10 @@ public class LambdaReflector {
 
                 serializedLambda = (SerializedLambda) serializedObject;
                 break;
-            } catch (NoSuchMethodException e) {
-                //ignore
+            } catch (NoSuchMethodException noSuchMethodExcetpion) {
+                log.trace("Ignore method not found.", noSuchMethodExcetpion);
             } catch (Exception exc) {
-                log.warn("Failed to reflect lambda object:" + methodReference, methodReference);
+                log.warn("Failed to reflect lambda object:" + methodReference, methodReference, exc);
                 break;
             }
         }

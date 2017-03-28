@@ -23,7 +23,9 @@ public class ArgMethodHandler1<ContextResult, PayloadType, ProcessorType, Arg1> 
         return new ArgMethodHandler2<>(contextResult, processorDescription);
     }
 
-    public <ProcessorResult> ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> withHandler(MethodReference1Arg<ProcessorType, Arg1, CompletableFuture<ProcessorResult>> methodReference) {
+    public <ProcessorResult> ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> withHandler(
+            MethodReference1Arg<ProcessorType, Arg1, CompletableFuture<ProcessorResult>> methodReference) {
+
         processorDescription.handler1 = methodReference;
         ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.handleBySource = source);
 
