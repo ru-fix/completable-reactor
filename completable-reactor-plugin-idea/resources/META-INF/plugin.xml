@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>ru.fix.completable.reactor.plugin.idea</id>
   <name>Completable Reactor</name>
-  <version>1.2</version>
+  <version>1.0.6</version>
   <vendor email="kasfandiyarov@gmail.com" url="https://github.com/ru-fix">FIX</vendor>
 
   <description>
@@ -16,9 +16,10 @@
 
   <change-notes>
     <![CDATA[
-      1.2 Support detached merge points.<br>
-      1.1 Navigation to code from context menu and by double click.<br>
-      1.0 Basic functionality of graph visualization and navigation.<br>
+      1.0.6 Support merge point labels.<br>
+      1.0.2 Support detached merge points.<br>
+      1.0.1 Navigation to code from context menu and by double click.<br>
+      1.0.0 Basic functionality of graph visualization and navigation.<br>
     ]]>
   </change-notes>
 
