@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.fix.commons.profiler.Profiler;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
-import ru.fix.completable.reactor.api.ProcessorDescription;
+import ru.fix.completable.reactor.api.Reactored;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +35,7 @@ public class MockSubgraphTest {
 
     enum Status {OK}
 
-    @ProcessorDescription(doc = "")
+    @Reactored()
     static class Processor1{
         public CompletableFuture<Void> handle(){
             return CompletableFuture.completedFuture(null);
