@@ -41,4 +41,9 @@ public class GraphProcessor<ProcessorType, PayloadType> implements ProcessingGra
     public String getProfilingName() {
         return processor.getClass().getSimpleName();
     }
+
+    @Override
+    public String getDebugName() {
+        return processor.getClass().getName() + "@" + id;
+    }
 }

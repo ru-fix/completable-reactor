@@ -908,6 +908,18 @@ public class ReactorGraphExecutionBuilder {
             handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessor(), payload);
         }
 
+        if(handlingResult == null){
+            RuntimeException exc = new RuntimeException(String.format(
+                    "Failed handling by processor %s for payload %s %s. Handling method returned NULL." +
+                            " Instance of CompletableFuture expected.",
+                    processingVertex.getProcessor().getDebugName(), payload.getClass(), payload));
+
+            log.error(exc.getMessage(), exc);
+            executionResultFuture.completeExceptionally(exc);
+            processingVertex.getProcessorFuture().complete(new HandlePayloadContext().setTerminal(true));
+            return;
+        }
+
         handlingResult.handleAsync((res, thr) -> {
             handleCall.stop();
 
@@ -940,7 +952,7 @@ public class ReactorGraphExecutionBuilder {
             if (thr != null) {
                 RuntimeException exc = new RuntimeException(String.format(
                         "Failed handling by processor %s for payload %s %s",
-                        processingVertex.getProcessor().getClass(), payload.getClass(), payload), thr);
+                        processingVertex.getProcessor().getDebugName(), payload.getClass(), payload), thr);
 
                 log.error(exc.getMessage(), exc);
                 executionResultFuture.completeExceptionally(exc);

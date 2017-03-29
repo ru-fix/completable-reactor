@@ -21,4 +21,9 @@ public class GraphMergePoint<PayloadType> implements ProcessingGraphItem, Mergea
     public String getProfilingName() {
         return "mergePoint." + this.id;
     }
+
+    @Override
+    public String getDebugName() {
+        return "mergePoint@" + id;
+    }
 }
