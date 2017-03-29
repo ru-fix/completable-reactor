@@ -14,9 +14,9 @@ public class SubgraphHandler<ContextResult, PayloadType, SubgraphPayloadType> {
         this.subgraphDescription = subgraphDescription;
     }
 
-    public ArgMethodMerger<ContextResult, PayloadType, SubgraphPayloadType> passArg(Function<PayloadType, SubgraphPayloadType> arg) {
+    public MergerBuilder<ContextResult, PayloadType, SubgraphPayloadType> passArg(Function<PayloadType, SubgraphPayloadType> arg) {
         this.subgraphDescription.arg = arg;
-        return new ArgMethodMerger<>(contextResult, mergerInfo -> {
+        return new MergerBuilder<>(contextResult, mergerInfo -> {
             this.subgraphDescription.merger = mergerInfo.merger;
             this.subgraphDescription.mergeSource = mergerInfo.mergerSource;
             this.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;
@@ -24,10 +24,10 @@ public class SubgraphHandler<ContextResult, PayloadType, SubgraphPayloadType> {
         });
     }
 
-    public ArgMethodMerger<ContextResult, PayloadType, SubgraphPayloadType> copyArg(Function<PayloadType, SubgraphPayloadType> arg) {
+    public MergerBuilder<ContextResult, PayloadType, SubgraphPayloadType> copyArg(Function<PayloadType, SubgraphPayloadType> arg) {
         this.subgraphDescription.arg = arg;
         this.subgraphDescription.isCopyArg = true;
-        return new ArgMethodMerger<>(contextResult, mergerInfo -> {
+        return new MergerBuilder<>(contextResult, mergerInfo -> {
             this.subgraphDescription.merger = mergerInfo.merger;
             this.subgraphDescription.mergeSource = mergerInfo.mergerSource;
             this.subgraphDescription.mergerDocs = mergerInfo.mergerDocs;

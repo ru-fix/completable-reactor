@@ -823,9 +823,9 @@ public class ReactorGraphBuilder {
         DescribeProcesorBuilder() {
         }
 
-        public <PayloadType> ArgMethodHandler0<GraphProcessorDescription<ProcessorType, PayloadType>, PayloadType, ProcessorType> forPayload(Class<PayloadType> payloadType){
+        public <PayloadType> HandlerBuilder0<GraphProcessorDescription<ProcessorType, PayloadType>, PayloadType, ProcessorType> forPayload(Class<PayloadType> payloadType){
             GraphProcessorDescription<ProcessorType, PayloadType> description = new GraphProcessorDescription<>();
-            return new ArgMethodHandler0<>(description, description);
+            return new HandlerBuilder0<>(description, description);
         }
     }
 

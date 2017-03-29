@@ -227,13 +227,13 @@ public class ReactorReflector {
     private static final String[] methodInvocationClassNamePrefixSkipList = Arrays.stream(
             new Class[]{
                     ReactorGraphBuilder.class,
-                    ArgMethodMerger.class,
-                    ArgMethodHandler0.class,
-                    ArgMethodHandler1.class,
-                    ArgMethodHandler2.class,
-                    ArgMethodHandler3.class,
-                    ArgMethodHandler4.class,
-                    ArgMethodHandler5.class,
+                    MergerBuilder.class,
+                    HandlerBuilder0.class,
+                    HandlerBuilder1.class,
+                    HandlerBuilder2.class,
+                    HandlerBuilder3.class,
+                    HandlerBuilder4.class,
+                    HandlerBuilder5.class,
                     MergePointArgMethodMerger.class
             })
             .map(Class::getName).toArray(String[]::new);

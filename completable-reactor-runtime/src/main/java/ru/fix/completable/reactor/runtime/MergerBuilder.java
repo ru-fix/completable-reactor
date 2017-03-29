@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 /**
  * @author Kamil Asfandiyarov
  */
-public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
+public class MergerBuilder<ContextResult, PayloadType, ProcessorResult> {
 
     @Data
     @Accessors(chain = true)
@@ -27,7 +27,7 @@ public class ArgMethodMerger<ContextResult, PayloadType, ProcessorResult> {
     final ContextResult contextResult;
     final Consumer<MergerInfo<PayloadType, ProcessorResult>> mergerConsumer;
 
-    public ArgMethodMerger(ContextResult contextResult, Consumer<MergerInfo<PayloadType, ProcessorResult>> mergerConsumer) {
+    public MergerBuilder(ContextResult contextResult, Consumer<MergerInfo<PayloadType, ProcessorResult>> mergerConsumer) {
         this.contextResult = contextResult;
         this.mergerConsumer = mergerConsumer;
     }
