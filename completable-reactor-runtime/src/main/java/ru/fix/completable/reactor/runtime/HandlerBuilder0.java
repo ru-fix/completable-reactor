@@ -8,7 +8,7 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
-public class HandlerBuilder0<ContextResult, PayloadType, ProcessorType> extends BaseDescriberItem<ContextResult> {
+public class HandlerBuilder0<ContextResult, PayloadType> extends BaseDescriberItem<ContextResult> {
 
     public HandlerBuilder0(ContextResult contextResult, GraphProcessorDescription processorDescription) {
         super(contextResult, processorDescription);
@@ -29,12 +29,12 @@ public class HandlerBuilder0<ContextResult, PayloadType, ProcessorType> extends 
     }
 
 
-    public <Arg1> HandlerBuilder1<ContextResult, PayloadType, ProcessorType, Arg1> passArg(Function<PayloadType, Arg1> arg) {
+    public <Arg1> HandlerBuilder1<ContextResult, PayloadType, Arg1> passArg(Function<PayloadType, Arg1> arg) {
         processorDescription.arg1 = arg;
         return new HandlerBuilder1<>(contextResult, processorDescription);
     }
 
-    public <Arg1> HandlerBuilder1<ContextResult, PayloadType, ProcessorType, Arg1> copyArg(Function<PayloadType, Arg1> arg) {
+    public <Arg1> HandlerBuilder1<ContextResult, PayloadType, Arg1> copyArg(Function<PayloadType, Arg1> arg) {
         processorDescription.arg1 = arg;
         processorDescription.isCopyArg1 = true;
         return new HandlerBuilder1<>(contextResult, processorDescription);

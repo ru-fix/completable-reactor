@@ -10,7 +10,6 @@ import lombok.ToString;
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString
 public class GraphProcessor<ProcessorType, PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem<PayloadType>, HandleableProcessingGraphItem {
-    final ProcessorType processor;
     final GraphProcessorDescription<ProcessorType, PayloadType> processorDescription;
 
     int id = 0;
@@ -25,9 +24,6 @@ public class GraphProcessor<ProcessorType, PayloadType> implements ProcessingGra
         return this;
     }
 
-    public ProcessorType getProcessor() {
-        return processor;
-    }
 
     public Class<ProcessorType> getProcessorClass() {
         return (Class<ProcessorType>) processor.getClass();

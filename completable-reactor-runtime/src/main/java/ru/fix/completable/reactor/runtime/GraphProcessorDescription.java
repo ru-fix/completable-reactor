@@ -44,11 +44,17 @@ public class GraphProcessorDescription<ProcessorType, PayloadType> {
      */
     Function arg5;
 
+    /**
+     * {@code Function<Payload, Arg6>}
+     */
+    Function arg6;
+
     boolean isCopyArg1 = false;
     boolean isCopyArg2 = false;
     boolean isCopyArg3 = false;
     boolean isCopyArg4 = false;
     boolean isCopyArg5 = false;
+    boolean isCopyArg6 = false;
 
     /**
      * {@code Handler0Args<Processor, CompletableFuture<ProcessorResult>>}

@@ -8,18 +8,18 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
-public class HandlerBuilder2<ContextResult, PayloadType, ProcessorType, Arg1, Arg2> extends BaseDescriberItem<ContextResult> {
+public class HandlerBuilder2<ContextResult, PayloadType, Arg1, Arg2> extends BaseDescriberItem<ContextResult> {
 
     public HandlerBuilder2(ContextResult contextResult, GraphProcessorDescription processorDescription) {
         super(contextResult, processorDescription);
     }
 
-    public <Arg3> HandlerBuilder3<ContextResult, PayloadType, ProcessorType, Arg1, Arg2, Arg3> passArg(Function<PayloadType, Arg3> arg) {
+    public <Arg3> HandlerBuilder3<ContextResult, PayloadType, Arg1, Arg2, Arg3> passArg(Function<PayloadType, Arg3> arg) {
         processorDescription.arg3 = arg;
         return new HandlerBuilder3<>(contextResult, processorDescription);
     }
 
-    public <Arg3> HandlerBuilder3<ContextResult, PayloadType, ProcessorType, Arg1, Arg2, Arg3> copyArg(Function<PayloadType, Arg3> arg) {
+    public <Arg3> HandlerBuilder3<ContextResult, PayloadType, Arg1, Arg2, Arg3> copyArg(Function<PayloadType, Arg3> arg) {
         processorDescription.arg3 = arg;
         processorDescription.isCopyArg3 = true;
         return new HandlerBuilder3<>(contextResult, processorDescription);
