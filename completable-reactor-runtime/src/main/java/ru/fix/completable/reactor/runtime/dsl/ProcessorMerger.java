@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime.function;
+package ru.fix.completable.reactor.runtime.dsl;
 
 import java.io.Serializable;
 

@@ -1,7 +1,7 @@
 package ru.fix.completable.reactor.runtime;
 
 import ru.fix.completable.reactor.api.Reactored;
-import ru.fix.completable.reactor.runtime.function.MergePointMerger;
+import ru.fix.completable.reactor.runtime.dsl.MergePointMerger;
 
 import java.lang.reflect.Method;
 import java.util.Optional;

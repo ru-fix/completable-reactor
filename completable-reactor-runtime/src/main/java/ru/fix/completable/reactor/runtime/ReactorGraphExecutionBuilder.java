@@ -795,19 +795,19 @@ public class ReactorGraphExecutionBuilder {
                 );
 
             } else if (processorInfo.description.handler1 != null) {
-                return (CompletableFuture) processorInfo.description.handler1.apply(
+                return (CompletableFuture) processorInfo.description.handler1.handle(
                         processor,
                         param1);
 
 
             } else if (processorInfo.description.handler2 != null) {
-                return (CompletableFuture) processorInfo.description.handler2.apply(
+                return (CompletableFuture) processorInfo.description.handler2.handle(
                         processor,
                         param1,
                         param2
                 );
             } else if (processorInfo.description.handler3 != null) {
-                return (CompletableFuture) processorInfo.description.handler3.apply(
+                return (CompletableFuture) processorInfo.description.handler3.handle(
                         processor,
                         param1,
                         param2,
@@ -815,7 +815,7 @@ public class ReactorGraphExecutionBuilder {
                 );
 
             } else if (processorInfo.description.handler4 != null) {
-                return (CompletableFuture) processorInfo.description.handler4.apply(
+                return (CompletableFuture) processorInfo.description.handler4.handle(
                         processor,
                         param1,
                         param2,
@@ -824,7 +824,7 @@ public class ReactorGraphExecutionBuilder {
                 );
 
             } else if (processorInfo.description.handler5 != null) {
-                return (CompletableFuture) processorInfo.description.handler5.apply(
+                return (CompletableFuture) processorInfo.description.handler5.handle(
                         processor,
                         param1,
                         param2,

@@ -632,26 +632,26 @@ public class ReactorGraphBuilder {
             } else if (processorInfo.description.handler1 != null) {
                 method = reflector.getMethodFromMethodReference(
                         processor.getClass(),
-                        processorInfo.description.handler1::apply);
+                        processorInfo.description.handler1::handle);
 
             } else if (processorInfo.description.handler2 != null) {
                 method = reflector.getMethodFromMethodReference(
                         processor.getClass(),
-                        processorInfo.description.handler2::apply);
+                        processorInfo.description.handler2::handle);
 
             } else if (processorInfo.description.handler3 != null) {
                 method = reflector.getMethodFromMethodReference(
                         processor.getClass(),
-                        processorInfo.description.handler3::apply);
+                        processorInfo.description.handler3::handle);
 
             } else if (processorInfo.description.handler4 != null) {
                 method = reflector.getMethodFromMethodReference(
                         processor.getClass(),
-                        processorInfo.description.handler4::apply);
+                        processorInfo.description.handler4::handle);
             } else if (processorInfo.description.handler5 != null) {
                 method = reflector.getMethodFromMethodReference(
                         processor.getClass(),
-                        processorInfo.description.handler5::apply);
+                        processorInfo.description.handler5::handle);
             } else {
                 throw new IllegalStateException(String.format("Can not find handler for processor %s", processor.getClass()));
             }
@@ -823,13 +823,13 @@ public class ReactorGraphBuilder {
         DescribeProcesorBuilder() {
         }
 
-        public <PayloadType> HandlerBuilder0<GraphProcessorDescription<ProcessorType, PayloadType>, PayloadType, ProcessorType> forPayload(Class<PayloadType> payloadType){
+        public <PayloadType> HandlerBuilder0<GraphProcessorDescription<PayloadType>, PayloadType, ProcessorType> forPayload(Class<PayloadType> payloadType){
             GraphProcessorDescription<ProcessorType, PayloadType> description = new GraphProcessorDescription<>();
             return new HandlerBuilder0<>(description, description);
         }
     }
 
-    public <ProcessorType> DescribeProcesorBuilder<ProcessorType> processor() {
+    public <ProcessorType> DescribeProcesorBuilder processor() {
         return new DescribeProcesorBuilder();
     }
 

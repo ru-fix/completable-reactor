@@ -9,28 +9,20 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString
-public class GraphProcessor<ProcessorType, PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem<PayloadType>, HandleableProcessingGraphItem {
-    final ProcessorType processor;
-    final GraphProcessorDescription<ProcessorType, PayloadType> processorDescription;
+public class GraphProcessor<PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem<PayloadType>, HandleableProcessingGraphItem {
+    final Class processorType;
+    final GraphProcessorDescription<PayloadType> processorDescription;
 
     int id = 0;
 
-    GraphProcessor(ProcessorType processor, GraphProcessorDescription<ProcessorType, PayloadType> description) {
-        this.processor = processor;
+    GraphProcessor(Class processorType, GraphProcessorDescription<PayloadType> description) {
+        this.processorType = processorType;
         this.processorDescription = description;
     }
 
-    public GraphProcessor<ProcessorType, PayloadType> withId(int id){
+    public GraphProcessor<PayloadType> setId(int id){
         this.id = id;
         return this;
-    }
-
-    public ProcessorType getProcessor() {
-        return processor;
-    }
-
-    public Class<ProcessorType> getProcessorClass() {
-        return (Class<ProcessorType>) processor.getClass();
     }
 
     public int getId() {
@@ -41,4 +33,5 @@ public class GraphProcessor<ProcessorType, PayloadType> implements ProcessingGra
     public String getProfilingName() {
         return processor.getClass().getSimpleName();
     }
+
 }

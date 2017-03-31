@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
-import ru.fix.completable.reactor.runtime.function.ProcessorMerger;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorMerger;
 
 import java.lang.reflect.Method;
 import java.util.Optional;

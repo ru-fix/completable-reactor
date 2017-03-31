@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime.function;
+package ru.fix.completable.reactor.runtime.dsl;
 
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
@@ -8,5 +8,5 @@ import java.util.concurrent.CompletableFuture;
  */
 @FunctionalInterface
 public interface Handler2Args<Arg1, Arg2, Result> extends Serializable {
-    CompletableFuture<Result> apply(Arg1 arg1, Arg2 arg2);
+    CompletableFuture<Result> handle(Arg1 arg1, Arg2 arg2);
 }

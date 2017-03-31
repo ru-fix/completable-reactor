@@ -6,8 +6,8 @@ import lombok.experimental.Accessors;
 import lombok.val;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
-import ru.fix.completable.reactor.runtime.function.MergePointMerger;
-import ru.fix.completable.reactor.runtime.function.ProcessorMerger;
+import ru.fix.completable.reactor.runtime.dsl.MergePointMerger;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorMerger;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

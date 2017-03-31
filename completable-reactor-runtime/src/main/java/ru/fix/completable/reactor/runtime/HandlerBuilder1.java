@@ -1,6 +1,6 @@
 package ru.fix.completable.reactor.runtime;
 
-import ru.fix.completable.reactor.runtime.function.Handler1Arg;
+import ru.fix.completable.reactor.runtime.dsl.Handler1Arg;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -8,18 +8,18 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
-public class HandlerBuilder1<ContextResult, PayloadType, ProcessorType, Arg1> extends BaseDescriberItem<ContextResult> {
+public class HandlerBuilder1<ContextResult, PayloadType, Arg1> extends BaseDescriberItem<ContextResult> {
 
-    public HandlerBuilder1(ContextResult contextResult, GraphProcessorDescription processorDescription) {
+    HandlerBuilder1(ContextResult contextResult, GraphProcessorDescription processorDescription) {
         super(contextResult, processorDescription);
     }
 
-    public <Arg2> HandlerBuilder2<ContextResult, PayloadType, ProcessorType, Arg1, Arg2> passArg(Function<PayloadType, Arg2> arg) {
+    public <Arg2> HandlerBuilder2<ContextResult, PayloadType, Arg1, Arg2> passArg(Function<PayloadType, Arg2> arg) {
         processorDescription.arg2 = arg;
         return new HandlerBuilder2<>(contextResult, processorDescription);
     }
 
-    public <Arg2> HandlerBuilder2<ContextResult, PayloadType, ProcessorType, Arg1, Arg2> copyArg(Function<PayloadType, Arg2> arg) {
+    public <Arg2> HandlerBuilder2<ContextResult, PayloadType, Arg1, Arg2> copyArg(Function<PayloadType, Arg2> arg) {
         processorDescription.arg2 = arg;
         processorDescription.isCopyArg2 = true;
         return new HandlerBuilder2<>(contextResult, processorDescription);

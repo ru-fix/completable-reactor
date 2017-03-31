@@ -2,7 +2,7 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.ToString;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
-import ru.fix.completable.reactor.runtime.function.*;
+import ru.fix.completable.reactor.runtime.dsl.*;
 
 import java.util.function.Function;
 
@@ -13,7 +13,7 @@ import java.util.function.Function;
  */
 
 @ToString
-public class GraphProcessorDescription<ProcessorType, PayloadType> {
+public class GraphProcessorDescription<PayloadType> {
     /**
      * Null if there is no merger provided.
      * In that case Processor does not modify payload.
@@ -105,7 +105,7 @@ public class GraphProcessorDescription<ProcessorType, PayloadType> {
     GraphProcessorDescription() {
     }
 
-    public GraphProcessor<ProcessorType, PayloadType> buildProcessor(ProcessorType processor) {
-        return new GraphProcessor<>(processor, this);
+    public GraphProcessor<PayloadType> buildProcessor() {
+        return new GraphProcessor<>(this);
     }
 }

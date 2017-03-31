@@ -2,7 +2,7 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.ToString;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
-import ru.fix.completable.reactor.runtime.function.MergePointMerger;
+import ru.fix.completable.reactor.runtime.dsl.MergePointMerger;
 
 /**
  * @author Kamil Asfandiyarov
