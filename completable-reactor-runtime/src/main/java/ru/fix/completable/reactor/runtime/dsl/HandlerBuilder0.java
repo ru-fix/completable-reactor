@@ -1,9 +1,5 @@
 package ru.fix.completable.reactor.runtime.dsl;
 
-import ru.fix.completable.reactor.runtime.HandlerBuilder1;
-import ru.fix.completable.reactor.runtime.MergerBuilder;
-
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -11,8 +7,15 @@ import java.util.function.Function;
  */
 public interface HandlerBuilder0<PayloadType> {
 
-    <ProcessorResult> MergerBuilder<ContextResult, PayloadType, ProcessorResult> withHandler(
-            Handler0Args<CompletableFuture<ProcessorResult>> handler) {
+    <ProcessorResult> ProcessorMergerBuilder<ProcessorDescription<PayloadType>, PayloadType, ProcessorResult> withHandler(
+            Handler0Args<ProcessorResult> handler
+    );
 
-    public <Arg1> HandlerBuilder1<ContextResult, PayloadType, Arg1> passArg(Function<PayloadType, Arg1> arg) {
+    <Arg1> HandlerBuilder1<ProcessorDescription<PayloadType>, PayloadType, Arg1> passArg(
+            Function<PayloadType, Arg1> arg
+    );
+
+    <Arg1> HandlerBuilder1<ProcessorDescription<PayloadType>, PayloadType, Arg1> copyArg(
+            Function<PayloadType, Arg1> arg
+    );
 }

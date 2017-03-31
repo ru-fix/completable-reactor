@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
 
 import java.util.*;
 import java.util.function.Consumer;

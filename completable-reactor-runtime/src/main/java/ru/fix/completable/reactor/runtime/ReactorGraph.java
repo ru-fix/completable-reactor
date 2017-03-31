@@ -8,6 +8,9 @@ import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.dsl.MergePointMerger;
 import ru.fix.completable.reactor.runtime.dsl.ProcessorMerger;
+import ru.fix.completable.reactor.runtime.internal.GraphProcessor;
+import ru.fix.completable.reactor.runtime.internal.GraphProcessorDescription;
+import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

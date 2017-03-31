@@ -1,6 +1,9 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.internal;
 
+import ru.fix.completable.reactor.runtime.ReactorReflector;
 import ru.fix.completable.reactor.runtime.dsl.Handler0Args;
+import ru.fix.completable.reactor.runtime.dsl.HandlerBuilder0;
+
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -8,13 +11,16 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
-public class HandlerBuilder0<ContextResult, PayloadType> extends BaseDescriberItem<ContextResult> {
+public class CRHandlerBuilder0<PayloadType> implements HandlerBuilder0<PayloadType> {
 
-    HandlerBuilder0(ContextResult contextResult, GraphProcessorDescription processorDescription) {
-        super(contextResult, processorDescription);
+    final CRProcessorDescription<PayloadType> processorDescription;
+
+    public CRHandlerBuilder0(CRProcessorDescription<PayloadType> processorDescription) {
+        this.processorDescription = processorDescription;
     }
 
-    public <ProcessorResult> MergerBuilder<ContextResult, PayloadType, ProcessorResult> withHandler(
+    @Override
+    public <ProcessorResult> MergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler0Args<CompletableFuture<ProcessorResult>> handler) {
 
         processorDescription.handler0 = handler;
@@ -28,15 +34,16 @@ public class HandlerBuilder0<ContextResult, PayloadType> extends BaseDescriberIt
         });
     }
 
-
-    public <Arg1> HandlerBuilder1<ContextResult, PayloadType, Arg1> passArg(Function<PayloadType, Arg1> arg) {
+    @Override
+    public <Arg1> CRHandlerBuilder1<PayloadType, Arg1> passArg(Function<PayloadType, Arg1> arg) {
         processorDescription.arg1 = arg;
-        return new HandlerBuilder1<>(contextResult, processorDescription);
+        return new CRHandlerBuilder1<>(processorDescription);
     }
 
-    public <Arg1> HandlerBuilder1<ContextResult, PayloadType, Arg1> copyArg(Function<PayloadType, Arg1> arg) {
+    @Override
+    public <Arg1> CRHandlerBuilder1<PayloadType, Arg1> copyArg(Function<PayloadType, Arg1> arg) {
         processorDescription.arg1 = arg;
         processorDescription.isCopyArg1 = true;
-        return new HandlerBuilder1<>(contextResult, processorDescription);
+        return new CRHandlerBuilder1<>(processorDescription);
     }
 }

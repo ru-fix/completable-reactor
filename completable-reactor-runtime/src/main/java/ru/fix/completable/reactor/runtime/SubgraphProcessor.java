@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
 
 /**
  * Represent processor graph instance.

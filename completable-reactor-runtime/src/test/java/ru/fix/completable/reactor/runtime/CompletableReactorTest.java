@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.api.Reactored;
+import ru.fix.completable.reactor.runtime.internal.GraphProcessor;
+import ru.fix.completable.reactor.runtime.internal.GraphProcessorDescription;
 import ru.fix.completable.reactor.ui.ReactorHtmlUIBuilder;
 
 import java.nio.file.Paths;

@@ -10,6 +10,7 @@ import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.runtime.internal.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

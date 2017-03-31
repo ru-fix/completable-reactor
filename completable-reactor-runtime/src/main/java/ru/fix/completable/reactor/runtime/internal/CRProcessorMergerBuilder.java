@@ -1,16 +1,39 @@
-package ru.fix.completable.reactor.runtime.dsl;
+package ru.fix.completable.reactor.runtime.internal;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
 import ru.fix.completable.reactor.api.Reactored;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.LambdaReflector;
 import ru.fix.completable.reactor.runtime.ReactorReflector;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorMerger;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorMergerBuilder;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * @author Kamil Asfandiyarov
  */
-public interface MergerBuilder<ContextResult, PayloadType, ProcessorResult> {
+public class CRProcessorMergerBuilder<PayloadType, ProcessorResult> implements ProcessorMergerBuilder<PayloadType, ProcessorResult> {
+
+    @Data
+    @Accessors(chain = true)
+    public static class MergerInfo<PayloadType, ProcessorResult> {
+        ReactorGraphModel.Source mergerSource;
+        String[] mergerDocs;
+        String mergerTitle;
+        ProcessorMerger<PayloadType, ProcessorResult> merger;
+    }
+
+    final Consumer<MergerInfo<PayloadType, ProcessorResult>> mergerConsumer;
+
+    public MergerBuilder(ContextResult contextResult, Consumer<MergerInfo<PayloadType, ProcessorResult>> mergerConsumer) {
+        this.contextResult = contextResult;
+        this.mergerConsumer = mergerConsumer;
+    }
+
     public ContextResult withMerger(ProcessorMerger<PayloadType, ProcessorResult> merger) {
         return withMerger(null, null, merger);
     }
@@ -38,7 +61,7 @@ public interface MergerBuilder<ContextResult, PayloadType, ProcessorResult> {
                     .orElse(null);
         }
 
-        ru.fix.completable.reactor.runtime.MergerBuilder.MergerInfo<PayloadType, ProcessorResult> mergerInfo = new ru.fix.completable.reactor.runtime.MergerBuilder.MergerInfo<>();
+        MergerInfo<PayloadType, ProcessorResult> mergerInfo = new MergerInfo<>();
         mergerInfo.merger = merger;
         mergerInfo.mergerSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
         mergerInfo.mergerTitle =  title;
@@ -49,4 +72,11 @@ public interface MergerBuilder<ContextResult, PayloadType, ProcessorResult> {
     }
 
     public ContextResult withoutMerger() {
+        MergerInfo<PayloadType, ProcessorResult> mergerInfo = new MergerInfo<>();
+        mergerInfo.merger = null;
+        mergerInfo.mergerSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
+
+        mergerConsumer.accept(mergerInfo);
+        return contextResult;
+    }
 }

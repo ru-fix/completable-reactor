@@ -1,6 +1,9 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.internal;
 
+import ru.fix.completable.reactor.runtime.BaseDescriberItem;
+import ru.fix.completable.reactor.runtime.ReactorReflector;
 import ru.fix.completable.reactor.runtime.dsl.Handler4Args;
+import ru.fix.completable.reactor.runtime.internal.GraphProcessorDescription;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -8,7 +11,7 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
-public class HandlerBuilder4<ContextResult, PayloadType , Arg1, Arg2, Arg3, Arg4> extends BaseDescriberItem<ContextResult> {
+public class CRHandlerBuilder4<ContextResult, PayloadType , Arg1, Arg2, Arg3, Arg4> extends BaseDescriberItem<ContextResult> {
     HandlerBuilder4(ContextResult contextResult, GraphProcessorDescription processorDescription) {
         super(contextResult, processorDescription);
     }

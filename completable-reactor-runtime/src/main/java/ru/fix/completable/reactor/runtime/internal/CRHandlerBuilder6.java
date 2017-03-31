@@ -1,15 +1,19 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.internal;
 
-import ru.fix.completable.reactor.runtime.function.Handler6Args;
+import ru.fix.completable.reactor.runtime.ReactorReflector;
+import ru.fix.completable.reactor.runtime.dsl.Handler6Args;
 
 import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Kamil Asfandiyarov
  */
-public class HandlerBuilder6<ContextResult, PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> extends BaseDescriberItem<ContextResult> {
-    public HandlerBuilder6(ContextResult contextResult, GraphProcessorDescription processorDescription) {
-        super(contextResult, processorDescription);
+public class CRHandlerBuilder6<ContextResult, PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> {
+
+    final CRProcessorDescription processorDescription;
+
+    public CRHandlerBuilder6(CRProcessorDescription processorDescription) {
+        this.processorDescription = processorDescription;
     }
 
     public <ProcessorResult> MergerBuilder<ContextResult, PayloadType, ProcessorResult> withHandler(

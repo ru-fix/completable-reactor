@@ -6,7 +6,11 @@ import ru.fix.completable.reactor.example.chain.ServiceInfoPayloadMixin;
 import ru.fix.completable.reactor.example.chain.SubscribePayload;
 import ru.fix.completable.reactor.example.chain.UserProfilePayloadMixin;
 import ru.fix.completable.reactor.example.processors.*;
-import ru.fix.completable.reactor.runtime.*;
+import ru.fix.completable.reactor.runtime.ReactorGraph;
+import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
+import ru.fix.completable.reactor.runtime.dsl.MergePoint;
+import ru.fix.completable.reactor.runtime.dsl.Processor;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorDescription;
 
 import java.math.BigDecimal;
 
@@ -16,7 +20,6 @@ import java.math.BigDecimal;
 public class Configuration {
 
     final ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder();
-
 
     /**
      * Processors
@@ -32,12 +35,12 @@ public class Configuration {
     /**
      * Graph processors
      */
-    GraphProcessorDescription<UserProfileService, UserProfilePayloadMixin> gUserProfileDescription =
-            graphBuilder.describeProcessor(UserProfileService.class)
+    ProcessorDescription<UserProfilePayloadMixin> gUserProfileDescription =
+            graphBuilder.processor()
                     .forPayload(UserProfilePayloadMixin.class)
                     .passArg(pld -> pld.getUserId())
                     .passArg(pld -> pld.getUserId().toString())
-                    .withHandler(UserProfileService::loadUserProfileById)
+                    .withHandler(userProfile::loadUserProfileById)
                     .withMerger(
                             "updateUserProfile",
                             (pld, result) -> {
@@ -58,32 +61,32 @@ public class Configuration {
                                 throw new IllegalArgumentException("result.status = " + result.status);
                             });
 
-    GraphProcessor<UserProfileService, UserProfilePayloadMixin> gUserProfile = gUserProfileDescription.buildProcessor(userProfile);
+    Processor<UserProfilePayloadMixin> gUserProfile = gUserProfileDescription.buildProcessor();
 
 
-    GraphProcessor<TransactionLogProcessor, UserProfilePayloadMixin> gTxLog = graphBuilder.describeProcessor(TransactionLogProcessor.class)
+    Processor<UserProfilePayloadMixin> gTxLog = graphBuilder.processor()
             .forPayload(UserProfilePayloadMixin.class)
             .passArg(pld -> pld.getUserId())
-            .withHandler(TransactionLogProcessor::logTransactioin)
+            .withHandler(txLog::logTransactioin)
             .withMerger((pld, any) -> MergeStatus.CONTINUE)
-            .buildProcessor(txLog);
+            .buildProcessor();
 
 
-    GraphProcessor<UserLogProcessor, UserProfilePayloadMixin> gUserLog = graphBuilder.describeProcessor(UserLogProcessor.class)
+    Processor<UserProfilePayloadMixin> gUserLog = graphBuilder.processor()
             .forPayload(UserProfilePayloadMixin.class)
             .passArg(pld -> pld.getUserId())
             .passArg(pld -> String.format("Request type: %s", pld.getClass().getSimpleName()))
-            .withHandler(UserLogProcessor::logAction)
+            .withHandler(userLog::logAction)
             .withMerger((pld, result) -> MergeStatus.CONTINUE)
-            .buildProcessor(userLog);
+            .buildProcessor();
 
 
-    GraphProcessor<NotificationProcessor, UserProfilePayloadMixin> gNotification = graphBuilder.describeProcessor(NotificationProcessor.class)
+    Processor<UserProfilePayloadMixin> gNotification = graphBuilder.processor()
             .forPayload(UserProfilePayloadMixin.class)
             .copyArg(pld -> pld.getUserId())
-            .withHandler(NotificationProcessor::sendPurchaseNotification)
+            .withHandler(notification1::sendPurchaseNotification)
             .withoutMerger()
-            .buildProcessor(notification1);
+            .buildProcessor();
 
 
     @Reactored({
@@ -108,19 +111,19 @@ public class Configuration {
         }
     }
 
-    GraphProcessor<BankProcessor, PurchasePayload> gBankPurchase = graphBuilder.describeProcessor(BankProcessor.class)
+    Processor<PurchasePayload> gBankPurchase = graphBuilder.processor()
             .forPayload(PurchasePayload.class)
             .passArg(pld -> pld.intermediateData.getUserInfo())
             .passArg(pld -> pld.intermediateData.getServiceInfo())
-            .withHandler(BankProcessor::withdrawMoneyWithMinus)
+            .withHandler(bank::withdrawMoneyWithMinus)
             .withMerger(Configuration::checkWithdrawResult)
-            .buildProcessor(bank);
+            .buildProcessor();
 
-    GraphProcessor<BankProcessor, SubscribePayload> gBankSubsribe = graphBuilder.describeProcessor(BankProcessor.class)
+    Processor<SubscribePayload> gBankSubsribe = graphBuilder.processor()
             .forPayload(SubscribePayload.class)
             .passArg(pld -> pld.intermediateData.getUserInfo())
             .passArg(pld -> pld.intermediateData.getServiceInfo())
-            .withHandler(BankProcessor::withdrawMoney)
+            .withHandler(bank::withdrawMoney)
             .withMerger(
                     "updateNewAmount",
                     (pld, withdraw) -> {
@@ -138,15 +141,15 @@ public class Configuration {
                                 throw new IllegalArgumentException("Status: " + withdraw.getStatus());
                         }
                     })
-            .buildProcessor(bank);
+            .buildProcessor();
 
 
     ReactorGraph<PurchasePayload> purchaseGraph() throws Exception {
 
-        GraphProcessor<ServiceInfoProcessor, ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.describeProcessor(ServiceInfoProcessor.class)
+        Processor<ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.processor()
                 .forPayload(ServiceInfoPayloadMixin.class)
                 .passArg(pld -> pld.getServiceId())
-                .withHandler(ServiceInfoProcessor::loadServiceInformation)
+                .withHandler(serviceInfo::loadServiceInformation)
                 .withMerger(
                         "updateServiceInfo",
                         (pld, result) -> {
@@ -169,64 +172,67 @@ public class Configuration {
                             }
                             return MergeStatus.CONTINUE;
                         })
-                .buildProcessor(serviceInfo);
+                .buildProcessor();
 
 
         return graphBuilder.payload(PurchasePayload.class)
-                .startPoint()
                 .handleBy(gUserProfile)
                 .handleBy(gServiceInfo)
 
-                .multiMerge()
-                .merge(gUserProfile)
+
+                .mergeGroup()
+                .with(gUserProfile)
+                .with(gServiceInfo)
+
+                .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
                 .on(MergeStatus.CONTINUE).merge(gServiceInfo)
 
 
-                .merge(gServiceInfo)
+                .mergePoint(gServiceInfo)
                 .on(MergeStatus.WITHDRAWAL).handleBy(gBankPurchase)
                 .on(MergeStatus.NO_WITHDRAWAL).handleBy(gUserLog)
                 .on(MergeStatus.NO_WITHDRAWAL).handleBy(gNotification)
                 .on(MergeStatus.STOP).complete()
 
-                .singleMerge(gBankPurchase)
+                .mergePoint(gBankPurchase)
                 .onAny()
                 .handleBy(gTxLog)
 
-                .singleMerge(gTxLog)
+                .mergePoint(gTxLog)
                 .onAny()
                 .handleBy(gUserLog)
 
-                .singleMerge(gUserLog)
+                .mergePoint(gUserLog)
                 .onAny()
                 .complete()
 
                 .coordinates()
                 .start(680, 60)
-                .proc("BankProcessor@0", 410, 440)
-                .proc("NotificationProcessor@0", 880, 430)
-                .proc("ServiceInfoProcessor@0", 480, 120)
-                .proc("TransactionLogProcessor@0", 420, 650)
-                .proc("UserLogProcessor@0", 680, 820)
-                .proc("UserProfileService@0", 770, 120)
-                .merge("BankProcessor@0", 480, 550)
-                .merge("ServiceInfoProcessor@0", 640, 280)
-                .merge("TransactionLogProcessor@0", 530, 770)
-                .merge("UserLogProcessor@0", 760, 930)
-                .merge("UserProfileService@0", 806, 201)
-                .complete("ServiceInfoProcessor@0", 480, 310)
-                .complete("UserLogProcessor@0", 740, 1020)
-                .complete("UserProfileService@0", 963, 258)
+                .proc(BankProcessor.class, 0, 410, 440)
+                .proc(NotificationProcessor.class, 0, 880, 430)
+                .proc(ServiceInfoProcessor.class, 0, 480, 120)
+                .proc(TransactionLogProcessor.class, 0, 420, 650)
+                .proc(UserLogProcessor.class, 0, 680, 820)
+                .proc(UserProfileService.class, 0, 770, 120)
+                .merge(BankProcessor.class, 0, 480, 550)
+                .merge(ServiceInfoProcessor.class, 0, 640, 280)
+                .merge(TransactionLogProcessor.class, 0, 530, 770)
+                .merge(UserLogProcessor.class, 0, 760, 930)
+                .merge(UserProfileService.class, 0, 806, 201)
+                .complete(ServiceInfoProcessor.class, 0, 480, 310)
+                .complete(UserLogProcessor.class, 0, 740, 1020)
+                .complete(UserProfileService.class, 0, 963, 258)
 
                 .buildGraph();
     }
 
     ReactorGraph<SubscribePayload> subscribeGraph() throws Exception {
 
-        GraphProcessor<ServiceInfoProcessor, ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.describeProcessor(ServiceInfoProcessor.class)
+        Processor<ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.processor()
                 .forPayload(ServiceInfoPayloadMixin.class)
                 .passArg(pld -> pld.getServiceId())
-                .withHandler(ServiceInfoProcessor::loadServiceInformation)
+                .withHandler(serviceInfo::loadServiceInformation)
                 .withMerger(
                         "updateServiceInfo",
                         (pld, result) -> {
@@ -248,10 +254,10 @@ public class Configuration {
                                     }
                             }
                             return MergeStatus.CONTINUE;
-                        }).buildProcessor(serviceInfo);
+                        }).buildProcessor();
 
 
-        GraphMergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint()
+        MergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint()
                 .forPayload(SubscribePayload.class)
                 .withMerger(
                         "checkTrialPeriod",
@@ -266,54 +272,55 @@ public class Configuration {
                 .buildMergePoint();
 
         return graphBuilder.payload(SubscribePayload.class)
-
-                .startPoint()
                 .handleBy(gUserProfile)
                 .handleBy(gServiceInfo)
 
-                .multiMerge()
-                .merge(gUserProfile)
+                .mergeGroup()
+                .with(gUserProfile)
+                .with(gServiceInfo)
+
+                .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
                 .on(MergeStatus.CONTINUE).merge(gServiceInfo)
 
-                .merge(gServiceInfo)
+                .mergePoint(gServiceInfo)
                 .on(MergeStatus.CONTINUE).merge(trialPeriodCheck)
                 .on(MergeStatus.STOP).complete()
 
-                .merge(trialPeriodCheck)
+                .mergePoint(trialPeriodCheck)
                 .on(MergeStatus.WITHDRAWAL).handleBy(gBankSubsribe)
                 .on(MergeStatus.NO_WITHDRAWAL).handleBy(gUserLog)
                 .on(MergeStatus.NO_WITHDRAWAL).handleBy(gNotification)
 
-                .singleMerge(gBankSubsribe)
+                .mergePoint(gBankSubsribe)
                 .onAny()
                 .handleBy(gTxLog)
 
-                .singleMerge(gTxLog)
+                .mergePoint(gTxLog)
                 .onAny()
                 .handleBy(gUserLog)
 
-                .singleMerge(gUserLog)
+                .mergePoint(gUserLog)
                 .onAny()
                 .complete()
 
                 .coordinates()
                 .start(680, 60)
-                .proc("BankProcessor@0", 410, 440)
-                .proc("NotificationProcessor@0", 889, 465)
-                .proc("ServiceInfoProcessor@0", 480, 120)
-                .proc("TransactionLogProcessor@0", 420, 650)
-                .proc("UserLogProcessor@0", 680, 820)
-                .proc("UserProfileService@0", 770, 120)
-                .merge("BankProcessor@0", 480, 550)
-                .merge("MergePoint@0", 702, 363)
-                .merge("ServiceInfoProcessor@0", 640, 280)
-                .merge("TransactionLogProcessor@0", 530, 770)
-                .merge("UserLogProcessor@0", 760, 930)
-                .merge("UserProfileService@0", 830, 250)
-                .complete("ServiceInfoProcessor@0", 480, 310)
-                .complete("UserLogProcessor@0", 740, 1020)
-                .complete("UserProfileService@0", 920, 300)
+                .proc(BankProcessor.class, 0, 410, 440)
+                .proc(NotificationProcessor.class, 0, 889, 465)
+                .proc(ServiceInfoProcessor.class, 0, 480, 120)
+                .proc(TransactionLogProcessor.class, 0, 420, 650)
+                .proc(UserLogProcessor.class, 0, 680, 820)
+                .proc(UserProfileService.class, 0, 770, 120)
+                .merge(BankProcessor.class, 0, 480, 550)
+                .merge(MergePoint.class, 0, 702, 363)
+                .merge(ServiceInfoProcessor.class, 0, 640, 280)
+                .merge(TransactionLogProcessor.class, 0, 530, 770)
+                .merge(UserLogProcessor.class, 0, 760, 930)
+                .merge(UserProfileService.class, 0, 830, 250)
+                .complete(ServiceInfoProcessor.class, 0, 480, 310)
+                .complete(UserLogProcessor.class, 0, 740, 1020)
+                .complete(UserProfileService.class, 0, 920, 300)
 
                 .buildGraph();
 

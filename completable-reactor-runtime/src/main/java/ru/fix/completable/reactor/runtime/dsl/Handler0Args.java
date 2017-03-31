@@ -7,6 +7,6 @@ import java.util.concurrent.CompletableFuture;
  * @author Kamil Asfandiyarov
  */
 @FunctionalInterface
-public interface Handler0Args<Result> extends Serializable {
-    CompletableFuture<Result> handle();
+public interface Handler0Args<ProcessorResult> extends Serializable {
+    CompletableFuture<ProcessorResult> handle();
 }

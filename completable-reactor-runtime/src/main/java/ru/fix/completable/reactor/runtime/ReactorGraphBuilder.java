@@ -5,7 +5,15 @@ import lombok.experimental.Accessors;
 import lombok.experimental.var;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import ru.fix.completable.reactor.api.*;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.api.Reactored;
+import ru.fix.completable.reactor.runtime.dsl.MergePointDescriptionBuilder;
+import ru.fix.completable.reactor.runtime.dsl.PayloadBuilder;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorDescriptionBuilder;
+import ru.fix.completable.reactor.runtime.internal.GraphProcessor;
+import ru.fix.completable.reactor.runtime.internal.GraphProcessorDescription;
+import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
+import ru.fix.completable.reactor.runtime.validators.GraphValidator;
 import ru.fix.completable.reactor.runtime.validators.ProcessorsHaveIncomingFlowsValidator;
 import ru.fix.completable.reactor.runtime.validators.TerminalVertexExistValidator;
 
@@ -814,7 +822,7 @@ public class ReactorGraphBuilder {
         return this;
     }
 
-    public <PayloadType> BuilderPayload<PayloadType> payload(Class<PayloadType> payloadClass) {
+    public <PayloadType> PayloadBuilder<PayloadType> payload(Class<PayloadType> payloadClass) {
         ReactorGraph<PayloadType> graph = new ReactorGraph<>(payloadClass);
         return new BuilderPayload<>(payloadClass, graph);
     }
@@ -829,8 +837,17 @@ public class ReactorGraphBuilder {
         }
     }
 
-    public <ProcessorType> DescribeProcesorBuilder processor() {
-        return new DescribeProcesorBuilder();
+
+    /**
+     * Build ProcessorDescription
+     */
+    public ProcessorDescriptionBuilder processor() {
+        return new ProcessorDescriptionBuilder() {
+            @Override
+            public <PayloadType> ru.fix.completable.reactor.runtime.dsl.HandlerBuilder0<PayloadType> forPayload(Class<PayloadType> payloadType) {
+                return null;
+            }
+        };
     }
 
     public static class DescribeMergePointBuilder {
@@ -843,8 +860,8 @@ public class ReactorGraphBuilder {
         }
     }
 
-    public DescribeMergePointBuilder describeMergePoint() {
-        return new DescribeMergePointBuilder();
+    public MergePointDescriptionBuilder describeMergePoint() {
+        throw new UnsupportedOperationException();
     }
 
     public static class DescribeSubgraphBuilder<SubgraphPayloadType>{

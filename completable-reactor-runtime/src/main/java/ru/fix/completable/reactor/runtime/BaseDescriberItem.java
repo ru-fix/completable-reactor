@@ -1,5 +1,7 @@
 package ru.fix.completable.reactor.runtime;
 
+import ru.fix.completable.reactor.runtime.internal.GraphProcessorDescription;
+
 /**
  * @author Kamil Asfandiyarov
  */
