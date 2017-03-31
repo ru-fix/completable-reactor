@@ -743,10 +743,8 @@ public class ReactorGraphExecutionBuilder {
 
     private CompletableFuture<?> invokeHandlingMethod(
             ReactorGraph.ProcessorInfo processorInfo,
-            GraphProcessor graphProcessor,
             Object payload) {
 
-        Object processor = graphProcessor.getProcessor();
         GraphProcessorDescription description = processorInfo.description;
 
         try {
@@ -756,6 +754,7 @@ public class ReactorGraphExecutionBuilder {
             Object param3 = null;
             Object param4 = null;
             Object param5 = null;
+            Object param6 = null;
 
             if (description.arg1 != null) {
                 param1 = processorInfo.description.arg1.apply(payload);
@@ -787,28 +786,28 @@ public class ReactorGraphExecutionBuilder {
                     param5 = threadsafeCopyMaker.makeThreadsafeCopy(param5);
                 }
             }
+            if (description.arg6 != null) {
+                param6 = processorInfo.description.arg6.apply(payload);
+                if (description.isCopyArg6) {
+                    param6 = threadsafeCopyMaker.makeThreadsafeCopy(param6);
+                }
+            }
 
 
             if (processorInfo.description.handler0 != null) {
-                return (CompletableFuture) processorInfo.description.handler0.apply(
-                        processor
-                );
+                return (CompletableFuture) processorInfo.description.handler0.handle();
 
             } else if (processorInfo.description.handler1 != null) {
-                return (CompletableFuture) processorInfo.description.handler1.handle(
-                        processor,
-                        param1);
+                return (CompletableFuture) processorInfo.description.handler1.handle(param1);
 
 
             } else if (processorInfo.description.handler2 != null) {
                 return (CompletableFuture) processorInfo.description.handler2.handle(
-                        processor,
                         param1,
                         param2
                 );
             } else if (processorInfo.description.handler3 != null) {
                 return (CompletableFuture) processorInfo.description.handler3.handle(
-                        processor,
                         param1,
                         param2,
                         param3
@@ -816,7 +815,6 @@ public class ReactorGraphExecutionBuilder {
 
             } else if (processorInfo.description.handler4 != null) {
                 return (CompletableFuture) processorInfo.description.handler4.handle(
-                        processor,
                         param1,
                         param2,
                         param3,
@@ -825,13 +823,21 @@ public class ReactorGraphExecutionBuilder {
 
             } else if (processorInfo.description.handler5 != null) {
                 return (CompletableFuture) processorInfo.description.handler5.handle(
-                        processor,
                         param1,
                         param2,
                         param3,
                         param4,
                         param5
                 );
+            } else if (processorInfo.description.handler5 != null) {
+                    return (CompletableFuture) processorInfo.description.handler6.handle(
+                            param1,
+                            param2,
+                            param3,
+                            param4,
+                            param5,
+                            param6
+                    );
 
             } else {
                 CompletableFuture result = new CompletableFuture();
