@@ -25,25 +25,17 @@ public class GraphProcessor<PayloadType> implements ProcessingGraphItem, Mergeab
         return this;
     }
 
-    public ProcessorType getProcessor() {
-        return processor;
-    }
-
-    public Class<ProcessorType> getProcessorClass() {
-        return (Class<ProcessorType>) processor.getClass();
-    }
-
     public int getId() {
         return id;
     }
 
     @Override
     public String getProfilingName() {
-        return processor.getClass().getSimpleName();
+        return processorType.getSimpleName();
     }
 
     @Override
     public String getDebugName() {
-        return processor.getClass().getName() + "@" + id;
+        return processorType.getName() + "@" + id;
     }
 }
