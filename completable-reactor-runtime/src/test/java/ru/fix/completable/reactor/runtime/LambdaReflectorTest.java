@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.runtime;
 
 import org.junit.Test;
+import ru.fix.completable.reactor.runtime.internal.LambdaReflector;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;

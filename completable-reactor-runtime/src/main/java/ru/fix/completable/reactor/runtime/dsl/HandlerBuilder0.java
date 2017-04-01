@@ -7,15 +7,15 @@ import java.util.function.Function;
  */
 public interface HandlerBuilder0<PayloadType> {
 
-    <ProcessorResult> ProcessorMergerBuilder<ProcessorDescription<PayloadType>, PayloadType, ProcessorResult> withHandler(
+    <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler0Args<ProcessorResult> handler
     );
 
-    <Arg1> HandlerBuilder1<ProcessorDescription<PayloadType>, PayloadType, Arg1> passArg(
+    <Arg1> HandlerBuilder1<PayloadType, Arg1> passArg(
             Function<PayloadType, Arg1> arg
     );
 
-    <Arg1> HandlerBuilder1<ProcessorDescription<PayloadType>, PayloadType, Arg1> copyArg(
+    <Arg1> HandlerBuilder1<PayloadType, Arg1> copyArg(
             Function<PayloadType, Arg1> arg
     );
 }

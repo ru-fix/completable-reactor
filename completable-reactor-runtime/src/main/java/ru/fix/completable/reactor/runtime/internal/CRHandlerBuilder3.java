@@ -1,42 +1,38 @@
 package ru.fix.completable.reactor.runtime.internal;
 
-import ru.fix.completable.reactor.runtime.BaseDescriberItem;
-import ru.fix.completable.reactor.runtime.ReactorReflector;
 import ru.fix.completable.reactor.runtime.dsl.Handler3Args;
-import ru.fix.completable.reactor.runtime.internal.GraphProcessorDescription;
+import ru.fix.completable.reactor.runtime.dsl.HandlerBuilder3;
+import ru.fix.completable.reactor.runtime.dsl.HandlerBuilder4;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorMergerBuilder;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
  * @author Kamil Asfandiyarov
  */
-public class CRHandlerBuilder3<ContextResult, PayloadType, Arg1, Arg2, Arg3> extends BaseDescriberItem<ContextResult> {
+public class CRHandlerBuilder3<PayloadType, Arg1, Arg2, Arg3> implements HandlerBuilder3<PayloadType, Arg1, Arg2, Arg3> {
 
-    HandlerBuilder3(ContextResult contextResult, GraphProcessorDescription processorDescription) {
-        super(contextResult, processorDescription);
+    final CRProcessorDescription<PayloadType> processorDescription;
+
+    CRHandlerBuilder3(CRProcessorDescription<PayloadType> processorDescription) {
+        this.processorDescription = processorDescription;
     }
 
-    public <Arg4> HandlerBuilder4<ContextResult, PayloadType, Arg1, Arg2, Arg3, Arg4> passArg(Function<PayloadType, Arg4> arg) {
+    public <Arg4> HandlerBuilder4<PayloadType, Arg1, Arg2, Arg3, Arg4> passArg(Function<PayloadType, Arg4> arg) {
         processorDescription.arg4 = arg;
-        return new HandlerBuilder4<>(contextResult, processorDescription);
+        return new CRHandlerBuilder4<>(processorDescription);
     }
 
-    public <Arg4> HandlerBuilder4<ContextResult, PayloadType, Arg1, Arg2, Arg3, Arg4> copyArg(Function<PayloadType, Arg4> arg) {
+    public <Arg4> HandlerBuilder4<PayloadType, Arg1, Arg2, Arg3, Arg4> copyArg(Function<PayloadType, Arg4> arg) {
         processorDescription.arg4 = arg;
         processorDescription.isCopyArg3 = true;
-        return new HandlerBuilder4<>(contextResult, processorDescription);
+        return new CRHandlerBuilder4<>(processorDescription);
     }
 
-    public <ProcessorResult> MergerBuilder<ContextResult, PayloadType, ProcessorResult> withHandler(Handler3Args<Arg1, Arg2, Arg3, CompletableFuture<ProcessorResult>> handler) {
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(Handler3Args<Arg1, Arg2, Arg3, ProcessorResult> handler) {
         processorDescription.handler3 = handler;
         ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.handleBySource = source);
 
-        return new MergerBuilder<>(contextResult, mergerInfo -> {
-            processorDescription.merger = mergerInfo.merger;
-            processorDescription.mergeSource = mergerInfo.mergerSource;
-            processorDescription.mergerDocs = mergerInfo.mergerDocs;
-            processorDescription.mergerTitle = mergerInfo.mergerTitle;
-        });
+        return new CRProcessorMergerBuilder<>(processorDescription);
     }
 }

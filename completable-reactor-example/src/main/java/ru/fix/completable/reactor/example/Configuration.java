@@ -257,7 +257,7 @@ public class Configuration {
                         }).buildProcessor();
 
 
-        MergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.describeMergePoint()
+        MergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.mergePoint()
                 .forPayload(SubscribePayload.class)
                 .withMerger(
                         "checkTrialPeriod",

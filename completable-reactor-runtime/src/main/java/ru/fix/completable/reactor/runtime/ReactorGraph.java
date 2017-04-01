@@ -8,9 +8,11 @@ import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.dsl.MergePointMerger;
 import ru.fix.completable.reactor.runtime.dsl.ProcessorMerger;
+import ru.fix.completable.reactor.runtime.internal.CRMergePoint;
 import ru.fix.completable.reactor.runtime.internal.GraphProcessor;
 import ru.fix.completable.reactor.runtime.internal.GraphProcessorDescription;
 import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
+import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -201,7 +203,7 @@ public class ReactorGraph<PayloadType> {
 
         GraphProcessorDescription description;
         SubgraphProcessorDescription subgraphDescription;
-        GraphMergePointDescription detachedMergePointDescription;
+        CRMergePointDescription detachedMergePointDescription;
 
         ReactorGraphModel.Coordinates coordinates;
 
@@ -342,8 +344,8 @@ public class ReactorGraph<PayloadType> {
         if (processingGraphItem instanceof SubgraphProcessor) {
             return serialize((SubgraphProcessor) processingGraphItem);
         }
-        if (processingGraphItem instanceof GraphMergePoint){
-            return serialize((GraphMergePoint) processingGraphItem);
+        if (processingGraphItem instanceof CRMergePoint){
+            return serialize((CRMergePoint) processingGraphItem);
         }
         throw new IllegalArgumentException(String.format("Instance of class %s not supported.", processingGraphItem.getClass()));
     }
@@ -360,7 +362,7 @@ public class ReactorGraph<PayloadType> {
                 graphProcessor.getId());
     }
 
-    static String serialize(GraphMergePoint graphMergePoint) {
+    static String serialize(CRMergePoint graphMergePoint) {
         return String.format("MergePoint@%d", graphMergePoint.id);
     }
 

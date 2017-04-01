@@ -7,12 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.api.Reactored;
-import ru.fix.completable.reactor.runtime.dsl.MergePointDescriptionBuilder;
-import ru.fix.completable.reactor.runtime.dsl.PayloadBuilder;
-import ru.fix.completable.reactor.runtime.dsl.ProcessorDescriptionBuilder;
-import ru.fix.completable.reactor.runtime.internal.GraphProcessor;
-import ru.fix.completable.reactor.runtime.internal.GraphProcessorDescription;
-import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
+import ru.fix.completable.reactor.runtime.dsl.*;
+import ru.fix.completable.reactor.runtime.internal.*;
 import ru.fix.completable.reactor.runtime.validators.GraphValidator;
 import ru.fix.completable.reactor.runtime.validators.ProcessorsHaveIncomingFlowsValidator;
 import ru.fix.completable.reactor.runtime.validators.TerminalVertexExistValidator;
@@ -41,7 +37,7 @@ public class ReactorGraphBuilder {
         graphValidators.add(new ProcessorsHaveIncomingFlowsValidator());
     }
 
-    private static <PayloadType> void ensureMergePointRegistered(GraphMergePoint graphMergePoint, ReactorGraph<PayloadType> graph) {
+    private static <PayloadType> void ensureMergePointRegistered(CRMergePoint graphMergePoint, ReactorGraph<PayloadType> graph) {
         Objects.requireNonNull(graphMergePoint);
 
         if (graph.processors.containsKey(graphMergePoint)) {
@@ -82,7 +78,7 @@ public class ReactorGraphBuilder {
 
         Objects.requireNonNull(subgraphProcessor);
 
-        if(graph.processors.containsKey(subgraphProcessor)){
+        if (graph.processors.containsKey(subgraphProcessor)) {
             return;
         }
 
@@ -97,16 +93,16 @@ public class ReactorGraphBuilder {
         graph.processors.put(subgraphProcessor, processorInfo);
     }
 
-    private static <PayloadType> void ensureGraphItemRegistered(MergeableProcessingGraphItem<PayloadType> item, ReactorGraph<?> graph){
+    private static <PayloadType> void ensureGraphItemRegistered(MergeableProcessingGraphItem<PayloadType> item, ReactorGraph<?> graph) {
         Objects.requireNonNull(item);
         Objects.requireNonNull(graph);
 
-        if(item instanceof GraphProcessor){
-            ensureProcessorRegistered((GraphProcessor)item, graph);
-        } else if(item instanceof SubgraphProcessor){
+        if (item instanceof GraphProcessor) {
+            ensureProcessorRegistered((GraphProcessor) item, graph);
+        } else if (item instanceof SubgraphProcessor) {
             ensureSubgraphRegistered((SubgraphProcessor) item, graph);
-        } else if(item instanceof GraphMergePoint){
-            ensureMergePointRegistered((GraphMergePoint)item, graph);
+        } else if (item instanceof CRMergePoint) {
+            ensureMergePointRegistered((CRMergePoint) item, graph);
         } else {
             throw new IllegalArgumentException("Invalid processing graph item type: " + item.getClass());
         }
@@ -139,17 +135,17 @@ public class ReactorGraphBuilder {
             this.graph = graph;
         }
 
-        public  BuilderStartPoint<PayloadType> handleBy(GraphProcessor<?, ? super PayloadType> processor){
+        public BuilderStartPoint<PayloadType> handleBy(GraphProcessor<?, ? super PayloadType> processor) {
             ensureProcessorRegistered(processor, this.graph);
             return handleByItem(processor);
         }
 
-        public  BuilderStartPoint<PayloadType>  handleBy(SubgraphProcessor<?, ? super PayloadType> subgraph){
+        public BuilderStartPoint<PayloadType> handleBy(SubgraphProcessor<?, ? super PayloadType> subgraph) {
             ensureSubgraphRegistered(subgraph, this.graph);
             return handleByItem(subgraph);
         }
 
-        public  BuilderStartPoint<PayloadType>  merge(GraphMergePoint<? super PayloadType> mergePoint){
+        public BuilderStartPoint<PayloadType> merge(CRMergePoint<? super PayloadType> mergePoint) {
             ensureMergePointRegistered(mergePoint, this.graph);
             return handleByItem(mergePoint);
         }
@@ -223,7 +219,7 @@ public class ReactorGraphBuilder {
             this.mergePoint = mergePoint;
         }
 
-        public BuilderMultiMerge<PayloadType> merge(GraphMergePoint<? super PayloadType> mergePoint) {
+        public BuilderMultiMerge<PayloadType> merge(CRMergePoint<? super PayloadType> mergePoint) {
             ensureMergePointRegistered(mergePoint, this.graph);
 
             return mergeItem(mergePoint);
@@ -258,7 +254,7 @@ public class ReactorGraphBuilder {
             this.mergePoint = new ReactorGraph.MergePoint()
                     .setProcessor(processor);
 
-            if (processor instanceof GraphMergePoint) {
+            if (processor instanceof CRMergePoint) {
                 this.mergePoint.setType(ReactorGraph.MergePoint.Type.DETACHED);
             }
 
@@ -564,7 +560,7 @@ public class ReactorGraphBuilder {
                             .map(Reactored::value)
                             .orElse(null);
 
-                } else if (entry.getKey() instanceof GraphMergePoint) {
+                } else if (entry.getKey() instanceof CRMergePoint) {
                     //do nothing
 
                 } else {
@@ -766,7 +762,7 @@ public class ReactorGraphBuilder {
             }
         }
 
-        public BuilderContext merge(GraphMergePoint<? super PayloadType> mergePoint) {
+        public BuilderContext merge(CRMergePoint<? super PayloadType> mergePoint) {
             ensureMergePointRegistered(mergePoint, this.graph);
             return mergeItem(mergePoint);
         }
@@ -794,12 +790,12 @@ public class ReactorGraphBuilder {
             return this.builderContext;
         }
 
-        public  BuilderContext handleBy(GraphProcessor<?, ? super PayloadType> processor){
+        public BuilderContext handleBy(GraphProcessor<?, ? super PayloadType> processor) {
             ensureProcessorRegistered(processor, this.graph);
             return handleByItem(processor);
         }
 
-        public  BuilderContext handleBy(SubgraphProcessor<?, ? super PayloadType> subgraph){
+        public BuilderContext handleBy(SubgraphProcessor<?, ? super PayloadType> subgraph) {
             ensureSubgraphRegistered(subgraph, this.graph);
             return handleByItem(subgraph);
         }
@@ -827,16 +823,6 @@ public class ReactorGraphBuilder {
         return new BuilderPayload<>(payloadClass, graph);
     }
 
-    public static class DescribeProcesorBuilder{
-        DescribeProcesorBuilder() {
-        }
-
-        public <PayloadType> HandlerBuilder0<GraphProcessorDescription<PayloadType>, PayloadType, ProcessorType> forPayload(Class<PayloadType> payloadType){
-            GraphProcessorDescription<ProcessorType, PayloadType> description = new GraphProcessorDescription<>();
-            return new HandlerBuilder0<>(description, description);
-        }
-    }
-
 
     /**
      * Build ProcessorDescription
@@ -850,34 +836,26 @@ public class ReactorGraphBuilder {
         };
     }
 
-    public static class DescribeMergePointBuilder {
-        DescribeMergePointBuilder() {
-        }
+    public MergePointDescriptionBuilder mergePoint() {
+        return new MergePointDescriptionBuilder() {
+            @Override
+            public <PayloadType> MergePointMergerBuilder<PayloadType> forPayload(Class<PayloadType> payloadType) {
 
-        public <PayloadType> MergePointArgMethodMerger<GraphMergePointDescription<PayloadType>, PayloadType> forPayload(Class<PayloadType> payloadType) {
-            GraphMergePointDescription<PayloadType> description = new GraphMergePointDescription<>();
-            return new MergePointArgMethodMerger<>(description, description);
-        }
+                CRMergePointDescription<PayloadType> mergePointDescription = new CRMergePointDescription<>();
+                return new CRMergePointMergerBuilder<PayloadType>(mergePointDescription);
+            }
+        };
     }
 
-    public MergePointDescriptionBuilder describeMergePoint() {
-        throw new UnsupportedOperationException();
-    }
 
-    public static class DescribeSubgraphBuilder<SubgraphPayloadType>{
-        final Class<SubgraphPayloadType> subgraphPayloadType;
+    public <SubgraphPayloadType> SubgraphBuilder<SubgraphPayloadType> subgraph(Class<SubgraphPayloadType> subgraphPayload) {
+        return new SubgraphBuilder<SubgraphPayloadType>() {
+            @Override
+            public <PayloadType> SubgraphHandlerBuilder<SubgraphPayloadType, PayloadType> forPayload(Class<PayloadType> payloadType) {
 
-        DescribeSubgraphBuilder(Class<SubgraphPayloadType> subgraphPayloadType) {
-            this.subgraphPayloadType = subgraphPayloadType;
-        }
-
-        public <PayloadType> SubgraphHandler<SubgraphProcessorDescription<SubgraphPayloadType, PayloadType>, PayloadType, SubgraphPayloadType>  forPayload(Class<PayloadType> payloadType){
-            SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> description = new SubgraphProcessorDescription<>(subgraphPayloadType);
-            return new SubgraphHandler<>(description, description);
-        }
-    }
-
-    public <SubgraphPayloadType> DescribeSubgraphBuilder<SubgraphPayloadType> describeSubgraph(Class<SubgraphPayloadType> subgraphPayload){
-        return new DescribeSubgraphBuilder<>(subgraphPayload);
+                CRSubgraphDescription<PayloadType> subgraphDescription = new CRSubgraphDescription<>(subgraphPayload);
+                return new CRSubgraphHandlerBuilder<>(subgraphDescription);
+            }
+        };
     }
 }

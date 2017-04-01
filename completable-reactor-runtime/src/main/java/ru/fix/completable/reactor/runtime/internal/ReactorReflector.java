@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.internal;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +10,9 @@ import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
-import ru.fix.completable.reactor.runtime.internal.*;
+import ru.fix.completable.reactor.runtime.MergePointArgMethodMerger;
+import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
+import ru.fix.completable.reactor.runtime.ReactorGraphException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -228,13 +230,14 @@ public class ReactorReflector {
     private static final String[] methodInvocationClassNamePrefixSkipList = Arrays.stream(
             new Class[]{
                     ReactorGraphBuilder.class,
-                    MergerBuilder.class,
-                    HandlerBuilder0.class,
-                    HandlerBuilder1.class,
-                    HandlerBuilder2.class,
-                    HandlerBuilder3.class,
-                    HandlerBuilder4.class,
-                    HandlerBuilder5.class,
+                    CRProcessorMergerBuilder.class,
+                    CRSubgraphMergerBuilder.class,
+                    CRHandlerBuilder0.class,
+                    CRHandlerBuilder1.class,
+                    CRHandlerBuilder2.class,
+                    CRHandlerBuilder3.class,
+                    CRHandlerBuilder4.class,
+                    CRHandlerBuilder5.class,
                     MergePointArgMethodMerger.class
             })
             .map(Class::getName).toArray(String[]::new);

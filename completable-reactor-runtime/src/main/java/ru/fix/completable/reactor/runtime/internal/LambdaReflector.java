@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.internal;
 
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
 public class LambdaReflector {
 
     @Value
-    static class AnnotatedMethod<AnnotationType> {
+    public static class AnnotatedMethod<AnnotationType> {
+        Class methodClass;
         Method method;
         AnnotationType annotation;
     }
@@ -30,11 +31,17 @@ public class LambdaReflector {
             Class<? extends Annotation> annotationClass) {
 
         return methodReference(methodReference)
-                .filter(method -> method.getAnnotation(annotationClass) != null)
-                .map(method -> new AnnotatedMethod<>(method, method.getAnnotation(annotationClass)));
+                .filter(reference -> reference.getMethod().getAnnotation(annotationClass) != null)
+                .map(reference -> new AnnotatedMethod<>(reference.getMethodClass(), reference.getMethod(), reference.getMethod().getAnnotation(annotationClass)));
     }
 
-    public static Optional<Method> methodReference(Serializable methodReference) {
+    @Value
+    public static class MethodReference {
+        Class methodClass;
+        Method method;
+    }
+
+    public static Optional<MethodReference> methodReference(Serializable methodReference) {
 
         SerializedLambda serializedLambda = null;
 
@@ -78,17 +85,17 @@ public class LambdaReflector {
             }
 
             if (methods.size() == 1) {
-                return Optional.of(methods.get(0));
+                return Optional.of(new MethodReference(methodClass, methods.get(0)));
             }
 
             List<Method> methodsWithMatchedSignatures = methods.stream()
                     .filter(method -> compareSignatures(method, methodSignature))
                     .collect(Collectors.toList());
 
-            if(methodsWithMatchedSignatures.size() == 0){
+            if (methodsWithMatchedSignatures.size() == 0) {
                 return Optional.empty();
             } else if (methodsWithMatchedSignatures.size() == 1) {
-                return Optional.of(methodsWithMatchedSignatures.get(0));
+                return Optional.of(new MethodReference(methodClass, methodsWithMatchedSignatures.get(0)));
             } else {
                 throw new UnsupportedOperationException("To many methods matched same signature: " + methodSignature);
             }
@@ -100,43 +107,43 @@ public class LambdaReflector {
     }
 
 
-    static String signatureMapType(Class type){
-        if(type.isArray()){
+    static String signatureMapType(Class type) {
+        if (type.isArray()) {
             //hope stack size will be enough
             return "[" + signatureMapType(type.getComponentType());
         }
-        if(type.equals(Boolean.TYPE)){
+        if (type.equals(Boolean.TYPE)) {
             return "Z";
         }
-        if(type.equals(Byte.TYPE)){
+        if (type.equals(Byte.TYPE)) {
             return "B";
         }
-        if(type.equals(Character.TYPE)){
+        if (type.equals(Character.TYPE)) {
             return "C";
         }
-        if(type.equals(Double.TYPE)){
+        if (type.equals(Double.TYPE)) {
             return "D";
         }
-        if(type.equals(Float.TYPE)){
+        if (type.equals(Float.TYPE)) {
             return "F";
         }
-        if(type.equals(Integer.TYPE)){
+        if (type.equals(Integer.TYPE)) {
             return "I";
         }
-        if(type.equals(Long.TYPE)){
+        if (type.equals(Long.TYPE)) {
             return "J";
         }
-        if(type.equals(Short.TYPE)){
+        if (type.equals(Short.TYPE)) {
             return "S";
         }
-        if(type.equals(Void.TYPE)) {
+        if (type.equals(Void.TYPE)) {
             return "V";
         }
         //Object
-        return "L" + type.getName().replace('.','/') + ";";
+        return "L" + type.getName().replace('.', '/') + ";";
     }
 
-    static String signature(Method method){
+    static String signature(Method method) {
         StringBuilder signature = new StringBuilder();
 
         Parameter[] parameters = method.getParameters();

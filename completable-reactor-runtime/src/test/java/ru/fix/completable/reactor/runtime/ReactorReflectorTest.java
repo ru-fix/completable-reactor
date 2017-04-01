@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.runtime;
 import org.junit.Before;
 import org.junit.Test;
 import ru.fix.completable.reactor.api.Reactored;
+import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
 import java.lang.reflect.Method;
 import java.util.function.BiFunction;

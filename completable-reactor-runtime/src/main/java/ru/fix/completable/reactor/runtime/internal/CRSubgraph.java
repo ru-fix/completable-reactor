@@ -1,8 +1,8 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.internal;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
+import ru.fix.completable.reactor.runtime.dsl.Subgraph;
 
 /**
  * Represent processor graph instance.
@@ -10,13 +10,13 @@ import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
  */
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString
-public class SubgraphProcessor<SubgraphPayloadType, PayloadType> implements ProcessingGraphItem, MergeableProcessingGraphItem<PayloadType>, HandleableProcessingGraphItem{
+public class CRSubgraph<PayloadType> implements Subgraph<PayloadType>, CRProcessingItem {
 
     int id = 0;
 
-    final SubgraphProcessorDescription subgraphDescription;
+    final CRSubgraphDescription subgraphDescription;
 
-    public SubgraphProcessor(SubgraphProcessorDescription<SubgraphPayloadType, PayloadType> subgraphDescription) {
+    public CRSubgraph(CRSubgraphDescription<PayloadType> subgraphDescription) {
         this.subgraphDescription = subgraphDescription;
     }
 
@@ -24,7 +24,7 @@ public class SubgraphProcessor<SubgraphPayloadType, PayloadType> implements Proc
         return subgraphDescription.subgraphPayload;
     }
 
-    public SubgraphProcessor<SubgraphPayloadType, PayloadType> withId(int id){
+    public Subgraph<PayloadType> setId(int id){
         this.id = id;
         return this;
     }

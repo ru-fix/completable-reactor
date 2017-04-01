@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime.validators;
 
 
 import ru.fix.completable.reactor.runtime.*;
+import ru.fix.completable.reactor.runtime.internal.CRMergePoint;
 import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public class ProcessorsHaveIncomingFlowsValidator implements GraphValidator {
                 .flatMap(mergePoint -> mergePoint.getTransitions().stream())
                 .map(ReactorGraph.Transition::getMerge)
                 .filter(Objects::nonNull)
-                .filter(processingItem -> processingItem instanceof GraphMergePoint<?>)
+                .filter(processingItem -> processingItem instanceof CRMergePoint<?>)
                 .forEach(processorsWithIncomingTransitions::add);
 
         Optional<ProcessingGraphItem> processorWithoutIncomingTransitions = graph.getProcessors().keySet().stream()

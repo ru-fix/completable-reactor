@@ -1,32 +1,27 @@
 package ru.fix.completable.reactor.runtime.internal;
 
-import ru.fix.completable.reactor.runtime.ReactorReflector;
 import ru.fix.completable.reactor.runtime.dsl.Handler6Args;
-
-import java.util.concurrent.CompletableFuture;
+import ru.fix.completable.reactor.runtime.dsl.HandlerBuilder6;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorMergerBuilder;
 
 /**
  * @author Kamil Asfandiyarov
  */
-public class CRHandlerBuilder6<ContextResult, PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> {
+public class CRHandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> implements HandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> {
 
-    final CRProcessorDescription processorDescription;
+    final CRProcessorDescription<PayloadType> processorDescription;
 
-    public CRHandlerBuilder6(CRProcessorDescription processorDescription) {
+    CRHandlerBuilder6(CRProcessorDescription<PayloadType> processorDescription) {
         this.processorDescription = processorDescription;
     }
 
-    public <ProcessorResult> MergerBuilder<ContextResult, PayloadType, ProcessorResult> withHandler(
-            Handler6Args<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, CompletableFuture<ProcessorResult>> handler) {
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            Handler6Args<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, ProcessorResult> handler) {
 
         processorDescription.handler6 = handler;
         ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.handleBySource = source);
 
-        return new MergerBuilder<>(contextResult, mergerInfo -> {
-            processorDescription.merger = mergerInfo.merger;
-            processorDescription.mergeSource = mergerInfo.mergerSource;
-            processorDescription.mergerDocs = mergerInfo.mergerDocs;
-            processorDescription.mergerTitle = mergerInfo.mergerTitle;
-        });
+        return new CRProcessorMergerBuilder<>(this.processorDescription);
     }
 }

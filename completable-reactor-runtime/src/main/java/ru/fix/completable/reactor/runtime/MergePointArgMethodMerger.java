@@ -2,6 +2,8 @@ package ru.fix.completable.reactor.runtime;
 
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.MergePointMerger;
+import ru.fix.completable.reactor.runtime.internal.LambdaReflector;
+import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -12,9 +14,9 @@ import java.util.Optional;
 public class MergePointArgMethodMerger<ContextResult, PayloadType> {
 
     final ContextResult contextResult;
-    final GraphMergePointDescription<PayloadType> description;
+    final CRMergePointDescription<PayloadType> description;
 
-    MergePointArgMethodMerger(ContextResult contextResult, GraphMergePointDescription<PayloadType> description) {
+    MergePointArgMethodMerger(ContextResult contextResult, CRMergePointDescription<PayloadType> description) {
         this.contextResult = contextResult;
         this.description = description;
     }

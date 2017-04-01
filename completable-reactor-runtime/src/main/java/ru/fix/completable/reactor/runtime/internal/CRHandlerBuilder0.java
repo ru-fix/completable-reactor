@@ -1,11 +1,9 @@
 package ru.fix.completable.reactor.runtime.internal;
 
-import ru.fix.completable.reactor.runtime.ReactorReflector;
 import ru.fix.completable.reactor.runtime.dsl.Handler0Args;
 import ru.fix.completable.reactor.runtime.dsl.HandlerBuilder0;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorMergerBuilder;
 
-
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -15,23 +13,18 @@ public class CRHandlerBuilder0<PayloadType> implements HandlerBuilder0<PayloadTy
 
     final CRProcessorDescription<PayloadType> processorDescription;
 
-    public CRHandlerBuilder0(CRProcessorDescription<PayloadType> processorDescription) {
+    CRHandlerBuilder0(CRProcessorDescription<PayloadType> processorDescription) {
         this.processorDescription = processorDescription;
     }
 
     @Override
-    public <ProcessorResult> MergerBuilder<PayloadType, ProcessorResult> withHandler(
-            Handler0Args<CompletableFuture<ProcessorResult>> handler) {
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            Handler0Args<ProcessorResult> handler) {
 
         processorDescription.handler0 = handler;
         ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.handleBySource = source);
 
-        return new MergerBuilder<>(contextResult, mergerInfo -> {
-            processorDescription.merger = mergerInfo.merger;
-            processorDescription.mergeSource = mergerInfo.mergerSource;
-            processorDescription.mergerDocs = mergerInfo.mergerDocs;
-            processorDescription.mergerTitle = mergerInfo.mergerTitle;
-        });
+        return new CRProcessorMergerBuilder<>(processorDescription);
     }
 
     @Override

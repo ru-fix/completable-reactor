@@ -64,7 +64,7 @@ public class MockSubgraphTest {
                 .withMerger((mainPayload, any) -> Status.OK)
                 .buildProcessor(new Processor1());
 
-        val subgraph = graphBuilder.describeSubgraph(SubgraphPayload.class)
+        val subgraph = graphBuilder.subgraph(SubgraphPayload.class)
                 .forPayload(MainPayload.class)
                 .passArg(pld -> new SubgraphPayload().setData(pld.getData()))
                 .withMerger((mainPayload, subgraphPayload) -> {
