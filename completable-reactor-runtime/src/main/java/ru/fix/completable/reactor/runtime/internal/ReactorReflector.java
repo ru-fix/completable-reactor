@@ -13,6 +13,7 @@ import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.MergePointArgMethodMerger;
 import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
 import ru.fix.completable.reactor.runtime.ReactorGraphException;
+import ru.fix.completable.reactor.runtime.internal.dsl.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

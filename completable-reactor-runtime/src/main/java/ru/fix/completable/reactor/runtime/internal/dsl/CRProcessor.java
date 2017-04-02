@@ -1,15 +1,16 @@
-package ru.fix.completable.reactor.runtime.internal;
+package ru.fix.completable.reactor.runtime.internal.dsl;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import ru.fix.completable.reactor.runtime.dsl.Processor;
+import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 
 /**
  *
  * @author Kamil Asfandiyarov
  */
 @EqualsAndHashCode(doNotUseGetters = true)
-@ToString
+@Data
 public class CRProcessor<PayloadType> implements Processor<PayloadType>, CRProcessingItem {
 
     final CRProcessorDescription<PayloadType> processorDescription;
@@ -24,6 +25,10 @@ public class CRProcessor<PayloadType> implements Processor<PayloadType>, CRProce
     public CRProcessor<PayloadType> setId(int id){
         this.id = id;
         return this;
+    }
+
+    public int getId() {
+        return id;
     }
 
     @Override

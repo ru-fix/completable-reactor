@@ -1,7 +1,9 @@
-package ru.fix.completable.reactor.runtime.internal;
+package ru.fix.completable.reactor.runtime.internal.dsl;
 
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.*;
+import ru.fix.completable.reactor.runtime.internal.LambdaReflector;
+import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -31,7 +33,7 @@ public class CRSubgraphMergerBuilder<PayloadType, SubgraphResult> implements Sub
     @Override
     public SubgraphDescription<PayloadType> withMerger(String title, String[] docs, SubgraphMerger<PayloadType, SubgraphResult> subgraphMerger) {
 
-        Optional<LambdaReflector.AnnotatedMethod> annotatedMethod = LambdaReflector.annotatedMethodReference(subgraphMerger, Reactored.class);
+        Optional<LambdaReflector.AnnotatedMethod<Reactored>> annotatedMethod = LambdaReflector.annotatedMethodReference(subgraphMerger, Reactored.class);
 
         if(title == null) {
             title = annotatedMethod
@@ -47,8 +49,6 @@ public class CRSubgraphMergerBuilder<PayloadType, SubgraphResult> implements Sub
                     .map(Reactored::value)
                     .orElse(null);
         }
-
-        annotatedMethod.ifPresent(reference -> this.subgraphDescription.subgraphPayload = reference.getMethodClass());
 
         this.subgraphDescription.merger = subgraphMerger;
         this.subgraphDescription.mergeSource = ReactorReflector.getMethodInvocationPoint().orElse(null);

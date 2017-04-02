@@ -2,7 +2,7 @@ package ru.fix.completable.reactor.runtime.validators;
 
 
 import ru.fix.completable.reactor.runtime.*;
-import ru.fix.completable.reactor.runtime.internal.CRMergePoint;
+import ru.fix.completable.reactor.runtime.internal.dsl.CRMergePoint;
 import ru.fix.completable.reactor.runtime.internal.ProcessingGraphItem;
 
 import java.util.List;

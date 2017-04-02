@@ -9,6 +9,7 @@ import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.*;
 import ru.fix.completable.reactor.runtime.internal.*;
+import ru.fix.completable.reactor.runtime.internal.dsl.*;
 import ru.fix.completable.reactor.runtime.validators.GraphValidator;
 import ru.fix.completable.reactor.runtime.validators.ProcessorsHaveIncomingFlowsValidator;
 import ru.fix.completable.reactor.runtime.validators.TerminalVertexExistValidator;
@@ -108,23 +109,7 @@ public class ReactorGraphBuilder {
         }
     }
 
-    public class BuilderPayload<PayloadType> {
-        final Class<PayloadType> payloadClass;
-        final ReactorGraph<PayloadType> graph;
 
-
-        public BuilderPayload(Class<PayloadType> payloadClass, ReactorGraph<PayloadType> graph) {
-            this.payloadClass = payloadClass;
-            this.graph = graph;
-        }
-
-
-        public BuilderStartPoint<PayloadType> startPoint() {
-            graph.startPoint = new ReactorGraph.StartPoint();
-            return new BuilderStartPoint<>(graph, graph.startPoint);
-        }
-
-    }
 
     public class BuilderStartPoint<PayloadType> {
         final ReactorGraph<PayloadType> graph;
@@ -836,18 +821,23 @@ public class ReactorGraphBuilder {
         };
     }
 
+    /**
+     * Build MergePointDescription
+     */
     public MergePointDescriptionBuilder mergePoint() {
         return new MergePointDescriptionBuilder() {
             @Override
             public <PayloadType> MergePointMergerBuilder<PayloadType> forPayload(Class<PayloadType> payloadType) {
 
                 CRMergePointDescription<PayloadType> mergePointDescription = new CRMergePointDescription<>();
-                return new CRMergePointMergerBuilder<PayloadType>(mergePointDescription);
+                return new CRMergePointMergerBuilder<>(mergePointDescription);
             }
         };
     }
 
-
+    /**
+     * Build SubgraphDescription
+     */
     public <SubgraphPayloadType> SubgraphBuilder<SubgraphPayloadType> subgraph(Class<SubgraphPayloadType> subgraphPayload) {
         return new SubgraphBuilder<SubgraphPayloadType>() {
             @Override

@@ -1,5 +1,6 @@
-package ru.fix.completable.reactor.runtime.internal;
+package ru.fix.completable.reactor.runtime.internal.dsl;
 
+import lombok.Data;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.dsl.*;
 
@@ -8,6 +9,7 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
+@Data
 public class CRProcessorDescription<PayloadType> implements ProcessorDescription<PayloadType> {
     /**
      * Null if there is no merger provided.
@@ -52,35 +54,38 @@ public class CRProcessorDescription<PayloadType> implements ProcessorDescription
     boolean isCopyArg6 = false;
 
     /**
-     * {@code Handler0Args<Processor, CompletableFuture<ProcessorResult>>}
+     * {@code Handler0Args<Processor, ProcessorResult>}
      */
     Handler0Args handler0;
 
     /**
-     * {@code Handler1Arg<Processor, Arg1, CompletableFuture<ProcessorResult>>}
+     * {@code Handler1Arg<Processor, Arg1, ProcessorResult>}
      */
     Handler1Arg handler1;
 
     /**
-     * {@code MethodReference2Arg<Processor, Arg1, Arg2, CompletableFuture<ProcessorResult>>}
+     * {@code MethodReference2Arg<Processor, Arg1, Arg2, ProcessorResult>}
      */
     Handler2Args handler2;
 
     /**
-     * {@code MethodReference3Arg<Processor, Arg1, Arg2, Arg3, CompletableFuture<ProcessorResult>>}
+     * {@code MethodReference3Arg<Processor, Arg1, Arg2, Arg3, ProcessorResult>}
      */
     Handler3Args handler3;
 
     /**
-     * {@code MethodReference4Arg<Processor, Arg1, Arg2, Arg3, Arg4, CompletableFuture<ProcessorResult>>}
+     * {@code MethodReference4Arg<Processor, Arg1, Arg2, Arg3, Arg4, ProcessorResult>}
      */
     Handler4Args handler4;
 
     /**
-     * {@code Handler<Arg1, Arg2, Arg3, Arg4, Arg5, CompletableFuture<ProcessorResult>>}
+     * {@code Handler<Arg1, Arg2, Arg3, Arg4, Arg5, ProcessorResult>}
      */
     Handler5Args handler5;
 
+    /**
+     * {@code Handler<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, ProcessorResult>}
+     */
     Handler6Args handler6;
 
     /**
@@ -103,9 +108,14 @@ public class CRProcessorDescription<PayloadType> implements ProcessorDescription
      */
     String mergerTitle;
 
-
+    /**
+     * Handler class
+     */
     Class processorType;
 
+    String handlerTitle;
+
+    String[] handlerDocs;
 
     CRProcessorDescription() {
     }

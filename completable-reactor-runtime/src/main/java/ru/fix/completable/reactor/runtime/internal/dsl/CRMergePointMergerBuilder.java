@@ -1,7 +1,9 @@
-package ru.fix.completable.reactor.runtime.internal;
+package ru.fix.completable.reactor.runtime.internal.dsl;
 
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.*;
+import ru.fix.completable.reactor.runtime.internal.LambdaReflector;
+import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
 import java.lang.reflect.Method;
 import java.util.Optional;

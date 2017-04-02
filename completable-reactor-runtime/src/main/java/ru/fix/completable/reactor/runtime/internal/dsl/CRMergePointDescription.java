@@ -1,14 +1,18 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.internal.dsl;
 
-import lombok.ToString;
+import lombok.Data;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.runtime.dsl.MergePoint;
+import ru.fix.completable.reactor.runtime.dsl.MergePointDescription;
 import ru.fix.completable.reactor.runtime.dsl.MergePointMerger;
+
+import java.util.Objects;
 
 /**
  * @author Kamil Asfandiyarov
  */
-@ToString
-public class GraphMergePointDescription<PayloadType> {
+@Data
+public class CRMergePointDescription<PayloadType> implements MergePointDescription<PayloadType>{
 
     /**
      * {@code Function<PayloadType, Enum>}
@@ -29,8 +33,10 @@ public class GraphMergePointDescription<PayloadType> {
      */
     String[] mergerDocs;
 
-    public GraphMergePoint<PayloadType> buildMergePoint(){
-        return new GraphMergePoint<>(this);
+    public MergePoint<PayloadType> buildMergePoint(){
+        Objects.requireNonNull(merger, "MergePoint merger is null.");
+
+        return new CRMergePoint<>(this);
     }
 
 }

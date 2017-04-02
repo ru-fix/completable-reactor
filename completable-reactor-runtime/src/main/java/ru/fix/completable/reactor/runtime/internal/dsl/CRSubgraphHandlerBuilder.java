@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime.internal;
+package ru.fix.completable.reactor.runtime.internal.dsl;
 
 import ru.fix.completable.reactor.runtime.dsl.SubgraphHandlerBuilder;
 import ru.fix.completable.reactor.runtime.dsl.SubgraphMergerBuilder;

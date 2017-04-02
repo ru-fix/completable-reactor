@@ -1,6 +1,6 @@
-package ru.fix.completable.reactor.runtime.internal;
+package ru.fix.completable.reactor.runtime.internal.dsl;
 
-import lombok.ToString;
+import lombok.Data;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.dsl.Subgraph;
 import ru.fix.completable.reactor.runtime.dsl.SubgraphDescription;
@@ -12,10 +12,10 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
-@ToString
+@Data
 public class CRSubgraphDescription<PayloadType> implements SubgraphDescription<PayloadType> {
 
-    Class<?> subgraphPayload;
+    final Class<?> subgraphPayload;
 
     /**
      * Null if there is no merger provided.

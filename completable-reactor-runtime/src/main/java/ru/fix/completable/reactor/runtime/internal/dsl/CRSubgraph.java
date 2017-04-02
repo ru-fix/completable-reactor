@@ -1,15 +1,16 @@
-package ru.fix.completable.reactor.runtime.internal;
+package ru.fix.completable.reactor.runtime.internal.dsl;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import ru.fix.completable.reactor.runtime.dsl.Subgraph;
+import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 
 /**
  * Represent processor graph instance.
  * @author Kamil Asfandiyarov
  */
 @EqualsAndHashCode(doNotUseGetters = true)
-@ToString
+@Data
 public class CRSubgraph<PayloadType> implements Subgraph<PayloadType>, CRProcessingItem {
 
     int id = 0;

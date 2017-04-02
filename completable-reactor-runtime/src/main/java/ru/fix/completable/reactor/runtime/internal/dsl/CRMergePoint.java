@@ -1,10 +1,15 @@
-package ru.fix.completable.reactor.runtime.internal;
+package ru.fix.completable.reactor.runtime.internal.dsl;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import ru.fix.completable.reactor.runtime.dsl.MergePoint;
+import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 
 /**
  * @author Kamil Asfandiyarov
  */
+@EqualsAndHashCode(doNotUseGetters = true)
+@Data
 public class CRMergePoint<PayloadType> implements MergePoint<PayloadType>, CRProcessingItem {
     int id = 0;
 
@@ -18,6 +23,10 @@ public class CRMergePoint<PayloadType> implements MergePoint<PayloadType>, CRPro
     public CRMergePoint<PayloadType> setId(int id){
         this.id = id;
         return this;
+    }
+
+    public int getId() {
+        return id;
     }
 
     @Override

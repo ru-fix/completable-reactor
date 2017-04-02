@@ -26,9 +26,9 @@ public class LambdaReflector {
         AnnotationType annotation;
     }
 
-    public static Optional<AnnotatedMethod> annotatedMethodReference(
+    public static <AnnotationType extends Annotation> Optional<AnnotatedMethod<AnnotationType>> annotatedMethodReference(
             Serializable methodReference,
-            Class<? extends Annotation> annotationClass) {
+            Class<AnnotationType> annotationClass) {
 
         return methodReference(methodReference)
                 .filter(reference -> reference.getMethod().getAnnotation(annotationClass) != null)

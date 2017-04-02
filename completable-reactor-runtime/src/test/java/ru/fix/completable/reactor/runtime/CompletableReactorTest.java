@@ -10,7 +10,7 @@ import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.Processor;
 import ru.fix.completable.reactor.runtime.dsl.Subgraph;
-import ru.fix.completable.reactor.runtime.internal.CRMergePoint;
+import ru.fix.completable.reactor.runtime.internal.dsl.CRMergePoint;
 import ru.fix.completable.reactor.runtime.internal.GraphProcessor;
 import ru.fix.completable.reactor.ui.ReactorHtmlUIBuilder;
 
