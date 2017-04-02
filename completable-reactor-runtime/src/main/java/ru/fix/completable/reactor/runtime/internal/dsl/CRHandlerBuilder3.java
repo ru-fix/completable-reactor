@@ -8,6 +8,7 @@ import ru.fix.completable.reactor.runtime.dsl.ProcessorMergerBuilder;
 import ru.fix.completable.reactor.runtime.internal.LambdaReflector;
 import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -38,6 +39,12 @@ public class CRHandlerBuilder3<PayloadType, Arg1, Arg2, Arg3> implements Handler
 
         LambdaReflector.annotatedMethodReference(handler, Reactored.class).ifPresent(method -> {
             processorDescription.processorType = method.getMethodClass();
+
+            Optional.ofNullable(method.getMethodClass().getAnnotation(Reactored.class))
+                    .map(annotation -> (Reactored)annotation)
+                    .map(Reactored::value)
+                    .ifPresent(processorDescription::setProcessorDoc);
+
             processorDescription.handlerTitle = method.getMethod().getName();
             processorDescription.handlerDocs = method.getAnnotation().value();
         });

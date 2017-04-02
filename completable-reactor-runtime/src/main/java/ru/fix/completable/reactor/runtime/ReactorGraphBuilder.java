@@ -8,6 +8,7 @@ import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.*;
+import ru.fix.completable.reactor.runtime.internal.ReactorGraph;
 import ru.fix.completable.reactor.runtime.internal.*;
 import ru.fix.completable.reactor.runtime.internal.dsl.*;
 import ru.fix.completable.reactor.runtime.validators.GraphValidator;
@@ -41,36 +42,36 @@ public class ReactorGraphBuilder {
     private static <PayloadType> void ensureMergePointRegistered(CRMergePoint graphMergePoint, ReactorGraph<PayloadType> graph) {
         Objects.requireNonNull(graphMergePoint);
 
-        if (graph.processors.containsKey(graphMergePoint)) {
+        if (graph.getProcessors().containsKey(graphMergePoint)) {
             return;
         }
 
         ReactorGraph.ProcessorInfo processorInfo = new ReactorGraph.ProcessorInfo()
                 .setProcessorType(ReactorGraph.ProcessorType.DETACHED_MERGE_POINT)
-                .setDetachedMergePointDescription(graphMergePoint.mergePointDescription);
+                .setDetachedMergePointDescription(graphMergePoint.getMergePointDescription());
 
-        graph.processors.put(graphMergePoint, processorInfo);
+        graph.getProcessors().put(graphMergePoint, processorInfo);
     }
 
 
     private static void ensureProcessorRegistered(
-            GraphProcessor<?, ?> graphProcessor,
+            CRProcessor<?> graphProcessor,
             ReactorGraph<?> graph) {
 
         Objects.requireNonNull(graphProcessor);
 
-        if (graph.processors.containsKey(graphProcessor)) {
+        if (graph.getProcessors().containsKey(graphProcessor)) {
             return;
         }
 
         ReactorGraph.ProcessorInfo processorInfo = new ReactorGraph.ProcessorInfo();
-        processorInfo.description = graphProcessor.processorDescription;
+        processorInfo.setDescription(graphProcessor.getProcessorDescription());
 
         Optional.ofNullable(ReactorReflector.lookupProcessorDescription(graphProcessor.getProcessorClass()))
                 .map(Reactored::value)
                 .ifPresent(doc -> processorInfo.processorDoc = doc);
 
-        graph.processors.put(graphProcessor, processorInfo);
+        graph.getProcessors().put(graphProcessor, processorInfo);
     }
 
     private static void ensureSubgraphRegistered(
@@ -79,7 +80,7 @@ public class ReactorGraphBuilder {
 
         Objects.requireNonNull(subgraphProcessor);
 
-        if (graph.processors.containsKey(subgraphProcessor)) {
+        if (graph.getProcessors().containsKey(subgraphProcessor)) {
             return;
         }
 
@@ -91,7 +92,7 @@ public class ReactorGraphBuilder {
                 .map(Reactored::value)
                 .ifPresent(doc -> processorInfo.processorDoc = doc);
 
-        graph.processors.put(subgraphProcessor, processorInfo);
+        graph.getProcessors().put(subgraphProcessor, processorInfo);
     }
 
     private static <PayloadType> void ensureGraphItemRegistered(MergeableProcessingGraphItem<PayloadType> item, ReactorGraph<?> graph) {
@@ -156,7 +157,7 @@ public class ReactorGraphBuilder {
         public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<? super PayloadType> processor) {
             ensureGraphItemRegistered(processor, this.graph);
 
-            if (!Optional.ofNullable(this.graph.processors.get(processor))
+            if (!Optional.ofNullable(this.graph.getProcessors().get(processor))
                     .filter(ReactorGraph.ProcessorInfo::isMergerExist)
                     .isPresent()) {
 
@@ -223,7 +224,7 @@ public class ReactorGraphBuilder {
         private BuilderMultiMerge<PayloadType> mergeItem(MergeableProcessingGraphItem processor) {
 
             if (processor instanceof GraphProcessor || processor instanceof SubgraphProcessor) {
-                if (!Optional.ofNullable(this.graph.processors.get(processor))
+                if (!Optional.ofNullable(this.graph.getProcessors().get(processor))
                         .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?
                                 processorInfo.description.merger :
                                 processorInfo.subgraphDescription.merger)
@@ -290,7 +291,7 @@ public class ReactorGraphBuilder {
 
             ensureGraphItemRegistered(processor, this.graph);
 
-            if (!Optional.ofNullable(this.graph.processors.get(processor))
+            if (!Optional.ofNullable(this.graph.getProcessors().get(processor))
                     .map(processorInfo -> processorInfo.processorType == ReactorGraph.ProcessorType.PLAIN ?
                             processorInfo.description.merger :
                             processorInfo.subgraphDescription.merger)
@@ -326,7 +327,7 @@ public class ReactorGraphBuilder {
         public BuilderSingleMerge<PayloadType> singleMerge(MergeableProcessingGraphItem<? super PayloadType> processor) {
             ensureGraphItemRegistered(processor, this.graph);
 
-            if (!Optional.ofNullable(this.graph.processors.get(processor))
+            if (!Optional.ofNullable(this.graph.getProcessors().get(processor))
                     .filter(ReactorGraph.ProcessorInfo::isMergerExist)
                     .isPresent()) {
 
@@ -520,7 +521,7 @@ public class ReactorGraphBuilder {
             /**
              * Populate request documentation from handling method
              */
-            for (Map.Entry<ProcessingGraphItem, ReactorGraph.ProcessorInfo> entry : graph.processors.entrySet()) {
+            for (Map.Entry<ProcessingGraphItem, ReactorGraph.ProcessorInfo> entry : graph.getProcessors().entrySet()) {
 
                 if (entry.getKey() instanceof GraphProcessor) {
 
@@ -762,7 +763,7 @@ public class ReactorGraphBuilder {
 
         private BuilderContext mergeItem(MergeableProcessingGraphItem<? super PayloadType> processor) {
 
-            if (!graph.processors.containsKey(processor)) {
+            if (!graph.getProcessors().containsKey(processor)) {
                 throw new IllegalArgumentException(String.format("Processor %s not registered for payload %s", processor, graph.getPayloadClass()));
             }
 

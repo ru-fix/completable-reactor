@@ -113,9 +113,13 @@ public class CRProcessorDescription<PayloadType> implements ProcessorDescription
      */
     Class processorType;
 
+    String[] processorDoc;
+
     String handlerTitle;
 
     String[] handlerDocs;
+
+
 
     CRProcessorDescription() {
     }

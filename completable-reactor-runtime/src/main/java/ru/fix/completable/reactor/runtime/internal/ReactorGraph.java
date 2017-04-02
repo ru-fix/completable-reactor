@@ -204,10 +204,11 @@ public class ReactorGraph<PayloadType> {
 
         ReactorGraphModel.Coordinates coordinates;
 
-        String[] processorDoc;
 
-        String[] requestDoc;
-        String handlerName;
+//        String[] processorDoc;
+//        String handlerName;
+//        String[] handlerDoc;
+
         ReactorGraphModel.Source coordinatesSource;
 
         boolean isMergerExist(){
@@ -229,7 +230,7 @@ public class ReactorGraph<PayloadType> {
             model.coordinates = coordinates != null ? coordinates : new ReactorGraphModel.Coordinates(100, 100);
             model.coordinatesSource = this.coordinatesSource;
             model.processorDoc = processorDoc;
-            model.requestDoc = requestDoc;
+            model.requestDoc = handlerDoc;
             model.handlerName = handlerName;
             model.processorType = this.processorType.serialize();
             model.handleBySource = Optional.ofNullable(this.description)
