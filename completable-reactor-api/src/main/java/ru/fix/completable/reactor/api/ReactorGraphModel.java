@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,28 +18,28 @@ public class ReactorGraphModel {
     @AllArgsConstructor
     @Accessors(chain = true)
     public static class Coordinates{
-
         public int x;
         public int y;
     }
-    public static class Payload {
 
+    public static class Payload {
         public String payloadName;
         public String payloadClass;
         public String[] payloadDoc;
     }
-    public static class StartPoint {
 
+    public static class StartPoint {
         public Coordinates coordinates;
         public Source coordinatesSource;
         public List<String> processors;
     }
-    public static class MergeGroup {
 
+    public static class MergeGroup {
         public List<MergePoint> mergePoints;
     }
-    public static class MergePoint {
 
+    public static class MergePoint {
+        public boolean isDetached;
         public String processor;
         public Coordinates coordinates;
         public Source coordinatesSource;
@@ -48,12 +49,11 @@ public class ReactorGraphModel {
         public List<MergePointTransition> transitions;
     }
     public static class TransitionDocumentation{
-
         public String mergeStatus;
         public String[] docs;
     }
-    public static class MergePointTransition {
 
+    public static class MergePointTransition {
         public List<String> mergeStatuses;
         public boolean isOnAny;
         public boolean isComplete;
@@ -69,38 +69,46 @@ public class ReactorGraphModel {
         public Map<String, ReactorGraphModel.Source> mergeStatusSources;
     }
 
-
-    public enum ProcessorType{
-        PLAIN,
-        SUBGRAPH,
-        DETACHED_MERGE_POINT
-    }
-
     @Data
     @Accessors(chain = true)
     public static class Source {
-
         public String className;
         public String fileName;
         public Integer fileNameLine;
     }
-    public static class ProcessorInfo{
 
-        public ProcessorType processorType;
+    public static class Processor{
+        public String id;
+
         public Coordinates coordinates;
         public Source coordinatesSource;
+
         public String[] processorDoc;
-        public String[] requestDoc;
-        public String handlerName;
-        public Source handleBySource;
+        public String handlerTitle;
+        public String[] handlerDoc;
+
+        public Source withHandlerSource;
     }
+
+    public static class Subgraph{
+        public String id;
+
+        public Coordinates coordinates;
+        public Source coordinatesSource;
+
+        public String subgraphTitle;
+        public String[] subgraphDoc;
+    }
+
     public Payload payload;
-
-    public Map<String, ProcessorInfo> processors;
     public StartPoint startPoint;
-    public List<MergeGroup> mergeGroups;
-    public Source serializationPointSource;
 
+    public final List<Processor> processors = new ArrayList<>();
+    public final List<Subgraph> subgraphs = new ArrayList<>();
+
+    public List<MergeGroup> mergeGroups;
+
+    public Source serializationPointSource;
     public Source coordinatesSource;
     public Source buildGraphSource;
 }

@@ -118,7 +118,7 @@ class ProcessorNode extends VBox {
                 .map(text -> new Text(text))
                 .ifPresent(handlerConent.getChildren()::add);
 
-        Optional.ofNullable(processorInfo.requestDoc)
+        Optional.ofNullable(processorInfo.handlerDoc)
                 .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))
                 .ifPresent(handlerConent.getChildren()::add);
 

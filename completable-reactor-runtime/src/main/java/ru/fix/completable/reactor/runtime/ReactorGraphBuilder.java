@@ -845,6 +845,13 @@ public class ReactorGraphBuilder {
             public <PayloadType> SubgraphHandlerBuilder<SubgraphPayloadType, PayloadType> forPayload(Class<PayloadType> payloadType) {
 
                 CRSubgraphDescription<PayloadType> subgraphDescription = new CRSubgraphDescription<>(subgraphPayload);
+
+                subgraphDescription.setHandlerName(subgraphPayload.getSimpleName());
+
+                Optional.ofNullable(subgraphPayload.getAnnotation(Reactored.class))
+                        .map(Reactored::value)
+                        .ifPresent(subgraphDescription::setSubgraphDoc);
+
                 return new CRSubgraphHandlerBuilder<>(subgraphDescription);
             }
         };

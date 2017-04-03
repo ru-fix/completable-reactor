@@ -7,7 +7,7 @@ import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
-
+import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -102,9 +102,13 @@ public class ReactorGraphExecutionBuilder {
     @Data
     @Accessors(chain = true)
     static class ProcessingVertex {
+
         ProcessingGraphItem processor;
-        ReactorGraph.ProcessorInfo processorInfo;
-        ReactorGraph.MergeGroup mergeGroup;
+
+        CRReactorGraph.ProcessingItemInfo processorInfo;
+
+        CRReactorGraph.MergeGroup mergeGroup;
+
         boolean inMergeGroup;
 
         final List<TransitionFuture<TransitionPayloadContext>> incomingProcessorFlows = new ArrayList<>();
@@ -120,7 +124,7 @@ public class ReactorGraphExecutionBuilder {
          * If during merging process we will receive merge status that match any of terminal transitions
          * then we should complete mergePointFuture with Terminal MergePayloadContext
          */
-        final List<ReactorGraph.Transition> mergePointTransition = new ArrayList<>();
+        final List<CRReactorGraph.Transition> mergePointTransition = new ArrayList<>();
 
         /**
          * Completes when all incoming transitions to merge group from processors is complete.

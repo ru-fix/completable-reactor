@@ -91,7 +91,7 @@ public class CRProcessorDescription<PayloadType> implements ProcessorDescription
     /**
      * Source where {@code handleBy} method was used
      */
-    ReactorGraphModel.Source handleBySource;
+    ReactorGraphModel.Source withHandlerSource;
 
     /**
      * Source where {@code withMerger} or {@code withoutMerger}  method was used

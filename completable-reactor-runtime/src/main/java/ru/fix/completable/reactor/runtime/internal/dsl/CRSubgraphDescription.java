@@ -6,7 +6,6 @@ import ru.fix.completable.reactor.runtime.dsl.Subgraph;
 import ru.fix.completable.reactor.runtime.dsl.SubgraphDescription;
 import ru.fix.completable.reactor.runtime.dsl.SubgraphMerger;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -29,6 +28,10 @@ public class CRSubgraphDescription<PayloadType> implements SubgraphDescription<P
      */
     ReactorGraphModel.Source mergeSource;
 
+    String subgraphName;
+
+    String[] subgraphDoc;
+
     String[] mergerDocs;
 
     String mergerTitle;
@@ -40,10 +43,10 @@ public class CRSubgraphDescription<PayloadType> implements SubgraphDescription<P
 
     boolean isCopyArg = false;
 
-    /**
-     * {@code Handler1Arg<Processor, Arg1, CompletableFuture<ProcessorResult>>}
-     */
-    Function<?, CompletableFuture<?>> handler;
+//    /**
+//     * {@code Handler1Arg<Processor, Arg1, CompletableFuture<ProcessorResult>>}
+//     */
+//    Function<?, CompletableFuture<?>> handler;
 
     public CRSubgraphDescription(Class<?> subgraphPayload) {
         this.subgraphPayload = subgraphPayload;
