@@ -10,18 +10,21 @@ import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
  */
 public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<PayloadType> {
 
+    final BuilderContext<PayloadType> builderContext;
     final CRReactorGraph<PayloadType> graph;
     final CRReactorGraph.MergePoint mergePoint;
 
-    CRMergePointBuilder(CRReactorGraph<PayloadType> graph, CRReactorGraph.MergePoint graphMergePoint) {
-        this.graph = graph;
+    CRMergePointBuilder(BuilderContext<PayloadType> builderContext, CRReactorGraph.MergePoint graphMergePoint) {
+        this.builderContext = builderContext;
+        this.graph = builderContext.graph;
         this.mergePoint = graphMergePoint;
     }
 
-
     static <PayloadType> CRMergePointBuilder<PayloadType> startBuildingMergePoint(
-            CRReactorGraph<PayloadType> graph,
+            BuilderContext<PayloadType> builderContext,
             Processor<? super PayloadType> processor) {
+
+        val graph = builderContext.graph;
 
         CRProcessor crProcessor = (CRProcessor) processor;
         graph.ensureProcessingItemRegistered(crProcessor);
@@ -47,12 +50,14 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
                 .setProcessor(crProcessor);
         graph.getMergePoints().add(graphMergePoint);
 
-        return new CRMergePointBuilder<>(graph, graphMergePoint);
+        return new CRMergePointBuilder<>(builderContext, graphMergePoint);
     }
 
     static <PayloadType> CRMergePointBuilder<PayloadType> startBuildingMergePoint(
-            CRReactorGraph<PayloadType> graph,
+            BuilderContext<PayloadType> builderContext,
             MergePoint<PayloadType> mergePoint) {
+
+        val graph = builderContext.graph;
 
         CRMergePoint crMergePoint = (CRMergePoint) mergePoint;
         graph.ensureProcessingItemRegistered(crMergePoint);
@@ -77,7 +82,7 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
                 .setMergePoint(crMergePoint);
         graph.getMergePoints().add(graphMergePoint);
 
-        return new CRMergePointBuilder<>(graph, graphMergePoint);
+        return new CRMergePointBuilder<>(builderContext, graphMergePoint);
     }
 
 
@@ -89,7 +94,7 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
 
         val onSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
 
-        return new CRMergePointTransition<>(graph, mergePoint, () -> {
+        return new CRMergePointTransition<>(builderContext, mergePoint, () -> {
             val transition = new CRReactorGraph.Transition(mergeStatuses);
             for (Enum<?> status : mergeStatuses) {
                 transition.getTransitionOnStatusSource().put(status.name(), onSource);
@@ -102,7 +107,7 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
     public MergePointTransition<PayloadType> onAny() {
         val onAnySource = ReactorReflector.getMethodInvocationPoint().orElse(null);
 
-        return new CRMergePointTransition<>(graph, mergePoint, () ->
+        return new CRMergePointTransition<>(builderContext, mergePoint, () ->
                 new CRReactorGraph.Transition()
                         .setOnAny(true)
                         .setTransitionOnAnySource(onAnySource));
@@ -115,17 +120,16 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
 
     @Override
     public MergePointBuilder<PayloadType> mergePoint(Processor<? super PayloadType> processor) {
-        return CRMergePointBuilder.startBuildingMergePoint(graph, processor);
+        return CRMergePointBuilder.startBuildingMergePoint(builderContext, processor);
     }
 
     @Override
     public MergePointBuilder<PayloadType> mergePoint(MergePoint<PayloadType> mergePoint) {
-        return CRMergePointBuilder.startBuildingMergePoint(graph, mergePoint);
+        return CRMergePointBuilder.startBuildingMergePoint(builderContext, mergePoint);
     }
 
     @Override
     public Coordinates<PayloadType> coordinates() {
-        return new CRCoordinates<>(graph);
+        return new CRCoordinates<>(builderContext);
     }
-
 }

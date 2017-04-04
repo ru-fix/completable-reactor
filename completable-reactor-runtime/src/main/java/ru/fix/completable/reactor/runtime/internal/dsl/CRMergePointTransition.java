@@ -16,15 +16,17 @@ import java.util.stream.Collectors;
  */
 public class CRMergePointTransition<PayloadType> implements MergePointTransition<PayloadType> {
 
+    final BuilderContext<PayloadType> builderContext;
     final CRReactorGraph<PayloadType> graph;
     final CRReactorGraph.MergePoint mergePoint;
     final Supplier<CRReactorGraph.Transition> transitionSupplier;
 
     public CRMergePointTransition(
-            CRReactorGraph<PayloadType> graph,
+            BuilderContext<PayloadType> builderContext,
             CRReactorGraph.MergePoint mergePoint,
             Supplier<CRReactorGraph.Transition> transitionSupplier) {
-        this.graph = graph;
+        this.builderContext = builderContext;
+        this.graph = builderContext.graph;
         this.mergePoint = mergePoint;
         this.transitionSupplier = transitionSupplier;
     }
@@ -53,7 +55,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
                 transitionSupplier.get()
                         .setComplete(true).setCompleteSource(ReactorReflector.getMethodInvocationPoint().orElse(null)));
 
-        return new CRMergePointBuilder<>(graph, this.mergePoint);
+        return new CRMergePointBuilder<>(builderContext, this.mergePoint);
     }
 
     @Override
@@ -66,7 +68,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
 
         checkMergeOrAddNewTransition(newTransition, this.mergePoint, TransitionType.HANDLE);
 
-        return new CRMergePointBuilder<>(graph, this.mergePoint);
+        return new CRMergePointBuilder<>(builderContext, this.mergePoint);
     }
 
     @Override
@@ -79,7 +81,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
 
         checkMergeOrAddNewTransition(newTransition, this.mergePoint, TransitionType.HANDLE);
 
-        return new CRMergePointBuilder<>(graph, this.mergePoint);
+        return new CRMergePointBuilder<>(builderContext, this.mergePoint);
     }
 
     @Override
@@ -92,7 +94,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
 
         checkMergeOrAddNewTransition(newTransition, this.mergePoint, TransitionType.MERGE);
 
-        return new CRMergePointBuilder<>(graph, this.mergePoint);
+        return new CRMergePointBuilder<>(builderContext, this.mergePoint);
     }
 
     @Override
@@ -105,7 +107,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
 
         checkMergeOrAddNewTransition(newTransition, this.mergePoint, TransitionType.MERGE);
 
-        return new CRMergePointBuilder<>(graph, this.mergePoint);
+        return new CRMergePointBuilder<>(builderContext, this.mergePoint);
     }
 
     @Override
@@ -118,7 +120,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
 
         checkMergeOrAddNewTransition(newTransition, this.mergePoint, TransitionType.MERGE);
 
-        return new CRMergePointBuilder<>(graph, this.mergePoint);
+        return new CRMergePointBuilder<>(builderContext, this.mergePoint);
     }
 
     enum TransitionType {
