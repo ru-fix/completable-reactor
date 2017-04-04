@@ -34,7 +34,7 @@ public class CRHandlerBuilder4<PayloadType, Arg1, Arg2, Arg3, Arg4> implements H
 
     public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(Handler4Args<Arg1, Arg2, Arg3, Arg4, ProcessorResult> handler) {
         processorDescription.handler4 = handler;
-        ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.handleBySource = source);
+        ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.withHandlerSource = source);
 
         LambdaReflector.annotatedMethodReference(handler, Reactored.class).ifPresent(method -> {
             processorDescription.processorType = method.getMethodClass();

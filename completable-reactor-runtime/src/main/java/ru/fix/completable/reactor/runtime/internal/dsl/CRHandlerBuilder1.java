@@ -39,7 +39,7 @@ public class CRHandlerBuilder1<PayloadType, Arg1>  implements HandlerBuilder1<Pa
             Handler1Arg<Arg1, ProcessorResult> handler) {
 
         processorDescription.handler1 = handler;
-        ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.handleBySource = source);
+        ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.withHandlerSource = source);
 
         LambdaReflector.annotatedMethodReference(handler, Reactored.class).ifPresent(method -> {
             processorDescription.processorType = method.getMethodClass();

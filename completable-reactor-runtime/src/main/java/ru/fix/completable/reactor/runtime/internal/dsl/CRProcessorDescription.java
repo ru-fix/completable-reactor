@@ -126,6 +126,6 @@ public class CRProcessorDescription<PayloadType> implements ProcessorDescription
 
     @Override
     public Processor<PayloadType> buildProcessor() {
-        return new CRProcessor<PayloadType>( this);
+        return new CRProcessor<>( this);
     }
 }

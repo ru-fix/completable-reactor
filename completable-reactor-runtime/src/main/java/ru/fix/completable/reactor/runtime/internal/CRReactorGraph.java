@@ -12,7 +12,6 @@ import ru.fix.completable.reactor.runtime.dsl.Coordinates;
 import ru.fix.completable.reactor.runtime.internal.dsl.*;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -26,50 +25,49 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     @Data
     @Accessors(chain = true)
     public static class MergeGroup {
-
         final List<MergePoint> mergePoints = new ArrayList<>();
-
-        public ReactorGraphModel.MergeGroup serialize(Function<CRProcessingItem, ProcessingItemInfo> processorInfoSupplier) {
-            ReactorGraphModel.MergeGroup model = new ReactorGraphModel.MergeGroup();
-            model.mergePoints = new ArrayList<>();
-
-            mergePoints.forEach(mergePoint -> {
-                ReactorGraphModel.MergePoint mergePointModel = mergePoint.serialize();
-                ProcessingItemInfo processorInfo = processorInfoSupplier.apply(mergePoint.getProcessor());
-
-                String mergerTitle = null;
-                String[] mergerDocs = null;
-                ReactorGraphModel.Source mergerSource = null;
-
-                switch (processorInfo.getProcessingItemType()){
-                    case PROCESSOR:
-                        mergerDocs = processorInfo.description.getMergerDocs();
-                        mergerTitle = processorInfo.description.getMergerTitle();
-                        mergerSource = processorInfo.description.getMergeSource();
-                        break;
-                    case SUBGRAPH:
-                        mergerDocs = processorInfo.subgraphDescription.getMergerDocs();
-                        mergerTitle = processorInfo.subgraphDescription.getMergerTitle();
-                        mergerSource = processorInfo.subgraphDescription.getMergeSource();
-                        break;
-                    case MERGE_POINT:
-                        mergerDocs = processorInfo.detachedMergePointDescription.getMergerDocs();
-                        mergerTitle = processorInfo.detachedMergePointDescription.getMergerTitle();
-                        mergerSource = processorInfo.detachedMergePointDescription.getMergerSource();
-                        break;
-                }
-
-                mergePointModel.mergeSource = mergerSource;
-                mergePointModel.mergerTitle = mergerTitle;
-                mergePointModel.mergerDocs = mergerDocs;
-
-                model.mergePoints.add(mergePointModel);
-            });
-
-            return model;
-        }
-
     }
+
+    public ReactorGraphModel.MergeGroup serialize(MergeGroup mergeGroup) {
+        ReactorGraphModel.MergeGroup model = new ReactorGraphModel.MergeGroup();
+        model.mergePoints = new ArrayList<>();
+
+        mergeGroup.mergePoints.forEach(mergePoint -> {
+            ReactorGraphModel.MergePoint mergePointModel = mergePoint.serialize();
+            ProcessingItemInfo processorInfo = this.processingItems.get(mergePoint.getProcessor());
+
+            String mergerTitle = null;
+            String[] mergerDocs = null;
+            ReactorGraphModel.Source mergerSource = null;
+
+            switch (processorInfo.getProcessingItemType()){
+                case PROCESSOR:
+                    mergerDocs = processorInfo.description.getMergerDocs();
+                    mergerTitle = processorInfo.description.getMergerTitle();
+                    mergerSource = processorInfo.description.getMergeSource();
+                    break;
+                case SUBGRAPH:
+                    mergerDocs = processorInfo.subgraphDescription.getMergerDocs();
+                    mergerTitle = processorInfo.subgraphDescription.getMergerTitle();
+                    mergerSource = processorInfo.subgraphDescription.getMergeSource();
+                    break;
+                case MERGE_POINT:
+                    mergerDocs = processorInfo.detachedMergePointDescription.getMergerDocs();
+                    mergerTitle = processorInfo.detachedMergePointDescription.getMergerTitle();
+                    mergerSource = processorInfo.detachedMergePointDescription.getMergerSource();
+                    break;
+            }
+
+            mergePointModel.mergeSource = mergerSource;
+            mergePointModel.mergerTitle = mergerTitle;
+            mergePointModel.mergerDocs = mergerDocs;
+
+            model.mergePoints.add(mergePointModel);
+        });
+
+        return model;
+    }
+
 
     @Data
     @Accessors(chain = true)
@@ -227,11 +225,10 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.coordinatesSource = this.coordinatesSource;
 
             model.subgraphDoc = subgraphDescription.getSubgraphDoc();
-            model.subgraphTitle = subgraphDescription.getSubgraphName();
+            model.subgraphTitle = subgraphDescription.getSubgraphTitle();
 
             return model;
         }
-
     }
 
 
@@ -330,7 +327,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         model.startPoint = startPoint.serialize();
         model.mergeGroups = new ArrayList<>();
 
-        this.mergeGroups.forEach(mergeGroup -> model.mergeGroups.add(mergeGroup.serialize(this.processingItems::get)));
+        this.mergeGroups.forEach(mergeGroup -> model.mergeGroups.add(serialize(mergeGroup)));
 
         return model;
     }

@@ -28,7 +28,7 @@ public class CRSubgraphDescription<PayloadType> implements SubgraphDescription<P
      */
     ReactorGraphModel.Source mergeSource;
 
-    String subgraphName;
+    String subgraphTitle;
 
     String[] subgraphDoc;
 
