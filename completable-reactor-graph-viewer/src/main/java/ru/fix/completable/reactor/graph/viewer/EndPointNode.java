@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class EndPointNode extends VBox {
     CoordinateTranslator coordinateTranslator;
-    ReactorGraphModel.MergePointTransition endPointTransition;
+    ReactorGraphModel.Transition endPointTransition;
     GraphViewer.ActionListener actionListener;
     ReactorGraphModel.MergePoint mergePoint;
 
@@ -23,7 +23,7 @@ public class EndPointNode extends VBox {
     public EndPointNode(
             CoordinateTranslator translator,
             ReactorGraphModel.MergePoint mergePoint,
-            ReactorGraphModel.MergePointTransition endPointTransition,
+            ReactorGraphModel.Transition endPointTransition,
             GraphViewer.ActionListener actionListener,
             List<GraphViewer.CoordinateItem> coordinateItems) {
 

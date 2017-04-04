@@ -29,12 +29,12 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
         CRProcessor crProcessor = (CRProcessor) processor;
         graph.ensureProcessingItemRegistered(crProcessor);
 
-        if (((CRProcessor) processor).getProcessorDescription().merger == null) {
+        if (crProcessor.getProcessorDescription().merger == null) {
             throw new IllegalArgumentException(String.format(
                     "Merge point added to processor %s does not have merger.\n" +
                             "To participate in transitions processor merge point should have merger.\n" +
                             "Use 'withMerger' clause to attach merger to processor.",
-                    ((CRProcessor) processor).getDebugName()));
+                    crProcessor.getDebugName()));
         }
 
         if (graph.getMergePoints().stream()
@@ -52,6 +52,40 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
 
         return new CRMergePointBuilder<>(builderContext, graphMergePoint);
     }
+
+    static <PayloadType> CRMergePointBuilder<PayloadType> startBuildingMergePoint(
+            BuilderContext<PayloadType> builderContext,
+            Subgraph<? super PayloadType> subgraph) {
+
+        val graph = builderContext.graph;
+
+        CRSubgraph crSubgraph = (CRSubgraph) subgraph;
+        graph.ensureProcessingItemRegistered(crSubgraph);
+
+        if (crSubgraph.getSubgraphDescription().merger == null) {
+            throw new IllegalArgumentException(String.format(
+                    "Merge point added to subgraph %s does not have merger.\n" +
+                            "To participate in transitions subgraph merge point should have merger.\n" +
+                            "Use 'withMerger' clause to attach merger to processor.",
+                    crSubgraph.getDebugName()));
+        }
+
+        if (graph.getMergePoints().stream()
+                .filter(graphMergePoint -> graphMergePoint.getType() == CRReactorGraph.MergePoint.Type.PROCESSOR)
+                .anyMatch(graphMergePoint -> graphMergePoint.getProcessor().equals(processor))) {
+
+            throw new IllegalArgumentException(String.format("Processor merge point for processor %s already registered.", ((CRProcessor)
+                    processor).getDebugName()));
+        }
+
+        CRReactorGraph.MergePoint graphMergePoint = new CRReactorGraph.MergePoint()
+                .setType(CRReactorGraph.MergePoint.Type.PROCESSOR)
+                .setProcessor(crProcessor);
+        graph.getMergePoints().add(graphMergePoint);
+
+        return new CRMergePointBuilder<>(builderContext, graphMergePoint);
+    }
+
 
     static <PayloadType> CRMergePointBuilder<PayloadType> startBuildingMergePoint(
             BuilderContext<PayloadType> builderContext,
@@ -121,6 +155,11 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
     @Override
     public MergePointBuilder<PayloadType> mergePoint(Processor<? super PayloadType> processor) {
         return CRMergePointBuilder.startBuildingMergePoint(builderContext, processor);
+    }
+
+    @Override
+    public MergePointBuilder<PayloadType> mergePoint(Subgraph<? super PayloadType> subgraph) {
+        return CRMergePointBuilder.startBuildingMergePoint(builderContext, subgraph);
     }
 
     @Override

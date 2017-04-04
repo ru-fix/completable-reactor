@@ -105,8 +105,10 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             ReactorGraphModel.MergePoint model = new ReactorGraphModel.MergePoint();
             model.coordinates = this.coordinates != null ? this.coordinates : new ReactorGraphModel.Coordinates(100,100);
             model.coordinatesSource = coordinatesSource;
-            model.isDetached = type == Type.DETACHED;
             model.processor = CRReactorGraph.serialize(this.processor);
+            if(type == Type.DETACHED) {
+                model.id = CRReactorGraph.serialize(this.mergePoint);
+            }
             model.transitions = new ArrayList<>();
             this.transitions.forEach(transition -> model.transitions.add(transition.serialize()));
             return model;
@@ -143,8 +145,8 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             }
         }
 
-        public ReactorGraphModel.MergePointTransition serialize() {
-            ReactorGraphModel.MergePointTransition model = new ReactorGraphModel.MergePointTransition();
+        public ReactorGraphModel.Transition serialize() {
+            ReactorGraphModel.Transition model = new ReactorGraphModel.Transition();
             model.mergeStatuses = Optional.ofNullable(mergeStatuses)
                     .map(Set::stream)
                     .map(stream -> stream.map(Enum::toString).collect(Collectors.toList()))
@@ -152,7 +154,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.isComplete = isComplete;
             model.isOnAny = isOnAny;
 
-            model.mergeProcessor = Optional.ofNullable(merge).map(CRReactorGraph::serialize).orElse(null);
+            model.mergeProcessingItem = Optional.ofNullable(merge).map(CRReactorGraph::serialize).orElse(null);
 
             model.handleByProcessor = Optional.ofNullable(handleBy).map(CRReactorGraph::serialize).orElse(null);
 

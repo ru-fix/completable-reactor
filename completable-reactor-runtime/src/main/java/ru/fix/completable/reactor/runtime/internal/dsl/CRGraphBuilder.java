@@ -42,7 +42,7 @@ public class CRGraphBuilder<PayloadType> {
          * Validate graph
          */
         builderContext.getGraphValidators().forEach(validator -> {
-            validator.validateGraph(graph);
+            validator.validateGraph(graph.serialize());
         });
 
         /**

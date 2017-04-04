@@ -12,6 +12,8 @@ import java.util.Map;
  * JSON representation of reactor graph.
  * @author Kamil Asfandiyarov
  */
+@Data
+@Accessors(chain = true)
 public class ReactorGraphModel {
 
     @Data
@@ -22,43 +24,57 @@ public class ReactorGraphModel {
         public int y;
     }
 
+    @Data
+    @Accessors(chain = true)
     public static class Payload {
         public String payloadName;
         public String payloadClass;
         public String[] payloadDoc;
     }
 
+    @Data
+    @Accessors(chain = true)
     public static class StartPoint {
         public Coordinates coordinates;
         public Source coordinatesSource;
         public List<String> processors;
     }
 
+    @Data
+    @Accessors(chain = true)
     public static class MergeGroup {
         public List<MergePoint> mergePoints;
     }
 
+    @Data
+    @Accessors(chain = true)
     public static class MergePoint {
-        public boolean isDetached;
         public String processor;
+        public String subgraph;
+        public String id;
         public Coordinates coordinates;
         public Source coordinatesSource;
         public Source mergeSource;
         public String mergerTitle;
         public String[] mergerDocs;
-        public List<MergePointTransition> transitions;
+        public List<Transition> transitions;
     }
+
+    @Data
+    @Accessors(chain = true)
     public static class TransitionDocumentation{
         public String mergeStatus;
         public String[] docs;
     }
 
-    public static class MergePointTransition {
+    @Data
+    @Accessors(chain = true)
+    public static class Transition {
         public List<String> mergeStatuses;
         public boolean isOnAny;
         public boolean isComplete;
-        public String mergeProcessor;
-        public String handleByProcessor;
+        public String mergeProcessingItem;
+        public String handleByProcessingItem;
         public Coordinates completeCoordinates;
         public Source completeCoordinatesSource;
         public Source completeSource;
@@ -77,6 +93,8 @@ public class ReactorGraphModel {
         public Integer fileNameLine;
     }
 
+    @Data
+    @Accessors(chain = true)
     public static class Processor{
         public String id;
 
@@ -90,6 +108,8 @@ public class ReactorGraphModel {
         public Source withHandlerSource;
     }
 
+    @Data
+    @Accessors(chain = true)
     public static class Subgraph{
         public String id;
 

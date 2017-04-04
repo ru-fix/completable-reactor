@@ -202,11 +202,11 @@ public class GraphViewPane extends ScrollPane {
 
                             pane.getChildren().add(line);
                             line.toBack();
-                        } else if (transition.mergeProcessor != null) {
+                        } else if (transition.mergeProcessingItem != null) {
                             val line = new TransitionLine(
                                     pane,
                                     mergePointNode,
-                                    mergePoints.get(transition.mergeProcessor),
+                                    mergePoints.get(transition.mergeProcessingItem),
                                     Optional.of(transition),
                                     actionListener);
 
@@ -223,11 +223,11 @@ public class GraphViewPane extends ScrollPane {
 
                         pane.getChildren().add(line);
                         line.toBack();
-                    } else if (transition.mergeProcessor != null) {
+                    } else if (transition.mergeProcessingItem != null) {
                         val line = new TransitionLine(
                                 pane,
                                 mergePointNode,
-                                mergePoints.get(transition.mergeProcessor),
+                                mergePoints.get(transition.mergeProcessingItem),
                                 Optional.of(transition),
                                 actionListener);
 
