@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.*;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
-import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 import ru.fix.completable.reactor.runtime.internal.dsl.*;
 import ru.fix.completable.reactor.runtime.validators.GraphValidator;
 import ru.fix.completable.reactor.runtime.validators.ProcessorsHaveIncomingFlowsValidator;
@@ -22,19 +21,11 @@ import java.util.Optional;
 @Slf4j
 public class ReactorGraphBuilder {
 
-    final ReactorReflector reactorReflector = new ReactorReflector();
-
     final List<GraphValidator> graphValidators = new ArrayList<>();
 
     public ReactorGraphBuilder() {
         graphValidators.add(new TerminalVertexExistValidator());
         graphValidators.add(new ProcessorsHaveIncomingFlowsValidator());
-    }
-
-
-    public ReactorGraphBuilder registerValidator(GraphValidator validator) {
-        graphValidators.add(validator);
-        return this;
     }
 
     /**
