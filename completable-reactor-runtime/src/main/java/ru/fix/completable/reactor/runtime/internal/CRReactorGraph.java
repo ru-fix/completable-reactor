@@ -25,14 +25,23 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     @Data
     @Accessors(chain = true)
     public static class MergeGroup {
-        final List<MergePoint> mergePoints = new ArrayList<>();
+        final List<CRProcessingItem> processingItems = new ArrayList<>();
     }
 
     public ReactorGraphModel.MergeGroup serialize(MergeGroup mergeGroup) {
         ReactorGraphModel.MergeGroup model = new ReactorGraphModel.MergeGroup();
         model.mergePoints = new ArrayList<>();
 
-        mergeGroup.mergePoints.forEach(mergePoint -> {
+        mergeGroup.processingItems.forEach(processingItem -> {
+
+            MergePoint mergePoint = getMergePoints().stream()
+                    .filter(graphMergePoint -> processingItem.equals(graphMergePoint.getProcessor()) ||
+                            processingItem.equals(graphMergePoint.getMergePoint()))
+
+                    .findAny().orElseThrow(()-> new IllegalStateException(String.format(
+                            "Graph merge group contains unregistered merge point %s",
+                            processingItem.getDebugName())));
+
             ReactorGraphModel.MergePoint mergePointModel = mergePoint.serialize();
             ProcessingItemInfo processorInfo = this.processingItems.get(mergePoint.getProcessor());
 
@@ -72,20 +81,25 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     @Data
     @Accessors(chain = true)
     public static class MergePoint {
-        enum Type {
+        public enum Type {
             PROCESSOR,
             DETACHED
         }
 
         Type type = Type.PROCESSOR;
 
-        CRProcessingItem processor;
+        CRProcessor processor;
+        CRMergePoint mergePoint;
+
 
         ReactorGraphModel.Coordinates coordinates;
         ReactorGraphModel.Source coordinatesSource;
 
-
         final List<Transition> transitions = new ArrayList<>();
+
+        public CRProcessingItem asProcessingItem(){
+            return processor != null ? processor : mergePoint;
+        }
 
         public ReactorGraphModel.MergePoint serialize() {
             ReactorGraphModel.MergePoint model = new ReactorGraphModel.MergePoint();
@@ -115,8 +129,8 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         ReactorGraphModel.Source completeSource;
 
         ReactorGraphModel.Source transitionOnAnySource;
-        Map<String, ReactorGraphModel.Source> transitionOnStatusSource;
-        Map<String, ReactorGraphModel.Source> mergeStatusSources;
+        final Map<String, ReactorGraphModel.Source> transitionOnStatusSource = new HashMap<>();
+        final Map<String, ReactorGraphModel.Source> mergeStatusSources = new HashMap<>();
 
 
         private Map<String, String[]> transitionsDoc;
@@ -124,7 +138,6 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         public Transition(Enum<?>... mergeStatuses) {
             this.mergeStatuses = new HashSet<>(Arrays.asList(mergeStatuses));
 
-            mergeStatusSources = new HashMap<>();
             for (Enum<?> status : mergeStatuses) {
                 mergeStatusSources.put(status.name(), new ReactorGraphModel.Source().setClassName(status.getClass().getName()));
             }
@@ -276,6 +289,9 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     final List<MergeGroup> mergeGroups = new ArrayList<>();
 
     @Getter
+    final List<MergePoint> mergePoints = new ArrayList<>();
+
+    @Getter
     final StartPoint startPoint = new CRReactorGraph.StartPoint();
 
     public CRReactorGraph(Class<PayloadType> payloadClass) {
@@ -333,7 +349,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     }
 
 
-    static String serialize(CRProcessingItem CRProcessingItem) {
+    public static String serialize(CRProcessingItem CRProcessingItem) {
         if (CRProcessingItem instanceof CRProcessor) {
             return serialize((CRProcessor) CRProcessingItem);
         }
@@ -346,7 +362,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         throw new IllegalArgumentException(String.format("Instance of class %s not supported.", CRProcessingItem.getClass()));
     }
 
-    static String serialize(CRProcessor graphProcessor) {
+    public static String serialize(CRProcessor graphProcessor) {
         if (graphProcessor == null) {
             return null;
         }
@@ -356,17 +372,70 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
                 graphProcessor.getId());
     }
 
-    static String serialize(CRMergePoint graphMergePoint) {
-        return String.format("MergePoint@%d", graphMergePoint.getId());
+    public static String serialize(Class processorType, int id) {
+        return String.format("%s@%d",
+                processorType.getSimpleName(),
+                id);
+    }
+
+    public static String serializeMergePoint(int id){
+        return String.format("MergePoint@%d", id);
+    }
+
+    public static String serialize(CRMergePoint graphMergePoint) {
+        return serializeMergePoint(graphMergePoint.getId());
     }
 
 
-    static String serialize(CRSubgraph subgraphProcessor) {
+    public static String serialize(CRSubgraph subgraphProcessor) {
         return subgraphProcessor == null ? null :
                 String.format("%s@%d",
                         subgraphProcessor.getPayloadClass().getSimpleName(),
                         subgraphProcessor.getId());
     }
 
+
+    public  void ensureProcessingItemRegistered(CRMergePoint graphMergePoint) {
+        Objects.requireNonNull(graphMergePoint);
+
+        if (this.getProcessingItems().containsKey(graphMergePoint)) {
+            return;
+        }
+
+        CRReactorGraph.ProcessingItemInfo processorInfo = new CRReactorGraph.ProcessingItemInfo()
+                .setProcessingItemType(CRReactorGraph.ProcessingItemType.MERGE_POINT)
+                .setDetachedMergePointDescription(graphMergePoint.getMergePointDescription());
+
+        this.getProcessingItems().put(graphMergePoint, processorInfo);
+    }
+
+    public void ensureProcessingItemRegistered(CRProcessor<?> graphProcessor) {
+
+        Objects.requireNonNull(graphProcessor);
+
+        if (this.getProcessingItems().containsKey(graphProcessor)) {
+            return;
+        }
+
+        CRReactorGraph.ProcessingItemInfo processorInfo = new CRReactorGraph.ProcessingItemInfo();
+        processorInfo.setDescription(graphProcessor.getProcessorDescription());
+
+        this.getProcessingItems().put(graphProcessor, processorInfo);
+    }
+
+    public void ensureProcessingItemRegistered(CRSubgraph<?> subgraphProcessor) {
+
+        Objects.requireNonNull(subgraphProcessor);
+
+        if (this.getProcessingItems().containsKey(subgraphProcessor)) {
+            return;
+        }
+
+        CRReactorGraph.ProcessingItemInfo processorInfo = new CRReactorGraph.ProcessingItemInfo()
+                .setProcessingItemType(CRReactorGraph.ProcessingItemType.SUBGRAPH)
+                .setSubgraphDescription(subgraphProcessor.getSubgraphDescription());
+
+        this.getProcessingItems().put(subgraphProcessor, processorInfo);
+    }
 
 }
