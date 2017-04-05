@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.execution;
 
 import lombok.Builder;
 import lombok.Data;
@@ -33,5 +33,5 @@ public class ReactorGraphExecution<PayloadType > {
     /**
      * Debug purpose field that allows to check internal execution graph state
      */
-    private final Collection<ru.fix.completable.reactor.runtime.ReactorGraphExecutionBuilder.ProcessingVertex> debugProcessingVertexGraphState;
+    private final Collection<ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder.ProcessingVertex> debugProcessingVertexGraphState;
 }

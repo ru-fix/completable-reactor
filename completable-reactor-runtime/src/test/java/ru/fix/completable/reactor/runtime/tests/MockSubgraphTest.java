@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.tests;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -8,6 +8,9 @@ import org.junit.Test;
 import ru.fix.commons.profiler.Profiler;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.api.Reactored;
+import ru.fix.completable.reactor.runtime.CompletableReactor;
+import ru.fix.completable.reactor.runtime.ReactorGraph;
+import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;

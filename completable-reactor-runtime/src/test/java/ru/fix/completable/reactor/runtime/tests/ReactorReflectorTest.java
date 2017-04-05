@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.tests;
 
 import org.junit.Before;
 import org.junit.Test;

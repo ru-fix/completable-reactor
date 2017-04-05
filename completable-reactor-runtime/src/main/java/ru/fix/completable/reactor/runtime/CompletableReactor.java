@@ -1,17 +1,23 @@
 package ru.fix.completable.reactor.runtime;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.Accessors;
 import ru.fix.commons.profiler.PrefixedProfiler;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
+import ru.fix.completable.reactor.runtime.cloning.CopierThreadsafeCopyMaker;
+import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
+import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
+import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder;
 import ru.fix.completable.reactor.runtime.immutability.ClonerWithReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
+import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
+import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +39,7 @@ public class CompletableReactor implements AutoCloseable {
 
     private final ReactorGraphExecutionBuilder executionBuilder;
 
-    private final Map<Class<?>, ReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
+    private final Map<Class<?>, CRReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
 
     /**
      * {@code Function<PayloadType, CompletableFuture<PayloadType>>}
@@ -120,8 +126,9 @@ public class CompletableReactor implements AutoCloseable {
      * @param reactorGraph
      */
     public void registerReactorGraph(ReactorGraph reactorGraph) {
-        payloadGraphs.put(reactorGraph.getPayloadClass(), reactorGraph);
-        inlinePayloadGraphs.remove(reactorGraph.getPayloadClass());
+        val crReactorGraph = (CRReactorGraph) reactorGraph;
+        payloadGraphs.put(crReactorGraph.getPayloadClass(), crReactorGraph);
+        inlinePayloadGraphs.remove(crReactorGraph.getPayloadClass());
     }
 
     /**
@@ -206,7 +213,7 @@ public class CompletableReactor implements AutoCloseable {
          * Debug purpose field that allows to check internal execution graph state
          */
         @Getter(AccessLevel.NONE)
-        private final Collection<ReactorGraphExecutionBuilder.ProcessingVertex> debugProcessingVertexGraphState;
+        private final Collection debugProcessingVertexGraphState;
     }
 
 
@@ -293,7 +300,7 @@ public class CompletableReactor implements AutoCloseable {
         /**
          * Launching chain execution
          */
-        execution.submitFuture.complete(payload);
+        execution.getSubmitFuture().complete(payload);
 
 
         /**
@@ -305,13 +312,13 @@ public class CompletableReactor implements AutoCloseable {
                      * Temporary solution.
                      * Should be fixed by completing all futures in processor chain
                      */
-                    if (!execution.resultFuture.isDone()) {
-                        execution.resultFuture.completeExceptionally(
+                    if (!execution.getResultFuture().isDone()) {
+                        execution.getResultFuture().completeExceptionally(
                                 new TimeoutException(
                                         String.format("Response for payload %s took more than %d ms.", payload, timeoutMs)));
                     }
-                    if (!execution.chainExecutionFuture.isDone()) {
-                        execution.chainExecutionFuture.completeExceptionally(
+                    if (!execution.getChainExecutionFuture().isDone()) {
+                        execution.getChainExecutionFuture().completeExceptionally(
                                 new TimeoutException(
                                         String.format("Execution of payload %s took more than %d ms.", payload, timeoutMs)));
                     }
@@ -319,7 +326,7 @@ public class CompletableReactor implements AutoCloseable {
                 timeoutMs,
                 TimeUnit.MILLISECONDS);
 
-        execution.chainExecutionFuture.thenRunAsync(() -> {
+        execution.getChainExecutionFuture().thenRunAsync(() -> {
             long count = pendingRequestCount.decrementAndGet();
             if (count == 0) {
                 synchronized (pendingRequestCount) {
@@ -361,6 +368,25 @@ public class CompletableReactor implements AutoCloseable {
                     pendingRequestCount.wait(timeoutLeft);
                 }
             }
+        }
+    }
+
+    /**
+     * Write *.rg file representation of graph structure
+     * *.rg files used by IDE and Graph Viewer to visualize graph
+     * @param graphs
+     * @throws Exception
+     */
+    public static void write(ReactorGraph<?>... graphs) throws Exception {
+        for (ReactorGraph<?> graph : graphs) {
+
+            val model = graph.serialize();
+            model.serializationPointSource = ReactorReflector.getMethodInvocationPoint().orElse(null);
+
+            val content = ReactorMarshaller.marshall(model);
+
+            val path = Paths.get(((CRReactorGraph)graph).getPayloadClass().getName() + ".rg");
+            Files.write(path, content.getBytes(StandardCharsets.UTF_8));
         }
     }
 }

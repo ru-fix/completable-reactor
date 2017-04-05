@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.cloning;
 
 import com.rits.cloning.Cloner;
 

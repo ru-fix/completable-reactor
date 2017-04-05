@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.tests;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -8,6 +8,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.api.Reactored;
+import ru.fix.completable.reactor.runtime.CompletableReactor;
+import ru.fix.completable.reactor.runtime.ReactorGraph;
+import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
 import ru.fix.completable.reactor.runtime.dsl.Processor;
 import ru.fix.completable.reactor.runtime.dsl.Subgraph;
 import ru.fix.completable.reactor.runtime.internal.dsl.CRMergePoint;

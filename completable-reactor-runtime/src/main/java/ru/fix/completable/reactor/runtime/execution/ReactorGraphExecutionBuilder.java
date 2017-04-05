@@ -1,10 +1,13 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.execution;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
+import ru.fix.completable.reactor.runtime.ProfilerNames;
+import ru.fix.completable.reactor.runtime.ReactorGraph;
+import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
@@ -30,7 +33,7 @@ public class ReactorGraphExecutionBuilder {
     private final SubgraphRunner subgraphRunner;
 
     @FunctionalInterface
-    interface SubgraphRunner {
+    public interface SubgraphRunner {
         CompletableFuture<?> run(Object paylaod);
     }
 
@@ -140,7 +143,12 @@ public class ReactorGraphExecutionBuilder {
     }
 
 
-    public ReactorGraphExecutionBuilder(Profiler profiler, ImmutabilityChecker immutabilityChecker, ThreadsafeCopyMaker threadsafeCopyMaker, SubgraphRunner subgraphRunner) {
+    public ReactorGraphExecutionBuilder(
+            Profiler profiler,
+            ImmutabilityChecker immutabilityChecker,
+            ThreadsafeCopyMaker threadsafeCopyMaker,
+            SubgraphRunner subgraphRunner) {
+
         this.profiler = profiler;
         this.immutabilityChecker = immutabilityChecker;
         this.threadsafeCopyMaker = threadsafeCopyMaker;
