@@ -331,9 +331,19 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         ReactorGraphModel.Payload payload = new ReactorGraphModel.Payload();
         payload.payloadClass = payloadClass.getName();
         payload.payloadName = payloadClass.getSimpleName();
-        payload.payloadDoc = Optional.ofNullable(payloadClass.getDeclaredAnnotation(Reactored.class))
-                .map(Reactored::value)
-                .orElse(null);
+
+        val paylaodDocBuilder = new ArrayList<String>();
+        for(Class clazz = payloadClass; clazz != null; clazz = clazz.getSuperclass()){
+            val docs = Optional.ofNullable(payloadClass.getDeclaredAnnotation(Reactored.class))
+                    .map(Reactored::value)
+                    .orElse(null);
+
+            if(docs != null){
+                paylaodDocBuilder.add(clazz.getSimpleName());
+                paylaodDocBuilder.addAll(Arrays.asList(docs));
+            }
+        }
+        payload.payloadDoc = paylaodDocBuilder.toArray(new String[paylaodDocBuilder.size()]);
         return payload;
     }
 

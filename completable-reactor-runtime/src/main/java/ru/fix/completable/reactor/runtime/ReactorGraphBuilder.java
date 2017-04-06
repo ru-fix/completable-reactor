@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.runtime;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.*;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
@@ -31,10 +32,11 @@ public class ReactorGraphBuilder {
     /**
      * Build ReactorGraph for given payload
      */
-
     public <PayloadType> PayloadBuilder<PayloadType> payload(Class<PayloadType> payloadClass) {
-        CRReactorGraph<PayloadType> graph = new CRReactorGraph<>(payloadClass);
-        return new CRPayloadBuilder<>(graph);
+        val builderContext = new BuilderContext<PayloadType>();
+        builderContext.setGraph(new CRReactorGraph<>(payloadClass));
+        builderContext.getGraphValidators().addAll(graphValidators);
+        return new CRPayloadBuilder<>(builderContext);
     }
 
 
