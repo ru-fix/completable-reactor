@@ -7,6 +7,8 @@ import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
 import ru.fix.completable.reactor.runtime.cloning.CopierThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
+import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
+import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder;
 import ru.fix.completable.reactor.runtime.immutability.ClonerWithReflectionImmutabilityChecker;
@@ -36,6 +38,8 @@ public class CompletableReactor implements AutoCloseable {
     private final ImmutabilityChecker immutabilityChecker = new ClonerWithReflectionImmutabilityChecker();
 
     private final ThreadsafeCopyMaker threadsafeCopyMaker = new CopierThreadsafeCopyMaker();
+
+    private final DebugSerializer debugSerializer = new ToStringDebugSerializer();
 
     private final ReactorGraphExecutionBuilder executionBuilder;
 
@@ -80,7 +84,8 @@ public class CompletableReactor implements AutoCloseable {
                         result.completeExceptionally(exc);
                         return result;
                     }
-                });
+                },
+                debugSerializer);
     }
 
     /**
@@ -123,6 +128,7 @@ public class CompletableReactor implements AutoCloseable {
 
     /**
      * Register reactor graph
+     *
      * @param reactorGraph
      */
     public void registerReactorGraph(ReactorGraph reactorGraph) {
@@ -255,7 +261,7 @@ public class CompletableReactor implements AutoCloseable {
          * Inline graph execution scenario
          */
         Function inlineGraphFunction = inlinePayloadGraphs.get(payload.getClass());
-        if(inlineGraphFunction != null){
+        if (inlineGraphFunction != null) {
             CompletableFuture<PayloadType> inlineGraphResult = (CompletableFuture<PayloadType>) inlineGraphFunction.apply(payload);
             inlineGraphResult.thenAcceptAsync(any -> payloadCall.stop());
 
@@ -374,6 +380,7 @@ public class CompletableReactor implements AutoCloseable {
     /**
      * Write *.rg file representation of graph structure
      * *.rg files used by IDE and Graph Viewer to visualize graph
+     *
      * @param graphs
      * @throws Exception
      */
@@ -385,7 +392,7 @@ public class CompletableReactor implements AutoCloseable {
 
             val content = ReactorMarshaller.marshall(model);
 
-            val path = Paths.get(((CRReactorGraph)graph).getPayloadClass().getName() + ".rg");
+            val path = Paths.get(((CRReactorGraph) graph).getPayloadClass().getName() + ".rg");
             Files.write(path, content.getBytes(StandardCharsets.UTF_8));
         }
     }
