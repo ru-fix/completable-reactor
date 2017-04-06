@@ -11,10 +11,12 @@ import java.util.stream.Collectors;
  */
 public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType> {
 
+    final BuilderContext<PayloadType> builderContext;
     final CRReactorGraph<PayloadType> graph;
 
-    public CRPayloadBuilder(CRReactorGraph<PayloadType> graph) {
-        this.graph = graph;
+    public CRPayloadBuilder(BuilderContext<PayloadType> builderContext) {
+        this.builderContext = builderContext;
+        this.graph = builderContext.graph;
     }
 
     private void addToStartPoint(CRProcessingItem processingItem) {
@@ -61,16 +63,16 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
 
     @Override
     public MergePointBuilder<PayloadType> mergePoint(Processor<? super PayloadType> processor) {
-        return CRMergePointBuilder.startBuildingMergePoint(graph, processor);
+        return CRMergePointBuilder.startBuildingMergePoint(builderContext, processor);
     }
 
     @Override
     public MergePointBuilder<PayloadType> mergePoint(MergePoint<PayloadType> mergePoint) {
-        return CRMergePointBuilder.startBuildingMergePoint(graph, mergePoint);
+        return CRMergePointBuilder.startBuildingMergePoint(builderContext, mergePoint);
     }
 
     @Override
     public MergeGroupBuilder<PayloadType> mergeGroup() {
-        return new CRMergeGroupBuilder<>(graph);
+        return new CRMergeGroupBuilder<>(builderContext);
     }
 }

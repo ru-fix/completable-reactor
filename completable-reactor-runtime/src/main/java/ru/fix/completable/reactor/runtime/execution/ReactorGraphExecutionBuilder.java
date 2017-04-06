@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.runtime.execution;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
 import ru.fix.completable.reactor.runtime.ProfilerNames;
@@ -10,6 +11,7 @@ import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
+import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 
 import java.util.*;
@@ -106,7 +108,7 @@ public class ReactorGraphExecutionBuilder {
     @Accessors(chain = true)
     static class ProcessingVertex {
 
-        ProcessingGraphItem processor;
+        CRProcessingItem processor;
 
         CRReactorGraph.ProcessingItemInfo processorInfo;
 
@@ -184,10 +186,12 @@ public class ReactorGraphExecutionBuilder {
      */
     public <PayloadType> ReactorGraphExecution<PayloadType> build(ReactorGraph<PayloadType> reactorGraph) {
 
+        val crReactorGraph = (CRReactorGraph<PayloadType>) reactorGraph;
+
         /**
          * Internal representation of processing graph based on processing vertices.
          */
-        final Map<ProcessingGraphItem, ProcessingVertex> processingVertices = new HashMap<>();
+        final Map<CRProcessingItem, ProcessingVertex> processingVertices = new HashMap<>();
 
 
         final CompletableFuture<PayloadType> submitFuture = new CompletableFuture<>();
@@ -206,12 +210,12 @@ public class ReactorGraphExecutionBuilder {
         /**
          * Init Processing Vertices.
          */
-        reactorGraph.processors.forEach((proc, info) -> {
+        crReactorGraph.getProcessingItems().forEach((proc, info) -> {
             ProcessingVertex vertex = new ProcessingVertex()
                     .setProcessor(proc)
                     .setProcessorInfo(info);
 
-            if (info.getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+            if (info.getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
                 /**
                  * Detached merge point does not uses {@code {@link ProcessingVertex#getProcessorFuture()}
                  */
@@ -225,10 +229,10 @@ public class ReactorGraphExecutionBuilder {
         /**
          * Populate start point transition
          */
-        for (ProcessingGraphItem processor : reactorGraph.startPoint.processors) {
+        for (CRProcessingItem processor : crReactorGraph.getStartPoint().getProcessingItems()) {
             ProcessingVertex vertex = processingVertices.get(processor);
 
-            if (vertex.getProcessorInfo().getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+            if (vertex.getProcessorInfo().getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
                 /**
                  * In case of Detached merge point transition from start point is being converted to a {@link MergePayloadContext}
                  */
@@ -249,16 +253,30 @@ public class ReactorGraphExecutionBuilder {
         }
 
         /**
-         * Populate MergeGroups and MergePoints
+         * Populate MergePoints without MergeGroup
          */
-        for (ReactorGraph.MergeGroup mergeGroup : reactorGraph.mergeGroups) {
+        crReactorGraph.getMergePoints().stream()
+                .filter(mergePoint -> crReactorGraph.getMergeGroups().stream()
+                        .anyMatch(mergeGroup -> mergeGroup.getMergePoints().contains(mergePoint)))
+                .forEach(mergePoint -> {
+
+                    ProcessingVertex mergePointVertex = processingVertices.get(mergePoint.asProcessingItem());
+                    mergePointVertex.setInMergeGroup(false);
+
+                    mergePoint.getTransitions().forEach(mergePointVertex.getMergePointTransition()::add);
+                });
+
+        /**
+         * Populate MergePoints within MergeGroups
+         */
+        for (CRReactorGraph.MergeGroup mergeGroup : crReactorGraph.getMergeGroups()) {
 
             if (mergeGroup.getMergePoints().size() == 1) {
                 /**
-                 * Disable merge group if there is only one merge point.
+                 * Ignore merge group if there is only one merge point.
                  */
-                ReactorGraph.MergePoint mergePoint = mergeGroup.getMergePoints().get(0);
-                ProcessingVertex mergePointVertex = processingVertices.get(mergePoint.processor);
+                CRReactorGraph.MergePoint mergePoint = mergeGroup.getMergePoints().get(0);
+                ProcessingVertex mergePointVertex = processingVertices.get(mergePoint.asProcessingItem());
                 mergePointVertex.setInMergeGroup(false);
 
                 mergePoint.getTransitions().forEach(mergePointVertex.getMergePointTransition()::add);
@@ -271,7 +289,7 @@ public class ReactorGraphExecutionBuilder {
                 CompletableFuture<Void> beforeMergeGroupMergingFuture = CompletableFuture.allOf(
                         mergeGroup.getMergePoints().stream()
                                 .map(mergePoint -> processingVertices.get(mergePoint.getProcessor()))
-                                .filter(vertex -> vertex.getProcessorInfo().getProcessorType() != ReactorGraph.ProcessorType.DETACHED_MERGE_POINT)
+                                .filter(vertex -> vertex.getProcessorInfo().getProcessingItemType() != CRReactorGraph.ProcessingItemType.MERGE_POINT)
                                 .map(ProcessingVertex::getProcessorFuture)
                                 .toArray(CompletableFuture[]::new)
                 );
@@ -310,14 +328,14 @@ public class ReactorGraphExecutionBuilder {
         /**
          * Populate outgoing flows
          */
-        for (ReactorGraph.MergePoint mergePoint : reactorGraph.mergeGroups.stream().map(ReactorGraph.MergeGroup::getMergePoints).flatMap(List::stream).collect(Collectors.toList())) {
+        for (CRReactorGraph.MergePoint mergePoint : crReactorGraph.getMergePoints()) {
 
             /**
              * MergeGroup can contain more that one MergePoint, so we have to wait all merge points to complete before
              * invoke processors.
              * We should not wait all merge point to complete if we are invoking other merge point within mergeGroup.
              */
-            ProcessingVertex mergePointVertex = processingVertices.get(mergePoint.processor);
+            ProcessingVertex mergePointVertex = processingVertices.get(mergePoint.asProcessingItem());
 
             CompletableFuture<MergePayloadContext> mergePointFuture = mergePointVertex.getMergePointFuture();
             CompletableFuture<MergePayloadContext> groupedMergePointFuture = mergePointVertex.isInMergeGroup() ?
@@ -337,7 +355,7 @@ public class ReactorGraphExecutionBuilder {
                      * activates when all merge points within merge group is completed
                      */
                     if (transition.handleBy != null) {
-                        ProcessingGraphItem proc = transition.handleBy;
+                        CRProcessingItem proc = transition.handleBy;
 
                         processingVertices.get(proc).incomingProcessorFlows.add(
                                 new TransitionFuture<>(
@@ -370,7 +388,7 @@ public class ReactorGraphExecutionBuilder {
                      * if merge point does not belong to same merge group - activate it only whole merge group is complete
                      */
                     if (transition.merge != null) {
-                        ProcessingGraphItem proc = transition.merge;
+                        CRProcessingItem proc = transition.merge;
 
                         ProcessingVertex transitionDestinationVertex = processingVertices.get(proc);
 
@@ -419,7 +437,7 @@ public class ReactorGraphExecutionBuilder {
          */
         processingVertices.forEach((processor, processingItem) -> {
 
-            if (processingItem.getProcessorInfo().getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+            if (processingItem.getProcessorInfo().getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
                 /**
                  * Detached merge point does not have graph processor, only merge point.
                  * No processor invocation is needed
@@ -523,7 +541,7 @@ public class ReactorGraphExecutionBuilder {
                 incomingFlows.add(vertex.beforeMergeGroupMergingFuture);
             }
 
-            if (vertex.getProcessorInfo().getProcessorType() != ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+            if (vertex.getProcessorInfo().getProcessingItemType() != CRReactorGraph.ProcessingItemType.MERGE_POINT) {
                 /**
                  * Ignore processor future for detached merge point
                  * And use it for all other cases
@@ -540,7 +558,7 @@ public class ReactorGraphExecutionBuilder {
                          */
                         HandlePayloadContext handlePayloadContext = null;
 
-                        if (vertex.getProcessorInfo().getProcessorType() != ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+                        if (vertex.getProcessorInfo().getProcessingItemType() != CRReactorGraph.ProcessingItemType.MERGE_POINT) {
 
                             handlePayloadContext = Optional.of(vertex.getProcessorFuture())
                                     .map(future -> {
@@ -632,11 +650,11 @@ public class ReactorGraphExecutionBuilder {
                                     .filter(context -> !context.isDeadTransition())
                                     .collect(Collectors.toList());
 
-                            if (vertex.getProcessorInfo().getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+                            if (vertex.getProcessorInfo().getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
                                 /**
                                  * Detached merge point
                                  */
-                                if(activeIncomingMergeFlows.size() == 0){
+                                if (activeIncomingMergeFlows.size() == 0) {
                                     throw new IllegalStateException(String.format("There is no incoming merge flows for detached merge point %s", vertex.getProcessor()));
 
                                 } else {
@@ -724,8 +742,8 @@ public class ReactorGraphExecutionBuilder {
     }
 
     private CompletableFuture<?> invokeHandlingMethod(
-            ReactorGraph.ProcessorInfo processorInfo,
-            ProcessingGraphItem processingItem,
+            CRReactorGraph.ProcessingItemInfo processorInfo,
+            CRProcessingItem processingItem,
             Object payload) {
 
         if (processingItem instanceof GraphProcessor) {
@@ -742,7 +760,7 @@ public class ReactorGraphExecutionBuilder {
     }
 
     private CompletableFuture<?> invokeHandlingMethod(
-            ReactorGraph.ProcessorInfo processorInfo,
+            CRReactorGraph.ProcessingItemInfo processorInfo,
             SubgraphProcessor graphProcessor,
             Object payload) {
 
@@ -755,7 +773,7 @@ public class ReactorGraphExecutionBuilder {
     }
 
     private CompletableFuture<?> invokeHandlingMethod(
-            ReactorGraph.ProcessorInfo processorInfo,
+            CRReactorGraph.ProcessingItemInfo processorInfo,
             Object payload) {
 
         GraphProcessorDescription description = processorInfo.description;
@@ -843,14 +861,14 @@ public class ReactorGraphExecutionBuilder {
                         param5
                 );
             } else if (processorInfo.description.handler5 != null) {
-                    return (CompletableFuture) processorInfo.description.handler6.handle(
-                            param1,
-                            param2,
-                            param3,
-                            param4,
-                            param5,
-                            param6
-                    );
+                return (CompletableFuture) processorInfo.description.handler6.handle(
+                        param1,
+                        param2,
+                        param3,
+                        param4,
+                        param5,
+                        param6
+                );
 
             } else {
                 CompletableFuture result = new CompletableFuture();
@@ -881,16 +899,16 @@ public class ReactorGraphExecutionBuilder {
                                       TransitionPayloadContext payloadContext,
                                       CompletableFuture<PayloadType> executionResultFuture) {
 
-        ReactorGraph.ProcessorInfo processorInfo = processingVertex.getProcessorInfo();
+        CRReactorGraph.ProcessingItemInfo processorInfo = processingVertex.getProcessorInfo();
         Object payload = payloadContext.getPayload();
 
         /**
          * In case of detached merge point processor should not have incoming handling transition.
          */
-        if (processorInfo.getProcessorType() == ReactorGraph.ProcessorType.DETACHED_MERGE_POINT) {
+        if (processorInfo.getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
             throw new IllegalStateException(String.format("Processor %s is of type %s and should not have any incoming handling transition",
                     processingVertex.getProcessor(),
-                    processorInfo.getProcessorType()));
+                    processorInfo.getProcessingItemType()));
         }
 
         ProfiledCall handleCall = profiler.profiledCall(ProfilerNames.PROCESSOR_HANDLE +
@@ -927,7 +945,7 @@ public class ReactorGraphExecutionBuilder {
             handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessor(), payload);
         }
 
-        if(handlingResult == null){
+        if (handlingResult == null) {
             RuntimeException exc = new RuntimeException(String.format(
                     "Failed handling by processor %s for payload %s %s. Handling method returned NULL." +
                             " Instance of CompletableFuture expected.",
@@ -985,9 +1003,8 @@ public class ReactorGraphExecutionBuilder {
     }
 
     /**
-     *
      * @param processingVertex
-     * @param processorResult empty in case of detached merge point
+     * @param processorResult       empty in case of detached merge point
      * @param payload
      * @param executionResultFuture
      * @param <PayloadType>
@@ -997,11 +1014,11 @@ public class ReactorGraphExecutionBuilder {
                                      Object payload,
                                      CompletableFuture<PayloadType> executionResultFuture) {
 
-        ReactorGraph.ProcessorInfo processorInfo = processingVertex.getProcessorInfo();
+        CRReactorGraph.ProcessingItemInfo processorInfo = processingVertex.getProcessorInfo();
 
         Supplier<Enum> mergerInvocation;
 
-        switch (processorInfo.getProcessorType()) {
+        switch (processorInfo.getProcessingItemType()) {
             case SUBGRAPH:
             case PLAIN:
                 if (processorInfo.getMerger() == null) {
@@ -1020,7 +1037,7 @@ public class ReactorGraphExecutionBuilder {
                 break;
 
             default:
-                throw new IllegalArgumentException(String.format("Unknown processor type: %s", processorInfo.getProcessorType()));
+                throw new IllegalArgumentException(String.format("Unknown processor type: %s", processorInfo.getProcessingItemType()));
         }
 
 

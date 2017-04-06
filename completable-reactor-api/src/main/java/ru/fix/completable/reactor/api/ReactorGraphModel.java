@@ -37,7 +37,7 @@ public class ReactorGraphModel {
     public static class StartPoint {
         public Coordinates coordinates;
         public Source coordinatesSource;
-        public List<String> processors;
+        public List<String> processingItems;
     }
 
     @Data

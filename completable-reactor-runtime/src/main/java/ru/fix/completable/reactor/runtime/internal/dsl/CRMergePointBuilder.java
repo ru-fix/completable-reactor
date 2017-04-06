@@ -71,16 +71,15 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
         }
 
         if (graph.getMergePoints().stream()
-                .filter(graphMergePoint -> graphMergePoint.getType() == CRReactorGraph.MergePoint.Type.PROCESSOR)
-                .anyMatch(graphMergePoint -> graphMergePoint.getProcessor().equals(processor))) {
+                .filter(graphMergePoint -> graphMergePoint.getType() == CRReactorGraph.MergePoint.Type.SUBGRAPH)
+                .anyMatch(graphMergePoint -> graphMergePoint.getSubgraph().equals(crSubgraph))) {
 
-            throw new IllegalArgumentException(String.format("Processor merge point for processor %s already registered.", ((CRProcessor)
-                    processor).getDebugName()));
+            throw new IllegalArgumentException(String.format("Subgraph merge point %s already registered.", crSubgraph.getDebugName()));
         }
 
         CRReactorGraph.MergePoint graphMergePoint = new CRReactorGraph.MergePoint()
-                .setType(CRReactorGraph.MergePoint.Type.PROCESSOR)
-                .setProcessor(crProcessor);
+                .setType(CRReactorGraph.MergePoint.Type.SUBGRAPH)
+                .setSubgraph(crSubgraph);
         graph.getMergePoints().add(graphMergePoint);
 
         return new CRMergePointBuilder<>(builderContext, graphMergePoint);
@@ -149,7 +148,7 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
 
     @Override
     public MergeGroupBuilder<PayloadType> mergeGroup() {
-        return new CRMergeGroupBuilder<>(graph);
+        return new CRMergeGroupBuilder<>(builderContext);
     }
 
     @Override

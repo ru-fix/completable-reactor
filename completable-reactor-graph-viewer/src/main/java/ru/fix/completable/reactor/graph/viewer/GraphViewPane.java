@@ -255,7 +255,7 @@ public class GraphViewPane extends ScrollPane {
         val startPointNode = new StartPointNode(translator, graphModel, actionListener, coordinateItems);
         pane.getChildren().add(startPointNode);
 
-        graphModel.startPoint.processors.forEach(processorName -> {
+        graphModel.startPoint.processingItems.forEach(processorName -> {
             TransitionLine transition;
 
             if (graphModel.processors.get(processorName).processorType == ReactorGraphModel.ProcessorType.DETACHED_MERGE_POINT) {

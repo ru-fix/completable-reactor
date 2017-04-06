@@ -69,11 +69,12 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
     }
 
     @Override
-    public Coordinates<PayloadType> merge(Class processorType, int id, int x, int y) {
+    public Coordinates<PayloadType> merge(Class processorOrSubgraphType, int id, int x, int y) {
         List<CRReactorGraph.MergePoint> matchedMergePoints = graph.getMergePoints().stream()
-                .filter(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.PROCESSOR)
+                .filter(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.PROCESSOR ||
+                        mergePoint.getType() == CRReactorGraph.MergePoint.Type.SUBGRAPH)
                 .filter(mergePoint -> CRReactorGraph.serialize(mergePoint.asProcessingItem()).equals(
-                        CRReactorGraph.serialize(processorType, id)))
+                        CRReactorGraph.serialize(processorOrSubgraphType, id)))
                 .collect(Collectors.toList());
 
         if (matchedMergePoints.size() > 1) {
@@ -83,13 +84,13 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
             throw new IllegalArgumentException(String.format(
                     "Found multiple merge points that matches %s." +
                             " Merge points: %s",
-                    CRReactorGraph.serialize(processorType, id),
+                    CRReactorGraph.serialize(processorOrSubgraphType, id),
                     matchedMergePointIds));
 
         } else if (matchedMergePoints.size() <= 0) {
             throw new IllegalArgumentException(String.format(
                     "Could not find merge point that matches %s",
-                    CRReactorGraph.serialize(processorType, id)));
+                    CRReactorGraph.serialize(processorOrSubgraphType, id)));
         }
 
         CRReactorGraph.MergePoint mergePoint = matchedMergePoints.get(0);
@@ -129,7 +130,8 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
     @Override
     public Coordinates<PayloadType> complete(Class processorOrSubgraphType, int id, int x, int y) {
         List<CRReactorGraph.MergePoint> matchedMergePoints = graph.getMergePoints().stream()
-                .filter(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.PROCESSOR)
+                .filter(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.PROCESSOR ||
+                        mergePoint.getType() == CRReactorGraph.MergePoint.Type.SUBGRAPH)
                 .filter(mergePoint -> CRReactorGraph.serialize(mergePoint.getProcessor()).equals(
                         CRReactorGraph.serialize(processorOrSubgraphType, id)))
                 .collect(Collectors.toList());

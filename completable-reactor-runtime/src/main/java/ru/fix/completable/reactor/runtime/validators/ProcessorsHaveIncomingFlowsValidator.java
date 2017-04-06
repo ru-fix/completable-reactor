@@ -29,7 +29,7 @@ public class ProcessorsHaveIncomingFlowsValidator implements GraphValidator {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        processorsWithIncomingTransitions.addAll(graph.getStartPoint().getProcessors());
+        processorsWithIncomingTransitions.addAll(graph.getStartPoint().getProcessingItems());
 
         graph.getMergeGroups().stream()
                 .map(MergeGroup::getMergePoints)

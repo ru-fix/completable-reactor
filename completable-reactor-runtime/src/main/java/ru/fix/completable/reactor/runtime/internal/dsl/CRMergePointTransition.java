@@ -42,6 +42,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
                                     "Join condition into single complete transition.",
                             mergePoint.getProcessor().getDebugName()));
                 case PROCESSOR:
+                case SUBGRAPH:
                     throw new IllegalArgumentException(String.format(
                             "Complete transition already present in merge point %s. " +
                                     "Join condition into single complete transition.",
