@@ -15,4 +15,6 @@ public interface MergeGroupBuilder<PayloadType> {
 
     MergePointBuilder<PayloadType> mergePoint(MergePoint<PayloadType> mergePoint);
 
+    Coordinates<PayloadType> coordinates();
+
 }

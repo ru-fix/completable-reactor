@@ -90,4 +90,9 @@ public class CRMergeGroupBuilder<PayloadType> implements MergeGroupBuilder<Paylo
         assertMergeGroup();
         return CRMergePointBuilder.startBuildingMergePoint(builderContext, mergePoint);
     }
+
+    @Override
+    public Coordinates<PayloadType> coordinates() {
+        return new CRCoordinates<>(builderContext);
+    }
 }
