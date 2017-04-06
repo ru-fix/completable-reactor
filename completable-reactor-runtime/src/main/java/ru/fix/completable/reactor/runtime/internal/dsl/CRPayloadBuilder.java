@@ -20,17 +20,17 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
     }
 
     private void addToStartPoint(CRProcessingItem processingItem) {
-        if ((graph.getStartPoint().getProcessors().contains(processingItem))) {
+        if ((graph.getStartPoint().getProcessingItems().contains(processingItem))) {
             throw new IllegalArgumentException(String.format(
                     "Could not add twice same processing item to handle payload." +
                             " Registered processors: %s. New processors: %s.",
-                    graph.getStartPoint().getProcessors().stream()
+                    graph.getStartPoint().getProcessingItems().stream()
                             .map(CRProcessingItem::getDebugName)
                             .collect(Collectors.joining(",")),
                     processingItem.getDebugName()));
         }
 
-        graph.getStartPoint().getProcessors().add(processingItem);
+        graph.getStartPoint().getProcessingItems().add(processingItem);
     }
 
 

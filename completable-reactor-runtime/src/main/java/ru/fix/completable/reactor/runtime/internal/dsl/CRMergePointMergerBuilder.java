@@ -32,7 +32,9 @@ public class CRMergePointMergerBuilder<PayloadType> implements MergePointMergerB
     @Override
     public MergePointDescription<PayloadType> withMerger(String title, String[] docs, MergePointMerger<PayloadType> mergePointMerger) {
 
-        Optional<LambdaReflector.AnnotatedMethod> mergerMethod = LambdaReflector.annotatedMethodReference(mergePointMerger, Reactored.class);
+        Optional<LambdaReflector.AnnotatedMethod<Reactored>> mergerMethod = LambdaReflector.annotatedMethodReference(
+                mergePointMerger,
+                Reactored.class);
 
         if(title == null) {
             title = mergerMethod

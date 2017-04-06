@@ -9,7 +9,6 @@ import ru.fix.commons.profiler.Profiler;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
 
 import java.util.concurrent.CompletableFuture;
@@ -61,11 +60,11 @@ public class MockSubgraphTest {
     @Test
     public void mock_subgraph() throws Exception {
 
-        val processor1 = graphBuilder.describeProcessor(Processor1.class)
+        val processor1 = graphBuilder.processor()
                 .forPayload(MainPayload.class)
-                .withHandler(Processor1::handle)
+                .withHandler(new Processor1()::handle)
                 .withMerger((mainPayload, any) -> Status.OK)
-                .buildProcessor(new Processor1());
+                .buildProcessor();
 
         val subgraph = graphBuilder.subgraph(SubgraphPayload.class)
                 .forPayload(MainPayload.class)
@@ -78,18 +77,17 @@ public class MockSubgraphTest {
 
 
         val graph = graphBuilder.payload(MainPayload.class)
-                .startPoint()
                 .handleBy(processor1)
 
-                .singleMerge(processor1)
+                .mergePoint(processor1)
                 .onAny().handleBy(subgraph)
 
-                .singleMerge(subgraph)
+                .mergePoint(subgraph)
                 .onAny().complete()
                 .coordinates()
                 .buildGraph();
 
-        ReactorGraph.write(graph);
+        CompletableReactor.write(graph);
         reactor.registerReactorGraph(graph);
 
 
