@@ -11,13 +11,10 @@ import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
+import ru.fix.completable.reactor.runtime.dsl.MergePoint;
 import ru.fix.completable.reactor.runtime.dsl.Processor;
 import ru.fix.completable.reactor.runtime.dsl.Subgraph;
-import ru.fix.completable.reactor.runtime.internal.dsl.CRMergePoint;
-import ru.fix.completable.reactor.runtime.internal.GraphProcessor;
-import ru.fix.completable.reactor.ui.ReactorHtmlUIBuilder;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +22,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -73,21 +69,7 @@ public class CompletableReactorTest {
     }
 
     static void printGraph(ReactorGraph<?>... graphs) throws Exception {
-
-        ReactorGraph.write(graphs);
-
-        System.out.println(
-                ReactorHtmlUIBuilder.write(
-                        Arrays.stream(graphs)
-                                .map(ReactorGraph::serialize)
-                                .collect(Collectors.toList()),
-                        Paths.get(String.format("%s.%s.graph.html",
-                                CompletableReactorTest.class.getSimpleName(),
-                                Arrays.stream(graphs)
-                                        .map(ReactorGraph::getPayloadClass)
-                                        .map(Class::getSimpleName)
-                                        .collect(Collectors.joining("."))))
-                ).toUri());
+        CompletableReactor.write(graphs);
     }
 
 
@@ -428,7 +410,7 @@ public class CompletableReactorTest {
         Mockito.when(processorInterface.handle()).thenReturn(CompletableFuture.completedFuture(42));
 
 
-        GraphProcessor<IdProcessorInterface, SingleInterfaceProcessorPayload> idProcessor1 = graphBuilder.describeProcessor(IdProcessorInterface.class)
+        Processor<IdProcessorInterface, SingleInterfaceProcessorPayload> idProcessor1 = graphBuilder.describeProcessor(IdProcessorInterface.class)
                 .forPayload(SingleInterfaceProcessorPayload.class)
                 .withHandler(IdProcessorInterface::handle)
                 .withMerger((pld, id) -> {
