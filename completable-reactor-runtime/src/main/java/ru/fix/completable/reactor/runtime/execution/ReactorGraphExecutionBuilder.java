@@ -9,6 +9,7 @@ import ru.fix.commons.profiler.Profiler;
 import ru.fix.completable.reactor.runtime.ProfilerNames;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
+import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
@@ -27,6 +28,7 @@ public class ReactorGraphExecutionBuilder {
     private final Profiler profiler;
     private final ImmutabilityChecker immutabilityChecker;
     private final ThreadsafeCopyMaker threadsafeCopyMaker;
+    private final DebugSerializer debugSerializer;
 
     private boolean debugProcessingVertexGraphState = false;
 
@@ -150,12 +152,14 @@ public class ReactorGraphExecutionBuilder {
             Profiler profiler,
             ImmutabilityChecker immutabilityChecker,
             ThreadsafeCopyMaker threadsafeCopyMaker,
-            SubgraphRunner subgraphRunner) {
+            SubgraphRunner subgraphRunner,
+            DebugSerializer debugSerializer) {
 
         this.profiler = profiler;
         this.immutabilityChecker = immutabilityChecker;
         this.threadsafeCopyMaker = threadsafeCopyMaker;
         this.subgraphRunner = subgraphRunner;
+        this.debugSerializer = debugSerializer;
     }
 
     public ReactorGraphExecutionBuilder setImmutabilityControlLevel(ImmutabilityControlLevel immutabilityControlLevel) {
@@ -756,8 +760,10 @@ public class ReactorGraphExecutionBuilder {
             case SUBGRAPH:
                 return invokeSubgraphHandlingMethod(processorInfo, payload);
             default:
-                throw new IllegalStateException(String.format("Processing item %s of type %s not supported",
-                        processingItem.getDebugName(), processorInfo.getProcessingItemType()));
+                throw new IllegalStateException(
+                        String.format("Processing item %s of type %s not supported",
+                                processingItem.getDebugName(),
+                                processorInfo.getProcessingItemType()));
         }
     }
 
@@ -879,7 +885,7 @@ public class ReactorGraphExecutionBuilder {
                                 String.format("There is no handler in processor %s for payload %s %s",
                                         processingItem.getDebugName(),
                                         payload.getClass(),
-                                        payload)));
+                                        debugSerializer.dumpObject(payload))));
                 return result;
             }
 
@@ -890,7 +896,7 @@ public class ReactorGraphExecutionBuilder {
                             String.format("Exception during handling in processor %s for payload %s %s",
                                     processingItem.getDebugName(),
                                     payload.getClass(),
-                                    payload),
+                                    debugSerializer.dumpObject(payload)),
                             exc));
             return result;
         }
@@ -927,31 +933,50 @@ public class ReactorGraphExecutionBuilder {
         Object payloadClone;
         ImmutabilityChecker.Snapshot payloadCloneSnapshot;
 
-        if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
-            /**
-             * Invoke handling with immutability check.
-             * Do not use origin payload, make two copies of payload.
-             */
-            payloadClone = immutabilityChecker.clone(payload);
-            payloadCloneSnapshot = immutabilityChecker.takeSnapshot(payloadClone);
+        try {
+            if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
+                /**
+                 * Invoke handling with immutability check.
+                 * Do not use origin payload, make two copies of payload.
+                 */
+                payloadClone = immutabilityChecker.clone(payload);
+                payloadCloneSnapshot = immutabilityChecker.takeSnapshot(payloadClone);
 
-            handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessor(), payloadClone);
+                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessor(), payloadClone);
 
-        } else {
-            /**
-             * Invoke handling without immutability check.
-             */
-            payloadClone = null;
-            payloadCloneSnapshot = null;
+            } else {
+                /**
+                 * Invoke handling without immutability check.
+                 */
+                payloadClone = null;
+                payloadCloneSnapshot = null;
 
-            handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessor(), payload);
+                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessor(), payload);
+            }
+        } catch (Exception handlingException) {
+            RuntimeException exc = new RuntimeException(
+                    String.format(
+                            "Failed handling by processor %s for payload %s %s. Handling method raised exception: %s.",
+                            processingVertex.getProcessor().getDebugName(),
+                            payload.getClass(),
+                            debugSerializer.dumpObject(payload),
+                            handlingException),
+                    handlingException);
+
+            log.error(exc.getMessage(), exc);
+            executionResultFuture.completeExceptionally(exc);
+            processingVertex.getProcessorFuture().complete(new HandlePayloadContext().setTerminal(true));
+            return;
         }
 
         if (handlingResult == null) {
-            RuntimeException exc = new RuntimeException(String.format(
-                    "Failed handling by processor %s for payload %s %s. Handling method returned NULL." +
-                            " Instance of CompletableFuture expected.",
-                    processingVertex.getProcessor().getDebugName(), payload.getClass(), payload));
+            RuntimeException exc = new RuntimeException(
+                    String.format(
+                            "Failed handling by processor %s for payload %s %s. Handling method returned NULL." +
+                                    " Instance of CompletableFuture expected.",
+                            processingVertex.getProcessor().getDebugName(),
+                            payload.getClass(),
+                            debugSerializer.dumpObject(payload)));
 
             log.error(exc.getMessage(), exc);
             executionResultFuture.completeExceptionally(exc);
@@ -966,7 +991,9 @@ public class ReactorGraphExecutionBuilder {
 
                 Optional<String> diff = immutabilityChecker.diff(payloadCloneSnapshot, payloadClone);
                 if (diff.isPresent()) {
-                    String message = String.format("Concurrent modification of payload %s. Diff: %s.", payload, diff.get());
+                    String message = String.format("Concurrent modification of payload %s. Diff: %s.",
+                            debugSerializer.dumpObject(payload),
+                            diff.get());
 
                     switch (controlLevel) {
                         case LOG_ERROR:
@@ -989,9 +1016,13 @@ public class ReactorGraphExecutionBuilder {
             }
 
             if (thr != null) {
-                RuntimeException exc = new RuntimeException(String.format(
-                        "Failed handling by processor %s for payload %s %s",
-                        processingVertex.getProcessor().getDebugName(), payload.getClass(), payload), thr);
+                RuntimeException exc = new RuntimeException(
+                        String.format(
+                                "Failed handling by processor %s for payload %s %s",
+                                processingVertex.getProcessor().getDebugName(),
+                                payload.getClass(),
+                                debugSerializer.dumpObject(payload)),
+                        thr);
 
                 log.error(exc.getMessage(), exc);
                 executionResultFuture.completeExceptionally(exc);
@@ -1022,7 +1053,7 @@ public class ReactorGraphExecutionBuilder {
 
         switch (processorInfo.getProcessingItemType()) {
             case PROCESSOR:
-                if(processorInfo.getDescription().getMerger() == null){
+                if (processorInfo.getDescription().getMerger() == null) {
                     /**
                      * This Processor does not have merger
                      */
@@ -1075,7 +1106,7 @@ public class ReactorGraphExecutionBuilder {
                 throw new IllegalStateException(String.format("Merging process returned %s status." +
                                 " But merge point of processor %s does not have matching transition for this status.",
                         mergeStatus,
-                        processingVertex.getProcessor()));
+                        processingVertex.getProcessor().getDebugName()));
             }
 
             /**
@@ -1093,7 +1124,8 @@ public class ReactorGraphExecutionBuilder {
                         if (executionResultFuture.isDone()) {
                             previousResult = executionResultFuture.get();
                         } else {
-                            log.error("Illegal graph execution state. Completion failed for new result, but execution result from previous terminal step is not complete.");
+                            log.error("Illegal graph execution state." +
+                                    " Completion failed for new result, but execution result from previous terminal step is not complete.");
                         }
                     } catch (Exception exc) {
                         log.error("Failed to get completed execution result from previous terminal step.", exc);
@@ -1102,9 +1134,9 @@ public class ReactorGraphExecutionBuilder {
                     log.error("Processing chain was completed by at least two different terminal steps." +
                                     " Already completed with result {}." +
                                     " New completion result {} in merge point for processor {}",
-                            previousResult,
-                            payload,
-                            processingVertex.getProcessor());
+                            debugSerializer.dumpObject(previousResult),
+                            debugSerializer.dumpObject(payload),
+                            processingVertex.getProcessor().getDebugName());
                 }
 
                 /**
@@ -1122,9 +1154,9 @@ public class ReactorGraphExecutionBuilder {
         } catch (Exception exc) {
             log.error("Failed to merge payload {} {} by processing item {} for result {}",
                     payload.getClass(),
-                    payload,
+                    debugSerializer.dumpObject(payload),
                     processingVertex.getProcessor().getDebugName(),
-                    processorResult,
+                    debugSerializer.dumpObject(processorResult),
                     exc);
 
             executionResultFuture.completeExceptionally(exc);
