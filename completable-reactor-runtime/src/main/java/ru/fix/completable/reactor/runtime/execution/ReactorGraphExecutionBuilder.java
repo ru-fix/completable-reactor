@@ -1021,21 +1021,34 @@ public class ReactorGraphExecutionBuilder {
         Supplier<Enum> mergerInvocation;
 
         switch (processorInfo.getProcessingItemType()) {
-            case SUBGRAPH:
-            case PLAIN:
-                if (processorInfo.getMerger() == null) {
+            case PROCESSOR:
+                if(processorInfo.getDescription().getMerger() == null){
                     /**
-                     * This is GraphProcessor or SubgraphProcessor without merger
+                     * This Processor does not have merger
                      */
                     processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
                     return;
                 } else {
-                    mergerInvocation = () -> (Enum) processorInfo.getMerger().merge(payload, processorResult);
+                    mergerInvocation = () -> (Enum) processorInfo.getDescription().getMerger().merge(
+                            payload,
+                            processorResult);
                 }
                 break;
-
-            case DETACHED_MERGE_POINT:
-                mergerInvocation = () -> (Enum) processorInfo.getDetachedMerger().merge(payload);
+            case SUBGRAPH:
+                if (processorInfo.getSubgraphDescription().getMerger() == null) {
+                    /**
+                     * This Subgraph does not have merger
+                     */
+                    processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
+                    return;
+                } else {
+                    mergerInvocation = () -> (Enum) processorInfo.getSubgraphDescription().getMerger().merge(
+                            payload,
+                            processorResult);
+                }
+                break;
+            case MERGE_POINT:
+                mergerInvocation = () -> (Enum) processorInfo.getDetachedMergePointDescription().getMerger().merge(payload);
                 break;
 
             default:
@@ -1054,7 +1067,7 @@ public class ReactorGraphExecutionBuilder {
             /**
              * Select outgoing transitions that matches mergeStatus
              */
-            List<ReactorGraph.Transition> activeTransitions = processingVertex.getMergePointTransition().stream()
+            List<CRReactorGraph.Transition> activeTransitions = processingVertex.getMergePointTransition().stream()
                     .filter(transition -> transition.isOnAny() || transition.getMergeStatuses().contains(mergeStatus))
                     .collect(Collectors.toList());
 
@@ -1068,7 +1081,7 @@ public class ReactorGraphExecutionBuilder {
             /**
              * check if this merge point have terminal transitions that matches merge status
              */
-            if (activeTransitions.stream().anyMatch(ReactorGraph.Transition::isComplete)) {
+            if (activeTransitions.stream().anyMatch(CRReactorGraph.Transition::isComplete)) {
 
                 /**
                  * Handle terminal transition by completing execution result
@@ -1107,10 +1120,10 @@ public class ReactorGraphExecutionBuilder {
             }
 
         } catch (Exception exc) {
-            log.error("Failed to merge payload {} {} by processor {}  for result {}",
+            log.error("Failed to merge payload {} {} by processing item {} for result {}",
                     payload.getClass(),
                     payload,
-                    processingVertex.getProcessor(),
+                    processingVertex.getProcessor().getDebugName(),
                     processorResult,
                     exc);
 
