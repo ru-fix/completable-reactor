@@ -13,6 +13,7 @@ import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
+import ru.fix.completable.reactor.runtime.internal.dsl.CRProcessorDescription;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -343,19 +344,19 @@ public class ReactorGraphExecutionBuilder {
                             thenComposeAsync(any -> mergePointVertex.getMergePointFuture()) :
                     mergePointVertex.getMergePointFuture();
 
-            for (ReactorGraph.Transition transition : mergePoint.transitions) {
+            for (CRReactorGraph.Transition transition : mergePoint.getTransitions()) {
 
                 /**
                  * Terminal merge point vertex handled synchronously with merging process
                  * Skip that kind of transition during pre-processing.
                  */
-                if (!transition.isComplete) {
+                if (!transition.isComplete()) {
                     /**
                      * Populate outgoing processor flows
                      * activates when all merge points within merge group is completed
                      */
-                    if (transition.handleBy != null) {
-                        CRProcessingItem proc = transition.handleBy;
+                    if (transition.getHandleBy() != null) {
+                        CRProcessingItem proc = transition.getHandleBy();
 
                         processingVertices.get(proc).incomingProcessorFlows.add(
                                 new TransitionFuture<>(
@@ -367,7 +368,8 @@ public class ReactorGraphExecutionBuilder {
                                                     } else if (context.isDeadTransition()) {
                                                         return new TransitionPayloadContext().setDeadTransition(true);
 
-                                                    } else if (transition.isOnAny || transition.getMergeStatuses().contains(context.mergeResult)) {
+                                                    } else if (transition.isOnAny() || transition.getMergeStatuses().contains(context
+                                                            .mergeResult)) {
                                                         return new TransitionPayloadContext()
                                                                 .setPayload(context.payload);
                                                     } else {
@@ -387,8 +389,8 @@ public class ReactorGraphExecutionBuilder {
                      * if merge point in same merge group activate it as soon as merge point completes
                      * if merge point does not belong to same merge group - activate it only whole merge group is complete
                      */
-                    if (transition.merge != null) {
-                        CRProcessingItem proc = transition.merge;
+                    if (transition.getMerge() != null) {
+                        CRProcessingItem proc = transition.getMerge();
 
                         ProcessingVertex transitionDestinationVertex = processingVertices.get(proc);
 
@@ -413,7 +415,9 @@ public class ReactorGraphExecutionBuilder {
                                                     } else if (context.isDeadTransition()) {
                                                         return new MergePayloadContext().setDeadTransition(true);
 
-                                                    } else if (transition.isOnAny || transition.getMergeStatuses().contains(context.mergeResult)) {
+                                                    } else if (transition.isOnAny() ||
+                                                            transition.getMergeStatuses().contains(context.mergeResult)) {
+
                                                         return new MergePayloadContext()
                                                                 .setPayload(context.payload)
                                                                 .setMergeResult(context.mergeResult);
@@ -746,37 +750,35 @@ public class ReactorGraphExecutionBuilder {
             CRProcessingItem processingItem,
             Object payload) {
 
-        if (processingItem instanceof GraphProcessor) {
-            return invokeHandlingMethod(processorInfo,
-                    (GraphProcessor) processingItem,
-                    payload);
-        } else if (processingItem instanceof SubgraphProcessor) {
-            return invokeHandlingMethod(processorInfo,
-                    (SubgraphProcessor) processingItem,
-                    payload);
-        } else {
-            throw new IllegalStateException(String.format("processing item of type %s not supported", processingItem.getClass()));
+        switch (processorInfo.getProcessingItemType()) {
+            case PROCESSOR:
+                return invokeProcessorHandlingMethod(processorInfo, processingItem, payload);
+            case SUBGRAPH:
+                return invokeSubgraphHandlingMethod(processorInfo, payload);
+            default:
+                throw new IllegalStateException(String.format("Processing item %s of type %s not supported",
+                        processingItem.getDebugName(), processorInfo.getProcessingItemType()));
         }
     }
 
-    private CompletableFuture<?> invokeHandlingMethod(
+    private CompletableFuture<?> invokeSubgraphHandlingMethod(
             CRReactorGraph.ProcessingItemInfo processorInfo,
-            SubgraphProcessor graphProcessor,
             Object payload) {
 
-        Object param = processorInfo.subgraphDescription.arg.apply(payload);
-        if (processorInfo.subgraphDescription.isCopyArg) {
+        Object param = processorInfo.getSubgraphDescription().getArg().apply(payload);
+        if (processorInfo.getSubgraphDescription().isCopyArg()) {
             param = threadsafeCopyMaker.makeThreadsafeCopy(param);
         }
 
         return subgraphRunner.run(param);
     }
 
-    private CompletableFuture<?> invokeHandlingMethod(
+    private CompletableFuture<?> invokeProcessorHandlingMethod(
             CRReactorGraph.ProcessingItemInfo processorInfo,
+            CRProcessingItem processingItem,
             Object payload) {
 
-        GraphProcessorDescription description = processorInfo.description;
+        CRProcessorDescription description = processorInfo.getDescription();
 
         try {
 
@@ -787,81 +789,81 @@ public class ReactorGraphExecutionBuilder {
             Object param5 = null;
             Object param6 = null;
 
-            if (description.arg1 != null) {
-                param1 = processorInfo.description.arg1.apply(payload);
-                if (description.isCopyArg1) {
+            if (description.getArg1() != null) {
+                param1 = description.getArg1().apply(payload);
+                if (description.isCopyArg1()) {
                     param1 = threadsafeCopyMaker.makeThreadsafeCopy(param1);
                 }
             }
-            if (description.arg2 != null) {
-                param2 = processorInfo.description.arg2.apply(payload);
-                if (description.isCopyArg2) {
+            if (description.getArg2() != null) {
+                param2 = description.getArg2().apply(payload);
+                if (description.isCopyArg2()) {
                     param2 = threadsafeCopyMaker.makeThreadsafeCopy(param2);
                 }
             }
-            if (description.arg3 != null) {
-                param3 = processorInfo.description.arg3.apply(payload);
-                if (description.isCopyArg3) {
+            if (description.getArg3() != null) {
+                param3 = description.getArg3().apply(payload);
+                if (description.isCopyArg3()) {
                     param3 = threadsafeCopyMaker.makeThreadsafeCopy(param3);
                 }
             }
-            if (description.arg4 != null) {
-                param4 = processorInfo.description.arg4.apply(payload);
-                if (description.isCopyArg4) {
+            if (description.getArg4() != null) {
+                param4 = description.getArg4().apply(payload);
+                if (description.isCopyArg4()) {
                     param4 = threadsafeCopyMaker.makeThreadsafeCopy(param4);
                 }
             }
-            if (description.arg5 != null) {
-                param5 = processorInfo.description.arg5.apply(payload);
-                if (description.isCopyArg5) {
+            if (description.getArg5() != null) {
+                param5 = description.getArg5().apply(payload);
+                if (description.isCopyArg5()) {
                     param5 = threadsafeCopyMaker.makeThreadsafeCopy(param5);
                 }
             }
-            if (description.arg6 != null) {
-                param6 = processorInfo.description.arg6.apply(payload);
-                if (description.isCopyArg6) {
+            if (description.getArg6() != null) {
+                param6 = description.getArg6().apply(payload);
+                if (description.isCopyArg6()) {
                     param6 = threadsafeCopyMaker.makeThreadsafeCopy(param6);
                 }
             }
 
 
-            if (processorInfo.description.handler0 != null) {
-                return (CompletableFuture) processorInfo.description.handler0.handle();
+            if (description.getHandler0() != null) {
+                return (CompletableFuture) description.getHandler0().handle();
 
-            } else if (processorInfo.description.handler1 != null) {
-                return (CompletableFuture) processorInfo.description.handler1.handle(param1);
+            } else if (description.getHandler1() != null) {
+                return (CompletableFuture) description.getHandler1().handle(param1);
 
 
-            } else if (processorInfo.description.handler2 != null) {
-                return (CompletableFuture) processorInfo.description.handler2.handle(
+            } else if (description.getHandler2() != null) {
+                return (CompletableFuture) description.getHandler2().handle(
                         param1,
                         param2
                 );
-            } else if (processorInfo.description.handler3 != null) {
-                return (CompletableFuture) processorInfo.description.handler3.handle(
+            } else if (description.getHandler3() != null) {
+                return (CompletableFuture) description.getHandler3().handle(
                         param1,
                         param2,
                         param3
                 );
 
-            } else if (processorInfo.description.handler4 != null) {
-                return (CompletableFuture) processorInfo.description.handler4.handle(
+            } else if (description.getHandler4() != null) {
+                return (CompletableFuture) description.getHandler4().handle(
                         param1,
                         param2,
                         param3,
                         param4
                 );
 
-            } else if (processorInfo.description.handler5 != null) {
-                return (CompletableFuture) processorInfo.description.handler5.handle(
+            } else if (description.getHandler5() != null) {
+                return (CompletableFuture) description.getHandler5().handle(
                         param1,
                         param2,
                         param3,
                         param4,
                         param5
                 );
-            } else if (processorInfo.description.handler5 != null) {
-                return (CompletableFuture) processorInfo.description.handler6.handle(
+            } else if (description.getHandler6() != null) {
+                return (CompletableFuture) description.getHandler6().handle(
                         param1,
                         param2,
                         param3,
@@ -875,7 +877,7 @@ public class ReactorGraphExecutionBuilder {
                 result.completeExceptionally(
                         new IllegalArgumentException(
                                 String.format("There is no handler in processor %s for payload %s %s",
-                                        processor.getClass(),
+                                        processingItem.getDebugName(),
                                         payload.getClass(),
                                         payload)));
                 return result;
@@ -886,7 +888,7 @@ public class ReactorGraphExecutionBuilder {
             result.completeExceptionally(
                     new IllegalArgumentException(
                             String.format("Exception during handling in processor %s for payload %s %s",
-                                    processor.getClass(),
+                                    processingItem.getDebugName(),
                                     payload.getClass(),
                                     payload),
                             exc));
@@ -911,8 +913,8 @@ public class ReactorGraphExecutionBuilder {
                     processorInfo.getProcessingItemType()));
         }
 
-        ProfiledCall handleCall = profiler.profiledCall(ProfilerNames.PROCESSOR_HANDLE +
-                processingVertex.getProcessor().getProfilingName())
+        ProfiledCall handleCall = profiler.profiledCall(
+                ProfilerNames.PROCESSOR_HANDLE + processingVertex.getProcessor().getProfilingName())
                 .start();
 
         CompletableFuture<?> handlingResult;
