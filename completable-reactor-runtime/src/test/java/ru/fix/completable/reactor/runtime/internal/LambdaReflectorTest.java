@@ -1,7 +1,6 @@
-package ru.fix.completable.reactor.runtime;
+package ru.fix.completable.reactor.runtime.internal;
 
 import org.junit.Test;
-import ru.fix.completable.reactor.runtime.internal.LambdaReflector;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -77,10 +76,10 @@ public class LambdaReflectorTest {
     @Test
     public void signature_check() throws Exception {
         assertEquals(
-                "(Lru/fix/completable/reactor/runtime/LambdaReflectorTest$Data;Ljava/lang/Object;[I)Ljava/lang/String;",
+                "(Lru/fix/completable/reactor/runtime/internal/LambdaReflectorTest$Data;Ljava/lang/Object;[I)Ljava/lang/String;",
                 LambdaReflector.signature(getMethodByName("signature1")));
         assertEquals(
-                "(I[Lru/fix/completable/reactor/runtime/LambdaReflectorTest$Data;)V",
+                "(I[Lru/fix/completable/reactor/runtime/internal/LambdaReflectorTest$Data;)V",
                 LambdaReflector.signature(getMethodByName("signature2")));
         assertEquals(
                 "(Ljava/lang/Integer;)I",
@@ -94,9 +93,9 @@ public class LambdaReflectorTest {
         Function2<String, LambdaReflectorTest, String> instanceMethodLambda = LambdaReflectorTest::myInstanceMethod;
         Function1<String, String> dynamicLambda = value -> value;
 
-        assertEquals("value-static", LambdaReflector.methodReference(staticMethodLambda).get().invoke(null, "value"));
+        assertEquals("value-static", LambdaReflector.methodReference(staticMethodLambda).get().getMethod().invoke(null, "value"));
 
-        assertEquals("value-instance", LambdaReflector.methodReference(instanceMethodLambda).get().invoke(this, "value"));
+        assertEquals("value-instance", LambdaReflector.methodReference(instanceMethodLambda).get().getMethod().invoke(this, "value"));
 
         //should not throw exception
         LambdaReflector.methodReference(dynamicLambda);
@@ -107,8 +106,8 @@ public class LambdaReflectorTest {
         Function1<String, Integer> twin1 = LambdaReflectorTest::staticTwinMethod;
         Function1<String, Short> twin2 = LambdaReflectorTest::staticTwinMethod;
 
-        assertEquals("static-twin1-1", LambdaReflector.methodReference(twin1).get().invoke(null, 1));
-        assertEquals("static-twin2-2", LambdaReflector.methodReference(twin2).get().invoke(null, (short) 2));
+        assertEquals("static-twin1-1", LambdaReflector.methodReference(twin1).get().getMethod().invoke(null, 1));
+        assertEquals("static-twin2-2", LambdaReflector.methodReference(twin2).get().getMethod().invoke(null, (short) 2));
     }
 
 
@@ -117,12 +116,12 @@ public class LambdaReflectorTest {
         Function3<String, Data, Object, int[]> twin1 = this::instanceTwinMethod;
         Function3<String, Data, Object, short[]> twin2 = this::instanceTwinMethod;
 
-        assertEquals("instance-twin1-o12", LambdaReflector.methodReference(twin1).get().invoke(
+        assertEquals("instance-twin1-o12", LambdaReflector.methodReference(twin1).get().getMethod().invoke(
                 this,
                 new Data(),
                 "o1",
                 new int[]{1, 2}));
-        assertEquals("instance-twin2-o23", LambdaReflector.methodReference(twin2).get().invoke(
+        assertEquals("instance-twin2-o23", LambdaReflector.methodReference(twin2).get().getMethod().invoke(
                 this,
                 new Data(),
                 "o2",

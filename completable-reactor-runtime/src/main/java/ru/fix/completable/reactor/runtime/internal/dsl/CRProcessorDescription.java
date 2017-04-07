@@ -121,7 +121,7 @@ public class CRProcessorDescription<PayloadType> implements ProcessorDescription
 
 
 
-    CRProcessorDescription() {
+    public CRProcessorDescription() {
     }
 
     @Override

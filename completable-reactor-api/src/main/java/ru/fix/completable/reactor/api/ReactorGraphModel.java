@@ -37,13 +37,13 @@ public class ReactorGraphModel {
     public static class StartPoint {
         public Coordinates coordinates;
         public Source coordinatesSource;
-        public List<String> processingItems;
+        public final List<String> processingItems = new ArrayList<>();
     }
 
     @Data
     @Accessors(chain = true)
     public static class MergeGroup {
-        public List<MergePoint> mergePoints;
+        public final List<MergePoint> mergePoints = new ArrayList<>();
     }
 
     @Data
@@ -57,7 +57,7 @@ public class ReactorGraphModel {
         public Source mergeSource;
         public String mergerTitle;
         public String[] mergerDocs;
-        public List<Transition> transitions;
+        public final List<Transition> transitions = new ArrayList<>();
     }
 
     @Data
@@ -78,7 +78,7 @@ public class ReactorGraphModel {
         public Coordinates completeCoordinates;
         public Source completeCoordinatesSource;
         public Source completeSource;
-        public List<TransitionDocumentation> transitionsDoc;
+        public final List<TransitionDocumentation> transitionsDoc = new ArrayList<>();
 
         public ReactorGraphModel.Source transitionOnAnySource;
         public Map<String, ReactorGraphModel.Source> transitionOnStatusSource;
@@ -126,7 +126,7 @@ public class ReactorGraphModel {
     public final List<Processor> processors = new ArrayList<>();
     public final List<Subgraph> subgraphs = new ArrayList<>();
 
-    public List<MergeGroup> mergeGroups;
+    public final List<MergeGroup> mergeGroups = new ArrayList<>();
 
     public Source serializationPointSource;
     public Source coordinatesSource;

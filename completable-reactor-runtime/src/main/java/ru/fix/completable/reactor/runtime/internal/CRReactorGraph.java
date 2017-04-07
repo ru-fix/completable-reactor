@@ -30,7 +30,6 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
 
     public ReactorGraphModel.MergeGroup serialize(MergeGroup mergeGroup) {
         ReactorGraphModel.MergeGroup model = new ReactorGraphModel.MergeGroup();
-        model.mergePoints = new ArrayList<>();
 
         mergeGroup.mergePoints.forEach(mergePoint -> {
 
@@ -136,7 +135,6 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             if (type == Type.DETACHED) {
                 model.id = CRReactorGraph.serialize(this.mergePoint);
             }
-            model.transitions = new ArrayList<>();
             this.transitions.forEach(transition -> model.transitions.add(transition.serialize()));
             return model;
         }
@@ -196,7 +194,6 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.mergeStatusSources = mergeStatusSources;
 
             if (this.transitionsDoc != null) {
-                model.transitionsDoc = new ArrayList<>();
                 this.transitionsDoc.forEach((status, docs) -> {
                     ReactorGraphModel.TransitionDocumentation doc = new ReactorGraphModel.TransitionDocumentation();
                     doc.mergeStatus = status;
@@ -287,7 +284,6 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             ReactorGraphModel.StartPoint model = new ReactorGraphModel.StartPoint();
             model.coordinates = this.coordinates != null ? this.coordinates : new ReactorGraphModel.Coordinates(500, 100);
             model.coordinatesSource = this.coordinatesSource;
-            model.processingItems = new ArrayList<>();
             this.processingItems.stream()
                     .map(CRReactorGraph::serialize)
                     .sorted()
@@ -333,12 +329,12 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         payload.payloadName = payloadClass.getSimpleName();
 
         val paylaodDocBuilder = new ArrayList<String>();
-        for(Class clazz = payloadClass; clazz != null; clazz = clazz.getSuperclass()){
+        for (Class clazz = payloadClass; clazz != null; clazz = clazz.getSuperclass()) {
             val docs = Optional.ofNullable(payloadClass.getDeclaredAnnotation(Reactored.class))
                     .map(Reactored::value)
                     .orElse(null);
 
-            if(docs != null){
+            if (docs != null) {
                 paylaodDocBuilder.add(clazz.getSimpleName());
                 paylaodDocBuilder.addAll(Arrays.asList(docs));
             }
@@ -379,10 +375,27 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
                     }
                 });
 
+        /**
+         * In Reactor Graphs we have list of MergeGroups and list of all merge points (within or not withing MergeGroup)
+         * In model we only have MergeGroup.
+         * So for single merge points we will use redundant MergeGroup with single merge point inside.
+         */
+
         model.startPoint = startPoint.serialize();
-        model.mergeGroups = new ArrayList<>();
 
         this.mergeGroups.forEach(mergeGroup -> model.mergeGroups.add(serialize(mergeGroup)));
+        this.mergePoints.stream()
+                .filter(mergePoint -> this.mergeGroups.stream()
+                        .map(MergeGroup::getMergePoints)
+                        .flatMap(List::stream)
+                        .noneMatch(mergePointInGroup -> mergePointInGroup.equals(mergePoint)))
+                .map(MergePoint::serialize)
+                .map(modelMergePoint -> {
+                    val group = new ReactorGraphModel.MergeGroup();
+                    group.getMergePoints().add(modelMergePoint);
+                    return group;
+                })
+                .forEach(model.mergeGroups::add);
 
         return model;
     }

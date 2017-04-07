@@ -17,7 +17,7 @@ public class CRHandlerBuilder0<PayloadType> implements HandlerBuilder0<PayloadTy
 
     final CRProcessorDescription<PayloadType> processorDescription;
 
-    CRHandlerBuilder0(CRProcessorDescription<PayloadType> processorDescription) {
+    public CRHandlerBuilder0(CRProcessorDescription<PayloadType> processorDescription) {
         this.processorDescription = processorDescription;
     }
 

@@ -47,7 +47,9 @@ public class ReactorGraphBuilder {
         return new ProcessorDescriptionBuilder() {
             @Override
             public <PayloadType> ru.fix.completable.reactor.runtime.dsl.HandlerBuilder0<PayloadType> forPayload(Class<PayloadType> payloadType) {
-                return null;
+
+                val processorDescription = new CRProcessorDescription<PayloadType>();
+                return new CRHandlerBuilder0<>(processorDescription);
             }
         };
     }
