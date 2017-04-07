@@ -123,6 +123,19 @@ public class GraphViewPane extends ScrollPane {
         pane.getChildren().removeAll();
         coordinateItems.clear();
 
+        graphModel.getProcessors().forEach(processor -> {
+            val processorNode = new ProcessorNode(
+                    translator,
+                    processorName,
+                    processorInfo,
+                    actionListener,
+                    coordinateItems);
+
+            processors.put(processorName, processorNode);
+            pane.getChildren().add(processorNode);
+        });
+
+
         graphModel.processors.forEach((processorName, processorInfo) -> {
 
             if (processorInfo.processorType == ReactorGraphModel.ProcessorType.DETACHED_MERGE_POINT) {

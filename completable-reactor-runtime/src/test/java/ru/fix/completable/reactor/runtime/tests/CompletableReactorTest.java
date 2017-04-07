@@ -805,7 +805,7 @@ public class CompletableReactorTest {
                 .proc(IdProcessor.class, 2, 46, 269)
                 .merge(IdProcessor.class, 1, 221, 233)
                 .merge(IdProcessor.class, 2, 81, 354)
-                .merge(MergePoint.class, 0, 114, 82)
+                .merge(0, 114, 82)
                 .complete(IdProcessor.class, 2, 87, 432)
 
                 .buildGraph();
