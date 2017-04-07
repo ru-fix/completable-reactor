@@ -9,6 +9,7 @@ import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -37,9 +38,21 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
     }
 
     @Override
-    public Coordinates<PayloadType> proc(Class processorType, int id, int x, int y) {
-        var matchedProcessors = graph.getProcessingItems().keySet().stream()
-                .filter(processingItem -> CRReactorGraph.serialize(processingItem).equals(CRReactorGraph.serialize(processorType, id)))
+    public Coordinates<PayloadType> proc(Class type, int id, int x, int y) {
+        var matchedProcessors = graph.getProcessingItems().entrySet().stream()
+                .filter(entry -> {
+                    switch (entry.getValue().getProcessingItemType()) {
+                        case SUBGRAPH:
+                            return entry.getValue().getSubgraphDescription().getSubgraphPayload().equals(type) &&
+                                    ((CRSubgraph) entry.getKey()).getId() == id;
+                        case PROCESSOR:
+                            return entry.getValue().getDescription().getProcessorType().equals(type) &&
+                                    ((CRProcessor) entry.getKey()).getId() == id;
+                        default:
+                            return false;
+                    }
+                })
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
         if (matchedProcessors.size() > 1) {
@@ -49,12 +62,12 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
             throw new IllegalArgumentException(String.format(
                     "Found multiple processors that matches %s " +
                             "Available processors: %s",
-                    CRReactorGraph.serialize(processorType, id),
+                    CRReactorGraph.serialize(type, id),
                     matchedProcessorIds));
 
         } else if (matchedProcessors.size() <= 0) {
             throw new IllegalArgumentException(String.format("Could not find processor that matches %s. Registered processors: %s",
-                    CRReactorGraph.serialize(processorType, id),
+                    CRReactorGraph.serialize(type, id),
                     graph.getProcessingItems().keySet().stream()
                             .map(CRReactorGraph::serialize)
                             .collect(Collectors.joining(","))
@@ -69,12 +82,26 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
     }
 
     @Override
-    public Coordinates<PayloadType> merge(Class processorOrSubgraphType, int id, int x, int y) {
+    public Coordinates<PayloadType> merge(Class type, int id, int x, int y) {
         List<CRReactorGraph.MergePoint> matchedMergePoints = graph.getMergePoints().stream()
-                .filter(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.PROCESSOR ||
-                        mergePoint.getType() == CRReactorGraph.MergePoint.Type.SUBGRAPH)
-                .filter(mergePoint -> CRReactorGraph.serialize(mergePoint.asProcessingItem()).equals(
-                        CRReactorGraph.serialize(processorOrSubgraphType, id)))
+                .filter(mergePoint -> {
+                    switch (mergePoint.getType()) {
+                        case PROCESSOR:
+                            return mergePoint.getProcessor().getId() == id &&
+                                    mergePoint
+                                            .getProcessor()
+                                            .getProcessorDescription()
+                                            .getProcessorType().equals(type);
+                        case SUBGRAPH:
+                            return mergePoint.getSubgraph().getId() == id &&
+                                    mergePoint
+                                            .getSubgraph()
+                                            .getSubgraphDescription()
+                                            .getSubgraphPayload().equals(type);
+                        default:
+                            return false;
+                    }
+                })
                 .collect(Collectors.toList());
 
         if (matchedMergePoints.size() > 1) {
@@ -84,13 +111,13 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
             throw new IllegalArgumentException(String.format(
                     "Found multiple merge points that matches %s." +
                             " Merge points: %s",
-                    CRReactorGraph.serialize(processorOrSubgraphType, id),
+                    CRReactorGraph.serialize(type, id),
                     matchedMergePointIds));
 
         } else if (matchedMergePoints.size() <= 0) {
             throw new IllegalArgumentException(String.format(
                     "Could not find merge point that matches %s",
-                    CRReactorGraph.serialize(processorOrSubgraphType, id)));
+                    CRReactorGraph.serialize(type, id)));
         }
 
         CRReactorGraph.MergePoint mergePoint = matchedMergePoints.get(0);
@@ -101,9 +128,14 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
     @Override
     public Coordinates<PayloadType> merge(int id, int x, int y) {
         List<CRReactorGraph.MergePoint> matchedMergePoints = graph.getMergePoints().stream()
-                .filter(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.DETACHED)
-                .filter(mergePoint -> CRReactorGraph.serialize(mergePoint.asProcessingItem()).equals(
-                        CRReactorGraph.serializeMergePoint(id)))
+                .filter(mergePoint -> {
+                    switch (mergePoint.getType()) {
+                        case DETACHED:
+                            return mergePoint.getMergePoint().getId() == id;
+                        default:
+                            return false;
+                    }
+                })
                 .collect(Collectors.toList());
 
         if (matchedMergePoints.size() > 1) {
@@ -128,12 +160,26 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
     }
 
     @Override
-    public Coordinates<PayloadType> complete(Class processorOrSubgraphType, int id, int x, int y) {
+    public Coordinates<PayloadType> complete(Class type, int id, int x, int y) {
         List<CRReactorGraph.MergePoint> matchedMergePoints = graph.getMergePoints().stream()
-                .filter(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.PROCESSOR ||
-                        mergePoint.getType() == CRReactorGraph.MergePoint.Type.SUBGRAPH)
-                .filter(mergePoint -> CRReactorGraph.serialize(mergePoint.getProcessor()).equals(
-                        CRReactorGraph.serialize(processorOrSubgraphType, id)))
+                .filter(mergePoint -> {
+                    switch (mergePoint.getType()) {
+                        case PROCESSOR:
+                            return mergePoint.getProcessor().getId() == id &&
+                                    mergePoint
+                                            .getProcessor()
+                                            .getProcessorDescription()
+                                            .getProcessorType().equals(type);
+                        case SUBGRAPH:
+                            return mergePoint.getSubgraph().getId() == id &&
+                                    mergePoint
+                                            .getSubgraph()
+                                            .getSubgraphDescription()
+                                            .getSubgraphPayload().equals(type);
+                        default:
+                            return false;
+                    }
+                })
                 .collect(Collectors.toList());
 
         if (matchedMergePoints.size() > 1) {
@@ -143,12 +189,12 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
 
             throw new IllegalArgumentException(String.format(
                     "Found multiple merge points that matches %s. Available merge points: %s",
-                    CRReactorGraph.serialize(processorOrSubgraphType, id),
+                    CRReactorGraph.serialize(type, id),
                     matchedMergePointIds));
 
         } else if (matchedMergePoints.size() <= 0) {
             throw new IllegalArgumentException(String.format("Could not find merge point that matches %s",
-                    CRReactorGraph.serialize(processorOrSubgraphType, id)));
+                    CRReactorGraph.serialize(type, id)));
         }
 
         List<CRReactorGraph.Transition> transitions = matchedMergePoints.get(0).getTransitions().stream()
@@ -157,11 +203,10 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
 
         if (transitions.size() > 1) {
             throw new IllegalArgumentException(String.format("Found multiple complete transitions that matches %s",
-                    CRReactorGraph.serialize(processorOrSubgraphType, id)));
-        }
-        else if (transitions.size() <= 0) {
+                    CRReactorGraph.serialize(type, id)));
+        } else if (transitions.size() <= 0) {
             throw new IllegalArgumentException(String.format("Could not find complete transition that matches %s",
-                    CRReactorGraph.serialize(processorOrSubgraphType, id)));
+                    CRReactorGraph.serialize(type, id)));
         }
 
         CRReactorGraph.Transition transition = transitions.get(0);
@@ -175,8 +220,7 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
     public Coordinates<PayloadType> complete(int id, int x, int y) {
         List<CRReactorGraph.MergePoint> matchedMergePoints = graph.getMergePoints().stream()
                 .filter(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.DETACHED)
-                .filter(mergePoint -> CRReactorGraph.serialize(mergePoint.getProcessor()).equals(
-                        CRReactorGraph.serializeMergePoint(id)))
+                .filter(mergePoint -> mergePoint.getMergePoint().getId() == id)
                 .collect(Collectors.toList());
 
         if (matchedMergePoints.size() > 1) {
@@ -201,8 +245,7 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
         if (transitions.size() > 1) {
             throw new IllegalArgumentException(String.format("Found multiple complete transitions that matches %s",
                     CRReactorGraph.serializeMergePoint(id)));
-        }
-        else if (transitions.size() <= 0) {
+        } else if (transitions.size() <= 0) {
             throw new IllegalArgumentException(String.format("Could not find complete transition that matches %s",
                     CRReactorGraph.serializeMergePoint(id)));
         }

@@ -15,6 +15,4 @@ public interface PayloadBuilder<PayloadType> {
     MergePointBuilder<PayloadType> mergePoint(Processor<? super PayloadType> processor);
 
     MergePointBuilder<PayloadType> mergePoint(MergePoint<PayloadType> mergePoint);
-
-    MergeGroupBuilder<PayloadType> mergeGroup();
 }

@@ -31,7 +31,8 @@ public class CRMergeGroupBuilder<PayloadType> implements MergeGroupBuilder<Paylo
 
         if(existingMergePoints.size() != 1){
             throw new IllegalArgumentException(String.format(
-                    "There should be only one merge point %s registered in the graph. Actual: %d",
+                    "There should be one merge point %s registered in the graph. Actual: %d." +
+                            " Probably mergeGroup() was invoked before mergePoint() in graph description.",
                     processingItem.getDebugName(),
                     existingMergePoints.size()));
         }

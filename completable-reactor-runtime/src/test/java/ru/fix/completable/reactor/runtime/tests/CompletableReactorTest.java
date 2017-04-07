@@ -336,12 +336,12 @@ public class CompletableReactorTest {
                 .handleBy(idProcessor11)
                 .handleBy(idProcessor12)
 
+                .mergePoint(idProcessor11).onAny().merge(idProcessor12)
+                .mergePoint(idProcessor12).onAny().handleBy(idProcessor13)
+
                 .mergeGroup()
                 .with(idProcessor11)
                 .with(idProcessor12)
-
-                .mergePoint(idProcessor11).onAny().merge(idProcessor12)
-                .mergePoint(idProcessor12).onAny().handleBy(idProcessor13)
 
                 .mergePoint(idProcessor13).onAny().complete()
                 .coordinates()
@@ -654,7 +654,7 @@ public class CompletableReactorTest {
                 .proc(IdProcessor.class, 1, 211, 79)
                 .merge(IdProcessor.class, 0, 126, 215)
                 .merge(IdProcessor.class, 1, 267, 187)
-                .merge(MergePoint.class, 0, 424, 160)
+                .merge(0, 424, 160)
                 .complete(IdProcessor.class, 0, 57, 274)
 
                 .buildGraph();
@@ -729,8 +729,8 @@ public class CompletableReactorTest {
                 .proc(IdProcessor.class, 1, 330, 127)
                 .merge(IdProcessor.class, 0, 235, 224)
                 .merge(IdProcessor.class, 1, 357, 241)
-                .merge(MergePoint.class, 0, 461, 289)
-                .complete(MergePoint.class, 0, 406, 369)
+                .merge(0, 461, 289)
+                .complete(0, 406, 369)
 
                 .buildGraph();
 

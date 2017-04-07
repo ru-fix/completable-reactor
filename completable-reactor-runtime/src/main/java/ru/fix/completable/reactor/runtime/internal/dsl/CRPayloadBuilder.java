@@ -71,8 +71,4 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
         return CRMergePointBuilder.startBuildingMergePoint(builderContext, mergePoint);
     }
 
-    @Override
-    public MergeGroupBuilder<PayloadType> mergeGroup() {
-        return new CRMergeGroupBuilder<>(builderContext);
-    }
 }

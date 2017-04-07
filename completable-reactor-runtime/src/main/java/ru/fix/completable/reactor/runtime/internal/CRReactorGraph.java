@@ -40,7 +40,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             }
 
             ReactorGraphModel.MergePoint mergePointModel = mergePoint.serialize();
-            ProcessingItemInfo processorInfo = this.processingItems.get(mergePoint.getProcessor());
+            ProcessingItemInfo processorInfo = this.processingItems.get(mergePoint.asProcessingItem());
 
             String mergerTitle = null;
             String[] mergerDocs = null;

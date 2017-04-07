@@ -13,11 +13,11 @@ public interface Coordinates<PayloadType> {
     /**
      * Processor or Subgraph coordinates
      */
-    Coordinates<PayloadType> proc(Class processorType, int id, int x, int y);
+    Coordinates<PayloadType> proc(Class type, int id, int x, int y);
     /**
      * Processors or Subgraphs merge point coordinates
      */
-    Coordinates<PayloadType> merge(Class processorType, int id, int x, int y);
+    Coordinates<PayloadType> merge(Class type, int id, int x, int y);
     /**
      * Detached merge point coordinates
      */
@@ -25,7 +25,7 @@ public interface Coordinates<PayloadType> {
     /**
      * Processors or Subgraphs merge point endpoint coordinates
      */
-    Coordinates<PayloadType> complete(Class processorOrSubgraphType, int id, int x, int y);
+    Coordinates<PayloadType> complete(Class type, int id, int x, int y);
     /**
      * Detached merge point endpoint coordinates
      */

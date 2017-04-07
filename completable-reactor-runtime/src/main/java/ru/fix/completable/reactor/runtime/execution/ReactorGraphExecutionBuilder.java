@@ -111,7 +111,7 @@ public class ReactorGraphExecutionBuilder {
     @Accessors(chain = true)
     static class ProcessingVertex {
 
-        CRProcessingItem processor;
+        CRProcessingItem processingItem;
 
         CRReactorGraph.ProcessingItemInfo processorInfo;
 
@@ -217,7 +217,7 @@ public class ReactorGraphExecutionBuilder {
          */
         crReactorGraph.getProcessingItems().forEach((proc, info) -> {
             ProcessingVertex vertex = new ProcessingVertex()
-                    .setProcessor(proc)
+                    .setProcessingItem(proc)
                     .setProcessorInfo(info);
 
             if (info.getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
@@ -225,7 +225,8 @@ public class ReactorGraphExecutionBuilder {
                  * Detached merge point does not uses {@code {@link ProcessingVertex#getProcessorFuture()}
                  */
                 vertex.getProcessorFuture().completeExceptionally(new IllegalStateException(
-                        String.format("Detached Merge Point %s should not use processorFuture.", vertex.getProcessor())));
+                        String.format("Detached Merge Point %s should not use processorFuture.",
+                                vertex.getProcessingItem().getDebugName())));
             }
 
             processingVertices.put(proc, vertex);
@@ -288,7 +289,8 @@ public class ReactorGraphExecutionBuilder {
                 CompletableFuture<Void> beforeMergeGroupMergingFuture = CompletableFuture.allOf(
                         mergeGroup.getMergePoints().stream()
                                 .map(mergePoint -> processingVertices.get(mergePoint.asProcessingItem()))
-                                .filter(vertex -> vertex.getProcessorInfo().getProcessingItemType() != CRReactorGraph.ProcessingItemType.MERGE_POINT)
+                                .filter(vertex -> vertex.getProcessorInfo().getProcessingItemType() !=
+                                        CRReactorGraph.ProcessingItemType.MERGE_POINT)
                                 .map(ProcessingVertex::getProcessorFuture)
                                 .toArray(CompletableFuture[]::new)
                 );
@@ -473,7 +475,7 @@ public class ReactorGraphExecutionBuilder {
                                                  */
                                                 if (!future.getFuture().isDone()) {
                                                     log.error("Illegal graph execution state. Future is not completed. Processor: {}",
-                                                            processingItem.getProcessor().getDebugName());
+                                                            processingItem.getProcessingItem().getDebugName());
 
                                                     return INVALID_TRANSITION_PAYLOAD_CONTEXT;
                                                 } else {
@@ -481,7 +483,7 @@ public class ReactorGraphExecutionBuilder {
                                                 }
                                             } catch (Exception exc) {
                                                 log.warn("Failed to get incoming processor flow future result for processor: {}",
-                                                        processingItem.getProcessor().getDebugName(), exc);
+                                                        processingItem.getProcessingItem().getDebugName(), exc);
 
                                                 return INVALID_TRANSITION_PAYLOAD_CONTEXT;
                                             }
@@ -514,7 +516,7 @@ public class ReactorGraphExecutionBuilder {
                                                             " Payload context will be used only from one of active flows." +
                                                             " Other active flows will be ignored." +
                                                             " Possible loss of computation results. ",
-                                                    processingItem.getProcessor().getDebugName());
+                                                    processingItem.getProcessingItem().getDebugName());
                                         }
 
                                         handle(processingItem, activeIncomingFlows.get(0), executionResultFuture);
@@ -567,7 +569,7 @@ public class ReactorGraphExecutionBuilder {
                                         try {
                                             if (!future.isDone()) {
                                                 log.error("Illegal graph execution state. Processor future is not completed. Processor {}",
-                                                        vertex.getProcessor().getDebugName());
+                                                        vertex.getProcessingItem().getDebugName());
                                                 return INVALID_HANDLE_PAYLOAD_CONTEXT;
                                             } else {
                                                 return future.get();
@@ -575,7 +577,7 @@ public class ReactorGraphExecutionBuilder {
                                         } catch (Exception exc) {
                                             RuntimeException resultException = new RuntimeException(String.format(
                                                     "Failed to get processor future result for processor: %s",
-                                                    vertex.getProcessor().getDebugName()), exc);
+                                                    vertex.getProcessingItem().getDebugName()), exc);
 
                                             log.error(resultException.getMessage(), resultException);
                                             executionResultFuture.completeExceptionally(resultException);
@@ -630,7 +632,7 @@ public class ReactorGraphExecutionBuilder {
                                     } catch (Exception exc) {
                                         RuntimeException resultException = new RuntimeException(String.format(
                                                 "Failed to get incoming merge flow future result for processor: %s",
-                                                vertex.getProcessor().getDebugName()), exc);
+                                                vertex.getProcessingItem().getDebugName()), exc);
 
                                         log.error(resultException.getMessage(), resultException);
                                         executionResultFuture.completeExceptionally(resultException);
@@ -658,7 +660,7 @@ public class ReactorGraphExecutionBuilder {
                                  */
                                 if (activeIncomingMergeFlows.size() == 0) {
                                     throw new IllegalStateException(String.format("There is no incoming merge flows for detached merge point %s",
-                                            vertex.getProcessor().getDebugName()));
+                                            vertex.getProcessingItem().getDebugName()));
 
                                 } else {
                                     if (activeIncomingMergeFlows.size() > 1) {
@@ -667,7 +669,7 @@ public class ReactorGraphExecutionBuilder {
                                                         " Other active flows will be ignored." +
                                                         " Possible loss of computation results." +
                                                         " Possible concurrent modifications of payload.",
-                                                vertex.getProcessor().getDebugName());
+                                                vertex.getProcessingItem().getDebugName());
                                     }
 
                                     merge(vertex, Optional.empty(), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
@@ -686,7 +688,7 @@ public class ReactorGraphExecutionBuilder {
                                                         " Other active flows will be ignored." +
                                                         " Possible loss of computation results." +
                                                         " Possible concurrent modifications of payload.",
-                                                vertex.getProcessor().getDebugName());
+                                                vertex.getProcessingItem().getDebugName());
                                     }
 
                                     merge(vertex, handlePayloadContext.getProcessorResult(), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
@@ -910,12 +912,12 @@ public class ReactorGraphExecutionBuilder {
          */
         if (processorInfo.getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
             throw new IllegalStateException(String.format("Processor %s is of type %s and should not have any incoming handling transition",
-                    processingVertex.getProcessor().getDebugName(),
+                    processingVertex.getProcessingItem().getDebugName(),
                     processorInfo.getProcessingItemType()));
         }
 
         ProfiledCall handleCall = profiler.profiledCall(
-                ProfilerNames.PROCESSOR_HANDLE + processingVertex.getProcessor().getProfilingName())
+                ProfilerNames.PROCESSOR_HANDLE + processingVertex.getProcessingItem().getProfilingName())
                 .start();
 
         CompletableFuture<?> handlingResult;
@@ -937,7 +939,7 @@ public class ReactorGraphExecutionBuilder {
                 payloadClone = immutabilityChecker.clone(payload);
                 payloadCloneSnapshot = immutabilityChecker.takeSnapshot(payloadClone);
 
-                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessor(), payloadClone);
+                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessingItem(), payloadClone);
 
             } else {
                 /**
@@ -946,13 +948,13 @@ public class ReactorGraphExecutionBuilder {
                 payloadClone = null;
                 payloadCloneSnapshot = null;
 
-                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessor(), payload);
+                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessingItem(), payload);
             }
         } catch (Exception handlingException) {
             RuntimeException exc = new RuntimeException(
                     String.format(
                             "Failed handling by processor %s for payload %s %s. Handling method raised exception: %s.",
-                            processingVertex.getProcessor().getDebugName(),
+                            processingVertex.getProcessingItem().getDebugName(),
                             payload.getClass(),
                             debugSerializer.dumpObject(payload),
                             handlingException),
@@ -969,7 +971,7 @@ public class ReactorGraphExecutionBuilder {
                     String.format(
                             "Failed handling by processor %s for payload %s %s. Handling method returned NULL." +
                                     " Instance of CompletableFuture expected.",
-                            processingVertex.getProcessor().getDebugName(),
+                            processingVertex.getProcessingItem().getDebugName(),
                             payload.getClass(),
                             debugSerializer.dumpObject(payload)));
 
@@ -1014,7 +1016,7 @@ public class ReactorGraphExecutionBuilder {
                 RuntimeException exc = new RuntimeException(
                         String.format(
                                 "Failed handling by processor %s for payload %s %s",
-                                processingVertex.getProcessor().getDebugName(),
+                                processingVertex.getProcessingItem().getDebugName(),
                                 payload.getClass(),
                                 debugSerializer.dumpObject(payload)),
                         thr);
@@ -1083,7 +1085,8 @@ public class ReactorGraphExecutionBuilder {
 
 
         try {
-            ProfiledCall mergeCall = profiler.profiledCall(ProfilerNames.PROCESSOR_MERGE + processingVertex.getProcessor().getProfilingName())
+            ProfiledCall mergeCall = profiler.profiledCall(
+                    ProfilerNames.PROCESSOR_MERGE + processingVertex.getProcessingItem().getProfilingName())
                     .start();
 
             Enum mergeStatus = mergerInvocation.get();
@@ -1101,7 +1104,7 @@ public class ReactorGraphExecutionBuilder {
                 throw new IllegalStateException(String.format("Merging process returned %s status." +
                                 " But merge point of processor %s does not have matching transition for this status.",
                         mergeStatus,
-                        processingVertex.getProcessor().getDebugName()));
+                        processingVertex.getProcessingItem().getDebugName()));
             }
 
             /**
@@ -1131,7 +1134,7 @@ public class ReactorGraphExecutionBuilder {
                                     " New completion result {} in merge point for processor {}",
                             debugSerializer.dumpObject(previousResult),
                             debugSerializer.dumpObject(payload),
-                            processingVertex.getProcessor().getDebugName());
+                            processingVertex.getProcessingItem().getDebugName());
                 }
 
                 /**
@@ -1150,7 +1153,7 @@ public class ReactorGraphExecutionBuilder {
             log.error("Failed to merge payload {} {} by processing item {} for result {}",
                     payload.getClass(),
                     debugSerializer.dumpObject(payload),
-                    processingVertex.getProcessor().getDebugName(),
+                    processingVertex.getProcessingItem().getDebugName(),
                     debugSerializer.dumpObject(processorResult),
                     exc);
 
