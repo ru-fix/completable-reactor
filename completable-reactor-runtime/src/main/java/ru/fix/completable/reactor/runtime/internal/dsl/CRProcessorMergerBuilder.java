@@ -7,9 +7,6 @@ import ru.fix.completable.reactor.runtime.dsl.ProcessorMergerBuilder;
 import ru.fix.completable.reactor.runtime.internal.LambdaReflector;
 import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
-import java.lang.reflect.Method;
-import java.util.Optional;
-
 /**
  * @author Kamil Asfandiyarov
  */
@@ -31,21 +28,14 @@ public class CRProcessorMergerBuilder<PayloadType, ProcessorResult> implements P
 
     public ProcessorDescription<PayloadType> withMerger(String title, String[] docs, ProcessorMerger<PayloadType, ProcessorResult> processorMerger) {
 
-        Optional<LambdaReflector.AnnotatedMethod<Reactored>> mergerMethod = LambdaReflector.annotatedMethodReference(processorMerger, Reactored.class);
+        LambdaReflector.AnnotatedMethod<Reactored> mergerMethod = LambdaReflector.annotatedMethodReference(processorMerger, Reactored.class);
 
         if(title == null) {
-            title = mergerMethod
-                    .map(LambdaReflector.AnnotatedMethod::getMethod)
-                    .map(Method::getName)
-                    .orElse(null);
+            title = mergerMethod.getMethod().getName();
         }
 
         if(docs == null) {
-            docs = mergerMethod
-                    .map(LambdaReflector.AnnotatedMethod::getMethod)
-                    .map(method -> method.getAnnotation(Reactored.class))
-                    .map(Reactored::value)
-                    .orElse(null);
+            docs = mergerMethod.getAnnotation().map(Reactored::value).orElse(null);
         }
 
         this.processorDescription.merger = processorMerger;

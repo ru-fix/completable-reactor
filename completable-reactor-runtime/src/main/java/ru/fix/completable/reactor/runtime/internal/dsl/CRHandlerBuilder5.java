@@ -1,14 +1,10 @@
 package ru.fix.completable.reactor.runtime.internal.dsl;
 
-import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.Handler5Args;
 import ru.fix.completable.reactor.runtime.dsl.HandlerBuilder5;
 import ru.fix.completable.reactor.runtime.dsl.HandlerBuilder6;
 import ru.fix.completable.reactor.runtime.dsl.ProcessorMergerBuilder;
-import ru.fix.completable.reactor.runtime.internal.LambdaReflector;
-import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -35,21 +31,12 @@ public class CRHandlerBuilder5<PayloadType , Arg1, Arg2, Arg3, Arg4, Arg5> imple
     }
 
     @Override
-    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(Handler5Args<Arg1, Arg2, Arg3, Arg4, Arg5, ProcessorResult> handler) {
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            Handler5Args<Arg1, Arg2, Arg3, Arg4, Arg5, ProcessorResult> handler) {
+
         processorDescription.handler5 = handler;
-        ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.withHandlerSource = source);
 
-        LambdaReflector.annotatedMethodReference(handler, Reactored.class).ifPresent(method -> {
-            processorDescription.processorType = method.getMethodClass();
-
-            Optional.ofNullable(method.getMethodClass().getAnnotation(Reactored.class))
-                    .map(annotation -> (Reactored)annotation)
-                    .map(Reactored::value)
-                    .ifPresent(processorDescription::setProcessorDoc);
-
-            processorDescription.handlerTitle = method.getMethod().getName();
-            processorDescription.handlerDocs = method.getAnnotation().value();
-        });
+        BuilderReflector.initializeProcessorDescription(handler, processorDescription);
 
         return new CRProcessorMergerBuilder<>(processorDescription);
     }

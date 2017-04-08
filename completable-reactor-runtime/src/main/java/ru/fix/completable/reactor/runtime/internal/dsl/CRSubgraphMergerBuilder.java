@@ -1,12 +1,11 @@
 package ru.fix.completable.reactor.runtime.internal.dsl;
 
 import ru.fix.completable.reactor.api.Reactored;
-import ru.fix.completable.reactor.runtime.dsl.*;
+import ru.fix.completable.reactor.runtime.dsl.SubgraphDescription;
+import ru.fix.completable.reactor.runtime.dsl.SubgraphMerger;
+import ru.fix.completable.reactor.runtime.dsl.SubgraphMergerBuilder;
 import ru.fix.completable.reactor.runtime.internal.LambdaReflector;
 import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
-
-import java.lang.reflect.Method;
-import java.util.Optional;
 
 /**
  * @author Kamil Asfandiyarov
@@ -33,21 +32,14 @@ public class CRSubgraphMergerBuilder<PayloadType, SubgraphResult> implements Sub
     @Override
     public SubgraphDescription<PayloadType> withMerger(String title, String[] docs, SubgraphMerger<PayloadType, SubgraphResult> subgraphMerger) {
 
-        Optional<LambdaReflector.AnnotatedMethod<Reactored>> annotatedMethod = LambdaReflector.annotatedMethodReference(subgraphMerger, Reactored.class);
+        LambdaReflector.AnnotatedMethod<Reactored> annotatedMethod = LambdaReflector.annotatedMethodReference(subgraphMerger, Reactored.class);
 
         if(title == null) {
-            title = annotatedMethod
-                    .map(LambdaReflector.AnnotatedMethod::getMethod)
-                    .map(Method::getName)
-                    .orElse(null);
+            title = annotatedMethod.getMethod().getName();
         }
 
         if(docs == null) {
-            docs = annotatedMethod
-                    .map(LambdaReflector.AnnotatedMethod::getMethod)
-                    .map(method -> method.getAnnotation(Reactored.class))
-                    .map(Reactored::value)
-                    .orElse(null);
+            docs = annotatedMethod.getAnnotation().map(Reactored::value).orElse(null);
         }
 
         this.subgraphDescription.merger = subgraphMerger;
