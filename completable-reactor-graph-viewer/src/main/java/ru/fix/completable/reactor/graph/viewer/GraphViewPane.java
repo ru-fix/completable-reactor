@@ -287,8 +287,6 @@ public class GraphViewPane extends ScrollPane {
          * Scroll pane so Payload would be in top center
          */
         this.setHvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getX()) / WORLD_SIZE);
-        this.setVvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getY() - 50) / WORLD_SIZE);
-
         return this;
     }
 

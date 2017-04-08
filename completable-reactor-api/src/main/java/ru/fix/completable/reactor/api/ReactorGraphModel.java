@@ -51,7 +51,7 @@ public class ReactorGraphModel {
     public static class MergePoint {
         public String processor;
         public String subgraph;
-        public String id;
+        public String mergePoint;
         public Coordinates coordinates;
         public Source coordinatesSource;
         public Source mergeSource;

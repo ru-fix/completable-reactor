@@ -95,7 +95,6 @@ class StartPointNode extends VBox {
         VBox content = new VBox();
 
         content.getChildren().add(new Text(this.model.payload.payloadName));
-        content.getChildren().add(new Text(this.model.payload.payloadClass));
 
         Optional.ofNullable(this.model.payload.payloadDoc)
                 .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))
