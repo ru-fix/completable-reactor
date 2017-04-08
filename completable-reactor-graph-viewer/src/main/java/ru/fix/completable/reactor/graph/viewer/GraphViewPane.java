@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.graph.viewer;
 
+import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -32,11 +33,14 @@ public class GraphViewPane extends ScrollPane {
 
     private CoordinateTranslator translator = new CoordinateTranslator(WORLD_SIZE);
 
-    private HashMap<String, ProcessorNode> processors = new HashMap<>();
+    /**
+     * {@code <Processor or Subgraph id, ProcessorNode or SubgraphNode>}
+     */
+    private HashMap<String, Node> processors = new HashMap<>();
     private HashMap<String, MergePointNode> mergePoints = new HashMap<>();
     private ArrayList<MergeGroupNode> mergeGroups = new ArrayList<>();
 
-    List<GraphViewer.CoordinateItem> coordinateItems = new ArrayList<>();
+    private List<GraphViewer.CoordinateItem> coordinateItems = new ArrayList<>();
     private ReactorGraphModel graphModel;
 
     private final Function<ShortcutType, Optional<Shortcut>> shortcutProvider;
@@ -126,36 +130,25 @@ public class GraphViewPane extends ScrollPane {
         graphModel.getProcessors().forEach(processor -> {
             val processorNode = new ProcessorNode(
                     translator,
-                    processorName,
-                    processorInfo,
+                    processor,
                     actionListener,
                     coordinateItems);
 
-            processors.put(processorName, processorNode);
+            processors.put(processor.id, processorNode);
             pane.getChildren().add(processorNode);
         });
 
-
-        graphModel.processors.forEach((processorName, processorInfo) -> {
-
-            if (processorInfo.processorType == ReactorGraphModel.ProcessorType.DETACHED_MERGE_POINT) {
-                /**
-                 * Detached merge point does not have ProcessorNode
-                 */
-                return;
-            }
-
-            val processorNode = new ProcessorNode(
+        graphModel.getSubgraphs().forEach(subgraph -> {
+            val subgraphNode = new SubgraphNode(
                     translator,
-                    processorName,
-                    processorInfo,
+                    subgraph,
                     actionListener,
                     coordinateItems);
 
-            processors.put(processorName, processorNode);
-            pane.getChildren().add(processorNode);
-
+            processors.put(subgraph.id, subgraphNode);
+            pane.getChildren().add(subgraphNode);
         });
+
 
         for (val mergeGroup : graphModel.mergeGroups) {
 
@@ -205,11 +198,11 @@ public class GraphViewPane extends ScrollPane {
                         line.toBack();
 
                     } else if (transition.isOnAny) {
-                        if (transition.handleByProcessor != null) {
+                        if (transition.getHandleByProcessingItem() != null) {
                             val line = new TransitionLine(
                                     pane,
                                     mergePointNode,
-                                    processors.get(transition.handleByProcessor),
+                                    processors.get(transition.getHandleByProcessingItem()),
                                     Optional.of(transition),
                                     actionListener);
 
@@ -226,11 +219,11 @@ public class GraphViewPane extends ScrollPane {
                             pane.getChildren().add(line);
                             line.toBack();
                         }
-                    } else if (transition.handleByProcessor != null) {
+                    } else if (transition.getHandleByProcessingItem() != null) {
                         val line = new TransitionLine(
                                 pane,
                                 mergePointNode,
-                                processors.get(transition.handleByProcessor),
+                                processors.get(transition.getHandleByProcessingItem()),
                                 Optional.of(transition),
                                 actionListener);
 
@@ -268,25 +261,14 @@ public class GraphViewPane extends ScrollPane {
         val startPointNode = new StartPointNode(translator, graphModel, actionListener, coordinateItems);
         pane.getChildren().add(startPointNode);
 
-        graphModel.startPoint.processingItems.forEach(processorName -> {
-            TransitionLine transition;
+        graphModel.startPoint.processingItems.forEach(processingItemId -> {
 
-            if (graphModel.processors.get(processorName).processorType == ReactorGraphModel.ProcessorType.DETACHED_MERGE_POINT) {
-                transition = new TransitionLine(
-                        pane,
-                        startPointNode,
-                        mergePoints.get(processorName),
-                        Optional.empty(),
-                        actionListener);
-
-            } else {
-                transition = new TransitionLine(
-                        pane,
-                        startPointNode,
-                        processors.get(processorName),
-                        Optional.empty(),
-                        actionListener);
-            }
+            val transition = new TransitionLine(
+                    pane,
+                    startPointNode,
+                    processors.get(processingItemId),
+                    Optional.empty(),
+                    actionListener);
 
             pane.getChildren().add(transition);
             transition.toBack();
@@ -300,6 +282,12 @@ public class GraphViewPane extends ScrollPane {
         for (val mergeGroupNode : mergeGroups) {
             mergeGroupNode.toBack();
         }
+
+        /**
+         * Scroll pane so Payload would be in top center
+         */
+        this.setHvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getX()) / WORLD_SIZE);
+        this.setVvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getY() - 50) / WORLD_SIZE);
 
         return this;
     }

@@ -263,6 +263,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.coordinates = coordinates != null ? coordinates : new ReactorGraphModel.Coordinates(100, 100);
             model.coordinatesSource = this.coordinatesSource;
 
+            model.buildSource = subgraphDescription.getBuildSource();
             model.subgraphDoc = subgraphDescription.getSubgraphDoc();
             model.subgraphTitle = subgraphDescription.getSubgraphTitle();
 

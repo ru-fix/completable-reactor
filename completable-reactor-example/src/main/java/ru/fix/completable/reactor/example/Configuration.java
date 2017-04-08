@@ -179,11 +179,6 @@ public class Configuration {
                 .handleBy(gUserProfile)
                 .handleBy(gServiceInfo)
 
-
-                .mergeGroup()
-                .with(gUserProfile)
-                .with(gServiceInfo)
-
                 .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
                 .on(MergeStatus.CONTINUE).merge(gServiceInfo)
@@ -194,6 +189,10 @@ public class Configuration {
                 .on(MergeStatus.NO_WITHDRAWAL).handleBy(gUserLog)
                 .on(MergeStatus.NO_WITHDRAWAL).handleBy(gNotification)
                 .on(MergeStatus.STOP).complete()
+
+                .mergeGroup()
+                .with(gUserProfile)
+                .with(gServiceInfo)
 
                 .mergePoint(gBankPurchase)
                 .onAny()
@@ -275,10 +274,6 @@ public class Configuration {
                 .handleBy(gUserProfile)
                 .handleBy(gServiceInfo)
 
-                .mergeGroup()
-                .with(gUserProfile)
-                .with(gServiceInfo)
-
                 .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
                 .on(MergeStatus.CONTINUE).merge(gServiceInfo)
@@ -286,6 +281,10 @@ public class Configuration {
                 .mergePoint(gServiceInfo)
                 .on(MergeStatus.CONTINUE).merge(trialPeriodCheck)
                 .on(MergeStatus.STOP).complete()
+
+                .mergeGroup()
+                .with(gUserProfile)
+                .with(gServiceInfo)
 
                 .mergePoint(trialPeriodCheck)
                 .on(MergeStatus.WITHDRAWAL).handleBy(gBankSubsribe)
@@ -313,7 +312,7 @@ public class Configuration {
                 .proc(UserLogProcessor.class, 0, 680, 820)
                 .proc(UserProfileService.class, 0, 770, 120)
                 .merge(BankProcessor.class, 0, 480, 550)
-                .merge(MergePoint.class, 0, 702, 363)
+                .merge(0, 702, 363)
                 .merge(ServiceInfoProcessor.class, 0, 640, 280)
                 .merge(TransactionLogProcessor.class, 0, 530, 770)
                 .merge(UserLogProcessor.class, 0, 760, 930)

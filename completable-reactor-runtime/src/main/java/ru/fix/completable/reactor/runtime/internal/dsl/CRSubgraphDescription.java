@@ -28,6 +28,12 @@ public class CRSubgraphDescription<PayloadType> implements SubgraphDescription<P
      */
     ReactorGraphModel.Source mergeSource;
 
+
+    /**
+     * Source where {@link ru.fix.completable.reactor.runtime.ReactorGraphBuilder#subgraph(Class)} method was used
+     */
+    ReactorGraphModel.Source buildSource;
+
     String subgraphTitle;
 
     String[] subgraphDoc;
@@ -43,10 +49,6 @@ public class CRSubgraphDescription<PayloadType> implements SubgraphDescription<P
 
     boolean isCopyArg = false;
 
-//    /**
-//     * {@code Handler1Arg<Processor, Arg1, CompletableFuture<ProcessorResult>>}
-//     */
-//    Function<?, CompletableFuture<?>> handler;
 
     public CRSubgraphDescription(Class<?> subgraphPayload) {
         this.subgraphPayload = subgraphPayload;

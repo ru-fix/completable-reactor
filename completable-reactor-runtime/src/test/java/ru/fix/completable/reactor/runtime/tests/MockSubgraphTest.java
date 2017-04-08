@@ -87,7 +87,7 @@ public class MockSubgraphTest {
                 .coordinates()
                 .buildGraph();
 
-        CompletableReactor.write(graph);
+        ReactorGraphBuilder.write(graph);
         reactor.registerReactorGraph(graph);
 
 

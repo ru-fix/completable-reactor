@@ -115,6 +115,7 @@ public class ReactorGraphModel {
 
         public Coordinates coordinates;
         public Source coordinatesSource;
+        public Source buildSource;
 
         public String subgraphTitle;
         public String[] subgraphDoc;

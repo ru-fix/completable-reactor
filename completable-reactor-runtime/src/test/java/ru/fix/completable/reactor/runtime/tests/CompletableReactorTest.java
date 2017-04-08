@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.runtime.tests;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
@@ -73,7 +74,7 @@ public class CompletableReactorTest {
     }
 
     static void printGraph(ReactorGraph<?>... graphs) throws Exception {
-        CompletableReactor.write(graphs);
+        ReactorGraphBuilder.write(graphs);
     }
 
 
@@ -505,6 +506,7 @@ public class CompletableReactorTest {
             "Expected result: {0, 1}"
     })
     @Data
+    @EqualsAndHashCode(callSuper = true)
     static class DeadBranchPayload extends IdListPayload {
         ThreeStateStatus threeStateStatus;
     }
@@ -604,6 +606,7 @@ public class CompletableReactorTest {
             "Expected result: {42, 1, 0}"
     })
     @Data
+    @EqualsAndHashCode(callSuper = true)
     static class DetachedMergePointFromStartPointPayload extends IdListPayload {}
 
     @Test
@@ -680,6 +683,7 @@ public class CompletableReactorTest {
 
     })
     @Data
+    @EqualsAndHashCode(callSuper = true)
     static class DetachedMergePointFromProcessorsMergePointPayload extends IdListPayload {}
 
     @Test
@@ -757,6 +761,7 @@ public class CompletableReactorTest {
 
     @Accessors(chain = true)
     @Data
+    @EqualsAndHashCode(callSuper = true)
     static class OptionalProcessorExecutionPayload extends IdListPayload {
         OPTIONAL_DECISION whereToGo;
     }

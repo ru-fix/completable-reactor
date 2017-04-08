@@ -46,7 +46,7 @@ public class GraphViewer {
 
         graphViewPane = new GraphViewPane(actionListener, this::getShortcut);
 
-        graphViewPane.setPrefSize(300.0, 300.0);
+        graphViewPane.setPrefSize(500.0, 500.0);
 
         scene = new Scene(graphViewPane);
 
