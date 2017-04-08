@@ -271,7 +271,7 @@ public class CompletableReactorTest {
 
                 .mergeGroup()
                 .with(idProcessor1)
-                .with(idProcessor3)
+                .with(idProcessor2)
                 .with(idProcessor3)
 
                 .coordinates()
@@ -644,9 +644,9 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .mergeGroup()
+                .with(idProcessor0)
                 .with(idProcessor1)
-                .with(idProcessor0)
-                .with(idProcessor0)
+                .with(mergePoint)
 
                 .coordinates()
                 .start(107, 9)

@@ -5,6 +5,7 @@ import ru.fix.completable.reactor.runtime.dsl.*;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -25,11 +26,22 @@ public class CRMergeGroupBuilder<PayloadType> implements MergeGroupBuilder<Paylo
 
     void addMergePointToMergeGroup(CRProcessingItem processingItem) {
 
+        if (graph.getMergeGroups().stream()
+                .map(CRReactorGraph.MergeGroup::getMergePoints)
+                .flatMap(List::stream)
+                .map(CRReactorGraph.MergePoint::asProcessingItem)
+                .anyMatch(item -> item.equals(processingItem))) {
+
+            throw new IllegalArgumentException(String.format(
+                    "Merge point %s already belong to merge group." +
+                            " MergePoint could belong only to one merge group.", processingItem.getDebugName()));
+        }
+
         val existingMergePoints = graph.getMergePoints().stream()
                 .filter(mergePoint -> mergePoint.asProcessingItem().equals(processingItem))
                 .collect(Collectors.toList());
 
-        if(existingMergePoints.size() != 1){
+        if (existingMergePoints.size() != 1) {
             throw new IllegalArgumentException(String.format(
                     "There should be one merge point %s registered in the graph. Actual: %d." +
                             " Probably mergeGroup() was invoked before mergePoint() in graph description.",
@@ -39,7 +51,6 @@ public class CRMergeGroupBuilder<PayloadType> implements MergeGroupBuilder<Paylo
 
         graphMergeGroup.getMergePoints().add(existingMergePoints.get(0));
     }
-
 
 
     @Override
@@ -69,8 +80,8 @@ public class CRMergeGroupBuilder<PayloadType> implements MergeGroupBuilder<Paylo
         return this;
     }
 
-    private void assertMergeGroup(){
-        if(graphMergeGroup.getMergePoints().size() < 2){
+    private void assertMergeGroup() {
+        if (graphMergeGroup.getMergePoints().size() < 2) {
             throw new IllegalArgumentException(String.format(
                     "Merge group should contain at least two items: %s",
                     graphMergeGroup.getMergePoints().stream()
