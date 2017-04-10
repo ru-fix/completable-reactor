@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.tests;
+package ru.fix.completable.reactor.runtime.tests;
 
 import lombok.val;
 import org.junit.Assert;

@@ -2,7 +2,6 @@ package ru.fix.completable.reactor.runtime.internal;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
-import ru.fix.completable.reactor.runtime.CompletableReactor;
 
 import java.util.Optional;
 
@@ -13,7 +12,7 @@ import java.util.Optional;
 public class ReactorReflector {
 
     private static final String[] methodInvocationClassNamePrefixSkipList = new String[]{
-            CompletableReactor.class.getPackage().getName()
+            ReactorReflector.class.getPackage().getName()
     };
 
     /**
