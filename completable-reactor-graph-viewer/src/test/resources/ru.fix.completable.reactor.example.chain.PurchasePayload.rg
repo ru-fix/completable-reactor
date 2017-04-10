@@ -227,8 +227,8 @@
             "fileNameLine" : null
           }
         },
-        "complete" : true,
-        "onAny" : false
+        "onAny" : false,
+        "complete" : true
       }, {
         "mergeStatuses" : [ "CONTINUE" ],
         "isOnAny" : false,
@@ -264,8 +264,8 @@
             "fileNameLine" : null
           }
         },
-        "complete" : false,
-        "onAny" : false
+        "onAny" : false,
+        "complete" : false
       } ]
     }, {
       "identity" : {
@@ -320,8 +320,8 @@
             "fileNameLine" : null
           }
         },
-        "complete" : false,
-        "onAny" : false
+        "onAny" : false,
+        "complete" : false
       }, {
         "mergeStatuses" : [ "NO_WITHDRAWAL" ],
         "isOnAny" : false,
@@ -357,8 +357,8 @@
             "fileNameLine" : null
           }
         },
-        "complete" : false,
-        "onAny" : false
+        "onAny" : false,
+        "complete" : false
       }, {
         "mergeStatuses" : [ "NO_WITHDRAWAL" ],
         "isOnAny" : false,
@@ -394,8 +394,8 @@
             "fileNameLine" : null
           }
         },
-        "complete" : false,
-        "onAny" : false
+        "onAny" : false,
+        "complete" : false
       }, {
         "mergeStatuses" : [ "STOP" ],
         "isOnAny" : false,
@@ -435,8 +435,8 @@
             "fileNameLine" : null
           }
         },
-        "complete" : true,
-        "onAny" : false
+        "onAny" : false,
+        "complete" : true
       } ]
     } ]
   }, {
@@ -482,8 +482,8 @@
         },
         "transitionOnStatusSource" : { },
         "mergeStatusSources" : { },
-        "complete" : false,
-        "onAny" : true
+        "onAny" : true,
+        "complete" : false
       } ]
     } ]
   }, {
@@ -529,8 +529,8 @@
         },
         "transitionOnStatusSource" : { },
         "mergeStatusSources" : { },
-        "complete" : false,
-        "onAny" : true
+        "onAny" : true,
+        "complete" : false
       } ]
     } ]
   }, {
@@ -580,8 +580,8 @@
         },
         "transitionOnStatusSource" : { },
         "mergeStatusSources" : { },
-        "complete" : true,
-        "onAny" : true
+        "onAny" : true,
+        "complete" : true
       } ]
     } ]
   } ],

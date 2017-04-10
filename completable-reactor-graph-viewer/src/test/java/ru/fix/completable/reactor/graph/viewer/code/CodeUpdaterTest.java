@@ -88,21 +88,20 @@ public class CodeUpdaterTest {
         Assert.assertEquals(normalize(expectedOutput), normalize(output));
     }
 
-    static String normalize(String value){
-        return value
-                .replace("\r", "\n")
-                .replace("\n\n", "\n")
-                .replace("\n\n", "\n");
-    }
-
-
     @Test
     public void update_existing_code_bloc_what_it_smaller_that_new_one() throws Exception {
         String input = IOUtils.toString(getClass().getResource("/code-block-3.txt").toURI(), StandardCharsets.UTF_8);
         String expectedOutput = IOUtils.toString(getClass().getResource("/code-block-3-result.txt").toURI(), StandardCharsets.UTF_8);
 
         String output = updater.updateCoordinates(input, coordinateItems);
-        Assert.assertEquals(expectedOutput, output);
+        Assert.assertEquals(normalize(expectedOutput), normalize(output));
+    }
+
+    static String normalize(String value){
+        return value
+                .replace("\r", "\n")
+                .replace("\n\n", "\n")
+                .replace("\n\n", "\n");
     }
 
 }
