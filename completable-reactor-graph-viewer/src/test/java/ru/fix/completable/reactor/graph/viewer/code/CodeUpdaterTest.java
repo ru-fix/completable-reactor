@@ -35,7 +35,7 @@ public class CodeUpdaterTest {
         String expectedOutput = IOUtils.toString(getClass().getResource("/code-block-1-result.txt").toURI(), StandardCharsets.UTF_8);
 
         String output = updater.updateCoordinates(input, coordinateItems);
-        Assert.assertEquals(expectedOutput, output);
+        Assert.assertEquals(normalize(expectedOutput), normalize(output));
     }
 
     @Test
@@ -44,7 +44,14 @@ public class CodeUpdaterTest {
         String expectedOutput = IOUtils.toString(getClass().getResource("/code-block-2-result.txt").toURI(), StandardCharsets.UTF_8);
 
         String output = updater.updateCoordinates(input, coordinateItems);
-        Assert.assertEquals(expectedOutput, output);
+        Assert.assertEquals(normalize(expectedOutput), normalize(output));
+    }
+
+    static String normalize(String value){
+        return value
+                .replace("\r", "\n")
+                .replace("\n\n", "\n")
+                .replace("\n\n", "\n");
     }
 
 }
