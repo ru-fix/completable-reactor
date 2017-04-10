@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.runtime.tests;
+package ru.fix.completable.reactor.tests;
 
 import lombok.val;
 import org.junit.Assert;
@@ -15,11 +15,16 @@ public class ReactorReflectorTest {
         return ReactorReflector.getMethodInvocationPoint().get();
     }
 
+    /**
+     * This test is located in separate package because {@link ReactorReflector#getMethodInvocationPoint()}  skip call stack
+     * with  ru.fix.completable.reactor.runtime.* classes.
+     * @throws Exception
+     */
     @Test
     public void getMethodInvocationPoint() throws Exception {
         val source = foo();
         Assert.assertEquals(ReactorReflectorTest.class.getName(), source.className);
-        Assert.assertEquals(ReactorReflectorTest.class.getSimpleName(), source.fileName);
-        Assert.assertEquals(15L, (long)source.fileNameLine);
+        Assert.assertEquals(ReactorReflectorTest.class.getSimpleName() + ".java", source.fileName);
+        Assert.assertEquals(25L, (long)source.fileNameLine);
     }
 }
