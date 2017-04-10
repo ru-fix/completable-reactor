@@ -20,35 +20,32 @@ import java.util.stream.Collectors;
 class ProcessorNode extends VBox {
 
     final CoordinateTranslator coordinateTranslator;
-    final String processorName;
-    final ReactorGraphModel.ProcessorInfo processorInfo;
+    final ReactorGraphModel.Processor processor;
     final GraphViewer.ActionListener actionListener;
 
     public ProcessorNode(
             CoordinateTranslator translator,
-            String processorName,
-            ReactorGraphModel.ProcessorInfo processorInfo,
+            ReactorGraphModel.Processor processor,
             GraphViewer.ActionListener actionListener,
             List<GraphViewer.CoordinateItem> coordinateItems) {
 
         this.coordinateTranslator = translator;
-        this.processorName = processorName;
-        this.processorInfo = processorInfo;
+        this.processor = processor;
         this.actionListener = actionListener;
 
         this.getStyleClass().add("processor");
 
-        val x = processorInfo.coordinates.x;
-        val y = processorInfo.coordinates.y;
+        val x = processor.coordinates.x;
+        val y = processor.coordinates.y;
 
         this.setLayoutX(translator.translateX(x));
         this.setLayoutY(translator.translateY(y));
 
 
-        val nameLabel = new Label(processorName);
+        val nameLabel = new Label(serialize(processor.getIdentity()));
         nameLabel.setFont(new Font(16.0));
 
-        val methodNameLabel = new Label(processorInfo.handlerName);
+        val methodNameLabel = new Label(processor.handlerTitle);
         methodNameLabel.setFont(new Font(14.0));
 
         this.getChildren().add(nameLabel);
@@ -56,15 +53,15 @@ class ProcessorNode extends VBox {
 
         this.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                actionListener.goToSource(processorInfo.handleBySource);
+                actionListener.goToSource(processor.withHandlerSource);
             }
         });
 
         GraphViewer.CoordinateItem coordinateItem = new GraphViewer.CoordinateItem(
                 GraphViewer.CoordinateItem.Type.PROCESSOR,
-                processorName,
-                processorInfo.coordinates.getX(),
-                processorInfo.coordinates.getY());
+                processor.getIdentity(),
+                processor.coordinates.getX(),
+                processor.coordinates.getY());
         coordinateItems.add(coordinateItem);
 
         val dragger = NodeDragger.attach(this);
@@ -97,12 +94,12 @@ class ProcessorNode extends VBox {
 
         VBox processorContent = new VBox();
         processorMenuItem.setGraphic(processorContent);
-        processorMenuItem.setOnAction(event -> actionListener.goToSource(this.processorInfo.handleBySource));
+        processorMenuItem.setOnAction(event -> actionListener.goToSource(this.processor.withHandlerSource));
         contextMenu.getItems().add(processorMenuItem);
 
-        processorContent.getChildren().add(new Text(this.processorName));
+        processorContent.getChildren().add(new Text(serialize(this.processor.getIdentity())));
 
-        Optional.ofNullable(processorInfo.processorDoc)
+        Optional.ofNullable(processor.processorDoc)
                 .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))
                 .ifPresent(processorContent.getChildren()::add);
 
@@ -110,19 +107,23 @@ class ProcessorNode extends VBox {
         val handlerMenuItem = new MenuItem();
         val handlerConent = new VBox();
         handlerMenuItem.setGraphic(handlerConent);
-        handlerMenuItem.setOnAction(event -> actionListener.goToSource(this.processorInfo.handleBySource));
+        handlerMenuItem.setOnAction(event -> actionListener.goToSource(this.processor.withHandlerSource));
 
         contextMenu.getItems().addAll(handlerMenuItem);
 
-        Optional.ofNullable(processorInfo.handlerName)
-                .map(text -> new Text(text))
+        Optional.ofNullable(processor.handlerTitle)
+                .map(Text::new)
                 .ifPresent(handlerConent.getChildren()::add);
 
-        Optional.ofNullable(processorInfo.requestDoc)
+        Optional.ofNullable(processor.handlerDoc)
                 .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))
                 .ifPresent(handlerConent.getChildren()::add);
 
         return contextMenu;
+    }
+
+    String serialize(ReactorGraphModel.Identity identity){
+        return identity.getClassName() + "@" + identity.getId();
     }
 
 }

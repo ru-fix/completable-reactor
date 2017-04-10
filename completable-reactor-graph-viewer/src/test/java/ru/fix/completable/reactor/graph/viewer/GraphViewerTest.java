@@ -42,7 +42,6 @@ public class GraphViewerTest extends Application {
 
         String graphModel;
 
-
         try (val resource = getClass().getResourceAsStream("/ru.fix.completable.reactor.example.chain.PurchasePayload.rg")) {
 
             graphModel = IOUtils.toString(resource, StandardCharsets.UTF_8);
@@ -54,7 +53,7 @@ public class GraphViewerTest extends Application {
         viewer.setShortcut(ShortcutType.GOTO_SERIALIZATION_POINT, new Shortcut(true, KeyCode.B));
 
         viewer.openGraph(graphModel);
-        stage.setScene(viewer.scene);
+        stage.setScene(viewer.getScene());
 
         stage.show();
     }

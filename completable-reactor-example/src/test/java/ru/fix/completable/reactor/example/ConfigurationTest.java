@@ -7,7 +7,7 @@ import ru.fix.completable.reactor.example.processors.BankProcessor;
 import ru.fix.completable.reactor.example.processors.ServiceInfoProcessor;
 import ru.fix.completable.reactor.example.processors.UserProfileService;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
+import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
 
 import java.util.concurrent.TimeUnit;
 
@@ -19,14 +19,16 @@ import static org.junit.Assert.assertEquals;
 public class ConfigurationTest {
 
     /**
-     * Test generate html view of graphs.
+     * Test generate view of graphs.
+     *
      * @throws Exception
      */
     @Test
     public void print_html_for_debug() throws Exception {
         Configuration configuration = new Configuration();
-        ReactorGraph.write(configuration.purchaseGraph());
-        ReactorGraph.write(configuration.subscribeGraph());
+        ReactorGraphBuilder.write(
+                configuration.purchaseGraph(),
+                configuration.subscribeGraph());
     }
 
     @Test

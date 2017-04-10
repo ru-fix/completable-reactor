@@ -30,7 +30,7 @@ public class TransitionLine extends Group {
     final Node toNode;
     final Optional<BorderableNode> toNodeBorderable;
 
-    final Optional<ReactorGraphModel.MergePointTransition> transition;
+    final Optional<ReactorGraphModel.Transition> transition;
     private final Polygon pointer;
 
     private final NodeCenter fromCenter;
@@ -44,7 +44,7 @@ public class TransitionLine extends Group {
     public TransitionLine(Node world,
                           Node fromNode,
                           Node toNode,
-                          Optional<ReactorGraphModel.MergePointTransition> transition,
+                          Optional<ReactorGraphModel.Transition> transition,
                           GraphViewer.ActionListener actionListener) {
         this.world = world;
         this.fromNode = fromNode;
@@ -342,7 +342,7 @@ public class TransitionLine extends Group {
         }
 
         if (this.transition.isPresent()) {
-            ReactorGraphModel.MergePointTransition transitionItem = this.transition.get();
+            ReactorGraphModel.Transition transitionItem = this.transition.get();
             if (transitionItem.isOnAny) {
                 MenuItem onAnyMenuItem = new MenuItem();
 

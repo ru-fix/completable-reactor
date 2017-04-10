@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 
-import java.util.List;
-
 /**
  * @author Kamil Asfandiyarov
  */
@@ -19,9 +17,5 @@ public class ReactorMarshaller {
 
     public static String marshall(ReactorGraphModel graphModel) throws Exception {
         return mapper.writeValueAsString(graphModel);
-    }
-
-    public static String marshall(List<ReactorGraphModel> graphModels) throws Exception {
-        return mapper.writeValueAsString(graphModels);
     }
 }

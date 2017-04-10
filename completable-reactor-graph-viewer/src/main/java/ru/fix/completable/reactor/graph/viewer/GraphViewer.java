@@ -46,7 +46,7 @@ public class GraphViewer {
 
         graphViewPane = new GraphViewPane(actionListener, this::getShortcut);
 
-        graphViewPane.setPrefSize(300.0, 300.0);
+        graphViewPane.setPrefSize(500.0, 500.0);
 
         scene = new Scene(graphViewPane);
 
@@ -106,12 +106,13 @@ public class GraphViewer {
         public enum Type {
             PROCESSOR,
             MERGE_POINT,
+            DETACHED_MERGE_POINT,
             START_POINT,
             END_POINT
         }
 
         final Type type;
-        final String processorId;
+        final ReactorGraphModel.Identity identity;
         volatile int x;
         volatile int y;
     }

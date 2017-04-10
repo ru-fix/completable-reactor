@@ -60,8 +60,8 @@ public class CodeUpdater {
                         //type are equals, compare processor
                         int cmpProc;
 
-                        if (item1.getProcessorId() != null && item2.getProcessorId() != null) {
-                            cmpProc = item1.getProcessorId().compareTo(item2.getProcessorId());
+                        if (item1.getIdentity() != null && item2.getIdentity() != null) {
+                            return item1.getIdentity().compareTo(item2.getIdentity());
                         } else {
                             cmpProc = 0;
                         }
@@ -95,16 +95,30 @@ public class CodeUpdater {
         return out.toString();
     }
 
+
+
     private String serialize(GraphViewer.CoordinateItem item) {
         switch (item.getType()) {
             case START_POINT:
                 return String.format(".start(%d, %d)", item.getX(), item.getY());
             case PROCESSOR:
-                return String.format(".proc(\"%s\", %d, %d)", item.getProcessorId(), item.getX(), item.getY());
+                return String.format(".proc(%s.class, %d, %d, %d)",
+                        item.getIdentity().getClassName(),
+                        item.getIdentity().getId(),
+                        item.getX(),
+                        item.getY());
             case MERGE_POINT:
-                return String.format(".merge(\"%s\", %d, %d)", item.getProcessorId(), item.getX(), item.getY());
+                return String.format(".merge(%s.class, %d, %d, %d)",
+                        item.getIdentity().getClassName(),
+                        item.getIdentity().getId(),
+                        item.getX(),
+                        item.getY());
             case END_POINT:
-                return String.format(".complete(\"%s\", %d, %d)", item.getProcessorId(), item.getX(), item.getY());
+                return String.format(".complete(%s.class, %d, %d, %d)",
+                        item.getIdentity().getClassName(),
+                        item.getIdentity().getId(),
+                        item.getX(),
+                        item.getY());
             default:
                 throw new IllegalArgumentException(String.format("Unsupported type: %s", item));
         }

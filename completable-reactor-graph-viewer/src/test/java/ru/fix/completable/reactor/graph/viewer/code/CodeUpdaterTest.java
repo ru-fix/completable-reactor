@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.graph.viewer.GraphViewer;
 
 import java.nio.charset.StandardCharsets;
@@ -21,12 +22,52 @@ public class CodeUpdaterTest {
 
     @BeforeClass
     public static void beforeClass() {
-        coordinateItems.add(new GraphViewer.CoordinateItem(GraphViewer.CoordinateItem.Type.START_POINT, null, 500, -200));
-        coordinateItems.add(new GraphViewer.CoordinateItem(GraphViewer.CoordinateItem.Type.PROCESSOR, "SmsRequestConstructProcessor@4", 910, 901));
-        coordinateItems.add(new GraphViewer.CoordinateItem(GraphViewer.CoordinateItem.Type.PROCESSOR, "SmsRequestConstructProcessor@5", 1170, 1270));
-        coordinateItems.add(new GraphViewer.CoordinateItem(GraphViewer.CoordinateItem.Type.PROCESSOR, "ServiceFetchProcessor@0", 320, 1141));
-        coordinateItems.add(new GraphViewer.CoordinateItem(GraphViewer.CoordinateItem.Type.MERGE_POINT, "ServiceFetchProcessor@5", 1210, 401));
-        coordinateItems.add(new GraphViewer.CoordinateItem(GraphViewer.CoordinateItem.Type.END_POINT, "SmsRequestConstructProcessor@6", 1500, 511));
+        coordinateItems.add(new GraphViewer.CoordinateItem(
+                GraphViewer.CoordinateItem.Type.START_POINT,
+                null,
+                500,
+                -200));
+
+        coordinateItems.add(new GraphViewer.CoordinateItem(
+                GraphViewer.CoordinateItem.Type.PROCESSOR,
+                new ReactorGraphModel.Identity()
+                        .setClassName("SmsRequestConstructProcessor")
+                        .setId(4),
+                910,
+                901));
+
+        coordinateItems.add(new GraphViewer.CoordinateItem(
+                GraphViewer.CoordinateItem.Type.PROCESSOR,
+                new ReactorGraphModel.Identity()
+                        .setClassName("SmsRequestConstructProcessor")
+                        .setId(5),
+                1170,
+                1270));
+
+        coordinateItems.add(new GraphViewer.CoordinateItem(
+                GraphViewer.CoordinateItem.Type.PROCESSOR,
+                new ReactorGraphModel.Identity()
+                        .setClassName("ServiceFetchProcessor")
+                        .setId(0),
+                320,
+                1141));
+
+        coordinateItems.add(new GraphViewer.CoordinateItem(
+                GraphViewer.CoordinateItem.Type.MERGE_POINT,
+                new ReactorGraphModel.Identity()
+                        .setClassName("ServiceFetchProcessor")
+                        .setId(5),
+                1210,
+                401));
+
+        coordinateItems.add(new GraphViewer.CoordinateItem(
+                GraphViewer.CoordinateItem.Type.END_POINT,
+                new ReactorGraphModel.Identity()
+                        .setClassName("SmsRequestConstructProcessor")
+                        .setId(6),
+
+                1500,
+                511));
     }
 
     @Test
@@ -52,6 +93,16 @@ public class CodeUpdaterTest {
                 .replace("\r", "\n")
                 .replace("\n\n", "\n")
                 .replace("\n\n", "\n");
+    }
+
+
+    @Test
+    public void update_existing_code_bloc_what_it_smaller_that_new_one() throws Exception {
+        String input = IOUtils.toString(getClass().getResource("/code-block-3.txt").toURI(), StandardCharsets.UTF_8);
+        String expectedOutput = IOUtils.toString(getClass().getResource("/code-block-3-result.txt").toURI(), StandardCharsets.UTF_8);
+
+        String output = updater.updateCoordinates(input, coordinateItems);
+        Assert.assertEquals(expectedOutput, output);
     }
 
 }

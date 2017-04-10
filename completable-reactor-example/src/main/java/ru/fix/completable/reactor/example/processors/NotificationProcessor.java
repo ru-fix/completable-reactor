@@ -1,15 +1,14 @@
 package ru.fix.completable.reactor.example.processors;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.fix.completable.reactor.api.HandlerDescription;
-import ru.fix.completable.reactor.api.ProcessorDescription;
+import ru.fix.completable.reactor.api.Reactored;
 
 import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Kamil Asfandiyarov
  */
-@ProcessorDescription(doc = {
+@Reactored({
         "Send notifications to external system",
         "Notification about events like purchase.",
         "We do not need to wait result of notification action for building correct response.",
@@ -18,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 })
 @Slf4j
 public class NotificationProcessor  {
-    @HandlerDescription(doc = {
+    @Reactored({
             "Send notification about purchase event"}
     )
     public CompletableFuture<Void> sendPurchaseNotification(Long userId) {

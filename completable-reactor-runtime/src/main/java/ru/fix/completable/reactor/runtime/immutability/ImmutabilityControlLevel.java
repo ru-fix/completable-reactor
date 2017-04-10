@@ -1,6 +1,8 @@
 package ru.fix.completable.reactor.runtime.immutability;
 
 /**
+ * Immutability control uses reflection to copy payload before forwarding it to handler.
+ *
  * @author Kamil Asfandiyarov
  */
 public enum ImmutabilityControlLevel {

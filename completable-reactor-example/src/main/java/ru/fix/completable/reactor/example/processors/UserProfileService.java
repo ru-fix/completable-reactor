@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.example.processors;
 
-import ru.fix.completable.reactor.api.HandlerDescription;
-import ru.fix.completable.reactor.api.ProcessorDescription;
+import ru.fix.completable.reactor.api.Reactored;
 
 import java.util.Map;
 import java.util.Objects;
@@ -16,7 +15,7 @@ import static ru.fix.completable.reactor.example.processors.UserProfileService.S
  * @author Kamil Asfandiyarov
  */
 
-@ProcessorDescription(doc = {
+@Reactored({
         "UserProfileServices loads information about user from remote database.",
         "User profile contains information whether user is blocked or not."
 
@@ -66,9 +65,7 @@ public class UserProfileService {
     }
 
 
-    @HandlerDescription(doc = {
-            "Load user profile from database by user id.",
-    })
+    @Reactored("Load user profile from database by user id.")
     public CompletableFuture<UserProfileResult> loadUserProfileById(long userId, String nonNullUnusedParam) {
 
         Objects.nonNull(nonNullUnusedParam);

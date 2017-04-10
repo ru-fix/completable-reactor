@@ -2,7 +2,7 @@ package ru.fix.completable.reactor.example.chain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import ru.fix.completable.reactor.api.PayloadDescription;
+import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.example.processors.ServiceInfo;
 import ru.fix.completable.reactor.example.processors.UserProfile;
 
@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 /**
  * @author Kamil Asfandiyarov
  */
-@PayloadDescription(doc = {
+@Reactored({
         "Represent purchase request"
 })
 public class PurchasePayload implements ServiceInfoPayloadMixin, UserProfilePayloadMixin {

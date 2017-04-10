@@ -2,8 +2,7 @@ package ru.fix.completable.reactor.example.processors;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import ru.fix.completable.reactor.api.HandlerDescription;
-import ru.fix.completable.reactor.api.ProcessorDescription;
+import ru.fix.completable.reactor.api.Reactored;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -16,10 +15,9 @@ import java.util.stream.Stream;
 /**
  * @author Kamil Asfandiyarov
  */
-@ProcessorDescription(doc = {
+@Reactored({
         "Service information processor load data for given service from database.",
         "Service could be not active. In that case purchase request will be denied.",
-
 })
 public class ServiceInfoProcessor  {
     public static final long SERVICE_ID_CAR_WASH = 1L;
@@ -54,9 +52,7 @@ public class ServiceInfoProcessor  {
         ServiceInfo serviceInfo;
     }
 
-    @HandlerDescription(doc = {
-            "Load service information from database.",
-    })
+    @Reactored({"Load service information from database."})
     public CompletableFuture<ServiceInfoResult> loadServiceInformation(Long serviceId) {
 
         return CompletableFuture

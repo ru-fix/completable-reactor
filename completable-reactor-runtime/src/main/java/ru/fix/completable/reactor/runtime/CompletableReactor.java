@@ -1,16 +1,20 @@
 package ru.fix.completable.reactor.runtime;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.Accessors;
 import ru.fix.commons.profiler.PrefixedProfiler;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
+import ru.fix.completable.reactor.runtime.cloning.CopierThreadsafeCopyMaker;
+import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
+import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
+import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
+import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
+import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder;
 import ru.fix.completable.reactor.runtime.immutability.ClonerWithReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
+import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,9 +35,11 @@ public class CompletableReactor implements AutoCloseable {
 
     private final ThreadsafeCopyMaker threadsafeCopyMaker = new CopierThreadsafeCopyMaker();
 
+    private final DebugSerializer debugSerializer = new ToStringDebugSerializer();
+
     private final ReactorGraphExecutionBuilder executionBuilder;
 
-    private final Map<Class<?>, ReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
+    private final Map<Class<?>, CRReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
 
     /**
      * {@code Function<PayloadType, CompletableFuture<PayloadType>>}
@@ -74,7 +80,8 @@ public class CompletableReactor implements AutoCloseable {
                         result.completeExceptionally(exc);
                         return result;
                     }
-                });
+                },
+                debugSerializer);
     }
 
     /**
@@ -117,11 +124,13 @@ public class CompletableReactor implements AutoCloseable {
 
     /**
      * Register reactor graph
+     *
      * @param reactorGraph
      */
     public void registerReactorGraph(ReactorGraph reactorGraph) {
-        payloadGraphs.put(reactorGraph.getPayloadClass(), reactorGraph);
-        inlinePayloadGraphs.remove(reactorGraph.getPayloadClass());
+        val crReactorGraph = (CRReactorGraph) reactorGraph;
+        payloadGraphs.put(crReactorGraph.getPayloadClass(), crReactorGraph);
+        inlinePayloadGraphs.remove(crReactorGraph.getPayloadClass());
     }
 
     /**
@@ -206,7 +215,7 @@ public class CompletableReactor implements AutoCloseable {
          * Debug purpose field that allows to check internal execution graph state
          */
         @Getter(AccessLevel.NONE)
-        private final Collection<ReactorGraphExecutionBuilder.ProcessingVertex> debugProcessingVertexGraphState;
+        private final Collection debugProcessingVertexGraphState;
     }
 
 
@@ -248,13 +257,13 @@ public class CompletableReactor implements AutoCloseable {
          * Inline graph execution scenario
          */
         Function inlineGraphFunction = inlinePayloadGraphs.get(payload.getClass());
-        if(inlineGraphFunction != null){
+        if (inlineGraphFunction != null) {
             CompletableFuture<PayloadType> inlineGraphResult = (CompletableFuture<PayloadType>) inlineGraphFunction.apply(payload);
             inlineGraphResult.thenAcceptAsync(any -> payloadCall.stop());
 
             return Optional.of(
                     Execution.<PayloadType>builder()
-                            .chainExecutionFuture(inlineGraphResult.thenAccept(any -> {}))
+                            .chainExecutionFuture(inlineGraphResult.thenAccept(any -> {/* do nothing */}))
                             .resultFuture(inlineGraphResult)
                             .build());
 
@@ -293,7 +302,7 @@ public class CompletableReactor implements AutoCloseable {
         /**
          * Launching chain execution
          */
-        execution.submitFuture.complete(payload);
+        execution.getSubmitFuture().complete(payload);
 
 
         /**
@@ -305,13 +314,13 @@ public class CompletableReactor implements AutoCloseable {
                      * Temporary solution.
                      * Should be fixed by completing all futures in processor chain
                      */
-                    if (!execution.resultFuture.isDone()) {
-                        execution.resultFuture.completeExceptionally(
+                    if (!execution.getResultFuture().isDone()) {
+                        execution.getResultFuture().completeExceptionally(
                                 new TimeoutException(
                                         String.format("Response for payload %s took more than %d ms.", payload, timeoutMs)));
                     }
-                    if (!execution.chainExecutionFuture.isDone()) {
-                        execution.chainExecutionFuture.completeExceptionally(
+                    if (!execution.getChainExecutionFuture().isDone()) {
+                        execution.getChainExecutionFuture().completeExceptionally(
                                 new TimeoutException(
                                         String.format("Execution of payload %s took more than %d ms.", payload, timeoutMs)));
                     }
@@ -319,7 +328,7 @@ public class CompletableReactor implements AutoCloseable {
                 timeoutMs,
                 TimeUnit.MILLISECONDS);
 
-        execution.chainExecutionFuture.thenRunAsync(() -> {
+        execution.getChainExecutionFuture().thenRunAsync(() -> {
             long count = pendingRequestCount.decrementAndGet();
             if (count == 0) {
                 synchronized (pendingRequestCount) {

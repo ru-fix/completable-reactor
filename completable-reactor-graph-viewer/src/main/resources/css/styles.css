@@ -12,6 +12,25 @@
     -fx-padding: 2, 2, 2, 2;
 }
 
+.processor .label {
+    -fx-text-fill: #000000;
+}
+
+.subgraph {
+    -fx-background-color: #dddddd;
+    -fx-border-color: #7e92bf;
+
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+
+    -fx-padding: 2, 2, 2, 2;
+}
+
+.subgraph .label {
+    -fx-text-fill: #000000;
+}
+
+
 .startPoint {
     -fx-background-color: #dddddd;
     -fx-border-color: #bfbfbf;
@@ -41,9 +60,7 @@
     -fx-stroke: #909090;
 }
 
-.processor .label {
-    -fx-text-fill: #000000;
-}
+
 
 .mergeGroup {
     -fx-border-color: #bfbfbf;

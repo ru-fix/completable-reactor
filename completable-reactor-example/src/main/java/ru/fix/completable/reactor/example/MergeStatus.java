@@ -1,20 +1,20 @@
 package ru.fix.completable.reactor.example;
 
-import ru.fix.completable.reactor.api.TransitionDescription;
+import ru.fix.completable.reactor.api.Reactored;
 
 /**
  * @author Kamil Asfandiyarov
  */
 public enum MergeStatus {
-    @TransitionDescription(doc = "Continue processing")
+    @Reactored("Continue processing")
     CONTINUE,
 
-    @TransitionDescription(doc = "Stop processing")
+    @Reactored("Stop processing")
     STOP,
 
-    @TransitionDescription(doc = "Withdraw money required")
+    @Reactored("Withdraw money required")
     WITHDRAWAL,
 
-    @TransitionDescription(doc = "No withdrawal required")
+    @Reactored("No withdrawal required")
     NO_WITHDRAWAL
 }

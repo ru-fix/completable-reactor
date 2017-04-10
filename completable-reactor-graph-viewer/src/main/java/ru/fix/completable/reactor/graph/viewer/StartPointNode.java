@@ -6,6 +6,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import lombok.experimental.var;
 import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 
@@ -86,16 +87,18 @@ class StartPointNode extends VBox {
     }
 
     private void fireGoToSourceEvent() {
-        ReactorGraphModel.Source payloadClassSource = new ReactorGraphModel.Source();
-        payloadClassSource.className = model.payload.payloadClass;
-        actionListener.goToSource(payloadClassSource);
+        var source = model.getStartPoint().getBuilderPayloadSource();
+        if(source == null) {
+            source = new ReactorGraphModel.Source();
+            source.setClassName(model.payload.payloadClass);
+        }
+        actionListener.goToSource(source);
     }
 
     VBox buildTooltipContent(){
         VBox content = new VBox();
 
         content.getChildren().add(new Text(this.model.payload.payloadName));
-        content.getChildren().add(new Text(this.model.payload.payloadClass));
 
         Optional.ofNullable(this.model.payload.payloadDoc)
                 .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))

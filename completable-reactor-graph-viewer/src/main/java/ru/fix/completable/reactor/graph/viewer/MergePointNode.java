@@ -62,7 +62,7 @@ class MergePointNode extends VBox  implements CentrableNode, BorderableNode{
 
         GraphViewer.CoordinateItem coordinateItem = new GraphViewer.CoordinateItem(
                 GraphViewer.CoordinateItem.Type.MERGE_POINT,
-                mergePoint.processor,
+                mergePoint.getIdentity(),
                 mergePoint.coordinates.getX(),
                 mergePoint.coordinates.getY());
 

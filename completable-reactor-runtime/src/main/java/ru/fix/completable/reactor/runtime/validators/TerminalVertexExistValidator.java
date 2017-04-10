@@ -1,8 +1,8 @@
 package ru.fix.completable.reactor.runtime.validators;
 
-import ru.fix.completable.reactor.runtime.GraphValidator;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
-import ru.fix.completable.reactor.runtime.ValidationException;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.api.ReactorGraphModel.MergeGroup;
+import ru.fix.completable.reactor.api.ReactorGraphModel.Transition;
 
 import java.util.List;
 
@@ -12,12 +12,12 @@ import java.util.List;
 public class TerminalVertexExistValidator implements GraphValidator {
 
     @Override
-    public void validateGraph(ReactorGraph<?> graph) throws ValidationException {
+    public void validateGraph(ReactorGraphModel graph) throws ValidationException {
         if (graph.getMergeGroups().stream()
-                .map(ReactorGraph.MergeGroup::getMergePoints)
+                .map(MergeGroup::getMergePoints)
                 .flatMap(List::stream)
                 .flatMap(mergePoint -> mergePoint.getTransitions().stream())
-                .noneMatch(ReactorGraph.Transition::isComplete)) {
+                .noneMatch(Transition::isComplete)) {
 
             throw new ValidationException("Graph should contain at least one terminal vertex." +
                     " Add complete step to at least one merge point.");
