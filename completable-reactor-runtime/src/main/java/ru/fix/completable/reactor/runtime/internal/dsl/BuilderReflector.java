@@ -17,7 +17,7 @@ public class BuilderReflector {
 
         ReactorReflector.getMethodInvocationPoint().ifPresent(source -> processorDescription.withHandlerSource = source);
 
-        val method = LambdaReflector.annotatedMethodReference(methodReference, Reactored.class);
+        val method = LambdaReflector.reflectAnnotatedMethodReference(methodReference, Reactored.class);
 
         processorDescription.processorType = method.getMethodClass();
 

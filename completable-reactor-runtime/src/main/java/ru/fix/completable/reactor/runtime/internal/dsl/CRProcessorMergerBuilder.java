@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.runtime.internal.dsl;
 
+import lombok.val;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.ProcessorDescription;
 import ru.fix.completable.reactor.runtime.dsl.ProcessorMerger;
@@ -28,13 +29,14 @@ public class CRProcessorMergerBuilder<PayloadType, ProcessorResult> implements P
 
     public ProcessorDescription<PayloadType> withMerger(String title, String[] docs, ProcessorMerger<PayloadType, ProcessorResult> processorMerger) {
 
-        LambdaReflector.AnnotatedMethod<Reactored> mergerMethod = LambdaReflector.annotatedMethodReference(processorMerger, Reactored.class);
+        val mergerMethod = LambdaReflector.tryReflectAnnotatedMethodReference(processorMerger, Reactored.class)
+                .orElse(null);
 
-        if(title == null) {
+        if(title == null && mergerMethod != null) {
             title = mergerMethod.getMethod().getName();
         }
 
-        if(docs == null) {
+        if(docs == null && mergerMethod != null) {
             docs = mergerMethod.getAnnotation().map(Reactored::value).orElse(null);
         }
 

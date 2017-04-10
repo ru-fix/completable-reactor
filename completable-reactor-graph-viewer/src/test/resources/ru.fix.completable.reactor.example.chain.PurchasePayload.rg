@@ -227,8 +227,8 @@
             "fileNameLine" : null
           }
         },
-        "onAny" : false,
-        "complete" : true
+        "complete" : true,
+        "onAny" : false
       }, {
         "mergeStatuses" : [ "CONTINUE" ],
         "isOnAny" : false,
@@ -264,8 +264,8 @@
             "fileNameLine" : null
           }
         },
-        "onAny" : false,
-        "complete" : false
+        "complete" : false,
+        "onAny" : false
       } ]
     }, {
       "identity" : {
@@ -320,8 +320,8 @@
             "fileNameLine" : null
           }
         },
-        "onAny" : false,
-        "complete" : false
+        "complete" : false,
+        "onAny" : false
       }, {
         "mergeStatuses" : [ "NO_WITHDRAWAL" ],
         "isOnAny" : false,
@@ -357,8 +357,8 @@
             "fileNameLine" : null
           }
         },
-        "onAny" : false,
-        "complete" : false
+        "complete" : false,
+        "onAny" : false
       }, {
         "mergeStatuses" : [ "NO_WITHDRAWAL" ],
         "isOnAny" : false,
@@ -394,8 +394,8 @@
             "fileNameLine" : null
           }
         },
-        "onAny" : false,
-        "complete" : false
+        "complete" : false,
+        "onAny" : false
       }, {
         "mergeStatuses" : [ "STOP" ],
         "isOnAny" : false,
@@ -435,8 +435,8 @@
             "fileNameLine" : null
           }
         },
-        "onAny" : false,
-        "complete" : true
+        "complete" : true,
+        "onAny" : false
       } ]
     } ]
   }, {
@@ -482,8 +482,8 @@
         },
         "transitionOnStatusSource" : { },
         "mergeStatusSources" : { },
-        "onAny" : true,
-        "complete" : false
+        "complete" : false,
+        "onAny" : true
       } ]
     } ]
   }, {
@@ -503,7 +503,7 @@
         "fileName" : "Configuration.java",
         "fileNameLine" : 71
       },
-      "mergerTitle" : "lambda$new$ee8c97b6$1",
+      "mergerTitle" : null,
       "mergerDocs" : null,
       "transitions" : [ {
         "mergeStatuses" : [ ],
@@ -529,8 +529,8 @@
         },
         "transitionOnStatusSource" : { },
         "mergeStatusSources" : { },
-        "onAny" : true,
-        "complete" : false
+        "complete" : false,
+        "onAny" : true
       } ]
     } ]
   }, {
@@ -550,7 +550,7 @@
         "fileName" : "Configuration.java",
         "fileNameLine" : 80
       },
-      "mergerTitle" : "lambda$new$7ef773d$1",
+      "mergerTitle" : null,
       "mergerDocs" : null,
       "transitions" : [ {
         "mergeStatuses" : [ ],
@@ -580,8 +580,8 @@
         },
         "transitionOnStatusSource" : { },
         "mergeStatusSources" : { },
-        "onAny" : true,
-        "complete" : true
+        "complete" : true,
+        "onAny" : true
       } ]
     } ]
   } ],

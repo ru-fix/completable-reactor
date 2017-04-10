@@ -26,7 +26,15 @@ public class LambdaReflector {
         Optional<AnnotationType> annotation;
     }
 
-    public static <AnnotationType extends Annotation> AnnotatedMethod<AnnotationType> annotatedMethodReference(
+    public static <AnnotationType extends Annotation> AnnotatedMethod<AnnotationType> reflectAnnotatedMethodReference(
+            Serializable methodReference,
+            Class<AnnotationType> annotationClass) {
+
+        return tryReflectAnnotatedMethodReference(methodReference, annotationClass)
+                .orElseThrow(() -> new IllegalArgumentException("Failed to reflect method reference."));
+    }
+
+    public static <AnnotationType extends Annotation> Optional<AnnotatedMethod<AnnotationType>> tryReflectAnnotatedMethodReference(
             Serializable methodReference,
             Class<AnnotationType> annotationClass) {
 
@@ -36,7 +44,7 @@ public class LambdaReflector {
                         reference.getMethod(),
                         Optional.ofNullable(reference.getMethod().getAnnotation(annotationClass))))
 
-                .orElseThrow(() -> new IllegalArgumentException("Failed to reflect method reference."));
+                .filter(reference -> !reference.getMethod().getName().startsWith("lambda$"));
     }
 
     @Value

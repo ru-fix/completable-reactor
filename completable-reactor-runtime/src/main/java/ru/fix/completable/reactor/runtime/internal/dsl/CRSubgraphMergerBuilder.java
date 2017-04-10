@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.runtime.internal.dsl;
 
+import lombok.val;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.SubgraphDescription;
 import ru.fix.completable.reactor.runtime.dsl.SubgraphMerger;
@@ -32,13 +33,14 @@ public class CRSubgraphMergerBuilder<PayloadType, SubgraphResult> implements Sub
     @Override
     public SubgraphDescription<PayloadType> withMerger(String title, String[] docs, SubgraphMerger<PayloadType, SubgraphResult> subgraphMerger) {
 
-        LambdaReflector.AnnotatedMethod<Reactored> annotatedMethod = LambdaReflector.annotatedMethodReference(subgraphMerger, Reactored.class);
+        val annotatedMethod = LambdaReflector.tryReflectAnnotatedMethodReference(subgraphMerger, Reactored.class)
+                .orElse(null);
 
-        if(title == null) {
+        if(title == null && annotatedMethod != null) {
             title = annotatedMethod.getMethod().getName();
         }
 
-        if(docs == null) {
+        if(docs == null && annotatedMethod != null) {
             docs = annotatedMethod.getAnnotation().map(Reactored::value).orElse(null);
         }
 

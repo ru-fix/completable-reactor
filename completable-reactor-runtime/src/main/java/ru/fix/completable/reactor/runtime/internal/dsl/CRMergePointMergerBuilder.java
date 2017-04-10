@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.runtime.internal.dsl;
 
+import lombok.val;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.dsl.MergePointDescription;
 import ru.fix.completable.reactor.runtime.dsl.MergePointMerger;
@@ -31,15 +32,15 @@ public class CRMergePointMergerBuilder<PayloadType> implements MergePointMergerB
     @Override
     public MergePointDescription<PayloadType> withMerger(String title, String[] docs, MergePointMerger<PayloadType> mergePointMerger) {
 
-        LambdaReflector.AnnotatedMethod<Reactored> mergerMethod = LambdaReflector.annotatedMethodReference(
+        val mergerMethod = LambdaReflector.tryReflectAnnotatedMethodReference(
                 mergePointMerger,
-                Reactored.class);
+                Reactored.class).orElse(null);
 
-        if(title == null) {
+        if(title == null && mergerMethod != null) {
             title = mergerMethod.getMethod().getName();
         }
 
-        if(docs == null) {
+        if(docs == null && mergerMethod != null) {
             docs = mergerMethod.getAnnotation().map(Reactored::value).orElse(null);
         }
 
