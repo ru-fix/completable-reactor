@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
+import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
 import ru.fix.completable.reactor.runtime.dsl.Coordinates;
 import ru.fix.completable.reactor.runtime.dsl.MergePointBuilder;
 import ru.fix.completable.reactor.runtime.internal.dsl.*;
@@ -270,14 +271,23 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     public static class StartPoint {
 
         ReactorGraphModel.Coordinates coordinates;
-
         ReactorGraphModel.Source coordinatesSource;
+
+        /**
+         * Where {@link ReactorGraphBuilder#payload(Class)} method was invoked during graph construction
+         */
+        ReactorGraphModel.Source builderPayloadSource;
+
         final List<CRProcessingItem> processingItems = new ArrayList<>();
+
 
         public ReactorGraphModel.StartPoint serialize() {
             ReactorGraphModel.StartPoint model = new ReactorGraphModel.StartPoint();
             model.coordinates = this.coordinates != null ? this.coordinates : new ReactorGraphModel.Coordinates(500, 100);
             model.coordinatesSource = this.coordinatesSource;
+
+            model.setBuilderPayloadSource(this.getBuilderPayloadSource());
+
             this.processingItems.stream()
                     .map(CRProcessingItem::serializeIdentity)
                     .sorted()

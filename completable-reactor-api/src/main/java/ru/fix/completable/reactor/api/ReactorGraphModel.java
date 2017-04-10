@@ -38,6 +38,12 @@ public class ReactorGraphModel {
     public static class StartPoint {
         public Coordinates coordinates;
         public Source coordinatesSource;
+
+        /**
+         * Where {@link ReactorGraphBuilder#payload(Class)} method was invoked during graph construction
+         */
+        ReactorGraphModel.Source builderPayloadSource;
+
         public final List<Identity> processingItems = new ArrayList<>();
     }
 

@@ -40,6 +40,10 @@ public class ReactorGraphBuilder {
         val builderContext = new BuilderContext<PayloadType>();
         builderContext.setGraph(new CRReactorGraph<>(payloadClass));
         builderContext.getGraphValidators().addAll(graphValidators);
+
+        builderContext.getGraph().getStartPoint().setBuilderPayloadSource(
+                ReactorReflector.getMethodInvocationPoint().orElse(null));
+
         return new CRPayloadBuilder<>(builderContext);
     }
 
@@ -51,7 +55,6 @@ public class ReactorGraphBuilder {
         return new ProcessorDescriptionBuilder() {
             @Override
             public <PayloadType> ru.fix.completable.reactor.runtime.dsl.HandlerBuilder0<PayloadType> forPayload(Class<PayloadType> payloadType) {
-
                 val processorDescription = new CRProcessorDescription<PayloadType>();
                 return new CRHandlerBuilder0<>(processorDescription);
             }
@@ -65,7 +68,6 @@ public class ReactorGraphBuilder {
         return new MergePointDescriptionBuilder() {
             @Override
             public <PayloadType> MergePointMergerBuilder<PayloadType> forPayload(Class<PayloadType> payloadType) {
-
                 CRMergePointDescription<PayloadType> mergePointDescription = new CRMergePointDescription<>();
                 return new CRMergePointMergerBuilder<>(mergePointDescription);
             }
