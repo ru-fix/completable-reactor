@@ -40,8 +40,8 @@ public class ProcessorsHaveIncomingFlowsValidator implements GraphValidator {
                 .forEach(processorsWithIncomingTransitions::add);
 
         val processorWithoutIncomingTransitions = Stream.concat(
-                graph.getProcessors().stream().map(Processor::getId),
-                graph.getSubgraphs().stream().map(Subgraph::getId))
+                graph.getProcessors().stream().map(Processor::getIdentity),
+                graph.getSubgraphs().stream().map(Subgraph::getIdentity))
                 .filter(processor -> !processorsWithIncomingTransitions.contains(processor))
                 .findAny();
 

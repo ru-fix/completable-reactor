@@ -279,7 +279,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.coordinates = this.coordinates != null ? this.coordinates : new ReactorGraphModel.Coordinates(500, 100);
             model.coordinatesSource = this.coordinatesSource;
             this.processingItems.stream()
-                    .map(CRReactorGraph::serialize)
+                    .map(CRProcessingItem::serializeIdentity)
                     .sorted()
                     .forEach(model.processingItems::add);
             return model;

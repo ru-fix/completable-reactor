@@ -106,6 +106,7 @@ public class GraphViewer {
         public enum Type {
             PROCESSOR,
             MERGE_POINT,
+            DETACHED_MERGE_POINT,
             START_POINT,
             END_POINT
         }

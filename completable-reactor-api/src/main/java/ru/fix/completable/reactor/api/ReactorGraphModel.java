@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.api;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.val;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ public class ReactorGraphModel {
     public static class StartPoint {
         public Coordinates coordinates;
         public Source coordinatesSource;
-        public final List<String> processingItems = new ArrayList<>();
+        public final List<Identity> processingItems = new ArrayList<>();
     }
 
     @Data
@@ -96,13 +97,37 @@ public class ReactorGraphModel {
 
     @Data
     @Accessors(chain = true)
-    public static class Identity{
+    public static class Identity implements Comparable<Identity>{
         /**
          * Null for detached MergePoint
          * Not null for Processors and Subgraphs
          */
         String className;
         int id;
+
+        @Override
+        public int compareTo(Identity other) {
+            val item1 = this;
+            val item2 = other;
+
+            if(item1.getClassName() == null && item2.getClassName() == null){
+                return Integer.compare(item1.getId(), item2.getId());
+            }
+            if(item1.getClassName() == null){
+                return 1;
+            }
+
+            if(item2.getClassName() == null){
+                return -1;
+            }
+
+            int cmp = item1.getClassName().compareTo(item2.getClassName());
+            if(cmp != 0){
+                return cmp;
+            }
+
+            return Integer.compare(item1.getId(), item2.getId());
+        }
     }
 
 
