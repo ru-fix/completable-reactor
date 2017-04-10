@@ -262,16 +262,33 @@ public class GraphViewPane extends ScrollPane {
         pane.getChildren().add(startPointNode);
 
         graphModel.startPoint.processingItems.forEach(processingItemId -> {
+            TransitionLine transition = null;
 
-            val transition = new TransitionLine(
-                    pane,
-                    startPointNode,
-                    processors.get(processingItemId),
-                    Optional.empty(),
-                    actionListener);
+            switch (processingItemId.getType()) {
+                case PROCESSOR:
+                case SUBGRAPH:
+                    transition = new TransitionLine(
+                            pane,
+                            startPointNode,
+                            processors.get(processingItemId),
+                            Optional.empty(),
+                            actionListener);
+                    break;
+                case MERGE_POINT:
+                    transition = new TransitionLine(
+                            pane,
+                            startPointNode,
+                            mergePoints.get(processingItemId),
+                            Optional.empty(),
+                            actionListener);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid type: " + processingItemId.getType());
+            }
 
             pane.getChildren().add(transition);
             transition.toBack();
+
         });
 
 

@@ -42,7 +42,8 @@ public class GraphViewerTest extends Application {
 
         String graphModel;
 
-        try (val resource = getClass().getResourceAsStream("/ru.fix.completable.reactor.example.chain.PurchasePayload.rg")) {
+        try (val resource = getClass().getResourceAsStream(
+                "/ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$DetachedMergePointFromStartPointPayload.rg")) {
 
             graphModel = IOUtils.toString(resource, StandardCharsets.UTF_8);
         }
