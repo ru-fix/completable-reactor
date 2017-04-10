@@ -53,7 +53,7 @@ public class EndPointNode extends VBox {
 
         GraphViewer.CoordinateItem coordinateItem = new GraphViewer.CoordinateItem(
                 GraphViewer.CoordinateItem.Type.END_POINT,
-                mergePoint.processor,
+                mergePoint.identity,
                 endPointTransition.completeCoordinates.getX(),
                 endPointTransition.completeCoordinates.getY());
         coordinateItems.add(coordinateItem);

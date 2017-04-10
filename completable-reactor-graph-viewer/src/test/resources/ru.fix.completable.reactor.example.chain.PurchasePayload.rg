@@ -14,16 +14,24 @@
       "fileName" : "Configuration.java",
       "fileNameLine" : 210
     },
+    "builderPayloadSource" : {
+      "className" : "ru.fix.completable.reactor.example.Configuration",
+      "fileName" : "Configuration.java",
+      "fileNameLine" : 178
+    },
     "processingItems" : [ {
+      "type" : "PROCESSOR",
       "className" : "ServiceInfoProcessor",
       "id" : 0
     }, {
+      "type" : "PROCESSOR",
       "className" : "UserProfileService",
       "id" : 0
     } ]
   },
   "processors" : [ {
     "identity" : {
+      "type" : "PROCESSOR",
       "className" : "BankProcessor",
       "id" : 0
     },
@@ -46,6 +54,7 @@
     }
   }, {
     "identity" : {
+      "type" : "PROCESSOR",
       "className" : "NotificationProcessor",
       "id" : 0
     },
@@ -68,6 +77,7 @@
     }
   }, {
     "identity" : {
+      "type" : "PROCESSOR",
       "className" : "ServiceInfoProcessor",
       "id" : 0
     },
@@ -90,6 +100,7 @@
     }
   }, {
     "identity" : {
+      "type" : "PROCESSOR",
       "className" : "TransactionLogProcessor",
       "id" : 0
     },
@@ -112,6 +123,7 @@
     }
   }, {
     "identity" : {
+      "type" : "PROCESSOR",
       "className" : "UserLogProcessor",
       "id" : 0
     },
@@ -134,6 +146,7 @@
     }
   }, {
     "identity" : {
+      "type" : "PROCESSOR",
       "className" : "UserProfileService",
       "id" : 0
     },
@@ -158,12 +171,11 @@
   "subgraphs" : [ ],
   "mergeGroups" : [ {
     "mergePoints" : [ {
-      "processor" : {
+      "identity" : {
+        "type" : "PROCESSOR",
         "className" : "UserProfileService",
         "id" : 0
       },
-      "subgraph" : null,
-      "mergePoint" : null,
       "coordinates" : {
         "x" : 806,
         "y" : 201
@@ -222,6 +234,7 @@
         "isOnAny" : false,
         "isComplete" : false,
         "mergeProcessingItem" : {
+          "type" : "PROCESSOR",
           "className" : "ServiceInfoProcessor",
           "id" : 0
         },
@@ -255,12 +268,11 @@
         "onAny" : false
       } ]
     }, {
-      "processor" : {
+      "identity" : {
+        "type" : "PROCESSOR",
         "className" : "ServiceInfoProcessor",
         "id" : 0
       },
-      "subgraph" : null,
-      "mergePoint" : null,
       "coordinates" : {
         "x" : 640,
         "y" : 280
@@ -279,6 +291,7 @@
         "isComplete" : false,
         "mergeProcessingItem" : null,
         "handleByProcessingItem" : {
+          "type" : "PROCESSOR",
           "className" : "BankProcessor",
           "id" : 0
         },
@@ -315,6 +328,7 @@
         "isComplete" : false,
         "mergeProcessingItem" : null,
         "handleByProcessingItem" : {
+          "type" : "PROCESSOR",
           "className" : "UserLogProcessor",
           "id" : 0
         },
@@ -351,6 +365,7 @@
         "isComplete" : false,
         "mergeProcessingItem" : null,
         "handleByProcessingItem" : {
+          "type" : "PROCESSOR",
           "className" : "NotificationProcessor",
           "id" : 0
         },
@@ -426,12 +441,11 @@
     } ]
   }, {
     "mergePoints" : [ {
-      "processor" : {
+      "identity" : {
+        "type" : "PROCESSOR",
         "className" : "BankProcessor",
         "id" : 0
       },
-      "subgraph" : null,
-      "mergePoint" : null,
       "coordinates" : {
         "x" : 480,
         "y" : 550
@@ -450,6 +464,7 @@
         "isComplete" : false,
         "mergeProcessingItem" : null,
         "handleByProcessingItem" : {
+          "type" : "PROCESSOR",
           "className" : "TransactionLogProcessor",
           "id" : 0
         },
@@ -473,12 +488,11 @@
     } ]
   }, {
     "mergePoints" : [ {
-      "processor" : {
+      "identity" : {
+        "type" : "PROCESSOR",
         "className" : "TransactionLogProcessor",
         "id" : 0
       },
-      "subgraph" : null,
-      "mergePoint" : null,
       "coordinates" : {
         "x" : 530,
         "y" : 770
@@ -497,6 +511,7 @@
         "isComplete" : false,
         "mergeProcessingItem" : null,
         "handleByProcessingItem" : {
+          "type" : "PROCESSOR",
           "className" : "UserLogProcessor",
           "id" : 0
         },
@@ -520,12 +535,11 @@
     } ]
   }, {
     "mergePoints" : [ {
-      "processor" : {
+      "identity" : {
+        "type" : "PROCESSOR",
         "className" : "UserLogProcessor",
         "id" : 0
       },
-      "subgraph" : null,
-      "mergePoint" : null,
       "coordinates" : {
         "x" : 760,
         "y" : 930

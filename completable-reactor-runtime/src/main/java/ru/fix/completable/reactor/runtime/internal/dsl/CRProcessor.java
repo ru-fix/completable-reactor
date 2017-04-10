@@ -45,6 +45,7 @@ public class CRProcessor<PayloadType> implements Processor<PayloadType>, CRProce
     @Override
     public ReactorGraphModel.Identity serializeIdentity() {
         return new ReactorGraphModel.Identity()
+                .setType(ReactorGraphModel.Identity.Type.PROCESSOR)
                 .setClassName(processorDescription.processorType.getSimpleName())
                 .setId(id);
     }

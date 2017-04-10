@@ -43,6 +43,7 @@ public class CRMergePoint<PayloadType> implements MergePoint<PayloadType>, CRPro
     @Override
     public ReactorGraphModel.Identity serializeIdentity() {
         return new ReactorGraphModel.Identity()
+                .setType(ReactorGraphModel.Identity.Type.MERGE_POINT)
                 .setId(id);
     }
 }

@@ -110,19 +110,19 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
 
             switch (this.getType()) {
                 case PROCESSOR:
-                    model.processor = this.processor.serializeIdentity();
+                    model.identity = this.processor.serializeIdentity();
                     model.mergerDocs = processor.getProcessorDescription().getMergerDocs();
                     model.mergerTitle = processor.getProcessorDescription().getMergerTitle();
                     model.mergeSource = processor.getProcessorDescription().getMergeSource();
                     break;
                 case SUBGRAPH:
-                    model.subgraph = this.subgraph.serializeIdentity();
+                    model.identity = this.subgraph.serializeIdentity();
                     model.mergerDocs = subgraph.getSubgraphDescription().getMergerDocs();
                     model.mergerTitle = subgraph.getSubgraphDescription().getMergerTitle();
                     model.mergeSource = subgraph.getSubgraphDescription().getMergeSource();
                     break;
                 case DETACHED:
-                    model.mergePoint = this.mergePoint.serializeIdentity();
+                    model.identity = this.mergePoint.serializeIdentity();
                     model.mergerDocs = mergePoint.getMergePointDescription().getMergerDocs();
                     model.mergerTitle = mergePoint.getMergePointDescription().getMergerTitle();
                     model.mergeSource = mergePoint.getMergePointDescription().getMergerSource();

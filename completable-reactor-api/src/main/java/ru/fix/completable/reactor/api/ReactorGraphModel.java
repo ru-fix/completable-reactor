@@ -56,9 +56,7 @@ public class ReactorGraphModel {
     @Data
     @Accessors(chain = true)
     public static class MergePoint {
-        public Identity processor;
-        public Identity subgraph;
-        public Identity mergePoint;
+        public Identity identity;
 
         public Coordinates coordinates;
         public Source coordinatesSource;
@@ -104,6 +102,10 @@ public class ReactorGraphModel {
     @Data
     @Accessors(chain = true)
     public static class Identity implements Comparable<Identity>{
+
+        public enum Type {PROCESSOR, SUBGRAPH, MERGE_POINT}
+
+        Type type;
         /**
          * Null for detached MergePoint
          * Not null for Processors and Subgraphs
@@ -115,6 +117,10 @@ public class ReactorGraphModel {
         public int compareTo(Identity other) {
             val item1 = this;
             val item2 = other;
+
+            if(item1.getType() != null && item2.getType() != null && item1.getType() != item2.getType()){
+                return Integer.compare(item1.getType().ordinal(), item2.getType().ordinal());
+            }
 
             if(item1.getClassName() == null && item2.getClassName() == null){
                 return Integer.compare(item1.getId(), item2.getId());

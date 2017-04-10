@@ -48,6 +48,7 @@ public class CRSubgraph<PayloadType> implements Subgraph<PayloadType>, CRProcess
     @Override
     public ReactorGraphModel.Identity serializeIdentity() {
         return new ReactorGraphModel.Identity()
+                .setType(ReactorGraphModel.Identity.Type.SUBGRAPH)
                 .setClassName(getPayloadClass().getSimpleName())
                 .setId(id);
     }

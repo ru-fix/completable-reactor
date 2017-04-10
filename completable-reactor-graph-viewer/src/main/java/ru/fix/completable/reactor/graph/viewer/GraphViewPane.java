@@ -156,7 +156,7 @@ public class GraphViewPane extends ScrollPane {
 
             for (val mergePoint : mergeGroup.mergePoints) {
                 val mergePointNode = new MergePointNode(translator, mergePoint, actionListener, coordinateItems);
-                mergePoints.put(mergePoint.processor, mergePointNode);
+                mergePoints.put(mergePoint.getIdentity(), mergePointNode);
                 pane.getChildren().add(mergePointNode);
                 groupMergePoints.add(mergePointNode);
             }
