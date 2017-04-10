@@ -42,7 +42,7 @@ class ProcessorNode extends VBox {
         this.setLayoutY(translator.translateY(y));
 
 
-        val nameLabel = new Label(processor.id);
+        val nameLabel = new Label(serialize(processor.getIdentity()));
         nameLabel.setFont(new Font(16.0));
 
         val methodNameLabel = new Label(processor.handlerTitle);
@@ -59,7 +59,7 @@ class ProcessorNode extends VBox {
 
         GraphViewer.CoordinateItem coordinateItem = new GraphViewer.CoordinateItem(
                 GraphViewer.CoordinateItem.Type.PROCESSOR,
-                processor.id,
+                processor.getIdentity(),
                 processor.coordinates.getX(),
                 processor.coordinates.getY());
         coordinateItems.add(coordinateItem);
@@ -97,7 +97,7 @@ class ProcessorNode extends VBox {
         processorMenuItem.setOnAction(event -> actionListener.goToSource(this.processor.withHandlerSource));
         contextMenu.getItems().add(processorMenuItem);
 
-        processorContent.getChildren().add(new Text(this.processor.id));
+        processorContent.getChildren().add(new Text(serialize(this.processor.getIdentity())));
 
         Optional.ofNullable(processor.processorDoc)
                 .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))
@@ -120,6 +120,10 @@ class ProcessorNode extends VBox {
                 .ifPresent(handlerConent.getChildren()::add);
 
         return contextMenu;
+    }
+
+    String serialize(ReactorGraphModel.Identity identity){
+        return identity.getClassName() + "@" + identity.getId();
     }
 
 }

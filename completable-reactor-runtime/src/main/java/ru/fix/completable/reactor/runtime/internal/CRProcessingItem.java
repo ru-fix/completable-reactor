@@ -1,5 +1,7 @@
 package ru.fix.completable.reactor.runtime.internal;
 
+import ru.fix.completable.reactor.api.ReactorGraphModel;
+
 /**
  * @author Kamil Asfandiyarov
  */
@@ -14,4 +16,9 @@ public interface CRProcessingItem {
      * @return name displayed in logs.
      */
     String getDebugName();
+
+    /**
+     * @return Model identity
+     */
+    ReactorGraphModel.Identity serializeIdentity();
 }

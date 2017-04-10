@@ -111,7 +111,7 @@ public class GraphViewer {
         }
 
         final Type type;
-        final String processorId;
+        final ReactorGraphModel.Identity identity;
         volatile int x;
         volatile int y;
     }

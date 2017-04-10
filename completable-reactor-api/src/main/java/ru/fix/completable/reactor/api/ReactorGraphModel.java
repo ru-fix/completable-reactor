@@ -49,9 +49,10 @@ public class ReactorGraphModel {
     @Data
     @Accessors(chain = true)
     public static class MergePoint {
-        public String processor;
-        public String subgraph;
-        public String mergePoint;
+        public Identity processor;
+        public Identity subgraph;
+        public Identity mergePoint;
+
         public Coordinates coordinates;
         public Source coordinatesSource;
         public Source mergeSource;
@@ -73,8 +74,8 @@ public class ReactorGraphModel {
         public List<String> mergeStatuses;
         public boolean isOnAny;
         public boolean isComplete;
-        public String mergeProcessingItem;
-        public String handleByProcessingItem;
+        public Identity mergeProcessingItem;
+        public Identity handleByProcessingItem;
         public Coordinates completeCoordinates;
         public Source completeCoordinatesSource;
         public Source completeSource;
@@ -95,8 +96,20 @@ public class ReactorGraphModel {
 
     @Data
     @Accessors(chain = true)
+    public static class Identity{
+        /**
+         * Null for detached MergePoint
+         * Not null for Processors and Subgraphs
+         */
+        String className;
+        int id;
+    }
+
+
+    @Data
+    @Accessors(chain = true)
     public static class Processor{
-        public String id;
+        Identity identity;
 
         public Coordinates coordinates;
         public Source coordinatesSource;
@@ -111,7 +124,7 @@ public class ReactorGraphModel {
     @Data
     @Accessors(chain = true)
     public static class Subgraph{
-        public String id;
+        Identity identity;
 
         public Coordinates coordinates;
         public Source coordinatesSource;

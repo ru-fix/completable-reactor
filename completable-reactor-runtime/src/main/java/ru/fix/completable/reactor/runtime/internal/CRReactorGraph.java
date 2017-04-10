@@ -109,19 +109,19 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
 
             switch (this.getType()) {
                 case PROCESSOR:
-                    model.processor = CRReactorGraph.serialize(this.processor);
+                    model.processor = this.processor.serializeIdentity();
                     model.mergerDocs = processor.getProcessorDescription().getMergerDocs();
                     model.mergerTitle = processor.getProcessorDescription().getMergerTitle();
                     model.mergeSource = processor.getProcessorDescription().getMergeSource();
                     break;
                 case SUBGRAPH:
-                    model.subgraph = CRReactorGraph.serialize(this.subgraph);
+                    model.subgraph = this.subgraph.serializeIdentity();
                     model.mergerDocs = subgraph.getSubgraphDescription().getMergerDocs();
                     model.mergerTitle = subgraph.getSubgraphDescription().getMergerTitle();
                     model.mergeSource = subgraph.getSubgraphDescription().getMergeSource();
                     break;
                 case DETACHED:
-                    model.mergePoint = CRReactorGraph.serialize(this.mergePoint);
+                    model.mergePoint = this.mergePoint.serializeIdentity();
                     model.mergerDocs = mergePoint.getMergePointDescription().getMergerDocs();
                     model.mergerTitle = mergePoint.getMergePointDescription().getMergerTitle();
                     model.mergeSource = mergePoint.getMergePointDescription().getMergerSource();
@@ -172,9 +172,9 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.isComplete = isComplete;
             model.isOnAny = isOnAny;
 
-            model.mergeProcessingItem = Optional.ofNullable(merge).map(CRReactorGraph::serialize).orElse(null);
+            model.mergeProcessingItem = Optional.ofNullable(merge).map(CRProcessingItem::serializeIdentity).orElse(null);
 
-            model.handleByProcessingItem = Optional.ofNullable(handleBy).map(CRReactorGraph::serialize).orElse(null);
+            model.handleByProcessingItem = Optional.ofNullable(handleBy).map(CRProcessingItem::serializeIdentity).orElse(null);
 
             model.completeCoordinates = completeCoordinates != null ? completeCoordinates : new ReactorGraphModel.Coordinates(100, 100);
 
@@ -355,12 +355,12 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
                     switch (entry.getValue().getProcessingItemType()) {
                         case PROCESSOR:
                             val processor = entry.getValue().serializeProcessor();
-                            processor.id = serialize(entry.getKey());
+                            processor.setIdentity(entry.getKey().serializeIdentity());
                             model.processors.add(processor);
                             break;
                         case SUBGRAPH:
                             val subgraph = entry.getValue().serializeSubgraph();
-                            subgraph.id = serialize(entry.getKey());
+                            subgraph.setIdentity(entry.getKey().serializeIdentity());
                             model.subgraphs.add(subgraph);
                             break;
                         case MERGE_POINT:

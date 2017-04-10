@@ -36,8 +36,8 @@ public class GraphViewPane extends ScrollPane {
     /**
      * {@code <Processor or Subgraph id, ProcessorNode or SubgraphNode>}
      */
-    private HashMap<String, Node> processors = new HashMap<>();
-    private HashMap<String, MergePointNode> mergePoints = new HashMap<>();
+    private HashMap<ReactorGraphModel.Identity, Node> processors = new HashMap<>();
+    private HashMap<ReactorGraphModel.Identity, MergePointNode> mergePoints = new HashMap<>();
     private ArrayList<MergeGroupNode> mergeGroups = new ArrayList<>();
 
     private List<GraphViewer.CoordinateItem> coordinateItems = new ArrayList<>();
@@ -134,7 +134,7 @@ public class GraphViewPane extends ScrollPane {
                     actionListener,
                     coordinateItems);
 
-            processors.put(processor.id, processorNode);
+            processors.put(processor.getIdentity(), processorNode);
             pane.getChildren().add(processorNode);
         });
 
@@ -145,7 +145,7 @@ public class GraphViewPane extends ScrollPane {
                     actionListener,
                     coordinateItems);
 
-            processors.put(subgraph.id, subgraphNode);
+            processors.put(subgraph.getIdentity(), subgraphNode);
             pane.getChildren().add(subgraphNode);
         });
 

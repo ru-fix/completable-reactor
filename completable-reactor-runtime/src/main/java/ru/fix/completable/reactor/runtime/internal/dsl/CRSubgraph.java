@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime.internal.dsl;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.dsl.Subgraph;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 
@@ -41,6 +42,13 @@ public class CRSubgraph<PayloadType> implements Subgraph<PayloadType>, CRProcess
 
     @Override
     public String getDebugName() {
-        return getPayloadClass().getName();
+        return getPayloadClass().getName() + "@" + id;
+    }
+
+    @Override
+    public ReactorGraphModel.Identity serializeIdentity() {
+        return new ReactorGraphModel.Identity()
+                .setClassName(getPayloadClass().getSimpleName())
+                .setId(id);
     }
 }

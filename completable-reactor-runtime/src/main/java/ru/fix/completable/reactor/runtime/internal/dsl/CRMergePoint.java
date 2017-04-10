@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime.internal.dsl;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.dsl.MergePoint;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 
@@ -37,5 +38,11 @@ public class CRMergePoint<PayloadType> implements MergePoint<PayloadType>, CRPro
     @Override
     public String getDebugName() {
         return "mergePoint@" + id;
+    }
+
+    @Override
+    public ReactorGraphModel.Identity serializeIdentity() {
+        return new ReactorGraphModel.Identity()
+                .setId(id);
     }
 }

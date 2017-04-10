@@ -42,7 +42,7 @@ class SubgraphNode extends VBox {
         this.setLayoutY(translator.translateY(y));
 
 
-        val nameLabel = new Label(subgraph.id);
+        val nameLabel = new Label(serialize(subgraph.getIdentity()));
         nameLabel.setFont(new Font(16.0));
 
         val methodNameLabel = new Label(subgraph.getSubgraphTitle());
@@ -59,7 +59,7 @@ class SubgraphNode extends VBox {
 
         GraphViewer.CoordinateItem coordinateItem = new GraphViewer.CoordinateItem(
                 GraphViewer.CoordinateItem.Type.PROCESSOR,
-                subgraph.id,
+                subgraph.getIdentity(),
                 subgraph.coordinates.getX(),
                 subgraph.coordinates.getY());
         coordinateItems.add(coordinateItem);
@@ -97,7 +97,7 @@ class SubgraphNode extends VBox {
         processorMenuItem.setOnAction(event -> actionListener.goToSource(this.subgraph.getBuildSource()));
         contextMenu.getItems().add(processorMenuItem);
 
-        processorContent.getChildren().add(new Text(this.subgraph.id));
+        processorContent.getChildren().add(new Text(serialize(this.subgraph.getIdentity())));
 
         Optional.ofNullable(subgraph.subgraphDoc)
                 .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))
@@ -106,4 +106,7 @@ class SubgraphNode extends VBox {
         return contextMenu;
     }
 
+    String serialize(ReactorGraphModel.Identity identity){
+        return identity.getClassName() + "@" + identity.getId();
+    }
 }
