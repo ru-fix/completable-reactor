@@ -85,6 +85,13 @@ public class MockSubgraphTest {
                 .mergePoint(subgraph)
                 .onAny().complete()
                 .coordinates()
+                .start(488, -51)
+                .proc(Processor1.class, 0, 483, 19)
+                .proc(SubgraphPayload.class, 0, 465, 175)
+                .merge(Processor1.class, 0, 519, 104)
+                .merge(SubgraphPayload.class, 0, 526, 259)
+                .complete(SubgraphPayload.class, 0, 532, 336)
+
                 .buildGraph();
 
         ReactorGraphBuilder.write(graph);
