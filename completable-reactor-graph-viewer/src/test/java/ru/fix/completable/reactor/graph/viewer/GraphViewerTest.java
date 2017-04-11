@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.graph.viewer.code.CodeUpdater;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -28,8 +29,19 @@ public class GraphViewerTest extends Application {
         }
 
         @Override
-        public void coordinatesChanged(List<GraphViewer.CoordinateItem> coordinateItems){
-            System.out.println("changeCoordinates: " + coordinateItems.stream().map(Object::toString).collect(Collectors.joining("\n")));
+        public void coordinatesChanged(List<GraphViewer.CoordinateItem> coordinateItems) {
+            try {
+                System.out.println("changeCoordinates:\n" +
+                        coordinateItems.stream().map(Object::toString).collect(Collectors.joining("\n")));
+
+                val codeUpdater = new CodeUpdater();
+                try (val resource = getClass().getResourceAsStream("/viewer-code-block.txt")) {
+                    System.out.println("Code:\n" +
+                            codeUpdater.updateCoordinates(IOUtils.toString(resource, StandardCharsets.UTF_8), coordinateItems));
+                }
+            } catch (Exception exc) {
+                exc.printStackTrace();
+            }
         }
     }
 
@@ -43,7 +55,7 @@ public class GraphViewerTest extends Application {
         String graphModel;
 
         try (val resource = getClass().getResourceAsStream(
-                "/ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$DetachedMergePointFromStartPointPayload.rg")) {
+                "/ru.fix.completable.reactor.runtime.tests.MockSubgraphTest$MainPayload.rg")) {
 
             graphModel = IOUtils.toString(resource, StandardCharsets.UTF_8);
         }
