@@ -168,6 +168,7 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
 
     @Override
     public Coordinates<PayloadType> coordinates() {
+        graph.setCoordinatesSource(ReactorReflector.getMethodInvocationPoint().orElse(null));
         return new CRCoordinates<>(builderContext);
     }
 }
