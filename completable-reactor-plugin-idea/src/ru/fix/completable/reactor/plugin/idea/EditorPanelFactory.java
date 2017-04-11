@@ -83,14 +83,9 @@ public class EditorPanelFactory {
                 ReactorGraphModel graphModel = graphViewer.getGraphModel();
 
                 final ReactorGraphModel.Source codeBlockFrom = graphModel.coordinatesSource;
-                final ReactorGraphModel.Source codeBlockTo = graphModel.buildGraphSource;
 
                 if (codeBlockFrom == null) {
                     log.warn("Coordinates source start location not specified in model.");
-                    return;
-                }
-                if (codeBlockTo == null) {
-                    log.warn("Coordinates source end location not specified in model.");
                     return;
                 }
 
@@ -111,7 +106,7 @@ public class EditorPanelFactory {
 
                         TextRange textRange = new TextRange(
                                 document.getLineStartOffset(codeBlockFrom.fileNameLine - 1),
-                                document.getLineEndOffset(codeBlockTo.fileNameLine - 1));
+                                document.getLineEndOffset(document.getLineCount() - 1));
 
                         String codeBlock = document.getText(textRange);
 
