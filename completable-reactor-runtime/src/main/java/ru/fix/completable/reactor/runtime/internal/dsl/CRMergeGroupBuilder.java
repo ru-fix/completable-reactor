@@ -4,6 +4,7 @@ import lombok.val;
 import ru.fix.completable.reactor.runtime.dsl.*;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
+import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -105,6 +106,7 @@ public class CRMergeGroupBuilder<PayloadType> implements MergeGroupBuilder<Paylo
 
     @Override
     public Coordinates<PayloadType> coordinates() {
+        graph.setCoordinatesSource(ReactorReflector.getMethodInvocationPoint().orElse(null));
         return new CRCoordinates<>(builderContext);
     }
 }
