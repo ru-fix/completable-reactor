@@ -54,6 +54,7 @@ public class CRSubgraphDescription<PayloadType> implements SubgraphDescription<P
         this.subgraphPayload = subgraphPayload;
     }
 
+    @Override
     public Subgraph<PayloadType> buildSubgraph() {
         return new CRSubgraph<>(this);
     }

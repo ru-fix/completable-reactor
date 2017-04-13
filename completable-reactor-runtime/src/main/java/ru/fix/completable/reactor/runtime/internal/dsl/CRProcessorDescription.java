@@ -122,6 +122,7 @@ public class CRProcessorDescription<PayloadType> implements ProcessorDescription
 
 
     public CRProcessorDescription() {
+        //Do nothing
     }
 
     @Override

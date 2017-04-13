@@ -33,6 +33,7 @@ public class CRMergePointDescription<PayloadType> implements MergePointDescripti
      */
     String[] mergerDocs;
 
+    @Override
     public MergePoint<PayloadType> buildMergePoint(){
         Objects.requireNonNull(merger, "MergePoint merger is null.");
 

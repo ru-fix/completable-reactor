@@ -17,17 +17,20 @@ public class CRHandlerBuilder4<PayloadType, Arg1, Arg2, Arg3, Arg4> implements H
         this.processorDescription = processorDescription;
     }
 
+    @Override
     public <Arg5> HandlerBuilder5<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5> passArg(Function<PayloadType, Arg5> arg) {
         processorDescription.arg5 = arg;
         return new CRHandlerBuilder5<>(processorDescription);
     }
 
+    @Override
     public <Arg5> HandlerBuilder5<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5> copyArg(Function<PayloadType, Arg5> arg) {
         processorDescription.arg5 = arg;
         processorDescription.isCopyArg4 = true;
         return new CRHandlerBuilder5<>(processorDescription);
     }
 
+    @Override
     public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler4Args<Arg1, Arg2, Arg3, Arg4, ProcessorResult> handler) {
 

@@ -19,14 +19,17 @@ public class CRProcessorMergerBuilder<PayloadType, ProcessorResult> implements P
         this.processorDescription = processorDescription;
     }
 
+    @Override
     public ProcessorDescription<PayloadType> withMerger(ProcessorMerger<PayloadType, ProcessorResult> processorMerger) {
         return withMerger(null, null, processorMerger);
     }
 
+    @Override
     public ProcessorDescription<PayloadType> withMerger(String title, ProcessorMerger<PayloadType, ProcessorResult> processorMerger) {
         return withMerger(title, null, processorMerger);
     }
 
+    @Override
     public ProcessorDescription<PayloadType> withMerger(String title, String[] docs, ProcessorMerger<PayloadType, ProcessorResult> processorMerger) {
 
         val mergerMethod = LambdaReflector.tryReflectAnnotatedMethodReference(processorMerger, Reactored.class)
@@ -48,6 +51,7 @@ public class CRProcessorMergerBuilder<PayloadType, ProcessorResult> implements P
         return processorDescription;
     }
 
+    @Override
     public ProcessorDescription<PayloadType> withoutMerger() {
         this.processorDescription.merger = null;
         this.processorDescription.mergeSource = ReactorReflector.getMethodInvocationPoint().orElse(null);

@@ -99,7 +99,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
                 case DETACHED:
                     return mergePoint;
                 default:
-                    throw new IllegalArgumentException(String.format("Invalid type: " + type));
+                    throw new IllegalArgumentException("Invalid type: " + type);
             }
         }
 

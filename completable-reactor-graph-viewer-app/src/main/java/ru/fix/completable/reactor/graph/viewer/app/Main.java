@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.graph.viewer.app;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import ru.fix.completable.reactor.graph.viewer.GraphViewer;
 
@@ -13,6 +14,7 @@ import java.nio.file.Paths;
 /**
  * @author Kamil Asfandiyarov
  */
+@Slf4j
 public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
@@ -36,7 +38,7 @@ public class Main extends Application {
 
             stage.show();
         } catch (Exception exc) {
-            exc.printStackTrace();
+            log.error(exc.getMessage(), exc);
             Platform.exit();
         }
     }
