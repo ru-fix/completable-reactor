@@ -5,7 +5,7 @@
   <parent>
     <artifactId>completable-reactor</artifactId>
     <groupId>ru.fix</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.10</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
