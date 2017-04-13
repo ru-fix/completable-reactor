@@ -99,6 +99,12 @@ public class CRMergeGroupBuilder<PayloadType> implements MergeGroupBuilder<Paylo
     }
 
     @Override
+    public MergePointBuilder<PayloadType> mergePoint(Subgraph<? super PayloadType> subgraph) {
+        assertMergeGroup();
+        return CRMergePointBuilder.startBuildingMergePoint(builderContext, subgraph);
+    }
+
+    @Override
     public MergePointBuilder<PayloadType> mergePoint(MergePoint<PayloadType> mergePoint) {
         assertMergeGroup();
         return CRMergePointBuilder.startBuildingMergePoint(builderContext, mergePoint);

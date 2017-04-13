@@ -13,6 +13,8 @@ public interface MergeGroupBuilder<PayloadType> {
 
     MergePointBuilder<PayloadType> mergePoint(Processor<? super PayloadType> processor);
 
+    MergePointBuilder<PayloadType> mergePoint(Subgraph<? super PayloadType> subgraph);
+
     MergePointBuilder<PayloadType> mergePoint(MergePoint<PayloadType> mergePoint);
 
     Coordinates<PayloadType> coordinates();
