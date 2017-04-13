@@ -67,6 +67,11 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
     }
 
     @Override
+    public MergePointBuilder<PayloadType> mergePoint(Subgraph<? super PayloadType> subgraph) {
+        return CRMergePointBuilder.startBuildingMergePoint(builderContext, subgraph);
+    }
+
+    @Override
     public MergePointBuilder<PayloadType> mergePoint(MergePoint<PayloadType> mergePoint) {
         return CRMergePointBuilder.startBuildingMergePoint(builderContext, mergePoint);
     }
