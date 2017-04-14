@@ -47,11 +47,6 @@ public class ReactorGraphModel {
         public final List<Identity> processingItems = new ArrayList<>();
     }
 
-    @Data
-    @Accessors(chain = true)
-    public static class MergeGroup {
-        public final List<MergePoint> mergePoints = new ArrayList<>();
-    }
 
     @Data
     @Accessors(chain = true)
@@ -177,7 +172,7 @@ public class ReactorGraphModel {
     public final List<Processor> processors = new ArrayList<>();
     public final List<Subgraph> subgraphs = new ArrayList<>();
 
-    public final List<MergeGroup> mergeGroups = new ArrayList<>();
+    public final List<MergePoint> mergePoints = new ArrayList<>();
 
     public Source serializationPointSource;
     public Source coordinatesSource;

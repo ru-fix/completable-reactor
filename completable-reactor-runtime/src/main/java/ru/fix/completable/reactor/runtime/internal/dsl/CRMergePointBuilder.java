@@ -146,10 +146,6 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
                         .setTransitionOnAnySource(onAnySource));
     }
 
-    @Override
-    public MergeGroupBuilder<PayloadType> mergeGroup() {
-        return new CRMergeGroupBuilder<>(builderContext);
-    }
 
     @Override
     public MergePointBuilder<PayloadType> mergePoint(Processor<? super PayloadType> processor) {

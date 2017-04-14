@@ -9,8 +9,6 @@ public interface MergePointBuilder<PayloadType> {
 
     MergePointTransition<PayloadType> onAny();
 
-    MergeGroupBuilder<PayloadType> mergeGroup();
-
     MergePointBuilder<PayloadType> mergePoint(Processor<? super PayloadType> processor);
 
     MergePointBuilder<PayloadType> mergePoint(Subgraph<? super PayloadType> subgraph);

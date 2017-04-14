@@ -1,7 +1,9 @@
 package ru.fix.completable.reactor.runtime.internal;
 
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
@@ -12,7 +14,6 @@ import ru.fix.completable.reactor.runtime.internal.dsl.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Model of graph used to generate execution chain.
@@ -32,34 +33,17 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         }
     }
 
-    public ReactorGraphModel.MergeGroup serialize(MergeGroup mergeGroup) {
-        ReactorGraphModel.MergeGroup model = new ReactorGraphModel.MergeGroup();
-
-        mergeGroup.mergePoints.forEach(mergePoint -> {
-
-            if (!this.getMergePoints().contains(mergePoint)) {
-                throw new IllegalStateException(String.format(
-                        "Graph merge group contains unregistered merge point %s",
-                        mergePoint.asProcessingItem().getDebugName()));
-            }
-
-            ReactorGraphModel.MergePoint mergePointModel = mergePoint.serialize();
-            model.mergePoints.add(mergePointModel);
-        });
-
-        return model;
-    }
-
-
     @Data
     @Accessors(chain = true)
     public static class MergePoint {
         public enum Type {
             /**
-             * Subgraphs or Processors merge point
+             * Processors merge point
              */
             PROCESSOR,
-
+            /**
+             * Subgraphs merge point
+             */
             SUBGRAPH,
             /**
              * Detached merge point without Processor or Subgraph
@@ -384,18 +368,9 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
 
         model.startPoint = startPoint.serialize();
 
-        /**
-         * In Reactor Graphs we have list of MergeGroups and list of all merge points (within or not withing MergeGroup)
-         * In model we only have MergeGroup.
-         * So for single merge points we will use redundant MergeGroup with single merge point inside.
-         */
-        Stream.concat(
-                this.mergeGroups.stream(),
-                this.mergePoints.stream()
-                        .filter(mergePoint -> this.mergeGroups.stream().noneMatch(group -> group.getMergePoints().contains(mergePoint)))
-                        .map(MergeGroup::new))
-
-                .forEach(mergeGroup -> model.mergeGroups.add(serialize(mergeGroup)));
+        this.mergePoints.stream()
+                .map(MergePoint::serialize)
+                .forEach(model.mergePoints::add);
 
         return model;
     }

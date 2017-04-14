@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.runtime.internal.dsl;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
@@ -29,6 +30,18 @@ public class CRGraphBuilder<PayloadType> {
     public ReactorGraph<PayloadType> buildGraph() {
 
         this.graph.setBuildGraphSource(ReactorReflector.getMethodInvocationPoint().orElse(null));
+        /**
+         * Generate explicit MergeGroups from linked MergePoints to make life easier for ReactorGraphExecutionBuilder.
+         * MergeGroup based of StartPoint and detached MergePoint will stay implicit and ReactorGraphExecutionBuilder
+         * will take care of that
+         */
+        val groupedMergePoints = new HashMap<CRReactorGraph.MergePoint, CRReactorGraph.MergeGroup>();
+        graph.getMergePoints().forEach(mergePoint -> {
+            if(!groupedMergePoints.containsKey(mergePoint)){
+                mergePoint.
+            }
+        });
+
         /**
          * Populate transitions documentation
          */
