@@ -33,10 +33,27 @@ public class CRHandlerBuilder5<PayloadType , Arg1, Arg2, Arg3, Arg4, Arg5> imple
     @Override
     public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler5Args<Arg1, Arg2, Arg3, Arg4, Arg5, ProcessorResult> handler) {
+        return withHandler(null, null, handler);
+    }
 
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(String title, Handler5Args<Arg1, Arg2, Arg3, Arg4, Arg5, ProcessorResult> handler) {
+        return withHandler(title, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(String title, String[] docs, Handler5Args<Arg1, Arg2, Arg3, Arg4, Arg5, ProcessorResult> handler) {
         processorDescription.handler5 = handler;
 
         BuilderReflector.initializeProcessorDescription(handler, processorDescription);
+
+        if (title != null) {
+            processorDescription.setHandlerTitle(title);
+        }
+
+        if (docs != null) {
+            processorDescription.setHandlerDocs(docs);
+        }
 
         return new CRProcessorMergerBuilder<>(processorDescription);
     }

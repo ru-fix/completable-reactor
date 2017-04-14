@@ -35,8 +35,30 @@ public class CRHandlerBuilder2<PayloadType, Arg1, Arg2> implements HandlerBuilde
     public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler2Args<Arg1, Arg2, ProcessorResult> handler) {
 
+        return withHandler(null, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(String title, Handler2Args<Arg1, Arg2, ProcessorResult> handler) {
+        return withHandler(title, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            String[] docs,
+            Handler2Args<Arg1, Arg2, ProcessorResult> handler) {
+
         processorDescription.handler2 = handler;
         BuilderReflector.initializeProcessorDescription(handler, processorDescription);
+
+        if(title != null) {
+            processorDescription.setHandlerTitle(title);
+        }
+
+        if(docs != null){
+            processorDescription.setHandlerDocs(docs);
+        }
 
         return new CRProcessorMergerBuilder<>(processorDescription);
     }

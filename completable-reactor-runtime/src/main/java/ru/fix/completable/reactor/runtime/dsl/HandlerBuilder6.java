@@ -9,4 +9,15 @@ public interface HandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6
     <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler6Args<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, ProcessorResult> handler
     );
+
+    <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            Handler6Args<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, ProcessorResult> handler
+    );
+
+    <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            String[] docs,
+            Handler6Args<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, ProcessorResult> handler
+    );
 }

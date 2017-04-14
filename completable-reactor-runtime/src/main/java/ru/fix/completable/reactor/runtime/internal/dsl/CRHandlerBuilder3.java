@@ -34,9 +34,32 @@ public class CRHandlerBuilder3<PayloadType, Arg1, Arg2, Arg3> implements Handler
     @Override
     public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler3Args<Arg1, Arg2, Arg3, ProcessorResult> handler) {
+        return withHandler(null, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            Handler3Args<Arg1, Arg2, Arg3, ProcessorResult> handler) {
+        return withHandler(title, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            String[] docs,
+            Handler3Args<Arg1, Arg2, Arg3, ProcessorResult> handler) {
 
         processorDescription.handler3 = handler;
         BuilderReflector.initializeProcessorDescription(handler, processorDescription);
+
+        if(title != null) {
+            processorDescription.setHandlerTitle(title);
+        }
+
+        if(docs != null){
+            processorDescription.setHandlerDocs(docs);
+        }
 
         return new CRProcessorMergerBuilder<>(processorDescription);
     }

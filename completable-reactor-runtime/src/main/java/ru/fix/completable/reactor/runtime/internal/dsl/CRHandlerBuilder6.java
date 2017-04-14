@@ -18,9 +18,32 @@ public class CRHandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> 
     @Override
     public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler6Args<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, ProcessorResult> handler) {
+        return withHandler(null, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            Handler6Args<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, ProcessorResult> handler) {
+        return withHandler(title, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            String[] docs,
+            Handler6Args<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, ProcessorResult> handler) {
 
         processorDescription.handler6 = handler;
         BuilderReflector.initializeProcessorDescription(handler, processorDescription);
+
+        if (title != null) {
+            processorDescription.setHandlerTitle(title);
+        }
+
+        if (docs != null) {
+            processorDescription.setHandlerDocs(docs);
+        }
 
         return new CRProcessorMergerBuilder<>(this.processorDescription);
     }

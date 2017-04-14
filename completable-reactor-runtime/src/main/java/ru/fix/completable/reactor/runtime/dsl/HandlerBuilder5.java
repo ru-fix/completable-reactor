@@ -18,4 +18,15 @@ public interface HandlerBuilder5<PayloadType , Arg1, Arg2, Arg3, Arg4, Arg5> {
     <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler5Args<Arg1, Arg2, Arg3, Arg4, Arg5, ProcessorResult> handler
     );
+
+    <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            Handler5Args<Arg1, Arg2, Arg3, Arg4, Arg5, ProcessorResult> handler
+    );
+
+    <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            String[] docs,
+            Handler5Args<Arg1, Arg2, Arg3, Arg4, Arg5, ProcessorResult> handler
+    );
 }

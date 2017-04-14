@@ -18,16 +18,6 @@ public class CRHandlerBuilder0<PayloadType> implements HandlerBuilder0<PayloadTy
     }
 
     @Override
-    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
-            Handler0Args<ProcessorResult> handler) {
-
-        processorDescription.handler0 = handler;
-        BuilderReflector.initializeProcessorDescription(handler, processorDescription);
-
-        return new CRProcessorMergerBuilder<>(processorDescription);
-    }
-
-    @Override
     public <Arg1> CRHandlerBuilder1<PayloadType, Arg1> passArg(Function<PayloadType, Arg1> arg) {
         processorDescription.arg1 = arg;
         return new CRHandlerBuilder1<>(processorDescription);
@@ -38,5 +28,40 @@ public class CRHandlerBuilder0<PayloadType> implements HandlerBuilder0<PayloadTy
         processorDescription.arg1 = arg;
         processorDescription.isCopyArg1 = true;
         return new CRHandlerBuilder1<>(processorDescription);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            Handler0Args<ProcessorResult> handler) {
+
+        return withHandler(null, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            Handler0Args<ProcessorResult> handler) {
+
+        return withHandler(title, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            String[] docs,
+            Handler0Args<ProcessorResult> handler) {
+
+        processorDescription.handler0 = handler;
+        BuilderReflector.initializeProcessorDescription(handler, processorDescription);
+
+        if(title != null) {
+            processorDescription.setHandlerTitle(title);
+        }
+
+        if(docs != null){
+            processorDescription.setHandlerDocs(docs);
+        }
+
+        return new CRProcessorMergerBuilder<>(processorDescription);
     }
 }

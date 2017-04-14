@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.runtime.internal.dsl;
 import ru.fix.completable.reactor.runtime.dsl.Handler1Arg;
 import ru.fix.completable.reactor.runtime.dsl.HandlerBuilder1;
 import ru.fix.completable.reactor.runtime.dsl.HandlerBuilder2;
+import ru.fix.completable.reactor.runtime.dsl.ProcessorMergerBuilder;
 
 import java.util.function.Function;
 
@@ -31,11 +32,36 @@ public class CRHandlerBuilder1<PayloadType, Arg1>  implements HandlerBuilder1<Pa
     }
 
     @Override
-    public <ProcessorResult> CRProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            Handler1Arg<Arg1, ProcessorResult> handler) {
+
+        return withHandler(null, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            Handler1Arg<Arg1, ProcessorResult> handler) {
+
+        return withHandler(title, null, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            String[] docs,
             Handler1Arg<Arg1, ProcessorResult> handler) {
 
         processorDescription.handler1 = handler;
         BuilderReflector.initializeProcessorDescription(handler, processorDescription);
+
+        if(title != null) {
+            processorDescription.setHandlerTitle(title);
+        }
+
+        if(docs != null){
+            processorDescription.setHandlerDocs(docs);
+        }
 
         return new CRProcessorMergerBuilder<>(processorDescription);
     }
