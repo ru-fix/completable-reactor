@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -775,6 +776,7 @@ public class CompletableReactorTest {
 
         Processor<IdListPayload> idProcessor1 = buildProcessor(new IdProcessor(1)).setId(1);
         Processor<IdListPayload> idProcessor2 = buildProcessor(new IdProcessor(2)).setId(2);
+        Processor<IdListPayload> idProcessor3 = buildProcessor(new IdProcessor(3)).setId(3);
 
         MergePoint<OptionalProcessorExecutionPayload> mergePoint = graphBuilder.mergePoint()
                 .forPayload(OptionalProcessorExecutionPayload.class)
@@ -802,6 +804,9 @@ public class CompletableReactorTest {
                 .onAny().handleBy(idProcessor2)
 
                 .mergePoint(idProcessor2)
+                .onAny().handleBy(idProcessor3)
+
+                .mergePoint(idProcessor3)
                 .onAny().complete()
 
                 .coordinates()
@@ -811,7 +816,7 @@ public class CompletableReactorTest {
                 .merge(IdProcessor.class, 1, 221, 233)
                 .merge(IdProcessor.class, 2, 81, 354)
                 .merge(0, 114, 82)
-                .complete(IdProcessor.class, 2, 87, 432)
+                .complete(IdProcessor.class, 3, 87, 432)
 
                 .buildGraph();
 
@@ -826,7 +831,7 @@ public class CompletableReactorTest {
                 .getResultFuture()
                 .get(10, TimeUnit.SECONDS);
 
-        assertEquals(Arrays.asList(1, 2), resultPayload.getIdSequence());
+        assertEquals(Arrays.asList(1, 2, 3), resultPayload.getIdSequence());
 
 
         result = reactor.submit(new OptionalProcessorExecutionPayload()
@@ -837,7 +842,69 @@ public class CompletableReactorTest {
                 .getResultFuture()
                 .get(10, TimeUnit.SECONDS);
 
-        assertEquals(Arrays.asList(2), resultPayload.getIdSequence());
+        assertEquals(Arrays.asList(2, 3), resultPayload.getIdSequence());
+    }
+
+
+
+    @Reactored({
+            "It possible for MergePoint to have several outgoing transitions.",
+            "This transitions could be executed conditionally.",
+            "If condition evaluated to false than this outgoing transitions marked as dead.",
+            "If all incoming transitions to processor marked as dead, then this processor and it's merge point marked as dead.",
+    })
+    static class DeadTransitionBreaksFlow extends IdListPayload{
+
+        public enum FlowDecision{
+            ONE, TWO
+        }
+    }
+
+    @Test
+    public void dead_transition_breaks_flow() throws Exception {
+
+
+
+        Processor<IdListPayload> idProcessor1 = buildProcessor(new IdProcessor(1)).setId(1);
+        Processor<IdListPayload> idProcessor2 = buildProcessor(new IdProcessor(2)).setId(2);
+        Processor<IdListPayload> idProcessor3 = buildProcessor(new IdProcessor(3)).setId(3);
+        Processor<IdListPayload> idProcessor4 = buildProcessor(new IdProcessor(4)).setId(4);
+
+        val decisionMergePoint = graphBuilder.mergePoint()
+                .forPayload(DeadTransitionBreaksFlow.class)
+                .withMerger("alwaysReturnsONE", payload -> DeadTransitionBreaksFlow.FlowDecision.ONE)
+                .buildMergePoint();
+
+        val graph = graphBuilder.payload(DeadTransitionBreaksFlow.class)
+                .merge(decisionMergePoint)
+
+                .mergePoint(decisionMergePoint)
+                .on(DeadTransitionBreaksFlow.FlowDecision.ONE).handleBy(idProcessor1)
+                .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handleBy(idProcessor2)
+                .on(DeadTransitionBreaksFlow.FlowDecision.ONE).handleBy(idProcessor3)
+
+                .mergePoint(idProcessor1)
+                .onAny().merge(idProcessor2)
+
+                .mergePoint(idProcessor2)
+                .onAny().merge(idProcessor3)
+
+                .mergePoint(idProcessor3)
+                .onAny().handleBy(idProcessor4)
+
+                .mergePoint(idProcessor4)
+                .onAny().complete()
+
+                .coordinates()
+                .buildGraph();
+
+        printGraph(graph);
+
+        reactor.registerReactorGraph(graph);
+
+        val result = reactor.submit(new DeadTransitionBreaksFlow()).getResultFuture().get(5, TimeUnit.MINUTES);
+
+        assertEquals(Arrays.asList(1,3,4), result.getIdSequence());
     }
 
 }

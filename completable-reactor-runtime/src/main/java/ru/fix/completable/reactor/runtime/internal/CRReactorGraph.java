@@ -450,6 +450,14 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     public void ensureProcessingItemRegistered(CRMergePoint graphMergePoint) {
         Objects.requireNonNull(graphMergePoint);
 
+        if (this.getProcessingItems().keySet().stream()
+                .anyMatch(item -> item.serializeIdentity().equals(graphMergePoint.serializeIdentity()) && item != graphMergePoint)) {
+            throw new IllegalArgumentException(String.format(
+                    "There are two MergePoint object with same id but different reference: %s." +
+                            " It could lead to ambiguous graph structure declaration.",
+                    graphMergePoint.getDebugName()));
+        }
+
         if (this.getProcessingItems().containsKey(graphMergePoint)) {
             return;
         }
@@ -462,8 +470,17 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     }
 
     public void ensureProcessingItemRegistered(CRProcessor<?> graphProcessor) {
-
         Objects.requireNonNull(graphProcessor);
+
+        if (this.getProcessingItems().keySet().stream()
+                .anyMatch(item -> item.serializeIdentity().equals(graphProcessor.serializeIdentity()) && item != graphProcessor)) {
+            throw new IllegalArgumentException(String.format(
+                    "There are two Processor object with same id but different reference: %s." +
+                            " It could lead to ambiguous graph structure declaration. E.g.:\n" +
+                            "processor1 = ...buildProcessor().setId(1);\n" +
+                            "processor2 = ...buildProcessor().setId(2);",
+                    graphProcessor.getDebugName()));
+        }
 
         if (this.getProcessingItems().containsKey(graphProcessor)) {
             return;
@@ -476,8 +493,15 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     }
 
     public void ensureProcessingItemRegistered(CRSubgraph<?> subgraphProcessor) {
-
         Objects.requireNonNull(subgraphProcessor);
+
+        if (this.getProcessingItems().keySet().stream()
+                .anyMatch(item -> item.serializeIdentity().equals(subgraphProcessor.serializeIdentity()) && item != subgraphProcessor)) {
+            throw new IllegalArgumentException(String.format(
+                    "There are two Subgraph object with same id but different reference: %s." +
+                            " It could lead to ambiguous graph structure declaration.",
+                    subgraphProcessor.getDebugName()));
+        }
 
         if (this.getProcessingItems().containsKey(subgraphProcessor)) {
             return;

@@ -35,7 +35,7 @@ public class ProcessorsHaveIncomingFlowsValidator implements GraphValidator {
                 .map(MergeGroup::getMergePoints)
                 .flatMap(List::stream)
                 .flatMap(mergePoint -> mergePoint.getTransitions().stream())
-                .map(Transition::getMergeProcessingItem)
+                .map(Transition::getHandleByProcessingItem)
                 .filter(Objects::nonNull)
                 .forEach(processorsWithIncomingTransitions::add);
 

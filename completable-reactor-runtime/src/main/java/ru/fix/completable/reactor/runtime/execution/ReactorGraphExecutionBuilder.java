@@ -242,7 +242,7 @@ public class ReactorGraphExecutionBuilder {
                 /**
                  * In case of Detached merge point transition from start point is being converted to a {@link MergePayloadContext}
                  */
-                vertex.incomingMergeFlows.add(new TransitionFuture<>(
+                vertex.getIncomingMergeFlows().add(new TransitionFuture<>(
                         startPointTransitionFuture.thenApplyAsync(
                                 transitionPayloadContext ->
                                         new MergePayloadContext()
@@ -358,7 +358,7 @@ public class ReactorGraphExecutionBuilder {
                     if (transition.getHandleBy() != null) {
                         CRProcessingItem proc = transition.getHandleBy();
 
-                        processingVertices.get(proc).incomingProcessorFlows.add(
+                        processingVertices.get(proc).getIncomingProcessorFlows().add(
                                 new TransitionFuture<>(
                                         groupedMergePointFuture.thenApplyAsync(
                                                 context -> {
@@ -448,15 +448,16 @@ public class ReactorGraphExecutionBuilder {
                  */
                 if (processingItem.getIncomingProcessorFlows().size() != 0) {
                     throw new IllegalStateException(String.format("Invalid graph state. Detached merge point %s have more than 0 incoming flows.",
-                            processor));
+                            processor.getDebugName()));
                 }
                 return;
             }
 
             if (processingItem.getIncomingProcessorFlows().size() <= 0) {
                 throw new IllegalArgumentException(String.format(
-                        "Invalid graph descriptor. Processor %s does not have incoming flows.",
-                        processor));
+                        "Invalid graph descriptor. Processor %s does not have incoming flows." +
+                                " Probably missing handleBy directive for this processor.",
+                        processor.getDebugName()));
             }
 
             CompletableFuture.allOf(
