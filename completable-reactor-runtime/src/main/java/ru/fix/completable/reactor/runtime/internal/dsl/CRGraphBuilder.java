@@ -105,7 +105,18 @@ public class CRGraphBuilder<PayloadType> {
             } else {
                 graph.setStartPointMergeGroup(Optional.empty());
             }
+        } else {
+            graph.setStartPointMergeGroup(Optional.empty());
         }
+
+        /**
+         * Add generated merge groups to graph
+         */
+        groupedMergePoints.values().forEach(group -> {
+            if(!graph.getMergeGroups().contains(group)) {
+                graph.getMergeGroups().add(group);
+            }
+        });
 
         /**
          * Remove redundant merge groups that contain only single merge point
