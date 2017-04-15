@@ -302,6 +302,9 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     final List<MergeGroup> mergeGroups = new ArrayList<>();
 
     @Getter
+    Optional<MergeGroup> startPointMergeGroup;
+
+    @Getter
     final List<MergePoint> mergePoints = new ArrayList<>();
 
     @Getter
@@ -371,6 +374,21 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         this.mergePoints.stream()
                 .map(MergePoint::serialize)
                 .forEach(model.mergePoints::add);
+
+        /**
+         * Serialize implicit MergeGroup information
+         */
+        this.mergeGroups.forEach(mergeGroup -> {
+            val modelGroup = new ReactorGraphModel.MergeGroup();
+            mergeGroup.getMergePoints().stream()
+                    .map(MergePoint::asProcessingItem)
+                    .map(CRProcessingItem::serializeIdentity)
+                    .forEach(modelGroup.getMergePoints()::add);
+            if(this.getStartPointMergeGroup().isPresent() && this.getStartPointMergeGroup().get() == mergeGroup) {
+                modelGroup.setIncludesStartPoint(true);
+            }
+            model.getImplicitMergeGroups().add(modelGroup);
+        });
 
         return model;
     }

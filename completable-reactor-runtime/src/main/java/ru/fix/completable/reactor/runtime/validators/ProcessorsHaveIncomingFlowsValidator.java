@@ -3,12 +3,10 @@ package ru.fix.completable.reactor.runtime.validators;
 
 import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
-import ru.fix.completable.reactor.api.ReactorGraphModel.MergeGroup;
 import ru.fix.completable.reactor.api.ReactorGraphModel.Processor;
 import ru.fix.completable.reactor.api.ReactorGraphModel.Subgraph;
 import ru.fix.completable.reactor.api.ReactorGraphModel.Transition;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,9 +19,7 @@ public class ProcessorsHaveIncomingFlowsValidator implements GraphValidator {
     @Override
     public void validateGraph(ReactorGraphModel graph) throws ValidationException {
 
-        val processorsWithIncomingTransitions = graph.getMergeGroups().stream()
-                .map(MergeGroup::getMergePoints)
-                .flatMap(List::stream)
+        val processorsWithIncomingTransitions = graph.getMergePoints().stream()
                 .flatMap(mergePoint -> mergePoint.getTransitions().stream())
                 .map(Transition::getHandleByProcessingItem)
                 .filter(Objects::nonNull)
@@ -31,9 +27,7 @@ public class ProcessorsHaveIncomingFlowsValidator implements GraphValidator {
 
         processorsWithIncomingTransitions.addAll(graph.getStartPoint().getProcessingItems());
 
-        graph.getMergeGroups().stream()
-                .map(MergeGroup::getMergePoints)
-                .flatMap(List::stream)
+        graph.getMergePoints().stream()
                 .flatMap(mergePoint -> mergePoint.getTransitions().stream())
                 .map(Transition::getHandleByProcessingItem)
                 .filter(Objects::nonNull)

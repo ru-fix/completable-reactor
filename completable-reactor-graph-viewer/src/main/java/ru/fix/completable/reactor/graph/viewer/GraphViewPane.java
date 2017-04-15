@@ -149,27 +149,45 @@ public class GraphViewPane extends ScrollPane {
             pane.getChildren().add(subgraphNode);
         });
 
+        /**
+         * StartPoint Node
+         */
+        val startPointNode = new StartPointNode(translator, graphModel, actionListener, coordinateItems);
+        pane.getChildren().add(startPointNode);
 
-        for (val mergeGroup : graphModel.mergeGroups) {
+        /**
+         * MergePoints
+         */
+        for(val mergePoint : graphModel.getMergePoints()){
+            val mergePointNode = new MergePointNode(translator, mergePoint, actionListener, coordinateItems);
+            mergePoints.put(mergePoint.getIdentity(), mergePointNode);
+            pane.getChildren().add(mergePointNode);
+        }
+
+
+        /**
+         * MergeGrops
+         */
+        for (val mergeGroup : graphModel.getImplicitMergeGroups()) {
 
             List<MergePointNode> groupMergePoints = new ArrayList<>();
 
-            for (val mergePoint : mergeGroup.mergePoints) {
-                val mergePointNode = new MergePointNode(translator, mergePoint, actionListener, coordinateItems);
-                mergePoints.put(mergePoint.getIdentity(), mergePointNode);
-                pane.getChildren().add(mergePointNode);
-                groupMergePoints.add(mergePointNode);
-            }
+            mergeGroup.getMergePoints().stream().map(mergePoints::get).forEach(groupMergePoints::add);
 
-            if (groupMergePoints.size() > 1) {
-                val mergeGroupNode = new MergeGroupNode(translator, mergeGroup, groupMergePoints, actionListener);
-                mergeGroups.add(mergeGroupNode);
-                pane.getChildren().add(mergeGroupNode);
-            }
+            val mergeGroupNode = new MergeGroupNode(
+                    translator,
+                    mergeGroup,
+                    mergeGroup.isIncludesStartPoint() ? Optional.of(startPointNode) : Optional.empty(),
+                    groupMergePoints,
+                    actionListener);
+
+            mergeGroups.add(mergeGroupNode);
+            pane.getChildren().add(mergeGroupNode);
         }
 
-        // Draw transition lines
-
+        /**
+         * Draw transition lines
+         */
         mergePoints.forEach((processorName, mergePointNode) -> {
 
             val mergePoint = mergePointNode.mergePoint;
@@ -256,11 +274,8 @@ public class GraphViewPane extends ScrollPane {
         });
 
         /**
-         * StartPoint with outgoing transitions
+         * StartPoint outgoing transitions
          */
-        val startPointNode = new StartPointNode(translator, graphModel, actionListener, coordinateItems);
-        pane.getChildren().add(startPointNode);
-
         graphModel.startPoint.processingItems.forEach(processingItemId -> {
             TransitionLine transition = null;
 

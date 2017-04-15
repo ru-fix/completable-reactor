@@ -9,10 +9,7 @@ import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 import ru.fix.completable.reactor.runtime.validators.GraphValidator;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author Kamil Asfandiyarov
@@ -37,8 +34,88 @@ public class CRGraphBuilder<PayloadType> {
          */
         val groupedMergePoints = new HashMap<CRReactorGraph.MergePoint, CRReactorGraph.MergeGroup>();
         graph.getMergePoints().forEach(mergePoint -> {
-            if(!groupedMergePoints.containsKey(mergePoint)){
-                mergePoint.
+            if (!groupedMergePoints.containsKey(mergePoint)) {
+
+                val mergeGroup = new CRReactorGraph.MergeGroup(mergePoint);
+                groupedMergePoints.put(mergePoint, mergeGroup);
+
+                mergePoint.getTransitions().stream()
+                        .filter(transition -> transition.getMerge() != null)
+                        .map(CRReactorGraph.Transition::getMerge)
+                        .map(item -> graph.getMergePoints().stream()
+                                .filter(point -> point.asProcessingItem().equals(item))
+                                .findAny()
+                                .orElseThrow(() -> new IllegalStateException(
+                                        String.format("MergePoint does not registered for processing item %s",
+                                                item.getDebugName()))))
+                        .forEach(linkedMergePoint -> {
+                            if (!groupedMergePoints.containsKey(linkedMergePoint)) {
+                                /**
+                                 * Linked merge point not in the group.
+                                 */
+                                mergeGroup.getMergePoints().add(linkedMergePoint);
+                            } else {
+                                /**
+                                 * Linked merge point already in the group.
+                                 * Merge it's group to this one.
+                                 */
+                                val linkedGroup = groupedMergePoints.get(linkedMergePoint);
+                                if (linkedGroup != mergeGroup) {
+                                    linkedGroup.getMergePoints().forEach(point -> {
+                                        mergeGroup.getMergePoints().add(point);
+                                        groupedMergePoints.put(point, mergeGroup);
+                                    });
+                                }
+                            }
+                        });
+            }
+        });
+        /**
+         * If there are several mergePoints that linked directly with start point, we have to join theirs group together
+         * Start point in terms of mergeGroup joining process works like a mergePoint.
+         */
+        CRReactorGraph.MergeGroup mergeGroupLinkedWithStartPoint = null;
+        for (Iterator<CRMergePoint> iter = this.graph.getStartPoint().getProcessingItems().stream()
+                .filter(item -> item instanceof CRMergePoint)
+                .map(item -> (CRMergePoint) item)
+                .iterator(); iter.hasNext(); ) {
+
+            val point = iter.next();
+            val group = groupedMergePoints.get(point);
+
+            if (mergeGroupLinkedWithStartPoint == null) {
+                mergeGroupLinkedWithStartPoint = group;
+            } else {
+                if (group != mergeGroupLinkedWithStartPoint) {
+                    for (val pointInGroup : group.getMergePoints()) {
+                        mergeGroupLinkedWithStartPoint.getMergePoints().add(pointInGroup);
+                        groupedMergePoints.put(pointInGroup, mergeGroupLinkedWithStartPoint);
+                    }
+                }
+            }
+        }
+        /**
+         * If mergeGroupLinkedWithStartPoint contains only detached merge points when we should include
+         * start point itself to this merge group.
+         */
+        if (mergeGroupLinkedWithStartPoint != null) {
+            if (mergeGroupLinkedWithStartPoint.getMergePoints().stream()
+                    .allMatch(mergePoint -> mergePoint.getType() != CRReactorGraph.MergePoint.Type.DETACHED)) {
+                graph.setStartPointMergeGroup(Optional.of(mergeGroupLinkedWithStartPoint));
+            } else {
+                graph.setStartPointMergeGroup(Optional.empty());
+            }
+        }
+
+        /**
+         * Remove redundant merge groups that contain only single merge point
+         * If merge group contains start point - leave it as is, even if it includes single merge point.
+         */
+        this.graph.getMergeGroups().removeIf(mergeGroup -> {
+            if (graph.getStartPointMergeGroup().isPresent()) {
+                return graph.getStartPointMergeGroup().get() != mergeGroup && mergeGroup.getMergePoints().size() <= 1;
+            } else {
+                return mergeGroup.getMergePoints().size() <= 1;
             }
         });
 
@@ -53,9 +130,7 @@ public class CRGraphBuilder<PayloadType> {
         /**
          * Validate graph
          */
-        builderContext.getGraphValidators().forEach(validator -> {
-            validator.validateGraph(graph.serialize());
-        });
+        builderContext.getGraphValidators().forEach(validator -> validator.validateGraph(graph.serialize()));
 
         /**
          * Generate possible graph executions and validate each execution

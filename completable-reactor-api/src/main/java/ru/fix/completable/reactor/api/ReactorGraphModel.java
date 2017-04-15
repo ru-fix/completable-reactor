@@ -63,6 +63,13 @@ public class ReactorGraphModel {
 
     @Data
     @Accessors(chain = true)
+    public static class MergeGroup{
+        final List<Identity> mergePoints = new ArrayList<>();
+        boolean includesStartPoint;
+    }
+
+    @Data
+    @Accessors(chain = true)
     public static class TransitionDocumentation{
         public String mergeStatus;
         public String[] docs;
@@ -173,6 +180,9 @@ public class ReactorGraphModel {
     public final List<Subgraph> subgraphs = new ArrayList<>();
 
     public final List<MergePoint> mergePoints = new ArrayList<>();
+    public final List<MergeGroup> implicitMergeGroups = new ArrayList<>();
+
+
 
     public Source serializationPointSource;
     public Source coordinatesSource;

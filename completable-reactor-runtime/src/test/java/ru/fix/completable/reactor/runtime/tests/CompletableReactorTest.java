@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -276,11 +277,6 @@ public class CompletableReactorTest {
                 .mergePoint(idProcessor3)
                 .onAny().complete()
 
-                .mergeGroup()
-                .with(idProcessor1)
-                .with(idProcessor2)
-                .with(idProcessor3)
-
                 .coordinates()
                 .start(500, 100)
                 .proc(IdProcessor.class, 1, 372, 174)
@@ -347,10 +343,6 @@ public class CompletableReactorTest {
                 .mergePoint(idProcessor11).onAny().merge(idProcessor12)
                 .mergePoint(idProcessor12).onAny().handleBy(idProcessor13)
 
-                .mergeGroup()
-                .with(idProcessor11)
-                .with(idProcessor12)
-
                 .mergePoint(idProcessor13).onAny().complete()
                 .coordinates()
                 .proc(IdProcessor.class, 11, 306, 216)
@@ -389,8 +381,6 @@ public class CompletableReactorTest {
 
                 .mergePoint(subgraphProcessor).onAny().merge(idProcessor2)
                 .mergePoint(idProcessor2).onAny().handleBy(idProcessor3)
-
-                .mergeGroup().with(subgraphProcessor).with(idProcessor2)
 
                 .mergePoint(idProcessor3).onAny().complete()
                 .coordinates()
@@ -565,32 +555,23 @@ public class CompletableReactorTest {
                 .on(ThreeStateStatus.AB).handleBy(idProcessor1)
                 .on(ThreeStateStatus.AB).handleBy(idProcessor2)
 
-
                 .mergePoint(idProcessor1)
                 .on(ThreeStateStatus.A).complete()
                 .on(ThreeStateStatus.AB, ThreeStateStatus.B).merge(idProcessor2)
 
-
                 .mergePoint(idProcessor2)
                 .onAny().complete()
 
-                .mergeGroup().with(idProcessor1).with(idProcessor2)
-
                 .coordinates()
-
                 .start(500, 100)
-
                 .proc(IdProcessor.class, 0, 420, 210)
                 .proc(IdProcessor.class, 1, 600, 420)
                 .proc(IdProcessor.class, 2, 260, 420)
-
                 .merge(IdProcessor.class, 0, 500, 320)
                 .merge(IdProcessor.class, 1, 560, 510)
                 .merge(IdProcessor.class, 2, 450, 540)
-
                 .complete(IdProcessor.class, 1, 651, 595)
                 .complete(IdProcessor.class, 2, 520, 660)
-
                 .buildGraph();
 
         printGraph(graph);
@@ -654,11 +635,6 @@ public class CompletableReactorTest {
 
                 .mergePoint(idProcessor0)
                 .onAny().complete()
-
-                .mergeGroup()
-                .with(idProcessor0)
-                .with(idProcessor1)
-                .with(mergePoint)
 
                 .coordinates()
                 .start(107, 9)
@@ -731,11 +707,6 @@ public class CompletableReactorTest {
 
                 .mergePoint(mergePoint)
                 .onAny().complete()
-
-                .mergeGroup()
-                .with(idProcessor0)
-                .with(idProcessor1)
-                .with(mergePoint)
 
                 .coordinates()
                 .start(95, 62)
@@ -938,6 +909,90 @@ public class CompletableReactorTest {
                 .get(5, TimeUnit.MINUTES);
 
         assertEquals(Arrays.asList(1, 3, 4), result.getIdSequence());
+    }
+
+    @Reactored({
+            "Implicit merge group generated for start point if it linked with detached merge point",
+            " and if this merge point does not belong to other merge group that contains processor",
+            " or subgraph merge point.",
+            "Expected result: {2, 0, 1, 3}"
+    })
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    static class StartPointMergeGroupPayload extends IdListPayload {
+    }
+
+    @Test
+    public void merge_group_for_graph_with_detached_merge_point_connected_to_start_point_with_start_point_merge_group()
+            throws Exception {
+
+        val idProcessor0 = buildProcessor(new IdProcessor(0)).setId(0);
+        val idProcessor1 = buildProcessor(new IdProcessor(1)).setId(1);
+
+        Semaphore mergePoint2Semaphore = new Semaphore(0);
+
+        val mergePoint2 = graphBuilder.mergePoint()
+                .forPayload(CompletableReactorTest.StartPointMergeGroupPayload.class)
+                .withMerger(
+                        "mergePoint-2",
+                        pld -> {
+                            try {
+                                mergePoint2Semaphore.acquire();
+                            } catch (Exception exc) {
+                                log.error("Failed to acquire semaphore", exc);
+                            }
+
+                            pld.getIdSequence().add(2);
+                            return CompletableReactorTest.Status.OK;
+                        })
+                .buildMergePoint()
+                .setId(0);
+
+        val idProcessor3 = buildProcessor(new IdProcessor(3)).setId(3);
+
+        val graph = graphBuilder.payload(CompletableReactorTest.StartPointMergeGroupPayload.class)
+
+                .handleBy(idProcessor0)
+                .handleBy(idProcessor1)
+                .merge(mergePoint2)
+
+                .mergePoint(idProcessor0)
+                .onAny().merge(idProcessor1)
+
+                .mergePoint(idProcessor1)
+                .onAny().merge(idProcessor3)
+
+                .mergePoint(mergePoint2)
+                .onAny().handleBy(idProcessor3)
+
+                .mergePoint(idProcessor3)
+                .onAny().complete()
+
+                .coordinates()
+                .buildGraph();
+
+        printGraph(graph);
+
+        reactor.registerReactorGraph(graph);
+
+        val resultFuture = reactor.submit(
+                new DeadTransitionBreaksFlow()
+                        .setFlowDecision(DeadTransitionBreaksFlow.FlowDecision.THREE))
+                .getResultFuture();
+
+        try {
+            resultFuture.get(1, TimeUnit.SECONDS);
+            fail("Failed to wait for mergePoint2");
+        } catch (TimeoutException exc) {
+            //ignore timeout exception
+        }
+
+        mergePoint2Semaphore.release();
+
+        val result = resultFuture.get(5, TimeUnit.MINUTES);
+
+        assertEquals(Arrays.asList(2, 0, 1, 3), result.getIdSequence());
+
     }
 
 }
