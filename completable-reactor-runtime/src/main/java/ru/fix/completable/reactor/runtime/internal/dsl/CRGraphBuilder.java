@@ -81,9 +81,18 @@ public class CRGraphBuilder<PayloadType> {
          * Start point in terms of mergeGroup joining process works like a mergePoint.
          */
         CRReactorGraph.MergeGroup mergeGroupLinkedWithStartPoint = null;
-        for (Iterator<CRMergePoint> iter = this.graph.getStartPoint().getProcessingItems().stream()
+        for (Iterator<CRReactorGraph.MergePoint> iter = this.graph.getStartPoint().getProcessingItems()
+                .stream()
                 .filter(item -> item instanceof CRMergePoint)
                 .map(item -> (CRMergePoint) item)
+                .map(item -> graph.getMergePoints().stream()
+                        .filter(point -> point.getType() == CRReactorGraph.MergePoint.Type.DETACHED)
+                        .filter(point -> point.asProcessingItem().equals(item))
+                        .findAny()
+                        .orElseThrow(() -> new IllegalStateException(String.format(
+                                "Can not find merge point of item %s within graph.",
+                                item.getDebugName())))
+                )
                 .iterator(); iter.hasNext(); ) {
 
             val point = iter.next();
