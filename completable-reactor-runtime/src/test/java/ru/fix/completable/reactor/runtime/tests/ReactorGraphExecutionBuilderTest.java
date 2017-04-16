@@ -78,6 +78,7 @@ public class ReactorGraphExecutionBuilderTest {
                 .map(CRReactorGraph.MergePoint::asProcessingItem)
                 .collect(Collectors.toList());
 
+        assertEquals(3, groupItems.size());
         assertEquals(Arrays.asList(idProcessor1, idProcessor2, idProcessor3), groupItems);
     }
 
