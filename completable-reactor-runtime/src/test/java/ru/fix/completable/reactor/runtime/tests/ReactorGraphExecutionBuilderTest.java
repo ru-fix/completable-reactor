@@ -10,6 +10,7 @@ import ru.fix.completable.reactor.runtime.dsl.Subgraph;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -194,9 +195,10 @@ public class ReactorGraphExecutionBuilderTest {
                 .getMergePoints()
                 .stream()
                 .map(CRReactorGraph.MergePoint::asProcessingItem)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
-        assertEquals(Arrays.asList(idProcessor0, idProcessor1, mergePoint), groupItems);
+        assertEquals(3, groupItems.size());
+        assertEquals(new HashSet<>(Arrays.asList(idProcessor0, idProcessor1, mergePoint)), groupItems);
     }
 
     @Test
@@ -254,9 +256,10 @@ public class ReactorGraphExecutionBuilderTest {
                 .getMergePoints()
                 .stream()
                 .map(CRReactorGraph.MergePoint::asProcessingItem)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
-        assertEquals(Arrays.asList(idProcessor0, idProcessor1, mergePoint), groupItems);
+        assertEquals(3, groupItems.size());
+        assertEquals(new HashSet<>(Arrays.asList(idProcessor0, idProcessor1, mergePoint)), groupItems);
     }
 
 
@@ -306,29 +309,31 @@ public class ReactorGraphExecutionBuilderTest {
 
         assertTrue(crGraph.getStartPointMergeGroup().isPresent());
 
-        val startPointGroupItems = (((List<CRReactorGraph.MergeGroup>) crGraph.getMergeGroups())
+        val startPointGroupItems = ((List<CRReactorGraph.MergeGroup>) crGraph.getMergeGroups())
                 .stream()
-                .filter(group -> !group.getMergePoints().contains(mergePoint2))
-                .findAny())
+                .filter(group -> group.getMergePoints().stream().anyMatch(point -> point.asProcessingItem().equals(mergePoint2)))
+                .findAny()
                 .get()
                 .getMergePoints()
                 .stream()
                 .map(CRReactorGraph.MergePoint::asProcessingItem)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
-        assertEquals(Arrays.asList(mergePoint2), startPointGroupItems);
+        assertEquals(1, startPointGroupItems.size());
+        assertEquals(new HashSet<>(Arrays.asList(mergePoint2)), startPointGroupItems);
 
 
-        val groupItems = (((List<CRReactorGraph.MergeGroup>) crGraph.getMergeGroups())
+        val groupItems = ((List<CRReactorGraph.MergeGroup>) crGraph.getMergeGroups())
                 .stream()
-                .filter(group -> group.getMergePoints().contains(mergePoint2))
-                .findAny())
+                .filter(group -> group.getMergePoints().stream().noneMatch(point -> point.asProcessingItem().equals(mergePoint2)))
+                .findAny()
                 .get()
                 .getMergePoints()
                 .stream()
                 .map(CRReactorGraph.MergePoint::asProcessingItem)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
-        assertEquals(Arrays.asList(idProcessor0, idProcessor1, idProcessor3), groupItems);
+        assertEquals(3, groupItems.size());
+        assertEquals(new HashSet<>(Arrays.asList(idProcessor0, idProcessor1, idProcessor3)), groupItems);
     }
 }

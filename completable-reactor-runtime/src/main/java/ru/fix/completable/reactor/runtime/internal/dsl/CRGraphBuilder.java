@@ -115,7 +115,7 @@ public class CRGraphBuilder<PayloadType> {
          */
         if (mergeGroupLinkedWithStartPoint != null) {
             if (mergeGroupLinkedWithStartPoint.getMergePoints().stream()
-                    .allMatch(mergePoint -> mergePoint.getType() != CRReactorGraph.MergePoint.Type.DETACHED)) {
+                    .allMatch(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.DETACHED)) {
                 graph.setStartPointMergeGroup(Optional.of(mergeGroupLinkedWithStartPoint));
             } else {
                 graph.setStartPointMergeGroup(Optional.empty());
