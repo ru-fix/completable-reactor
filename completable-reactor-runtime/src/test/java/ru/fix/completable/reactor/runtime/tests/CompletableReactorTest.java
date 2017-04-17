@@ -975,10 +975,7 @@ public class CompletableReactorTest {
 
         reactor.registerReactorGraph(graph);
 
-        val resultFuture = reactor.submit(
-                new DeadTransitionBreaksFlow()
-                        .setFlowDecision(DeadTransitionBreaksFlow.FlowDecision.THREE))
-                .getResultFuture();
+        val resultFuture = reactor.submit(new StartPointMergeGroupPayload()).getResultFuture();
 
         try {
             resultFuture.get(1, TimeUnit.SECONDS);
