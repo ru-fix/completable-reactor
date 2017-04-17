@@ -6,7 +6,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import lombok.experimental.var;
 import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 
@@ -30,6 +29,8 @@ public class GraphViewPane extends ScrollPane {
     private Double worldSize = WORLD_SIZE;
 
     private Pane pane = new Pane();
+
+    private boolean isMergeGroupShown = false;
 
     private CoordinateTranslator translator = new CoordinateTranslator(WORLD_SIZE);
 
@@ -100,13 +101,24 @@ public class GraphViewPane extends ScrollPane {
         serializationMenuItem.setOnAction(event -> actionListener.goToSource(this.graphModel.serializationPointSource));
         contextMenu.getItems().add(serializationMenuItem);
 
+        val showMergeGropusMenuItem = new MenuItem();
+        showMergeGropusMenuItem.setOnAction(event -> showMergeGroups(!isMergeGroupShown));
+        contextMenu.getItems().add(showMergeGropusMenuItem);
+
         pane.setOnContextMenuRequested(contextMenuEvent -> {
 
-            var serializationMenuText = new StringBuilder("Graph serialization location");
+            val serializationMenuText = new StringBuilder("Graph serialization location");
             shortcutProvider.apply(ShortcutType.GOTO_SERIALIZATION_POINT).ifPresent(
                     shortcut -> serializationMenuText.append(" (" + shortcut.getTitle() + ")"));
+
             serializationMenuItem.setText(serializationMenuText.toString());
 
+
+            val showMergeGropusMenuText = new StringBuilder("Show/Hide MergeGroups");
+            shortcutProvider.apply(ShortcutType.SHOW_HIDE_MERGE_GROUPS).ifPresent(
+                    shortcut -> showMergeGropusMenuText.append(" (" + shortcut.getTitle() + ")"));
+
+            showMergeGropusMenuItem.setText(showMergeGropusMenuText.toString());
 
             contextMenu.show(pane, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
             contextMenuEvent.consume();
@@ -180,6 +192,8 @@ public class GraphViewPane extends ScrollPane {
                     mergeGroup.isIncludesStartPoint() ? Optional.of(startPointNode) : Optional.empty(),
                     groupMergePoints,
                     actionListener);
+
+            mergeGroupNode.setVisible(isMergeGroupShown);
 
             mergeGroups.add(mergeGroupNode);
             pane.getChildren().add(mergeGroupNode);
@@ -322,4 +336,14 @@ public class GraphViewPane extends ScrollPane {
         return this;
     }
 
+    public void showMergeGroups(boolean showMergeGroups){
+        this.isMergeGroupShown = showMergeGroups;
+        for (MergeGroupNode mergeGroup : mergeGroups) {
+            mergeGroup.setVisible(showMergeGroups);
+        }
+    }
+
+    public boolean isMergeGroupShown() {
+        return isMergeGroupShown;
+    }
 }

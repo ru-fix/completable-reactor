@@ -55,7 +55,7 @@ public class GraphViewerTest extends Application {
         String graphModel;
 
         try (val resource = getClass().getResourceAsStream(
-                "/ru.fix.completable.reactor.runtime.tests.MockSubgraphTest$MainPayload.rg")) {
+                "/ru.fix.completable.reactor.example.chain.PurchasePayload.rg")) {
 
             graphModel = IOUtils.toString(resource, StandardCharsets.UTF_8);
         }

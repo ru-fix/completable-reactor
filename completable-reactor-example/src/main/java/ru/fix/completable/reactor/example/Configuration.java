@@ -190,10 +190,6 @@ public class Configuration {
                 .on(MergeStatus.NO_WITHDRAWAL).handleBy(gNotification)
                 .on(MergeStatus.STOP).complete()
 
-                .mergeGroup()
-                .with(gUserProfile)
-                .with(gServiceInfo)
-
                 .mergePoint(gBankPurchase)
                 .onAny()
                 .handleBy(gTxLog)
@@ -281,10 +277,6 @@ public class Configuration {
                 .mergePoint(gServiceInfo)
                 .on(MergeStatus.CONTINUE).merge(trialPeriodCheck)
                 .on(MergeStatus.STOP).complete()
-
-                .mergeGroup()
-                .with(gUserProfile)
-                .with(gServiceInfo)
 
                 .mergePoint(trialPeriodCheck)
                 .on(MergeStatus.WITHDRAWAL).handleBy(gBankSubsribe)

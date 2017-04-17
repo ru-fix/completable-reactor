@@ -173,6 +173,12 @@ public class ReactorGraphModel {
         public String[] subgraphDoc;
     }
 
+    public enum Version{
+        v1_0_11
+    }
+
+    public Version version = Version.v1_0_11;
+
     public Payload payload;
     public StartPoint startPoint;
 
