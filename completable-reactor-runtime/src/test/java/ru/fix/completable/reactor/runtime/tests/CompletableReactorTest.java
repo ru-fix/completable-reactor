@@ -888,6 +888,18 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .coordinates()
+                .start(500, 100)
+                .proc(IdProcessor.class, 1, 399, 309)
+                .proc(IdProcessor.class, 2, 551, 319)
+                .proc(IdProcessor.class, 3, 725, 302)
+                .proc(IdProcessor.class, 4, 713, 609)
+                .merge(IdProcessor.class, 1, 422, 473)
+                .merge(IdProcessor.class, 2, 584, 410)
+                .merge(IdProcessor.class, 3, 704, 526)
+                .merge(IdProcessor.class, 4, 754, 706)
+                .merge(0, 551, 173)
+                .complete(IdProcessor.class, 4, 765, 773)
+
                 .buildGraph();
 
         printGraph(graph);
