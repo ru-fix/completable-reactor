@@ -108,11 +108,18 @@ public class CodeUpdater {
                         item.getX(),
                         item.getY());
             case MERGE_POINT:
-                return String.format(".merge(%s.class, %d, %d, %d)",
-                        item.getIdentity().getClassName(),
-                        item.getIdentity().getId(),
-                        item.getX(),
-                        item.getY());
+                if(item.getIdentity().getClassName() == null){
+                    return String.format(".merge(%d, %d, %d)",
+                            item.getIdentity().getId(),
+                            item.getX(),
+                            item.getY());
+                } else {
+                    return String.format(".merge(%s.class, %d, %d, %d)",
+                            item.getIdentity().getClassName(),
+                            item.getIdentity().getId(),
+                            item.getX(),
+                            item.getY());
+                }
             case END_POINT:
                 return String.format(".complete(%s.class, %d, %d, %d)",
                         item.getIdentity().getClassName(),
