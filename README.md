@@ -54,7 +54,7 @@ Processor uses Handler to make asynchronous computation, MergePoint uses Merger 
 ## Dive into details 
 
 ## Intellij Idea Plugin
-https://plugins.jetbrains.com/plugin/9526-completable-reactor
+https://plugins.jetbrains.com/plugin/9599-completable-reactor
 
 Completable Reactor Intellij Idea plugin provides graph visualization and source code navigation within IDE.  
 You can jump to code using double click on graph item or context menu.
