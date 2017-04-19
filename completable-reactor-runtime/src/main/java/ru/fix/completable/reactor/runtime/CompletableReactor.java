@@ -74,7 +74,7 @@ public class CompletableReactor implements AutoCloseable {
 
         @Override
         public boolean isTraceable(Object payload) {
-            return tracer == null;
+            return tracer != null && tracer.isTraceable(payload);
         }
 
         @Override
