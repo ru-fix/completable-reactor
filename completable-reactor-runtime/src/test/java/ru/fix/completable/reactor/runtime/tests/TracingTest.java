@@ -6,10 +6,15 @@ import lombok.experimental.Accessors;
 import lombok.val;
 import org.junit.Test;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 import ru.fix.completable.reactor.runtime.LogTracer;
 import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Kamil Asfandiyarov
@@ -75,6 +80,9 @@ public class TracingTest {
 
         completableReactor.registerReactorGraph(graph);
 
+        val beforeHandle = new AtomicBoolean();
+        val beforeMerge = new AtomicBoolean();
+
         val tracer = new LogTracer(){
             @Override
             public boolean isTraceable(Object payload) {
@@ -83,6 +91,22 @@ public class TracingTest {
                 } else {
                     return false;
                 }
+            }
+
+            @Override
+            public Object beforeHandle(ReactorGraphModel.Identity identity, Object payload) {
+                if(((TracablePayload)payload).getNumber() == 42) {
+                    beforeHandle.set(true);
+                }
+                return super.beforeHandle(identity, payload);
+            }
+
+            @Override
+            public Object beforeMerge(ReactorGraphModel.Identity identity, Object payload, Object handleResult) {
+                if(((TracablePayload)payload).getNumber() == 42) {
+                    beforeMerge.set(true);
+                }
+                return super.beforeMerge(identity, payload, handleResult);
             }
         };
 
@@ -93,5 +117,8 @@ public class TracingTest {
         }
 
         completableReactor.close();
+
+        assertTrue(beforeHandle.get());
+        assertTrue(beforeMerge.get());
     }
 }
