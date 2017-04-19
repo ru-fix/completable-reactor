@@ -12,7 +12,9 @@ import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 @EqualsAndHashCode(doNotUseGetters = true)
 @Data
 public class CRMergePoint<PayloadType> implements MergePoint<PayloadType>, CRProcessingItem {
-    int id = 0;
+
+    final ReactorGraphModel.Identity identity = new ReactorGraphModel.Identity()
+            .setType(ReactorGraphModel.Identity.Type.MERGE_POINT);
 
     CRMergePointDescription<PayloadType> mergePointDescription;
 
@@ -22,28 +24,26 @@ public class CRMergePoint<PayloadType> implements MergePoint<PayloadType>, CRPro
 
     @Override
     public CRMergePoint<PayloadType> setId(int id){
-        this.id = id;
+        this.identity.setId(id);
         return this;
     }
 
     public int getId() {
-        return id;
+        return this.identity.getId();
     }
 
     @Override
     public String getProfilingName() {
-        return "mergePoint." + this.id;
+        return "mergePoint." + this.identity.getId();
     }
 
     @Override
     public String getDebugName() {
-        return "mergePoint@" + id;
+        return "mergePoint@" + identity.getId();
     }
 
     @Override
     public ReactorGraphModel.Identity serializeIdentity() {
-        return new ReactorGraphModel.Identity()
-                .setType(ReactorGraphModel.Identity.Type.MERGE_POINT)
-                .setId(id);
+        return identity;
     }
 }

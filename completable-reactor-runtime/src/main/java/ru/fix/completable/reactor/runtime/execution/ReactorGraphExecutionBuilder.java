@@ -15,6 +15,7 @@ import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 import ru.fix.completable.reactor.runtime.internal.dsl.CRProcessorDescription;
+import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +30,7 @@ public class ReactorGraphExecutionBuilder {
     private final ImmutabilityChecker immutabilityChecker;
     private final ThreadsafeCopyMaker threadsafeCopyMaker;
     private final DebugSerializer debugSerializer;
+    private final Tracer tracer;
 
     private boolean debugProcessingVertexGraphState = false;
 
@@ -153,13 +155,15 @@ public class ReactorGraphExecutionBuilder {
             ImmutabilityChecker immutabilityChecker,
             ThreadsafeCopyMaker threadsafeCopyMaker,
             SubgraphRunner subgraphRunner,
-            DebugSerializer debugSerializer) {
+            DebugSerializer debugSerializer,
+            Tracer tracer) {
 
         this.profiler = profiler;
         this.immutabilityChecker = immutabilityChecker;
         this.threadsafeCopyMaker = threadsafeCopyMaker;
         this.subgraphRunner = subgraphRunner;
         this.debugSerializer = debugSerializer;
+        this.tracer = tracer;
     }
 
     public ReactorGraphExecutionBuilder setImmutabilityControlLevel(ImmutabilityControlLevel immutabilityControlLevel) {
@@ -946,6 +950,8 @@ public class ReactorGraphExecutionBuilder {
                 ProfilerNames.PROCESSOR_HANDLE + processingVertex.getProcessingItem().getProfilingName())
                 .start();
 
+        Object handleTraceMarker = tracer.beforeHandle(processingVertex.getProcessingItem().serializeIdentity(), payload);
+
         CompletableFuture<?> handlingResult;
 
         /**
@@ -1009,6 +1015,7 @@ public class ReactorGraphExecutionBuilder {
 
         handlingResult.handleAsync((res, thr) -> {
             handleCall.stop();
+            tracer.afterHandle(handleTraceMarker, res, thr);
 
             if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
 

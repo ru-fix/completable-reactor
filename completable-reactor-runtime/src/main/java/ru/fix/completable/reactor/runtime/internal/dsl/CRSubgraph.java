@@ -14,12 +14,14 @@ import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 @Data
 public class CRSubgraph<PayloadType> implements Subgraph<PayloadType>, CRProcessingItem {
 
-    int id = 0;
+    final ReactorGraphModel.Identity identity = new ReactorGraphModel.Identity()
+            .setType(ReactorGraphModel.Identity.Type.SUBGRAPH);
 
     final CRSubgraphDescription subgraphDescription;
 
     public CRSubgraph(CRSubgraphDescription<PayloadType> subgraphDescription) {
         this.subgraphDescription = subgraphDescription;
+        this.identity.setClassName(getPayloadClass().getSimpleName());
     }
 
     public Class<PayloadType> getPayloadClass() {
@@ -28,12 +30,12 @@ public class CRSubgraph<PayloadType> implements Subgraph<PayloadType>, CRProcess
 
     @Override
     public Subgraph<PayloadType> setId(int id){
-        this.id = id;
+        this.identity.setId(id);
         return this;
     }
 
     public int getId() {
-        return id;
+        return identity.getId();
     }
 
     @Override
@@ -43,14 +45,11 @@ public class CRSubgraph<PayloadType> implements Subgraph<PayloadType>, CRProcess
 
     @Override
     public String getDebugName() {
-        return getPayloadClass().getName() + "@" + id;
+        return getPayloadClass().getName() + "@" + identity.getId();
     }
 
     @Override
     public ReactorGraphModel.Identity serializeIdentity() {
-        return new ReactorGraphModel.Identity()
-                .setType(ReactorGraphModel.Identity.Type.SUBGRAPH)
-                .setClassName(getPayloadClass().getSimpleName())
-                .setId(id);
+        return this.identity;
     }
 }

@@ -14,22 +14,24 @@ import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 @Data
 public class CRProcessor<PayloadType> implements Processor<PayloadType>, CRProcessingItem {
 
-    final CRProcessorDescription<PayloadType> processorDescription;
+    final ReactorGraphModel.Identity identity = new ReactorGraphModel.Identity()
+            .setType(ReactorGraphModel.Identity.Type.PROCESSOR);
 
-    int id = 0;
+    final CRProcessorDescription<PayloadType> processorDescription;
 
     CRProcessor(CRProcessorDescription<PayloadType> description) {
         this.processorDescription = description;
+        this.identity.setClassName(processorDescription.processorType.getSimpleName());
     }
 
     @Override
     public CRProcessor<PayloadType> setId(int id){
-        this.id = id;
+        this.identity.setId(id);
         return this;
     }
 
     public int getId() {
-        return id;
+        return this.identity.getId();
     }
 
     @Override
@@ -39,14 +41,11 @@ public class CRProcessor<PayloadType> implements Processor<PayloadType>, CRProce
 
     @Override
     public String getDebugName() {
-        return processorDescription.processorType.getName() + "@" + id;
+        return processorDescription.processorType.getName() + "@" + identity.getId();
     }
 
     @Override
     public ReactorGraphModel.Identity serializeIdentity() {
-        return new ReactorGraphModel.Identity()
-                .setType(ReactorGraphModel.Identity.Type.PROCESSOR)
-                .setClassName(processorDescription.processorType.getSimpleName())
-                .setId(id);
+        return this.identity;
     }
 }
