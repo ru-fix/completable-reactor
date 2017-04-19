@@ -7,9 +7,13 @@ import ru.fix.completable.reactor.api.ReactorGraphModel;
  */
 public interface Tracer {
     /**
+     * @return true if this payload instance should be traced
+     */
+    boolean isTraceable(Object payload);
+    /**
      * @param identity Graph processing item identity
      * @param payload Payload instance
-     * @return tracingMarker - any object that will be passed to {@link #afterHandle(Object, Object, Throwable)} method
+     * @return tracingMarker - any object that will be passed to {@link #afterHandle(Object, ReactorGraphModel.Identity, Object, Throwable)} method
      */
     Object beforeHandle(ReactorGraphModel.Identity identity, Object payload);
 
@@ -19,7 +23,7 @@ public interface Tracer {
      * @param handlerResult handler result
      * @param throwable in case handler completed with an exception
      */
-    void afterHandle(Object tracingMarker, Object handlerResult, Throwable throwable);
+    void afterHandle(Object tracingMarker, ReactorGraphModel.Identity identity, Object handlerResult, Throwable throwable);
 
     /**
      *

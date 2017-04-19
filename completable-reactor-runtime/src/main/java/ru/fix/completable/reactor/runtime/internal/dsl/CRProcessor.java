@@ -21,7 +21,9 @@ public class CRProcessor<PayloadType> implements Processor<PayloadType>, CRProce
 
     CRProcessor(CRProcessorDescription<PayloadType> description) {
         this.processorDescription = description;
-        this.identity.setClassName(processorDescription.processorType.getSimpleName());
+        this.identity
+                .setClassName(processorDescription.processorType.getSimpleName())
+        ;
     }
 
     @Override
@@ -41,11 +43,6 @@ public class CRProcessor<PayloadType> implements Processor<PayloadType>, CRProce
 
     @Override
     public String getDebugName() {
-        return processorDescription.processorType.getName() + "@" + identity.getId();
-    }
-
-    @Override
-    public ReactorGraphModel.Identity serializeIdentity() {
-        return this.identity;
+        return identity.toString();
     }
 }

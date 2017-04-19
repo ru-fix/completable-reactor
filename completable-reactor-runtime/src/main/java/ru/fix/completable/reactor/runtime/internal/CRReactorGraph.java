@@ -94,19 +94,19 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
 
             switch (this.getType()) {
                 case PROCESSOR:
-                    model.identity = this.processor.serializeIdentity();
+                    model.identity = this.processor.getIdentity();
                     model.mergerDocs = processor.getProcessorDescription().getMergerDocs();
                     model.mergerTitle = processor.getProcessorDescription().getMergerTitle();
                     model.mergeSource = processor.getProcessorDescription().getMergeSource();
                     break;
                 case SUBGRAPH:
-                    model.identity = this.subgraph.serializeIdentity();
+                    model.identity = this.subgraph.getIdentity();
                     model.mergerDocs = subgraph.getSubgraphDescription().getMergerDocs();
                     model.mergerTitle = subgraph.getSubgraphDescription().getMergerTitle();
                     model.mergeSource = subgraph.getSubgraphDescription().getMergeSource();
                     break;
                 case DETACHED:
-                    model.identity = this.mergePoint.serializeIdentity();
+                    model.identity = this.mergePoint.getIdentity();
                     model.mergerDocs = mergePoint.getMergePointDescription().getMergerDocs();
                     model.mergerTitle = mergePoint.getMergePointDescription().getMergerTitle();
                     model.mergeSource = mergePoint.getMergePointDescription().getMergerSource();
@@ -157,9 +157,9 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.isComplete = isComplete;
             model.isOnAny = isOnAny;
 
-            model.mergeProcessingItem = Optional.ofNullable(merge).map(CRProcessingItem::serializeIdentity).orElse(null);
+            model.mergeProcessingItem = Optional.ofNullable(merge).map(CRProcessingItem::getIdentity).orElse(null);
 
-            model.handleByProcessingItem = Optional.ofNullable(handleBy).map(CRProcessingItem::serializeIdentity).orElse(null);
+            model.handleByProcessingItem = Optional.ofNullable(handleBy).map(CRProcessingItem::getIdentity).orElse(null);
 
             model.completeCoordinates = completeCoordinates != null ? completeCoordinates : new ReactorGraphModel.Coordinates(100, 100);
 
@@ -273,7 +273,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.setBuilderPayloadSource(this.getBuilderPayloadSource());
 
             this.processingItems.stream()
-                    .map(CRProcessingItem::serializeIdentity)
+                    .map(CRProcessingItem::getIdentity)
                     .sorted()
                     .forEach(model.processingItems::add);
             return model;
@@ -352,12 +352,12 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
                     switch (entry.getValue().getProcessingItemType()) {
                         case PROCESSOR:
                             val processor = entry.getValue().serializeProcessor();
-                            processor.setIdentity(entry.getKey().serializeIdentity());
+                            processor.setIdentity(entry.getKey().getIdentity());
                             model.processors.add(processor);
                             break;
                         case SUBGRAPH:
                             val subgraph = entry.getValue().serializeSubgraph();
-                            subgraph.setIdentity(entry.getKey().serializeIdentity());
+                            subgraph.setIdentity(entry.getKey().getIdentity());
                             model.subgraphs.add(subgraph);
                             break;
                         case MERGE_POINT:
@@ -382,7 +382,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             val modelGroup = new ReactorGraphModel.MergeGroup();
             mergeGroup.getMergePoints().stream()
                     .map(MergePoint::asProcessingItem)
-                    .map(CRProcessingItem::serializeIdentity)
+                    .map(CRProcessingItem::getIdentity)
                     .forEach(modelGroup.getMergePoints()::add);
             if(this.getStartPointMergeGroup().isPresent() && this.getStartPointMergeGroup().get() == mergeGroup) {
                 modelGroup.setIncludesStartPoint(true);
@@ -444,7 +444,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         Objects.requireNonNull(graphMergePoint);
 
         if (this.getProcessingItems().keySet().stream()
-                .anyMatch(item -> item.serializeIdentity().equals(graphMergePoint.serializeIdentity()) && item != graphMergePoint)) {
+                .anyMatch(item -> item.getIdentity().equals(graphMergePoint.getIdentity()) && item != graphMergePoint)) {
             throw new IllegalArgumentException(String.format(
                     "There are two MergePoint object with same id but different reference: %s." +
                             " It could lead to ambiguous graph structure declaration.",
@@ -466,7 +466,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         Objects.requireNonNull(graphProcessor);
 
         if (this.getProcessingItems().keySet().stream()
-                .anyMatch(item -> item.serializeIdentity().equals(graphProcessor.serializeIdentity()) && item != graphProcessor)) {
+                .anyMatch(item -> item.getIdentity().equals(graphProcessor.getIdentity()) && item != graphProcessor)) {
             throw new IllegalArgumentException(String.format(
                     "There are two Processor object with same id but different reference: %s." +
                             " It could lead to ambiguous graph structure declaration. E.g.:\n" +
@@ -489,7 +489,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         Objects.requireNonNull(subgraphProcessor);
 
         if (this.getProcessingItems().keySet().stream()
-                .anyMatch(item -> item.serializeIdentity().equals(subgraphProcessor.serializeIdentity()) && item != subgraphProcessor)) {
+                .anyMatch(item -> item.getIdentity().equals(subgraphProcessor.getIdentity()) && item != subgraphProcessor)) {
             throw new IllegalArgumentException(String.format(
                     "There are two Subgraph object with same id but different reference: %s." +
                             " It could lead to ambiguous graph structure declaration.",

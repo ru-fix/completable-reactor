@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 import ru.fix.commons.profiler.PrefixedProfiler;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.cloning.CopierThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
@@ -15,6 +16,7 @@ import ru.fix.completable.reactor.runtime.immutability.ClonerWithReflectionImmut
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
+import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,7 +52,7 @@ public class CompletableReactor implements AutoCloseable {
             1,
             "completable-reactor-check-timeout-");
 
-    private volatile long executionTimeout = TimeUnit.MINUTES.toMillis(15);
+    private volatile long executionTimeoutMs = TimeUnit.MINUTES.toMillis(15);
 
     private AtomicBoolean isClosed = new AtomicBoolean();
 
@@ -65,6 +67,38 @@ public class CompletableReactor implements AutoCloseable {
     private final AtomicLong pendingRequestCount = new AtomicLong();
 
     private final AtomicLong closeTimeoutMs = new AtomicLong(120_000);
+
+    private static class ReactorTracer implements Tracer{
+
+        private volatile Tracer tracer;
+
+        @Override
+        public boolean isTraceable(Object payload) {
+            return tracer == null;
+        }
+
+        @Override
+        public Object beforeHandle(ReactorGraphModel.Identity identity, Object payload) {
+            return tracer.beforeHandle(identity, payload);
+        }
+
+        @Override
+        public void afterHandle(Object tracingMarker, ReactorGraphModel.Identity identity, Object handlerResult, Throwable throwable) {
+            tracer.afterHandle(tracingMarker, identity, handlerResult, throwable);
+        }
+
+        @Override
+        public Object beforeMerge(ReactorGraphModel.Identity identity, Object payload, Object handleResult) {
+            return tracer.beforeMerge(identity, payload, handleResult);
+        }
+
+        @Override
+        public void afterMerger(Object tracingMarker, ReactorGraphModel.Identity identity, Object payload) {
+            tracer.afterMerger(tracingMarker, identity, payload);
+        }
+    }
+
+    private final ReactorTracer reactorTracer = new ReactorTracer();
 
     public CompletableReactor(Profiler profiler) {
         this.profiler = new PrefixedProfiler(profiler, ProfilerNames.PROFILER_PREFIX);
@@ -81,7 +115,8 @@ public class CompletableReactor implements AutoCloseable {
                         return result;
                     }
                 },
-                debugSerializer);
+                debugSerializer,
+                reactorTracer);
     }
 
     /**
@@ -106,20 +141,44 @@ public class CompletableReactor implements AutoCloseable {
         return this;
     }
 
+    /**
+     * @return timeout in millisecond reactor will wain pending flows during {@link #close()} method
+     */
     public long getCloseTimeoutMs() {
         return closeTimeoutMs.get();
     }
 
+    /**
+     * @param value timeout in millisecond reactor will wain pending flows during {@link #close()} method
+     */
     public void setCloseTimeoutMs(long value) {
         closeTimeoutMs.set(value);
     }
 
-    public long getExecutionTimeout() {
-        return executionTimeout;
+    /**
+     * @return timeout in milliseconds reactor will wain for flow to execute until terminating it with TimeoutException
+     */
+    public long getExecutionTimeoutMs() {
+        return executionTimeoutMs;
     }
 
-    public void setExecutionTimeout(long value) {
-        executionTimeout = value;
+    /**
+     * @param value timeout in milliseconds reactor will wain for flow to execute until terminating it with TimeoutException
+     */
+    public void setExecutionTimeoutMs(long value) {
+        executionTimeoutMs = value;
+    }
+
+    public void setTracer(Tracer tracer){
+        this.reactorTracer.tracer = tracer;
+    }
+
+    public Tracer getTracer(){
+        return this.reactorTracer.tracer;
+    }
+
+    public void removeTracer(){
+        this.reactorTracer.tracer = null;
     }
 
     /**
@@ -220,7 +279,7 @@ public class CompletableReactor implements AutoCloseable {
 
 
     public <PayloadType> Execution<PayloadType> submit(PayloadType payload) throws PendingOperationsLimitOverflowException {
-        return submit(payload, executionTimeout);
+        return submit(payload, executionTimeoutMs);
     }
 
     public <PayloadType> Execution<PayloadType> submit(PayloadType payload, long timeoutMs) throws PendingOperationsLimitOverflowException {
@@ -237,7 +296,7 @@ public class CompletableReactor implements AutoCloseable {
     }
 
     public <PayloadType> Optional<Execution<PayloadType>> trySubmit(PayloadType payload) {
-        return trySubmit(payload, executionTimeout);
+        return trySubmit(payload, executionTimeoutMs);
     }
 
     public <PayloadType> Optional<Execution<PayloadType>> trySubmit(PayloadType payload, long timeoutMs) {
@@ -350,7 +409,7 @@ public class CompletableReactor implements AutoCloseable {
     }
 
     /**
-     * Blocks until all pending request is complete
+     * Blocks until all pending request is complete or {@link #getCloseTimeoutMs()} time elapsed
      *
      * @throws Exception
      */

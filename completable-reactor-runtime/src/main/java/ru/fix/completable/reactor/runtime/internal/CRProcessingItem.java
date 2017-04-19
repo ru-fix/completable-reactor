@@ -20,5 +20,5 @@ public interface CRProcessingItem {
     /**
      * @return Model identity
      */
-    ReactorGraphModel.Identity serializeIdentity();
+    ReactorGraphModel.Identity getIdentity();
 }

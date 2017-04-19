@@ -45,11 +45,6 @@ public class CRSubgraph<PayloadType> implements Subgraph<PayloadType>, CRProcess
 
     @Override
     public String getDebugName() {
-        return getPayloadClass().getName() + "@" + identity.getId();
-    }
-
-    @Override
-    public ReactorGraphModel.Identity serializeIdentity() {
-        return this.identity;
+        return identity.toString();
     }
 }

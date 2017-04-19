@@ -39,11 +39,6 @@ public class CRMergePoint<PayloadType> implements MergePoint<PayloadType>, CRPro
 
     @Override
     public String getDebugName() {
-        return "mergePoint@" + identity.getId();
-    }
-
-    @Override
-    public ReactorGraphModel.Identity serializeIdentity() {
-        return identity;
+        return identity.toString();
     }
 }

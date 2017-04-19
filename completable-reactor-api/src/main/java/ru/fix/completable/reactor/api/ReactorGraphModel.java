@@ -11,6 +11,7 @@ import java.util.Map;
 
 /**
  * JSON representation of reactor graph.
+ *
  * @author Kamil Asfandiyarov
  */
 @Data
@@ -20,7 +21,7 @@ public class ReactorGraphModel {
     @Data
     @AllArgsConstructor
     @Accessors(chain = true)
-    public static class Coordinates{
+    public static class Coordinates {
         public int x;
         public int y;
     }
@@ -40,7 +41,7 @@ public class ReactorGraphModel {
         public Source coordinatesSource;
 
         /**
-         * Where {@link ReactorGraphBuilder#payload(Class)} method was invoked during graph construction
+         * Where payload() method was invoked during graph construction
          */
         ReactorGraphModel.Source builderPayloadSource;
 
@@ -63,14 +64,14 @@ public class ReactorGraphModel {
 
     @Data
     @Accessors(chain = true)
-    public static class MergeGroup{
+    public static class MergeGroup {
         final List<Identity> mergePoints = new ArrayList<>();
         boolean includesStartPoint;
     }
 
     @Data
     @Accessors(chain = true)
-    public static class TransitionDocumentation{
+    public static class TransitionDocumentation {
         public String mergeStatus;
         public String[] docs;
     }
@@ -103,7 +104,7 @@ public class ReactorGraphModel {
 
     @Data
     @Accessors(chain = true)
-    public static class Identity implements Comparable<Identity>{
+    public static class Identity implements Comparable<Identity> {
 
         public enum Type {PROCESSOR, SUBGRAPH, MERGE_POINT}
 
@@ -111,8 +112,10 @@ public class ReactorGraphModel {
         /**
          * Null for detached MergePoint
          * Not null for Processors and Subgraphs
+         * Simple class name without package
          */
         String className;
+
         int id;
 
         @Override
@@ -120,34 +123,51 @@ public class ReactorGraphModel {
             val item1 = this;
             val item2 = other;
 
-            if(item1.getType() != null && item2.getType() != null && item1.getType() != item2.getType()){
+            if (item1.getType() != null && item2.getType() != null && item1.getType() != item2.getType()) {
                 return Integer.compare(item1.getType().ordinal(), item2.getType().ordinal());
             }
 
-            if(item1.getClassName() == null && item2.getClassName() == null){
+            if (item1.getClassName() == null && item2.getClassName() == null) {
                 return Integer.compare(item1.getId(), item2.getId());
             }
-            if(item1.getClassName() == null){
+            if (item1.getClassName() == null) {
                 return 1;
             }
 
-            if(item2.getClassName() == null){
+            if (item2.getClassName() == null) {
                 return -1;
             }
 
             int cmp = item1.getClassName().compareTo(item2.getClassName());
-            if(cmp != 0){
+            if (cmp != 0) {
                 return cmp;
             }
 
             return Integer.compare(item1.getId(), item2.getId());
+        }
+
+        @Override
+        public String toString() {
+            switch (type) {
+                case PROCESSOR:
+                    return className + "@" + id;
+
+                case SUBGRAPH:
+                    return className + "@" + id;
+
+                case MERGE_POINT:
+                    return "mergePoint@" + id;
+
+                default:
+                    throw new IllegalArgumentException("Invalid type: " + type);
+            }
         }
     }
 
 
     @Data
     @Accessors(chain = true)
-    public static class Processor{
+    public static class Processor {
         Identity identity;
 
         public Coordinates coordinates;
@@ -162,7 +182,7 @@ public class ReactorGraphModel {
 
     @Data
     @Accessors(chain = true)
-    public static class Subgraph{
+    public static class Subgraph {
         Identity identity;
 
         public Coordinates coordinates;
@@ -173,7 +193,7 @@ public class ReactorGraphModel {
         public String[] subgraphDoc;
     }
 
-    public enum Version{
+    public enum Version {
         v1_0_11
     }
 
@@ -187,7 +207,6 @@ public class ReactorGraphModel {
 
     public final List<MergePoint> mergePoints = new ArrayList<>();
     public final List<MergeGroup> implicitMergeGroups = new ArrayList<>();
-
 
 
     public Source serializationPointSource;

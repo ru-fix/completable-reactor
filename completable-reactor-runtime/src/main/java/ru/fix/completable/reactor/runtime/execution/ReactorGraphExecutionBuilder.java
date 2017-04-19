@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
+import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.ProfilerNames;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
@@ -950,7 +951,13 @@ public class ReactorGraphExecutionBuilder {
                 ProfilerNames.PROCESSOR_HANDLE + processingVertex.getProcessingItem().getProfilingName())
                 .start();
 
-        Object handleTraceMarker = tracer.beforeHandle(processingVertex.getProcessingItem().serializeIdentity(), payload);
+        boolean isTraceablePayload = tracer.isTraceable(payload);
+        Object handleTracingMarker = isTraceablePayload ?
+                tracer.beforeHandle(processingVertex.getProcessingItem().getIdentity(), payload) :
+                null;
+        ReactorGraphModel.Identity handleTracingIdentity = isTraceablePayload ?
+                processingVertex.getProcessingItem().getIdentity() :
+                null;
 
         CompletableFuture<?> handlingResult;
 
@@ -1015,7 +1022,10 @@ public class ReactorGraphExecutionBuilder {
 
         handlingResult.handleAsync((res, thr) -> {
             handleCall.stop();
-            tracer.afterHandle(handleTraceMarker, res, thr);
+
+            if(isTraceablePayload) {
+                tracer.afterHandle(handleTracingMarker, handleTracingIdentity, res, thr);
+            }
 
             if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
 
@@ -1121,10 +1131,18 @@ public class ReactorGraphExecutionBuilder {
             ProfiledCall mergeCall = profiler.profiledCall(
                     ProfilerNames.PROCESSOR_MERGE + processingVertex.getProcessingItem().getProfilingName())
                     .start();
+            boolean isTraceablePayload = tracer.isTraceable(payload);
+            Object mergeTracingMarker = isTraceablePayload ?
+                    tracer.beforeMerge(processingVertex.getProcessingItem().getIdentity(), payload, processorResult) :
+                    null;
 
             Enum mergeStatus = mergerInvocation.get();
 
             mergeCall.stop();
+
+            if(isTraceablePayload) {
+                tracer.afterMerger(mergeTracingMarker, processingVertex.getProcessingItem().getIdentity(), payload);
+            }
 
             /**
              * Select outgoing transitions that matches mergeStatus
