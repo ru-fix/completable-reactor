@@ -17,37 +17,58 @@ code as graph of execution flows.
  
 ## Concept
 
-Payload - plain old java object that encapsulate request, response and intermediate computation data required for request processing.  
-```
+### Terms
+
+**Payload** - plain old java object that encapsulate request, response and intermediate computation data required for request processing.  
+```java
 class MyPayload{
     String data1;
     int data2;
 }
 ```
-Processor - service that encapsulates common logic. Usually Processor contains several Handlers.  
-```
+
+**Processor** - service that encapsulates common logic. Usually Processor contains several Handlers.  
+```java
 @Reactored("MyNiceService description")
 class MyNiceService {
-    ...
+    //...
     @Reactored("myNiceHandler documentation")
-    CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2)`
-    ...
+    CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2) {/*...*/}
+    //...
 }
 ```
-Handler - asynchronous method that takes information from Payload and returns computation result. 
-```
+
+**Handler** - asynchronous method that takes information from Payload and returns computation result. 
+```java
 @Reactored("myNiceHandler documentation")
 CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2)` 
 ```
-Merger - synchronous method that takes Handlers computation result and uses it to update Payload
-```
-@Reactored("myNiceMerger documentation")
-Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult)`
-```
-MergePoint - graph processing item that uses Merger method to make modification on Payload.
 
-Visual representation of Processor and MergePoint:       
-Processor uses Handler to make asynchronous computation, MergePoint uses Merger to apply Handler computation result on Payload.    
+**Merger** - synchronous method that takes Handlers computation result and uses it to update Payload
+```java
+@Reactored("myNiceMerger documentation")
+Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult){
+    paylaod.getResponse().setData(handlerResult.getData());
+    return MyTransition.OK;
+}
+```
+**MergePoint** - graph processing item that uses Merger method to make modification on Payload.
+
+**Transition** - Enum instance that represent transition during flow execution. MergePoint merger returns instance of Enum. 
+Outgoing transition will be selected according to this value. 
+```java
+enum MyTransitions{
+    @Reactored("OneWay transition description")
+    ONE_WAY,
+    @Reactored("AnotherWay transition description")
+    ANOTHER_WAY
+}
+```
+
+Processor uses Handler to make asynchronous computation, MergePoint uses Merger to apply Handler computation result on Payload.  
+Origin payload is passed to Processors handler, then after handler computation is done origin payload is passed together with handler 
+result to merge point. Inside merge point origin payload is modified and became Payload*. Outgoing transitions from merge point pass 
+this new Payload* to next nodes.  
 ![Alt processor-with-mergePoint.png](docs/processor-with-mergePoint.png?raw=true "Processor with MergePoint")
 
 
