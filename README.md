@@ -22,8 +22,34 @@ code as graph of execution flows.
 **Payload** - plain old java object that encapsulate request, response and intermediate computation data required for request processing.  
 ```java
 class MyPayload{
+    static class Request {
+        String data1;
+        int data2;
+    }
+    static class Response {
+        boolean result;
+    }
+    static class IntermediateData {
+        String someData;
+    }
+    
+    final Request request = new Request();
+    final Response response = new Request();
+    final IntermediateData intermediateData = new IntermediateData();
+}
+```
+or simply
+```java
+class MyPayload{
+    //request parameters
     String data1;
     int data2;
+    
+    //intermediate data
+    String someData;
+    
+    //execution results
+    boolean result;
 }
 ```
 
