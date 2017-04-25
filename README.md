@@ -85,7 +85,10 @@ Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult){
 ![Alt merge-point.png](docs/merge-point.png?raw=true "MergePoint")
 
 **Transition** - Enum instance that represent transition during flow execution. MergePoint merger returns instance of Enum. 
-Outgoing transition will be selected according to this value. 
+Outgoing transition will be activated according to this value. If mergere returns status PLAN_B, then all outgoing transitions with 
+condition status PLAN_B will be activated and all transitions without PLAN_B status will be marked as dead. For unconditional transitions 
+there is no distinct status. That transitions  will be always activated regardless of the merger result.
+
 ```java
 enum MyTransitions{
     @Reactored("OneWay transition description")
@@ -95,11 +98,30 @@ enum MyTransitions{
 }
 ```
 
+### Processor with MergePoint
+
 Processor uses Handler to make asynchronous computation, MergePoint uses Merger to apply Handler computation result on Payload.  
 Origin payload is passed to Processors handler, then after handler computation is done origin payload is passed together with handler 
 result to merge point. Inside merge point origin payload is modified and became Payload*. Outgoing transitions from merge point pass 
 this new Payload* to next nodes.  
 ![Alt processor-with-merge-point.png](docs/processor-with-merge-point.png?raw=true "Processor with MergePoint")
+
+### MergePoint decision
+
+If all of outgoing transitions from MergePoint have distinct statuses then flow will continue to execute only by one of transitions.  
+If MergePoint merger will return FAIL status then execution completes immediately. In case of FIRST status flow will continue and 
+Processor2 will be invoked. In case of SECOND status - Processor3
+In given example there could be three options:  
+* Payload -> Processor1 -> End (if merger returns FAIL status)
+* Payload -> Processor1 -> Processor2 -> End (if merger returns FIRST status)
+* Payload -> Processor1 -> Processor3 -> End (if merger returns SECOND status)
+
+![Alt merge-point-decision.png](docs/merge-point-decision.png?raw=true "MergePoint decision")
+
+
+### Parallel execution
+
+![Alt parallel-execution.png](docs/parallel-execution.png?raw=true "Parallel execution")
 
 
 ## Dive into details 
