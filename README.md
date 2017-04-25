@@ -65,7 +65,10 @@ class MyNiceService {
 }
 ```
 
-**Handler** - asynchronous method that takes information from Payload and returns computation result. 
+**Handler** - asynchronous method that takes information from Payload and returns computation result. Handler MUST NOT change Payload 
+because same instance of Payload passed to other handlers in parallel. Is is ok to concurrently read payload from several handlers but 
+not to modify payload. The only point of payload modification is MergePoint.
+ 
 ```java
 @Reactored("myNiceHandler documentation")
 CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2)` 
@@ -73,7 +76,8 @@ CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2)`
 
 ![Alt processor.png](docs/processor.png?raw=true "MergePoint")
 
-**Merger** - synchronous method that takes Handlers computation result and uses it to update Payload
+**Merger** - synchronous method that takes Handlers computation result and uses it to update Payload. Merger is being invoked by 
+framework sequentially. That is why it is safe to modify payload within merger.
 ```java
 @Reactored("myNiceMerger documentation")
 Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult){
@@ -98,6 +102,13 @@ enum MyTransitions{
 }
 ```
 
+**EndPoint** - graph item that indicates end of flow execution. When graph execution reaches EndPoint then all transitions marked as dead
+ and CompletableReactor immediately returns graph result. The only exception is detached processors or subgraphs. They will continue to 
+ exectue.   
+
+![Alt end-point.png](docs/end-point.png?raw=true "EndPoint")
+
+
 ### Processor with MergePoint
 
 Processor uses Handler to make asynchronous computation, MergePoint uses Merger to apply Handler computation result on Payload.  
@@ -115,11 +126,23 @@ In given example there could be three options:
 * Payload -> Processor1 -> End (if merger returns FAIL status)
 * Payload -> Processor1 -> Processor2 -> End (if merger returns FIRST status)
 * Payload -> Processor1 -> Processor3 -> End (if merger returns SECOND status)
+First payload goes to Processor1 and passed to Processor1 handler. Then framework waits when CompletableFuture returned by Processor1 
+handler completes. After that MergePoint merger will be invoked and Payload with Processor1 handler result will be passed to this merger.
+Merger will check Processor1 handler result, modify Payload if needed and returns one of statuses: FAIL, FIRST, SECOND.  After that 
+execution will continue along with one of transitions (FAIL leads to END, FIRST - to Processor1, SECOND - to Processor3).
 
 ![Alt merge-point-decision.png](docs/merge-point-decision.png?raw=true "MergePoint decision")
 
 
 ### Parallel execution
+
+
+If two transitions have same condition Status then flow will continue execution in parallel and both transitions will be activated.  
+In given example there could be two options: 
+* Payload -> Processor1 -> End (if merger returns FAIL status)
+* Payload -> Processor2, Processor3 -> End (if merger returns OK status)
+
+    
 
 ![Alt parallel-execution.png](docs/parallel-execution.png?raw=true "Parallel execution")
 
