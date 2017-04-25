@@ -52,6 +52,7 @@ class MyPayload{
     boolean result;
 }
 ```
+![Alt payload.png](docs/payload.png?raw=true "Payload")
 
 **Processor** - service that encapsulates common logic. Usually Processor contains several Handlers.  
 ```java
@@ -70,6 +71,8 @@ class MyNiceService {
 CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2)` 
 ```
 
+![Alt processor.png](docs/processor.png?raw=true "MergePoint")
+
 **Merger** - synchronous method that takes Handlers computation result and uses it to update Payload
 ```java
 @Reactored("myNiceMerger documentation")
@@ -79,6 +82,7 @@ Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult){
 }
 ```
 **MergePoint** - graph processing item that uses Merger method to make modification on Payload.
+![Alt merge-point.png](docs/merge-point.png?raw=true "MergePoint")
 
 **Transition** - Enum instance that represent transition during flow execution. MergePoint merger returns instance of Enum. 
 Outgoing transition will be selected according to this value. 
@@ -95,7 +99,7 @@ Processor uses Handler to make asynchronous computation, MergePoint uses Merger 
 Origin payload is passed to Processors handler, then after handler computation is done origin payload is passed together with handler 
 result to merge point. Inside merge point origin payload is modified and became Payload*. Outgoing transitions from merge point pass 
 this new Payload* to next nodes.  
-![Alt processor-with-mergePoint.png](docs/processor-with-mergePoint.png?raw=true "Processor with MergePoint")
+![Alt processor-with-merge-point.png](docs/processor-with-merge-point.png?raw=true "Processor with MergePoint")
 
 
 ## Dive into details 
