@@ -19,7 +19,9 @@ code as graph of execution flows.
 
 ### Terms
 
-**Payload** - plain old java object that encapsulate request, response and intermediate computation data required for request processing.  
+**Payload** - plain old java object that encapsulate request, response and intermediate computation data required for request processing.
+CompletableReactor receive payload as an argument. Execute business flows, modify payload during execution and returns it as a computation 
+result.
 ```java
 class MyPayload{
     static class Request {
@@ -52,9 +54,22 @@ class MyPayload{
     boolean result;
 }
 ```
+
 ![Alt payload.png](docs/payload.png?raw=true "Payload")
 
-**Processor** - service that encapsulates common logic. Usually Processor contains several Handlers.  
+**Handler** - asynchronous method that takes information from Payload and returns computation result. Handler implements atomic business 
+logic of the execution flow. It could be reused in different flows several time. Handler MUST NOT change Payload because same instance of 
+Payload passed to other handlers in parallel. Is is ok to concurrently read payload from several handlers but not to modify payload. The 
+only point of payload modification is MergePoint.
+ 
+```java
+@Reactored("myNiceHandler documentation")
+CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2)` 
+```
+
+**Processor** - service that encapsulates coupled business logic. Usually Processor contains several Handlers. Processors could be reused
+ between different business scenarios in different business flows. They encapsulate reusable logic.
+ 
 ```java
 @Reactored("MyNiceService description")
 class MyNiceService {
@@ -63,15 +78,6 @@ class MyNiceService {
     CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2) {/*...*/}
     //...
 }
-```
-
-**Handler** - asynchronous method that takes information from Payload and returns computation result. Handler MUST NOT change Payload 
-because same instance of Payload passed to other handlers in parallel. Is is ok to concurrently read payload from several handlers but 
-not to modify payload. The only point of payload modification is MergePoint.
- 
-```java
-@Reactored("myNiceHandler documentation")
-CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2)` 
 ```
 
 ![Alt processor.png](docs/processor.png?raw=true "MergePoint")
@@ -111,13 +117,17 @@ enum MyTransitions{
 
 ### Processor with MergePoint
 
+![Alt processor-with-merge-point.png](docs/processor-with-merge-point.png?raw=true "Processor with MergePoint")
+
 Processor uses Handler to make asynchronous computation, MergePoint uses Merger to apply Handler computation result on Payload.  
 Origin payload is passed to Processors handler, then after handler computation is done origin payload is passed together with handler 
 result to merge point. Inside merge point origin payload is modified and became Payload*. Outgoing transitions from merge point pass 
 this new Payload* to next nodes.  
-![Alt processor-with-merge-point.png](docs/processor-with-merge-point.png?raw=true "Processor with MergePoint")
+
 
 ### MergePoint decision
+
+![Alt merge-point-decision.png](docs/merge-point-decision.png?raw=true "MergePoint decision")
 
 If all of outgoing transitions from MergePoint have distinct statuses then flow will continue to execute only by one of transitions.  
 If MergePoint merger will return FAIL status then execution completes immediately. In case of FIRST status flow will continue and 
@@ -131,23 +141,31 @@ handler completes. After that MergePoint merger will be invoked and Payload with
 Merger will check Processor1 handler result, modify Payload if needed and returns one of statuses: FAIL, FIRST, SECOND.  After that 
 execution will continue along with one of transitions (FAIL leads to END, FIRST - to Processor1, SECOND - to Processor3).
 
-![Alt merge-point-decision.png](docs/merge-point-decision.png?raw=true "MergePoint decision")
-
-
 ### Parallel execution
 
+![Alt parallel-execution.png](docs/parallel-execution.png?raw=true "Parallel execution")
 
 If two transitions have same condition Status then flow will continue execution in parallel and both transitions will be activated.  
 In given example there could be two options: 
 * Payload -> Processor1 -> End (if merger returns FAIL status)
 * Payload -> Processor2, Processor3 -> End (if merger returns OK status)
+CompletableReactor will way until result of Processor1 is ready. The it send Processor1 result to MergePoint. MergePoint analyzes 
+Processor1 result, mutates Payload instance if needed and then returns merge status. If this status is END then flow execution stops. If 
+this status is OK then framework launches Processor2 and Processor3 in parallel.  
+MergePoint of Processor2 have two incoming transitions. It will wait until all of them is complete and only then will launch merger. 
+Suppose Processor2 will finish first. MergePoint of Processor2 will have to wait to second incoming transition from MergePoint of 
+Processor3. When Processor3 result is complete, MergePoint of Processor3 will be executed. If MergePoint of Processor3 returns  FAIL then
+all flow stops. If MergePoint of Processor3 returns OK then transition from Processor3 MergePoint to Processor2 MergePoint activates. 
+Then MergePoint of Processor2 executed.  This will leads us to deterministic order of Payload modification and Processors execution. 
 
     
-
-![Alt parallel-execution.png](docs/parallel-execution.png?raw=true "Parallel execution")
-
-
 ## Dive into details 
+
+### MergeGroups
+
+![Alt merge-group.png](docs/merge-group.png?raw=true "MergeGroups")
+
+
 
 ## Intellij Idea Plugin
 https://plugins.jetbrains.com/plugin/9599-completable-reactor
