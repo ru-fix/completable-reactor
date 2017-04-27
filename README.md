@@ -17,9 +17,8 @@ code as graph of execution flows.
  
 ## Concept
 
-### Terms
-
-**Payload** - plain old java object that encapsulate request, response and intermediate computation data required for request processing.
+### Payload
+Payload is a plain old java object that encapsulate request, response and intermediate computation data required for request processing.
 CompletableReactor receive payload as an argument. Execute business flows, modify payload during execution and returns it as a computation 
 result.
 ```java
@@ -57,7 +56,8 @@ class MyPayload{
 
 ![Alt payload.png](docs/payload.png?raw=true "Payload")
 
-**Handler** - asynchronous method that takes information from Payload and returns computation result. Handler implements atomic business 
+### Handler
+Handler is an asynchronous method that takes information from Payload and returns computation result. Handler implements atomic business 
 logic of the execution flow. It could be reused in different flows several time. Handler MUST NOT change Payload because same instance of 
 Payload passed to other handlers in parallel. Is is ok to concurrently read payload from several handlers but not to modify payload. The 
 only point of payload modification is MergePoint.
@@ -82,7 +82,8 @@ class MyNiceService {
 
 ![Alt processor.png](docs/processor.png?raw=true "MergePoint")
 
-**Merger** - synchronous method that takes Handlers computation result and uses it to update Payload. Merger is being invoked by 
+### Merger
+Merger is a synchronous method that takes Handlers computation result and uses it to update Payload. Merger is being invoked by 
 framework sequentially. That is why it is safe to modify payload within merger.
 ```java
 @Reactored("myNiceMerger documentation")
@@ -91,10 +92,13 @@ Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult){
     return MyTransition.OK;
 }
 ```
-**MergePoint** - graph processing item that uses Merger method to make modification on Payload.
+### MergePoint
+MergePoint is a graph processing item that uses Merger method to make modification on Payload.
+
 ![Alt merge-point.png](docs/merge-point.png?raw=true "MergePoint")
 
-**Transition** - Enum instance that represent transition during flow execution. MergePoint merger returns instance of Enum. 
+### Transition
+Transition is a Enum instance that represent transition during flow execution. MergePoint merger returns instance of Enum. 
 Outgoing transition will be activated according to this value. If mergere returns status PLAN_B, then all outgoing transitions with 
 condition status PLAN_B will be activated and all transitions without PLAN_B status will be marked as dead. For unconditional transitions 
 there is no distinct status. That transitions  will be always activated regardless of the merger result.
@@ -107,8 +111,8 @@ enum MyTransitions{
     ANOTHER_WAY
 }
 ```
-
-**EndPoint** - graph item that indicates end of flow execution. When graph execution reaches EndPoint then all transitions marked as dead
+### EndPoint
+EndPoint is a graph item that indicates end of flow execution. When graph execution reaches EndPoint then all transitions marked as dead
  and CompletableReactor immediately returns graph result. The only exception is detached processors or subgraphs. They will continue to 
  exectue.   
 
