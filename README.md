@@ -163,8 +163,18 @@ Processor3. When Processor3 result is complete, MergePoint of Processor3 will be
 all flow stops. If MergePoint of Processor3 returns OK then transition from Processor3 MergePoint to Processor2 MergePoint activates. 
 Then MergePoint of Processor2 executed.  This will leads us to deterministic order of Payload modification and Processors execution. 
 
+
+### Detached MergePoint
+
+Until know we pass Payload instances to Processors.  
+
+![Alt detached-without-merge-point.png](docs/detached-without-merge-point.png?raw=true "Parallel execution")
+![Alt detached-with-merge-point.png](docs/detached-with-merge-point.png?raw=true "Parallel execution")
+
 ## Examples
 
+
+## Validation
     
 ## Implementation details 
 
