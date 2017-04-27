@@ -127,15 +127,17 @@ this new Payload* to next nodes.
 
 ### MergePoint decision
 
+If all of outgoing transitions from MergePoint have distinct statuses then flow will continue to execute only by one of transitions.
+
 ![Alt merge-point-decision.png](docs/merge-point-decision.png?raw=true "MergePoint decision")
 
-If all of outgoing transitions from MergePoint have distinct statuses then flow will continue to execute only by one of transitions.  
 If MergePoint merger will return FAIL status then execution completes immediately. In case of FIRST status flow will continue and 
 Processor2 will be invoked. In case of SECOND status - Processor3
 In given example there could be three options:  
 * Payload -> Processor1 -> End (if merger returns FAIL status)
 * Payload -> Processor1 -> Processor2 -> End (if merger returns FIRST status)
 * Payload -> Processor1 -> Processor3 -> End (if merger returns SECOND status)
+
 First payload goes to Processor1 and passed to Processor1 handler. Then framework waits when CompletableFuture returned by Processor1 
 handler completes. After that MergePoint merger will be invoked and Payload with Processor1 handler result will be passed to this merger.
 Merger will check Processor1 handler result, modify Payload if needed and returns one of statuses: FAIL, FIRST, SECOND.  After that 
@@ -143,12 +145,15 @@ execution will continue along with one of transitions (FAIL leads to END, FIRST 
 
 ### Parallel execution
 
+If two transitions have same condition Status then flow will continue execution in parallel and both transitions will be activated.
+
 ![Alt parallel-execution.png](docs/parallel-execution.png?raw=true "Parallel execution")
 
-If two transitions have same condition Status then flow will continue execution in parallel and both transitions will be activated.  
+
 In given example there could be two options: 
 * Payload -> Processor1 -> End (if merger returns FAIL status)
 * Payload -> Processor2, Processor3 -> End (if merger returns OK status)
+
 CompletableReactor will way until result of Processor1 is ready. The it send Processor1 result to MergePoint. MergePoint analyzes 
 Processor1 result, mutates Payload instance if needed and then returns merge status. If this status is END then flow execution stops. If 
 this status is OK then framework launches Processor2 and Processor3 in parallel.  
@@ -161,7 +166,15 @@ Then MergePoint of Processor2 executed.  This will leads us to deterministic ord
     
 ## Dive into details 
 
-### MergeGroups
+### Implicit MergeGroups
+MergePoints is the only place where it is allowed to modify Payload. During execution of parallel flows CompletableReactor protects 
+Payload from concurrent reading and modification. In given example there are two processors: Processor2 and Processor3 that start in 
+parallel. It is possible that Processor3 finishes first and triggers execution of MergePoint of Processor3. In that case there are could 
+be the risk of parallel reading Payload by Processor2 in Payload modification by Processor3. To prevent that CompletableReactor joins two 
+MergePoints into implicit MergeGroup. This MergeGroup prevents its MergePoint from execution until all incoming transitions to this 
+MergePoint is activated or marked as dead. This way even in Processor3 completes before Processor2, MergePoint of Processor3 will stay 
+inactive. And only after second incoming transitions to MergeGroup (transition from Processor2 to MergePoint of Processor2) is activated 
+MergeGroup will launch execution of MergePoint of Processor3.    
 
 ![Alt merge-group.png](docs/merge-group.png?raw=true "MergeGroups")
 
