@@ -67,7 +67,8 @@ only point of payload modification is MergePoint.
 CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2)` 
 ```
 
-**Processor** - service that encapsulates coupled business logic. Usually Processor contains several Handlers. Processors could be reused
+### Processor
+Processor is a service that encapsulates coupled business logic. Usually Processor contains several Handlers. Processors could be reused
  between different business scenarios in different business flows. They encapsulate reusable logic.
  
 ```java
