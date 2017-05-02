@@ -170,19 +170,42 @@ Then MergePoint of Processor2 executed.  This will leads us to deterministic ord
 
 ### Detached Processor without MergePoint
 
-Until know we pass Payload instances to Processors.  
+Until now we pass by reference Payload instances to Processors. But some times we are not interesting in computation result of processor.
+It could be NotificationService that will send message to external system and current business flow is not dependent on notification 
+result. We can not simply pass Payload to Processor6 by reference due to concurrent reading data by Processor6 and data modification in 
+one of MergePoints. Problem could be solved by passing copy of Payload to Processor6 or by using Immutable arguments in Processor6.
 
 ![Alt detached-without-merge-point.png](docs/detached-without-merge-point.png?raw=true "Parallel execution")
 
-
 ### Detached Processor with MergePoint
+
+Some times we want to launch Processor execution in parallel with main flow. In that case we have to pass copy of Payload to Processor6 
+or use immutable arguments to prevent concurrent reading by Processor6 and modification by MergePoints like in Detached Processor without
+ MergePoint scenario. We have to use MergePoint to bring Processor6 result back to main flow. 
 
 ![Alt detached-with-merge-point.png](docs/detached-with-merge-point.png?raw=true "Parallel execution")
 
-
 ### Subgraph
 
+Subgraph - is a Processor that execute Payload inside CompletableReactor. It have implicit Handler that takes Payload as argument and 
+returns Payload as computation result. Subgraphs allows to reuse graphs.
+
+![Alt subgraph.png](docs/subgraph.png?raw=true "Subgraph")
+
+
 ### How MergePoint decides which incoming Payload to chose
+Processors MergePoint receives Processors computation Result and reference to Payload passed to Processor. If there are incoming 
+transitions to Processors MergePoint then MergePoint also receives Payload instances through this transitions. Detached MergePoint does 
+not have transition from Processor with Processors Result. It have only incoming transitions. Both Processors MergePoint and Detached 
+Merge Point uses same rules to chose Payload for merging.
+* If there is single incoming transition (from Processor or other MergePoint) then Payload of this transitions will be used.
+* If there are incoming transition from Processor and incoming transition from other MergePoint then Payload of Processors transitions 
+ will be used.
+* Case when there is no Processors transition and more than one incoming transition is not allowed.
+* Case when there is more that one Processors transition is not allowed.
+
+![Alt merge-point-chose-payload.png](docs/merge-point-chose-payload.png?raw=true "MergePoint chose payload")
+
 
 ## Examples
 
