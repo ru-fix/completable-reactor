@@ -333,7 +333,7 @@ public class ReactorGraphExecutionBuilder {
         /**
          * Check if StartPoint have MergeGroup and initialize startPointAfterMergeGroupMergingFuture
          */
-        if(crReactorGraph.getStartPointMergeGroup().isPresent()){
+        if (crReactorGraph.getStartPointMergeGroup().isPresent()) {
             for (val processingItem : crReactorGraph.getStartPoint().getProcessingItems()) {
                 ProcessingVertex vertex = processingVertices.get(processingItem);
                 if (vertex.getProcessorInfo().getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
@@ -477,7 +477,8 @@ public class ReactorGraphExecutionBuilder {
                  * No processor invocation is needed
                  */
                 if (processingItem.getIncomingProcessorFlows().size() != 0) {
-                    throw new IllegalStateException(String.format("Invalid graph state. Detached merge point %s have more than 0 incoming flows.",
+                    throw new IllegalStateException(String.format(
+                            "Invalid graph state. Detached merge point %s have more than 0 incoming flows.",
                             processor.getDebugName()));
                 }
                 return;
@@ -655,7 +656,8 @@ public class ReactorGraphExecutionBuilder {
                                 .map(future -> {
                                     try {
                                         if (!future.getFuture().isDone()) {
-                                            log.error("Illegal graph execution state. Incoming merge future is not complete. ProcessingVertex: {}", vertex);
+                                            log.error("Illegal graph execution state. Incoming merge future is not complete." +
+                                                    " ProcessingVertex: {}", vertex);
                                             return INVALID_MERGE_PAYLOAD_CONTEXT;
                                         } else {
                                             return future.getFuture().get();
@@ -690,7 +692,8 @@ public class ReactorGraphExecutionBuilder {
                                  * Detached merge point
                                  */
                                 if (activeIncomingMergeFlows.size() == 0) {
-                                    throw new IllegalStateException(String.format("There is no incoming merge flows for detached merge point %s",
+                                    throw new IllegalStateException(String.format(
+                                            "There is no incoming merge flows for detached merge point %s",
                                             vertex.getProcessingItem().getDebugName()));
 
                                 } else {
@@ -710,7 +713,10 @@ public class ReactorGraphExecutionBuilder {
                                     /**
                                      * There is no active incoming merge flow for given merge point.
                                      */
-                                    merge(vertex, handlePayloadContext.getProcessorResult(), handlePayloadContext.getPayload(), executionResultFuture);
+                                    merge(vertex,
+                                            handlePayloadContext.getProcessorResult(),
+                                            handlePayloadContext.getPayload(),
+                                            executionResultFuture);
 
                                 } else {
                                     if (activeIncomingMergeFlows.size() > 1) {
@@ -722,7 +728,10 @@ public class ReactorGraphExecutionBuilder {
                                                 vertex.getProcessingItem().getDebugName());
                                     }
 
-                                    merge(vertex, handlePayloadContext.getProcessorResult(), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
+                                    merge(vertex,
+                                            handlePayloadContext.getProcessorResult(),
+                                            activeIncomingMergeFlows.get(0).getPayload(),
+                                            executionResultFuture);
                                 }
                             }
                         }
@@ -1023,7 +1032,7 @@ public class ReactorGraphExecutionBuilder {
         handlingResult.handleAsync((res, thr) -> {
             handleCall.stop();
 
-            if(isTraceablePayload) {
+            if (isTraceablePayload) {
                 tracer.afterHandle(handleTracingMarker, handleTracingIdentity, res, thr);
             }
 
@@ -1047,7 +1056,11 @@ public class ReactorGraphExecutionBuilder {
                             log.error(message, immutabilityException);
 
                             if (thr == null) {
-                                log.error("Overwriting execution exception {} by immutability check exception {}.", thr, immutabilityException, thr);
+                                log.error(
+                                        "Overwriting execution exception {} by immutability check exception {}.",
+                                        thr,
+                                        immutabilityException,
+                                        thr);
                             }
                             thr = immutabilityException;
                             break;
@@ -1140,7 +1153,7 @@ public class ReactorGraphExecutionBuilder {
 
             mergeCall.stop();
 
-            if(isTraceablePayload) {
+            if (isTraceablePayload) {
                 tracer.afterMerger(mergeTracingMarker, processingVertex.getProcessingItem().getIdentity(), payload);
             }
 
@@ -1192,7 +1205,10 @@ public class ReactorGraphExecutionBuilder {
                  * Terminal state reached. Execution result completed.
                  * Throw poison pill - terminal context. All following merge points should be deactivated.
                  */
-                processingVertex.getMergePointFuture().complete(new MergePayloadContext().setPayload(null).setMergeResult(mergeStatus).setTerminal(true));
+                processingVertex.getMergePointFuture().complete(new MergePayloadContext()
+                        .setPayload(null)
+                        .setMergeResult(mergeStatus)
+                        .setTerminal(true));
             } else {
                 /**
                  * There is no terminal state reached after merging.
