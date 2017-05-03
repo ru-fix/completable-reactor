@@ -96,7 +96,6 @@ public class CodeUpdater {
     }
 
 
-
     private String serialize(GraphViewer.CoordinateItem item) {
         switch (item.getType()) {
             case START_POINT:
@@ -108,7 +107,7 @@ public class CodeUpdater {
                         item.getX(),
                         item.getY());
             case MERGE_POINT:
-                if(item.getIdentity().getClassName() == null){
+                if (item.getIdentity().getClassName() == null) {
                     return String.format(".merge(%d, %d, %d)",
                             item.getIdentity().getId(),
                             item.getX(),
@@ -121,11 +120,18 @@ public class CodeUpdater {
                             item.getY());
                 }
             case END_POINT:
-                return String.format(".complete(%s.class, %d, %d, %d)",
-                        item.getIdentity().getClassName(),
-                        item.getIdentity().getId(),
-                        item.getX(),
-                        item.getY());
+                if (item.getIdentity().getClassName() == null) {
+                    return String.format(".complete(%d, %d, %d)",
+                            item.getIdentity().getId(),
+                            item.getX(),
+                            item.getY());
+                } else {
+                    return String.format(".complete(%s.class, %d, %d, %d)",
+                            item.getIdentity().getClassName(),
+                            item.getIdentity().getId(),
+                            item.getX(),
+                            item.getY());
+                }
             default:
                 throw new IllegalArgumentException(String.format("Unsupported type: %s", item));
         }
