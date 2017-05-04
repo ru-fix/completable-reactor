@@ -506,23 +506,36 @@ public class ReactorGraphExecutionBuilder {
                                                  * Future should be already complete
                                                  */
                                                 if (!future.getFuture().isDone()) {
-                                                    log.error("Illegal graph execution state. Future is not completed. Processor: {}",
-                                                            processingItem.getProcessingItem().getDebugName());
+                                                    Exception resultException = new Exception(String.format(
+                                                            "Illegal graph execution state. Future is not completed. Processor: %s",
+                                                            processingItem.getProcessingItem().getDebugName()));
 
+                                                    log.error(resultException.getMessage(), resultException);
+                                                    executionResultFuture.completeExceptionally(resultException);
                                                     return INVALID_TRANSITION_PAYLOAD_CONTEXT;
                                                 } else {
                                                     return future.getFuture().get();
                                                 }
                                             } catch (Exception exc) {
-                                                log.warn("Failed to get incoming processor flow future result for processor: {}",
-                                                        processingItem.getProcessingItem().getDebugName(), exc);
+                                                Exception resultException = new Exception(String.format(
+                                                        "Failed to get incoming processor flow future result for processor: %s",
+                                                        processingItem.getProcessingItem().getDebugName()), exc);
+                                                log.error(resultException.getMessage(), resultException);
+                                                executionResultFuture.completeExceptionally(resultException);
 
                                                 return INVALID_TRANSITION_PAYLOAD_CONTEXT;
                                             }
                                         })
                                         .collect(Collectors.toList());
 
-                                if (incomingFlows.stream().anyMatch(TransitionPayloadContext::isTerminal)) {
+                                if (incomingFlows.stream().anyMatch(context -> context == INVALID_TRANSITION_PAYLOAD_CONTEXT)) {
+                                    /**
+                                     * Invalid graph execution state
+                                     * Mark as terminal all outgoing flows from processor
+                                     */
+                                    processingItem.getProcessorFuture().complete(new HandlePayloadContext().setTerminal(true));
+
+                                } else if (incomingFlows.stream().anyMatch(TransitionPayloadContext::isTerminal)) {
                                     /**
                                      * Terminal state reached.
                                      * Mark as terminal all outgoing flows from processor
@@ -531,7 +544,6 @@ public class ReactorGraphExecutionBuilder {
 
                                 } else {
                                     List<TransitionPayloadContext> activeIncomingFlows = incomingFlows.stream()
-                                            .filter(context -> context != INVALID_TRANSITION_PAYLOAD_CONTEXT)
                                             .filter(context -> !context.isDeadTransition())
                                             .collect(Collectors.toList());
 
@@ -600,8 +612,12 @@ public class ReactorGraphExecutionBuilder {
                                     .map(future -> {
                                         try {
                                             if (!future.isDone()) {
-                                                log.error("Illegal graph execution state. Processor future is not completed. Processor {}",
-                                                        vertex.getProcessingItem().getDebugName());
+                                                RuntimeException resultException = new RuntimeException(String.format(
+                                                        "Illegal graph execution state. Processor future is not completed. Processor %s",
+                                                        vertex.getProcessingItem().getDebugName()));
+                                                log.error(resultException.getMessage(), resultException);
+                                                executionResultFuture.completeExceptionally(resultException);
+
                                                 return INVALID_HANDLE_PAYLOAD_CONTEXT;
                                             } else {
                                                 return future.get();
@@ -617,7 +633,7 @@ public class ReactorGraphExecutionBuilder {
                                             return INVALID_HANDLE_PAYLOAD_CONTEXT;
                                         }
                                     })
-                                    .orElseGet(() -> INVALID_HANDLE_PAYLOAD_CONTEXT);
+                                    .orElse(INVALID_HANDLE_PAYLOAD_CONTEXT);
 
                             if (handlePayloadContext == INVALID_HANDLE_PAYLOAD_CONTEXT) {
                                 /**
@@ -656,8 +672,12 @@ public class ReactorGraphExecutionBuilder {
                                 .map(future -> {
                                     try {
                                         if (!future.getFuture().isDone()) {
-                                            log.error("Illegal graph execution state. Incoming merge future is not complete." +
-                                                    " ProcessingVertex: {}", vertex);
+
+                                            RuntimeException resultException = new RuntimeException(String.format(
+                                                    "Illegal graph execution state. Incoming merge future is not complete." +
+                                                            " ProcessingVertex: %s", vertex));
+                                            log.error(resultException.getMessage(), resultException);
+                                            executionResultFuture.completeExceptionally(resultException);
                                             return INVALID_MERGE_PAYLOAD_CONTEXT;
                                         } else {
                                             return future.getFuture().get();
@@ -673,6 +693,13 @@ public class ReactorGraphExecutionBuilder {
                                     }
                                 }).collect(Collectors.toList());
 
+                        if (incomingMergeFlows.stream().anyMatch(context -> context == INVALID_MERGE_PAYLOAD_CONTEXT)) {
+                            /**
+                             * Exception during merging
+                             * Mark as terminal all outgoing flows from merge point
+                             */
+                            vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
+                        }
                         if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isTerminal)) {
                             /**
                              * Terminal state reached.
@@ -683,7 +710,6 @@ public class ReactorGraphExecutionBuilder {
                         } else {
 
                             final List<MergePayloadContext> activeIncomingMergeFlows = incomingMergeFlows.stream()
-                                    .filter(context -> context != INVALID_MERGE_PAYLOAD_CONTEXT)
                                     .filter(context -> !context.isDeadTransition())
                                     .collect(Collectors.toList());
 
@@ -692,9 +718,23 @@ public class ReactorGraphExecutionBuilder {
                                  * Detached merge point
                                  */
                                 if (activeIncomingMergeFlows.size() == 0) {
-                                    throw new IllegalStateException(String.format(
-                                            "There is no incoming merge flows for detached merge point %s",
-                                            vertex.getProcessingItem().getDebugName()));
+
+                                    /**
+                                     * Check that there are at least on incoming transition that marked as dead
+                                     */
+                                    if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isDeadTransition)) {
+                                        /**
+                                         * Detached MergePoint marked as Dead, because there are no active incoming flows and
+                                         * there is at least one incoming dead transition
+                                         * Mark as dead all outgoing flows from merge point
+                                         */
+                                        vertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
+                                    } else {
+                                        throw new IllegalStateException(String.format(
+                                                "There is no incoming merge flows for detached merge point %s." +
+                                                        " At least dead incoming transition expected.",
+                                                vertex.getProcessingItem().getDebugName()));
+                                    }
 
                                 } else {
                                     if (activeIncomingMergeFlows.size() > 1) {
