@@ -871,6 +871,7 @@ public class ReactorGraphExecutionBuilder {
             Object param4 = null;
             Object param5 = null;
             Object param6 = null;
+            Object param7 = null;
 
             if (description.getArg1() != null) {
                 param1 = description.getArg1().apply(payload);
@@ -906,6 +907,12 @@ public class ReactorGraphExecutionBuilder {
                 param6 = description.getArg6().apply(payload);
                 if (description.isCopyArg6()) {
                     param6 = threadsafeCopyMaker.makeThreadsafeCopy(param6);
+                }
+            }
+            if (description.getArg7() != null) {
+                param7 = description.getArg7().apply(payload);
+                if (description.isCopyArg7()) {
+                    param7 = threadsafeCopyMaker.makeThreadsafeCopy(param7);
                 }
             }
 
@@ -954,7 +961,16 @@ public class ReactorGraphExecutionBuilder {
                         param5,
                         param6
                 );
-
+            } else if (description.getHandler7() != null) {
+                return (CompletableFuture) description.getHandler7().handle(
+                        param1,
+                        param2,
+                        param3,
+                        param4,
+                        param5,
+                        param6,
+                        param7
+                );
             } else {
                 CompletableFuture result = new CompletableFuture();
                 result.completeExceptionally(
@@ -991,7 +1007,8 @@ public class ReactorGraphExecutionBuilder {
          * In case of detached merge point processor should not have incoming handling transition.
          */
         if (processorInfo.getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
-            throw new IllegalStateException(String.format("Processor %s is of type %s and should not have any incoming handling transition",
+            throw new IllegalStateException(String.format(
+                    "Processor %s is of type %s and should not have any incoming handling transition",
                     processingVertex.getProcessingItem().getDebugName(),
                     processorInfo.getProcessingItemType()));
         }
@@ -1122,7 +1139,9 @@ public class ReactorGraphExecutionBuilder {
 
                 processingVertex.getProcessorFuture().complete(new HandlePayloadContext().setTerminal(true));
             } else {
-                processingVertex.getProcessorFuture().complete(new HandlePayloadContext().setPayload(payload).setProcessorResult(res));
+                processingVertex.getProcessorFuture().complete(new HandlePayloadContext()
+                        .setPayload(payload)
+                        .setProcessorResult(res));
             }
             return null;
         });
@@ -1176,7 +1195,8 @@ public class ReactorGraphExecutionBuilder {
                 break;
 
             default:
-                throw new IllegalArgumentException(String.format("Unknown processor type: %s", processorInfo.getProcessingItemType()));
+                throw new IllegalArgumentException(String.format("Unknown processor type: %s",
+                        processorInfo.getProcessingItemType()));
         }
 
 
@@ -1227,7 +1247,8 @@ public class ReactorGraphExecutionBuilder {
                             previousResult = executionResultFuture.get();
                         } else {
                             log.error("Illegal graph execution state." +
-                                    " Completion failed for new result, but execution result from previous terminal step is not complete.");
+                                    " Completion failed for new result," +
+                                    " but execution result from previous terminal step is not complete.");
                         }
                     } catch (Exception exc) {
                         log.error("Failed to get completed execution result from previous terminal step.", exc);
@@ -1253,7 +1274,9 @@ public class ReactorGraphExecutionBuilder {
                 /**
                  * There is no terminal state reached after merging.
                  */
-                processingVertex.getMergePointFuture().complete(new MergePayloadContext().setPayload(payload).setMergeResult(mergeStatus));
+                processingVertex.getMergePointFuture().complete(new MergePayloadContext()
+                        .setPayload(payload)
+                        .setMergeResult(mergeStatus));
             }
 
         } catch (Exception exc) {

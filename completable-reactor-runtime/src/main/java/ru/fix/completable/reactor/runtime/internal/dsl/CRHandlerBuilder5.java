@@ -25,13 +25,13 @@ public class CRHandlerBuilder5<PayloadType , Arg1, Arg2, Arg3, Arg4, Arg5> imple
     }
 
     @Override
-    public <Arg6> HandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> passArg(Function<PayloadType, Arg5> arg) {
+    public <Arg6> HandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> passArg(Function<PayloadType, Arg6> arg) {
         processorDescription.arg6 = arg;
         return new CRHandlerBuilder6<>(processorDescription);
     }
 
     @Override
-    public <Arg6> CRHandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> copyArg(Function<PayloadType, Arg5> arg) {
+    public <Arg6> CRHandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> copyArg(Function<PayloadType, Arg6> arg) {
         processorDescription.arg6 = arg;
         processorDescription.isCopyArg6 = true;
         return new CRHandlerBuilder6<>(processorDescription);

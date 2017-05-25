@@ -46,12 +46,18 @@ public class CRProcessorDescription<PayloadType> implements ProcessorDescription
      */
     Function arg6;
 
+    /**
+     * {@code Function<Payload, Arg7>}
+     */
+    Function arg7;
+
     boolean isCopyArg1 = false;
     boolean isCopyArg2 = false;
     boolean isCopyArg3 = false;
     boolean isCopyArg4 = false;
     boolean isCopyArg5 = false;
     boolean isCopyArg6 = false;
+    boolean isCopyArg7 = false;
 
     /**
      * {@code Handler0Args<Processor, ProcessorResult>}
@@ -87,6 +93,11 @@ public class CRProcessorDescription<PayloadType> implements ProcessorDescription
      * {@code Handler<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, ProcessorResult>}
      */
     Handler6Args handler6;
+
+    /**
+     * {@code Handler<Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7,ProcessorResult>}
+     */
+    Handler7Args handler7;
 
     /**
      * Source where {@code handleBy} method was used

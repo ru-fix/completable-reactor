@@ -8,11 +8,11 @@ import java.util.function.Function;
 public interface HandlerBuilder5<PayloadType , Arg1, Arg2, Arg3, Arg4, Arg5> {
 
     <Arg6> HandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> passArg(
-            Function<PayloadType, Arg5> arg
+            Function<PayloadType, Arg6> arg
     );
 
     <Arg6> HandlerBuilder6<PayloadType, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> copyArg(
-            Function<PayloadType, Arg5> arg
+            Function<PayloadType, Arg6> arg
     );
 
     <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
