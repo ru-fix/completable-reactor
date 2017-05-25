@@ -39,7 +39,8 @@ public class CRHandlerBuilder2<PayloadType, Arg1, Arg2> implements HandlerBuilde
     }
 
     @Override
-    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(String title, Handler2Args<Arg1, Arg2, ProcessorResult> handler) {
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title, Handler2Args<Arg1, Arg2, ProcessorResult> handler) {
         return withHandler(title, null, handler);
     }
 
