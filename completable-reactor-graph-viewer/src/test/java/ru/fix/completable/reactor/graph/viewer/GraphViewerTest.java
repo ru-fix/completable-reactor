@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
  */
 
 public class GraphViewerTest extends Application {
+
+    private static String payload;
+
     public GraphViewerTest() {
     }
 
@@ -54,8 +57,7 @@ public class GraphViewerTest extends Application {
 
         String graphModel;
 
-        try (val resource = getClass().getResourceAsStream(
-                "/ru.fix.completable.reactor.example.chain.PurchasePayload.rg")) {
+        try (val resource = getClass().getResourceAsStream("/"  + GraphViewerTest.payload)) {
 
             graphModel = IOUtils.toString(resource, StandardCharsets.UTF_8);
         }
@@ -77,8 +79,17 @@ public class GraphViewerTest extends Application {
     @Ignore
     @Test
     public void open_pane() throws Exception {
+        GraphViewerTest.payload = "PurchasePayload.rg";
         Application.launch();
     }
 
+
+    @Ignore
+    @Test
+    public void open_grpah_with_subgraph() throws Exception{
+        GraphViewerTest.payload = "ParentGraphPayload.rg";
+        Application.launch();
+
+    }
 
 }
