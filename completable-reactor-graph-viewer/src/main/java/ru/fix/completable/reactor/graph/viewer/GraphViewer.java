@@ -37,9 +37,9 @@ public class GraphViewer {
             }
 
             @Override
-            public void goToSubgraph(ReactorGraphModel.Identity subgraphIdentity) {
+            public void goToSubgraph(String subgraphPayloadClass) {
                 for(val listener: actionListeners){
-                    listener.goToSubgraph(subgraphIdentity);
+                    listener.goToSubgraph(subgraphPayloadClass);
                 }
             }
 
@@ -136,9 +136,9 @@ public class GraphViewer {
 
         /**
          * Viewer asks IDE to navigate to subgraph view
-         * @param subgraphIdentity
          */
-        void goToSubgraph(ReactorGraphModel.Identity subgraphIdentity);
+        void goToSubgraph(String subgraphPayloadClass);
+
         /**
          * Graph nodes coordinates changed
          * @param coordinateItems new coordinates

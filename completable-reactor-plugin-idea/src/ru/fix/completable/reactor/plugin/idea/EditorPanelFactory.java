@@ -48,21 +48,21 @@ public class EditorPanelFactory {
 
                             PsiFile foundFile = null;
 
-                            if(source.fileName != null) {
+                            if (source.fileName != null) {
                                 foundFile = Arrays.stream(PsiShortNamesCache.getInstance(project).getFilesByName(source.fileName))
                                         .findAny()
                                         .orElse(null);
 
-                            } else if(source.className != null){
+                            } else if (source.className != null) {
 
                                 ProjectAndLibrariesScope searchScope = new ProjectAndLibrariesScope(project);
                                 PsiClass payloadPsiClass = JavaPsiFacade.getInstance(project).findClass(source.className, searchScope);
-                                if(payloadPsiClass != null) {
+                                if (payloadPsiClass != null) {
                                     foundFile = payloadPsiClass.getContainingFile();
                                 }
                             }
 
-                            if(foundFile == null){
+                            if (foundFile == null) {
                                 log.warn("Can not find file for source: " + source);
                                 return;
                             }
@@ -78,34 +78,29 @@ public class EditorPanelFactory {
             }
 
             @Override
-            public void goToSubgraph(ReactorGraphModel.Identity subgraphIdentity) {
-                if(subgraphIdentity.getType() != ReactorGraphModel.Identity.Type.SUBGRAPH){
-                    //ignore non subgraph identity
-                    return;
-                }
+            public void goToSubgraph(String subgraphPayloadClass) {
                 ApplicationManager.getApplication().invokeLater(
                         () -> ApplicationManager.getApplication().runReadAction(() -> {
 
                             PsiFile foundFile = null;
 
-                            if(subgraphIdentity.getClassName() != null) {
+                            if (subgraphPayloadClass != null) {
                                 foundFile = Arrays.stream(PsiShortNamesCache.getInstance(project)
-                                        .getFilesByName(subgraphIdentity.getClassName() + ".rg"))
+                                        .getFilesByName(subgraphPayloadClass + ".rg"))
                                         .findAny()
                                         .orElse(null);
 
                             }
 
-                            if(foundFile == null){
-                                log.warn("Can not find file for subgraph: " + subgraphIdentity);
+                            if (foundFile == null) {
+                                log.warn("Can not find file for subgraph: " + subgraphPayloadClass);
                                 return;
                             }
 
                             OpenFileDescriptor descriptor = new OpenFileDescriptor(
                                     project,
-                                    foundFile.getVirtualFile(),
-                                    source.fileNameLine != null ? source.fileNameLine - 1 : 0,
-                                    0);
+                                    foundFile.getVirtualFile());
+
                             descriptor.navigate(true);
                         })
                 );
