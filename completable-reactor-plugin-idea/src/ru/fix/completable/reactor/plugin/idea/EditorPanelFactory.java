@@ -78,6 +78,40 @@ public class EditorPanelFactory {
             }
 
             @Override
+            public void goToSubgraph(ReactorGraphModel.Identity subgraphIdentity) {
+                if(subgraphIdentity.getType() != ReactorGraphModel.Identity.Type.SUBGRAPH){
+                    //ignore non subgraph identity
+                    return;
+                }
+                ApplicationManager.getApplication().invokeLater(
+                        () -> ApplicationManager.getApplication().runReadAction(() -> {
+
+                            PsiFile foundFile = null;
+
+                            if(subgraphIdentity.getClassName() != null) {
+                                foundFile = Arrays.stream(PsiShortNamesCache.getInstance(project)
+                                        .getFilesByName(subgraphIdentity.getClassName() + ".rg"))
+                                        .findAny()
+                                        .orElse(null);
+
+                            }
+
+                            if(foundFile == null){
+                                log.warn("Can not find file for subgraph: " + subgraphIdentity);
+                                return;
+                            }
+
+                            OpenFileDescriptor descriptor = new OpenFileDescriptor(
+                                    project,
+                                    foundFile.getVirtualFile(),
+                                    source.fileNameLine != null ? source.fileNameLine - 1 : 0,
+                                    0);
+                            descriptor.navigate(true);
+                        })
+                );
+            }
+
+            @Override
             public void coordinatesChanged(List<GraphViewer.CoordinateItem> coordinateItems) {
 
                 ReactorGraphModel graphModel = graphViewer.getGraphModel();

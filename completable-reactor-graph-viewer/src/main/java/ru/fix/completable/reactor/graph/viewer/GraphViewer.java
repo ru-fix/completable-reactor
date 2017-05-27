@@ -121,8 +121,21 @@ public class GraphViewer {
 
     public interface ActionListener {
 
+        /**
+         * Viewer asks IDE to navigate to source code
+         * @param source source code location
+         */
         void goToSource(ReactorGraphModel.Source source);
 
+        /**
+         * Viewer asks IDE to navigate to subgraph view
+         * @param subgraphIdentity
+         */
+        void goToSubgraph(ReactorGraphModel.Identity subgraphIdentity);
+        /**
+         * Graph nodes coordinates changed
+         * @param coordinateItems new coordinates
+         */
         void coordinatesChanged(List<CoordinateItem> coordinateItems);
     }
 

@@ -53,7 +53,7 @@ class SubgraphNode extends VBox {
 
         this.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                actionListener.goToSource(subgraph.getBuildSource());
+                actionListener.goToSubgraph(subgraph.getIdentity());
             }
         });
 

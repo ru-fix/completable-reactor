@@ -32,6 +32,11 @@ public class GraphViewerTest extends Application {
         }
 
         @Override
+        public void goToSubgraph(ReactorGraphModel.Identity subgraphIdentity) {
+            System.out.println("goToSubgraph: " + subgraphIdentity);
+        }
+
+        @Override
         public void coordinatesChanged(List<GraphViewer.CoordinateItem> coordinateItems) {
             try {
                 System.out.println("changeCoordinates:\n" +
