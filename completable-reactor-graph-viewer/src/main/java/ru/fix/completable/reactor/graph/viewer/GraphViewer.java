@@ -37,6 +37,13 @@ public class GraphViewer {
             }
 
             @Override
+            public void goToSubgraph(ReactorGraphModel.Identity subgraphIdentity) {
+                for(val listener: actionListeners){
+                    listener.goToSubgraph(subgraphIdentity);
+                }
+            }
+
+            @Override
             public void coordinatesChanged(List<CoordinateItem> coordinateItems) {
                 for (val listener : actionListeners) {
                     listener.coordinatesChanged(coordinateItems);
