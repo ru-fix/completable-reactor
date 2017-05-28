@@ -244,8 +244,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.buildSource = subgraphDescription.getBuildSource();
             model.subgraphDoc = subgraphDescription.getSubgraphDoc();
             model.subgraphTitle = subgraphDescription.getSubgraphTitle();
-            model.payloadSource = new ReactorGraphModel.Source()
-                    .setClassName(subgraphDescription.getSubgraphPayload().getName());
+            model.payloadClass = subgraphDescription.getSubgraphPayload().getName();
 
             return model;
         }

@@ -32,8 +32,8 @@ public class GraphViewerTest extends Application {
         }
 
         @Override
-        public void goToSubgraph(ReactorGraphModel.Identity subgraphIdentity) {
-            System.out.println("goToSubgraph: " + subgraphIdentity);
+        public void goToSubgraph(String subgraphPayloadClass) {
+            System.out.println("goToSubgraph: " + subgraphPayloadClass);
         }
 
         @Override

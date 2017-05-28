@@ -188,7 +188,7 @@ public class ReactorGraphModel {
         public Coordinates coordinates;
         public Source coordinatesSource;
         public Source buildSource;
-        public Source payloadSource;
+        public String payloadClass;
 
         public String subgraphTitle;
         public String[] subgraphDoc;
