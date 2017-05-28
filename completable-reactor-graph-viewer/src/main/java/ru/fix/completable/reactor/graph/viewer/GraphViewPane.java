@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 /**
@@ -330,11 +331,26 @@ public class GraphViewPane extends ScrollPane {
         }
 
         /**
-         * Scroll pane so Payload would be in top center
+         * Scroll pane so Payload Node would be in center position
          */
         this.setHvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getX()) / WORLD_SIZE);
+        this.setVvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getY()) / WORLD_SIZE);
+
+        enableSingleScrollingPayloadToTopCenterOnResize();
+
         return this;
     }
+
+    AtomicBoolean widthCeterized = new AtomicBoolean();
+    AtomicBoolean heightCeterized = new AtomicBoolean();
+
+    private void enableSingleScrollingPayloadToTopCenterOnResize(){
+        this.getScene().heightProperty().addListener((observable, oldValue, newValue) -> {
+            this.setVvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getY() + newValue.doubleValue() / 2) / WORLD_SIZE);
+        });
+    }
+
+
 
     public void showMergeGroups(boolean showMergeGroups){
         this.isMergeGroupShown = showMergeGroups;
