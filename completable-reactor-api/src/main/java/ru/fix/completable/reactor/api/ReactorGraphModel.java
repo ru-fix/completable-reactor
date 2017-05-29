@@ -195,6 +195,7 @@ public class ReactorGraphModel {
     }
 
     public enum Version {
+        v1_0_11,
         v1_0_18
     }
 
