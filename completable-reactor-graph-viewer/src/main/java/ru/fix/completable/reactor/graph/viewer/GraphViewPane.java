@@ -40,6 +40,7 @@ public class GraphViewPane extends ScrollPane {
      */
     private HashMap<ReactorGraphModel.Identity, Node> processors = new HashMap<>();
     private HashMap<ReactorGraphModel.Identity, MergePointNode> mergePoints = new HashMap<>();
+
     private ArrayList<MergeGroupNode> mergeGroups = new ArrayList<>();
 
     private List<GraphViewer.CoordinateItem> coordinateItems = new ArrayList<>();
@@ -84,6 +85,8 @@ public class GraphViewPane extends ScrollPane {
         );
 
         initializePopupMenu();
+
+        subscribeScrollingPayloadListenerOnResizeEvent();
     }
 
     void initializePopupMenu() {
@@ -171,7 +174,7 @@ public class GraphViewPane extends ScrollPane {
         /**
          * MergePoints
          */
-        for(val mergePoint : graphModel.getMergePoints()){
+        for (val mergePoint : graphModel.getMergePoints()) {
             val mergePointNode = new MergePointNode(translator, mergePoint, actionListener, coordinateItems);
             mergePoints.put(mergePoint.getIdentity(), mergePointNode);
             pane.getChildren().add(mergePointNode);
@@ -336,23 +339,40 @@ public class GraphViewPane extends ScrollPane {
         this.setHvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getX()) / WORLD_SIZE);
         this.setVvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getY()) / WORLD_SIZE);
 
-        enableSingleScrollingPayloadToTopCenterOnResize();
+        enableSingleScrollingPayloadToTopCenterOnFirstResize();
 
         return this;
     }
 
-    AtomicBoolean widthCeterized = new AtomicBoolean();
-    AtomicBoolean heightCeterized = new AtomicBoolean();
+    final AtomicBoolean payloadIsWidthCetralized = new AtomicBoolean();
+    final AtomicBoolean payloadIsHeightCentralized = new AtomicBoolean();
 
-    private void enableSingleScrollingPayloadToTopCenterOnResize(){
-        this.getScene().heightProperty().addListener((observable, oldValue, newValue) -> {
-            this.setVvalue((WORLD_SIZE / 2 + graphModel.getStartPoint().getCoordinates().getY() + newValue.doubleValue() / 2) / WORLD_SIZE);
+    private void enableSingleScrollingPayloadToTopCenterOnFirstResize() {
+        payloadIsWidthCetralized.set(false);
+        payloadIsHeightCentralized.set(false);
+    }
+
+    private void subscribeScrollingPayloadListenerOnResizeEvent() {
+        this.heightProperty().addListener((observable, oldValue, newValue) -> {
+            if (payloadIsHeightCentralized.compareAndSet(false, true)) {
+                int startPointY = graphModel.getStartPoint().getCoordinates().getY();
+                final double approximateMargin = 50;
+                this.setVvalue((WORLD_SIZE / 2 + startPointY + newValue.doubleValue() / 2 - approximateMargin)
+                        / WORLD_SIZE);
+            }
+        });
+        this.widthProperty().addListener((observable, oldValue, newValue) -> {
+            if (payloadIsWidthCetralized.compareAndSet(false, true)) {
+                int startPointX = graphModel.getStartPoint().getCoordinates().getX();
+                final double approximatePayloadNodeWidth = 100;
+                this.setHvalue(
+                        (WORLD_SIZE / 2 + startPointX  + approximatePayloadNodeWidth / 2) / WORLD_SIZE);
+            }
         });
     }
 
 
-
-    public void showMergeGroups(boolean showMergeGroups){
+    public void showMergeGroups(boolean showMergeGroups) {
         this.isMergeGroupShown = showMergeGroups;
         for (MergeGroupNode mergeGroup : mergeGroups) {
             mergeGroup.setVisible(showMergeGroups);
