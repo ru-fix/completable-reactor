@@ -63,14 +63,14 @@ public class TracingTest {
                 .setId(3);
 
         val graph = graphBuilder.payload(TracablePayload.class)
-                .handleBy(processor1)
-                .handleBy(processor2)
+                .handle(processor1)
+                .handle(processor2)
 
                 .mergePoint(processor1)
                 .onAny().merge(processor2)
 
                 .mergePoint(processor2)
-                .onAny().handleBy(processor3)
+                .onAny().handle(processor3)
 
                 .mergePoint(processor3)
                 .onAny().complete()

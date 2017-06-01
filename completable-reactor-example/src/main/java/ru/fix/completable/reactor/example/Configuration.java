@@ -176,8 +176,8 @@ public class Configuration {
 
 
         return graphBuilder.payload(PurchasePayload.class)
-                .handleBy(gUserProfile)
-                .handleBy(gServiceInfo)
+                .handle(gUserProfile)
+                .handle(gServiceInfo)
 
                 .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
@@ -185,18 +185,18 @@ public class Configuration {
 
 
                 .mergePoint(gServiceInfo)
-                .on(MergeStatus.WITHDRAWAL).handleBy(gBankPurchase)
-                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gUserLog)
-                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gNotification)
+                .on(MergeStatus.WITHDRAWAL).handle(gBankPurchase)
+                .on(MergeStatus.NO_WITHDRAWAL).handle(gUserLog)
+                .on(MergeStatus.NO_WITHDRAWAL).handle(gNotification)
                 .on(MergeStatus.STOP).complete()
 
                 .mergePoint(gBankPurchase)
                 .onAny()
-                .handleBy(gTxLog)
+                .handle(gTxLog)
 
                 .mergePoint(gTxLog)
                 .onAny()
-                .handleBy(gUserLog)
+                .handle(gUserLog)
 
                 .mergePoint(gUserLog)
                 .onAny()
@@ -266,9 +266,10 @@ public class Configuration {
                         })
                 .buildMergePoint();
 
-        return graphBuilder.payload(SubscribePayload.class)
-                .handleBy(gUserProfile)
-                .handleBy(gServiceInfo)
+        return graphBuilder
+                .payload(SubscribePayload.class)
+                .handle(gUserProfile)
+                .handle(gServiceInfo)
 
                 .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
@@ -279,17 +280,17 @@ public class Configuration {
                 .on(MergeStatus.STOP).complete()
 
                 .mergePoint(trialPeriodCheck)
-                .on(MergeStatus.WITHDRAWAL).handleBy(gBankSubsribe)
-                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gUserLog)
-                .on(MergeStatus.NO_WITHDRAWAL).handleBy(gNotification)
+                .on(MergeStatus.WITHDRAWAL).handle(gBankSubsribe)
+                .on(MergeStatus.NO_WITHDRAWAL).handle(gUserLog)
+                .on(MergeStatus.NO_WITHDRAWAL).handle(gNotification)
 
                 .mergePoint(gBankSubsribe)
                 .onAny()
-                .handleBy(gTxLog)
+                .handle(gTxLog)
 
                 .mergePoint(gTxLog)
                 .onAny()
-                .handleBy(gUserLog)
+                .handle(gUserLog)
 
                 .mergePoint(gUserLog)
                 .onAny()

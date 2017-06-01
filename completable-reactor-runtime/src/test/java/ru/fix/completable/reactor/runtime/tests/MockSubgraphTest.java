@@ -77,10 +77,10 @@ public class MockSubgraphTest {
 
 
         val graph = graphBuilder.payload(MainPayload.class)
-                .handleBy(processor1)
+                .handle(processor1)
 
                 .mergePoint(processor1)
-                .onAny().handleBy(subgraph)
+                .onAny().handle(subgraph)
 
                 .mergePoint(subgraph)
                 .onAny().complete()

@@ -60,7 +60,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
     }
 
     @Override
-    public MergePointBuilder<PayloadType> handleBy(Processor<? super PayloadType> processor) {
+    public MergePointBuilder<PayloadType> handle(Processor<? super PayloadType> processor) {
         CRProcessor<?> crProcessor = (CRProcessor<?>) processor;
         graph.ensureProcessingItemRegistered(crProcessor);
 
@@ -73,7 +73,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
     }
 
     @Override
-    public MergePointBuilder<PayloadType> handleBy(Subgraph<? super PayloadType> subgraph) {
+    public MergePointBuilder<PayloadType> handle(Subgraph<? super PayloadType> subgraph) {
         CRSubgraph<?> crSubgraph = (CRSubgraph<?>) subgraph;
         graph.ensureProcessingItemRegistered(crSubgraph);
 

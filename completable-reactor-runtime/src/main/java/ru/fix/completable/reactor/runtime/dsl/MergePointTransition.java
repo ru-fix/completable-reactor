@@ -7,9 +7,9 @@ public interface MergePointTransition<PayloadType> {
 
     MergePointBuilder<PayloadType> complete();
 
-    MergePointBuilder<PayloadType> handleBy(Processor<? super PayloadType> processor);
+    MergePointBuilder<PayloadType> handle(Processor<? super PayloadType> processor);
 
-    MergePointBuilder<PayloadType> handleBy(Subgraph<? super PayloadType> subgraph);
+    MergePointBuilder<PayloadType> handle(Subgraph<? super PayloadType> subgraph);
 
     MergePointBuilder<PayloadType> merge(Processor<? super PayloadType> processor);
 

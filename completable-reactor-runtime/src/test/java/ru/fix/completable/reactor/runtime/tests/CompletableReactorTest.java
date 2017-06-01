@@ -94,7 +94,7 @@ public class CompletableReactorTest {
         Processor<IdListPayload> idProcessor1 = buildProcessor(new IdProcessor(1));
 
         ReactorGraph graph = graphBuilder.payload(SingleProcessorPayload.class)
-                .handleBy(idProcessor1)
+                .handle(idProcessor1)
 
                 .mergePoint(idProcessor1)
                 .onAny().complete()
@@ -134,8 +134,8 @@ public class CompletableReactorTest {
         ReactorGraph graph = graphBuilder.payload(TwoProcessorSequentialMergePayload.class)
 
 
-                .handleBy(idProcessor1)
-                .handleBy(idProcessor2)
+                .handle(idProcessor1)
+                .handle(idProcessor2)
 
                 .mergePoint(idProcessor1)
                 .on(Status.OK, Status.UNUSED).merge(idProcessor2)
@@ -192,9 +192,9 @@ public class CompletableReactorTest {
 
         ReactorGraph graph = graphBuilder.payload(DetachedProcessorPayload.class)
 
-                .handleBy(idProcessor1)
-                .handleBy(idProcessor2)
-                .handleBy(idProcessor3)
+                .handle(idProcessor1)
+                .handle(idProcessor2)
+                .handle(idProcessor3)
 
                 .mergePoint(idProcessor1)
                 .on(Status.OK).merge(idProcessor2)
@@ -264,9 +264,9 @@ public class CompletableReactorTest {
 
         ReactorGraph graph = graphBuilder.payload(PayloadWithMergeGroup.class)
 
-                .handleBy(idProcessor1)
-                .handleBy(idProcessor2)
-                .handleBy(idProcessor3)
+                .handle(idProcessor1)
+                .handle(idProcessor2)
+                .handle(idProcessor3)
 
                 .mergePoint(idProcessor1)
                 .onAny().merge(idProcessor2)
@@ -336,12 +336,13 @@ public class CompletableReactorTest {
         Processor<IdListPayload> idProcessor13 = buildProcessor(new IdProcessor(13)).setId(13);
 
 
-        ReactorGraph<SubgraphPayload> childGraph = graphBuilder.payload(SubgraphPayload.class)
-                .handleBy(idProcessor11)
-                .handleBy(idProcessor12)
+        ReactorGraph<SubgraphPayload> childGraph = graphBuilder
+                .payload(SubgraphPayload.class)
+                .handle(idProcessor11)
+                .handle(idProcessor12)
 
                 .mergePoint(idProcessor11).onAny().merge(idProcessor12)
-                .mergePoint(idProcessor12).onAny().handleBy(idProcessor13)
+                .mergePoint(idProcessor12).onAny().handle(idProcessor13)
 
                 .mergePoint(idProcessor13).onAny().complete()
                 .coordinates()
@@ -373,14 +374,14 @@ public class CompletableReactorTest {
 
         ReactorGraph<ParentGraphPayload> parentGraph = graphBuilder.payload(ParentGraphPayload.class)
 
-                .handleBy(idProcessor1)
+                .handle(idProcessor1)
 
                 .mergePoint(idProcessor1)
-                .onAny().handleBy(idProcessor2)
-                .onAny().handleBy(subgraphProcessor)
+                .onAny().handle(idProcessor2)
+                .onAny().handle(subgraphProcessor)
 
                 .mergePoint(subgraphProcessor).onAny().merge(idProcessor2)
-                .mergePoint(idProcessor2).onAny().handleBy(idProcessor3)
+                .mergePoint(idProcessor2).onAny().handle(idProcessor3)
 
                 .mergePoint(idProcessor3).onAny().complete()
                 .coordinates()
@@ -432,7 +433,7 @@ public class CompletableReactorTest {
 
         ReactorGraph<SingleInterfaceProcessorPayload> graph = graphBuilder.payload(SingleInterfaceProcessorPayload.class)
 
-                .handleBy(idProcessor1)
+                .handle(idProcessor1)
 
                 .mergePoint(idProcessor1)
                 .onAny().complete()
@@ -474,7 +475,7 @@ public class CompletableReactorTest {
 
         ReactorGraph<SingleInterfaceProcessorPayload> graph = graphBuilder.payload(SingleInterfaceProcessorPayload.class)
 
-                .handleBy(idProcessor1)
+                .handle(idProcessor1)
 
                 .mergePoint(idProcessor1)
                 .onAny().complete()
@@ -547,13 +548,13 @@ public class CompletableReactorTest {
 
         ReactorGraph<DeadBranchPayload> graph = graphBuilder.payload(DeadBranchPayload.class)
 
-                .handleBy(idProcessor0)
+                .handle(idProcessor0)
 
                 .mergePoint(idProcessor0)
-                .on(ThreeStateStatus.A).handleBy(idProcessor1)
-                .on(ThreeStateStatus.B).handleBy(idProcessor2)
-                .on(ThreeStateStatus.AB).handleBy(idProcessor1)
-                .on(ThreeStateStatus.AB).handleBy(idProcessor2)
+                .on(ThreeStateStatus.A).handle(idProcessor1)
+                .on(ThreeStateStatus.B).handle(idProcessor2)
+                .on(ThreeStateStatus.AB).handle(idProcessor1)
+                .on(ThreeStateStatus.AB).handle(idProcessor2)
 
                 .mergePoint(idProcessor1)
                 .on(ThreeStateStatus.A).complete()
@@ -623,8 +624,8 @@ public class CompletableReactorTest {
 
         ReactorGraph<DetachedMergePointFromStartPointPayload> graph = graphBuilder.payload(DetachedMergePointFromStartPointPayload.class)
 
-                .handleBy(idProcessor0)
-                .handleBy(idProcessor1)
+                .handle(idProcessor0)
+                .handle(idProcessor1)
                 .merge(mergePoint)
 
                 .mergePoint(mergePoint)
@@ -696,8 +697,8 @@ public class CompletableReactorTest {
 
         ReactorGraph<DetachedMergePointFromProcessorsMergePointPayload> graph = graphBuilder.payload(DetachedMergePointFromProcessorsMergePointPayload.class)
 
-                .handleBy(idProcessor0)
-                .handleBy(idProcessor1)
+                .handle(idProcessor0)
+                .handle(idProcessor1)
 
                 .mergePoint(idProcessor0)
                 .onAny().merge(idProcessor1)
@@ -777,14 +778,14 @@ public class CompletableReactorTest {
                 .merge(mergePoint)
 
                 .mergePoint(mergePoint)
-                .on(OPTIONAL_DECISION.LEFT).handleBy(idProcessor2)
-                .on(OPTIONAL_DECISION.RIGHT).handleBy(idProcessor1)
+                .on(OPTIONAL_DECISION.LEFT).handle(idProcessor2)
+                .on(OPTIONAL_DECISION.RIGHT).handle(idProcessor1)
 
                 .mergePoint(idProcessor1)
-                .onAny().handleBy(idProcessor2)
+                .onAny().handle(idProcessor2)
 
                 .mergePoint(idProcessor2)
-                .onAny().handleBy(idProcessor3)
+                .onAny().handle(idProcessor3)
 
                 .mergePoint(idProcessor3)
                 .onAny().complete()
@@ -870,11 +871,11 @@ public class CompletableReactorTest {
                 .merge(decisionMergePoint)
 
                 .mergePoint(decisionMergePoint)
-                .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handleBy(idProcessor1)
-                .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handleBy(idProcessor2)
-                .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handleBy(idProcessor3)
-                .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handleBy(idProcessor1)
-                .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handleBy(idProcessor3)
+                .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handle(idProcessor1)
+                .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handle(idProcessor2)
+                .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handle(idProcessor3)
+                .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handle(idProcessor1)
+                .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handle(idProcessor3)
 
                 .mergePoint(idProcessor1)
                 .on(DeadTransitionBreaksFlow.FlowDecision.THREE).merge(idProcessor2)
@@ -884,7 +885,7 @@ public class CompletableReactorTest {
                 .onAny().merge(idProcessor3)
 
                 .mergePoint(idProcessor3)
-                .onAny().handleBy(idProcessor4)
+                .onAny().handle(idProcessor4)
 
                 .mergePoint(idProcessor4)
                 .onAny().complete()
@@ -966,8 +967,8 @@ public class CompletableReactorTest {
 
         val graph = graphBuilder.payload(CompletableReactorTest.StartPointMergeGroupPayload.class)
 
-                .handleBy(idProcessor0)
-                .handleBy(idProcessor1)
+                .handle(idProcessor0)
+                .handle(idProcessor1)
                 .merge(mergePoint2)
 
                 .mergePoint(idProcessor0)
@@ -977,7 +978,7 @@ public class CompletableReactorTest {
                 .onAny().merge(idProcessor3)
 
                 .mergePoint(mergePoint2)
-                .onAny().handleBy(idProcessor3)
+                .onAny().handle(idProcessor3)
 
                 .mergePoint(idProcessor3)
                 .onAny().complete()

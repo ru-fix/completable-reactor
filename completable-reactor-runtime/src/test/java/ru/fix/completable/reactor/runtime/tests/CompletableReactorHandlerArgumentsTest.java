@@ -65,7 +65,7 @@ public class CompletableReactorHandlerArgumentsTest {
 
 
         ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handleBy(processor)
+                .handle(processor)
 
                 .mergePoint(processor)
                 .onAny()
@@ -113,7 +113,7 @@ public class CompletableReactorHandlerArgumentsTest {
 
 
         ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handleBy(processor)
+                .handle(processor)
 
                 .mergePoint(processor)
                 .onAny()
@@ -163,7 +163,7 @@ public class CompletableReactorHandlerArgumentsTest {
 
 
         ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handleBy(processor)
+                .handle(processor)
 
                 .mergePoint(processor)
                 .onAny()
@@ -215,7 +215,7 @@ public class CompletableReactorHandlerArgumentsTest {
 
 
         ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handleBy(processor)
+                .handle(processor)
 
                 .mergePoint(processor)
                 .onAny()
@@ -270,7 +270,7 @@ public class CompletableReactorHandlerArgumentsTest {
 
 
         ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handleBy(processor)
+                .handle(processor)
 
                 .mergePoint(processor)
                 .onAny()
@@ -327,7 +327,7 @@ public class CompletableReactorHandlerArgumentsTest {
 
 
         ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handleBy(processor)
+                .handle(processor)
 
                 .mergePoint(processor)
                 .onAny()
@@ -386,7 +386,7 @@ public class CompletableReactorHandlerArgumentsTest {
 
 
         ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handleBy(processor)
+                .handle(processor)
 
                 .mergePoint(processor)
                 .onAny()
@@ -447,7 +447,7 @@ public class CompletableReactorHandlerArgumentsTest {
 
 
         ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handleBy(processor)
+                .handle(processor)
 
                 .mergePoint(processor)
                 .onAny()

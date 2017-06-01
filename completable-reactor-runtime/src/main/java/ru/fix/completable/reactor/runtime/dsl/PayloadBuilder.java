@@ -6,9 +6,9 @@ package ru.fix.completable.reactor.runtime.dsl;
  */
 public interface PayloadBuilder<PayloadType> {
 
-    PayloadBuilder<PayloadType> handleBy(Processor<? super PayloadType> processor);
+    PayloadBuilder<PayloadType> handle(Processor<? super PayloadType> processor);
 
-    PayloadBuilder<PayloadType> handleBy(Subgraph<? super PayloadType> subgraph);
+    PayloadBuilder<PayloadType> handle(Subgraph<? super PayloadType> subgraph);
 
     PayloadBuilder<PayloadType> merge(MergePoint<PayloadType> mergePoint);
 

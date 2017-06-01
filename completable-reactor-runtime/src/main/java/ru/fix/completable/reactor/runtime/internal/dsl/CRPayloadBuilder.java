@@ -35,7 +35,7 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
 
 
     @Override
-    public PayloadBuilder<PayloadType> handleBy(Processor<? super PayloadType> processor) {
+    public PayloadBuilder<PayloadType> handle(Processor<? super PayloadType> processor) {
         CRProcessor<?> crProcessor = (CRProcessor<?>) processor;
         graph.ensureProcessingItemRegistered(crProcessor);
 
@@ -44,7 +44,7 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
     }
 
     @Override
-    public PayloadBuilder<PayloadType> handleBy(Subgraph<? super PayloadType> subgraph) {
+    public PayloadBuilder<PayloadType> handle(Subgraph<? super PayloadType> subgraph) {
         CRSubgraph<?> crSubgraph = (CRSubgraph<?>) subgraph;
         graph.ensureProcessingItemRegistered(crSubgraph);
 

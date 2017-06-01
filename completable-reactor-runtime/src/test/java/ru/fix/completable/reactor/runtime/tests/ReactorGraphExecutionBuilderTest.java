@@ -43,9 +43,9 @@ public class ReactorGraphExecutionBuilderTest {
 
         ReactorGraph graph = graphBuilder.payload(CompletableReactorTest.PayloadWithMergeGroup.class)
 
-                .handleBy(idProcessor1)
-                .handleBy(idProcessor2)
-                .handleBy(idProcessor3)
+                .handle(idProcessor1)
+                .handle(idProcessor2)
+                .handle(idProcessor3)
 
                 .mergePoint(idProcessor1)
                 .onAny().merge(idProcessor2)
@@ -100,15 +100,15 @@ public class ReactorGraphExecutionBuilderTest {
 
         ReactorGraph<CompletableReactorTest.ParentGraphPayload> graph = graphBuilder.payload(CompletableReactorTest.ParentGraphPayload.class)
 
-                .handleBy(idProcessor1)
+                .handle(idProcessor1)
 
                 .mergePoint(idProcessor1)
-                .onAny().handleBy(idProcessor2)
-                .onAny().handleBy(subgraphProcessor)
+                .onAny().handle(idProcessor2)
+                .onAny().handle(subgraphProcessor)
 
                 .mergePoint(subgraphProcessor).onAny().merge(idProcessor2)
 
-                .mergePoint(idProcessor2).onAny().handleBy(idProcessor3)
+                .mergePoint(idProcessor2).onAny().handle(idProcessor3)
 
                 .mergePoint(idProcessor3).onAny().complete()
                 .coordinates()
@@ -162,8 +162,8 @@ public class ReactorGraphExecutionBuilderTest {
 
         ReactorGraph<CompletableReactorTest.DetachedMergePointFromStartPointPayload> graph = graphBuilder.payload(CompletableReactorTest.DetachedMergePointFromStartPointPayload.class)
 
-                .handleBy(idProcessor0)
-                .handleBy(idProcessor1)
+                .handle(idProcessor0)
+                .handle(idProcessor1)
                 .merge(mergePoint)
 
                 .mergePoint(mergePoint)
@@ -224,8 +224,8 @@ public class ReactorGraphExecutionBuilderTest {
 
         ReactorGraph<CompletableReactorTest.DetachedMergePointFromProcessorsMergePointPayload> graph = graphBuilder.payload(CompletableReactorTest.DetachedMergePointFromProcessorsMergePointPayload.class)
 
-                .handleBy(idProcessor0)
-                .handleBy(idProcessor1)
+                .handle(idProcessor0)
+                .handle(idProcessor1)
 
                 .mergePoint(idProcessor0)
                 .onAny().merge(idProcessor1)
@@ -285,8 +285,8 @@ public class ReactorGraphExecutionBuilderTest {
 
         val graph = graphBuilder.payload(CompletableReactorTest.StartPointMergeGroupPayload.class)
 
-                .handleBy(idProcessor0)
-                .handleBy(idProcessor1)
+                .handle(idProcessor0)
+                .handle(idProcessor1)
                 .merge(mergePoint2)
 
                 .mergePoint(idProcessor0)
@@ -296,7 +296,7 @@ public class ReactorGraphExecutionBuilderTest {
                 .onAny().merge(idProcessor3)
 
                 .mergePoint(mergePoint2)
-                .onAny().handleBy(idProcessor3)
+                .onAny().handle(idProcessor3)
 
                 .mergePoint(idProcessor3)
                 .onAny().complete()
