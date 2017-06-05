@@ -1036,26 +1036,22 @@ public class ReactorGraphExecutionBuilder {
          */
         final ImmutabilityControlLevel controlLevel = this.immutabilityControlLevel;
 
-        Object payloadClone;
-        ImmutabilityChecker.Snapshot payloadCloneSnapshot;
+        ImmutabilityChecker.Snapshot payloadSnapshot;
 
         try {
             if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
                 /**
                  * Invoke handling with immutability check.
-                 * Do not use origin payload, make two copies of payload.
                  */
-                payloadClone = immutabilityChecker.clone(payload);
-                payloadCloneSnapshot = immutabilityChecker.takeSnapshot(payloadClone);
+                payloadSnapshot = immutabilityChecker.takeSnapshot(payload);
 
-                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessingItem(), payloadClone);
+                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessingItem(), payload);
 
             } else {
                 /**
                  * Invoke handling without immutability check.
                  */
-                payloadClone = null;
-                payloadCloneSnapshot = null;
+                payloadSnapshot = null;
 
                 handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessingItem(), payload);
             }
@@ -1099,9 +1095,9 @@ public class ReactorGraphExecutionBuilder {
 
             if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
 
-                Optional<String> diff = immutabilityChecker.diff(payloadCloneSnapshot, payloadClone);
+                Optional<String> diff = immutabilityChecker.diff(payloadSnapshot, payload);
                 if (diff.isPresent()) {
-                    String message = String.format("Concurrent modification of payload %s. Diff: %s.",
+                    String message = String.format("Concurrent modification of payload %s detected. Diff: %s.",
                             debugSerializer.dumpObject(payload),
                             diff.get());
 

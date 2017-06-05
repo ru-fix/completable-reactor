@@ -12,7 +12,7 @@ import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder;
-import ru.fix.completable.reactor.runtime.immutability.ClonerWithReflectionImmutabilityChecker;
+import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
@@ -33,7 +33,7 @@ public class CompletableReactor implements AutoCloseable {
 
     private final Profiler profiler;
 
-    private final ImmutabilityChecker immutabilityChecker = new ClonerWithReflectionImmutabilityChecker();
+    private final ImmutabilityChecker immutabilityChecker = new ReflectionImmutabilityChecker();
 
     private final ThreadsafeCopyMaker threadsafeCopyMaker = new CopierThreadsafeCopyMaker();
 
