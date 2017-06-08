@@ -21,6 +21,9 @@ import java.util.function.Function;
  */
 public class GraphViewPane extends ScrollPane {
 
+    public static final double MIN_SCALE = 0.3;
+    public static final double MAX_SCALE = 2.0;
+
     GraphViewer.ActionListener actionListener;
 
 
@@ -68,7 +71,7 @@ public class GraphViewPane extends ScrollPane {
 
         pane.setOnScroll(scrollEvent ->
                 {
-                    if (!scrollEvent.isControlDown()) {
+                    if (scrollEvent.isControlDown()) {
                         scrollEvent.consume();
 
                         Double zoomChangeFactor;
@@ -78,8 +81,19 @@ public class GraphViewPane extends ScrollPane {
                             zoomChangeFactor = 1 / ZOOM_CHANGE_FACTOR;
                         }
 
-                        pane.setScaleX(pane.getScaleX() * zoomChangeFactor);
-                        pane.setScaleY(pane.getScaleY() * zoomChangeFactor);
+                        double newScaleX = pane.getScaleX() * zoomChangeFactor;
+                        double newScaleY = pane.getScaleY() * zoomChangeFactor;
+
+                        if(newScaleX > MIN_SCALE && newScaleX < MAX_SCALE && newScaleY > MIN_SCALE && newScaleY < MAX_SCALE){
+                            pane.setScaleX(newScaleX);
+                            pane.setScaleY(newScaleY);
+                        }
+
+                    } else {
+                        /**
+                         * To prevent strange behavior on scroll within IDE in MacOS
+                         */
+                        scrollEvent.consume();
                     }
                 }
         );
