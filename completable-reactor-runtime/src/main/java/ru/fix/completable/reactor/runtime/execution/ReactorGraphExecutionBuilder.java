@@ -1225,10 +1225,14 @@ public class ReactorGraphExecutionBuilder {
                     .collect(Collectors.toList());
 
             if (activeTransitions.size() <= 0) {
-                throw new IllegalStateException(String.format("Merging process returned %s status." +
-                                " But merge point of processor %s does not have matching transition for this status.",
-                        mergeStatus,
-                        processingVertex.getProcessingItem().getDebugName()));
+                throw new IllegalStateException(String.format("Merger function returned %s.%s status." +
+                                " But merge point of processor %s does not have matching transition for this status." +
+                                " Expected status from merger function one of: %s",
+                        mergeStatus.getDeclaringClass(), mergeStatus,
+                        processingVertex.getProcessingItem().getDebugName(),
+                        processingVertex.getMergePointTransition().stream()
+                                .map(CRReactorGraph.Transition::getDebugDescription)
+                                .collect(Collectors.joining(",", "{", "}"))));
             }
 
             /**

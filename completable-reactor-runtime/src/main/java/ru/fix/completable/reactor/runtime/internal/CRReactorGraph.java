@@ -183,6 +183,18 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             return model;
         }
 
+        public String getDebugDescription(){
+            if(isOnAny){
+                return "{onAny}";
+            } else if(mergeStatuses != null) {
+                return mergeStatuses.stream()
+                        .map(status -> status.getDeclaringClass() + "." + status)
+                        .collect(Collectors.joining(",", "{", "}"));
+            } else {
+                return "{INVALID}";
+            }
+        }
+
     }
 
     public enum ProcessingItemType {

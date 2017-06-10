@@ -1017,4 +1017,95 @@ public class CompletableReactorTest {
 
     }
 
+    @Reactored({
+            "Dead transition deactivates merge point and all outgoing transitions from this merge point",
+            "Expected result: {2, 0, 1, 3}"
+    })
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    static class DeadTransitionPayload extends IdListPayload {
+        public enum Status {
+            FIRST, SECOND
+        }
+    }
+
+    @Test
+    public void dead_transition_kills_merge_point_and_all_outgoing_transitions() throws Exception {
+
+        val idProcessor0 = graphBuilder.processor()
+                .forPayload(IdListPayload.class)
+                .withHandler(new IdProcessor(0)::handle)
+                .withMerger((pld, id) -> {
+                    pld.getIdSequence().add(id);
+                    return DeadTransitionPayload.Status.FIRST;
+                })
+                .buildProcessor()
+                .setId(0);
+
+        val idProcessor1 = buildProcessor(new IdProcessor(1)).setId(1);
+        val idProcessor2 = buildProcessor(new IdProcessor(2)).setId(2);
+        val idProcessor3 = buildProcessor(new IdProcessor(3)).setId(3);
+
+        val processor4mergerSemaphore = new Semaphore(0);
+
+        val idProcessor4 = graphBuilder.processor()
+                .forPayload(IdListPayload.class)
+                .withHandler(new IdProcessor(4)::handle)
+                .withMerger((pld, id) -> {
+                    try {
+                        pld.getIdSequence().add(id);
+                        processor4mergerSemaphore.acquire();
+                        return Status.OK;
+                    } catch (Exception exc) {
+                        throw new RuntimeException(exc);
+                    }
+                })
+                .buildProcessor()
+                .setId(4);
+
+        val graph = graphBuilder.payload(DeadTransitionPayload.class)
+                .handle(idProcessor0)
+                .handle(idProcessor1)
+                .handle(idProcessor2)
+
+                .mergePoint(idProcessor0)
+                .on(DeadTransitionPayload.Status.FIRST).handle(idProcessor4)
+                .on(DeadTransitionPayload.Status.SECOND).merge(idProcessor1)
+
+                .mergePoint(idProcessor1)
+                .onAny().merge(idProcessor2)
+
+                .mergePoint(idProcessor2)
+                .onAny().handle(idProcessor3)
+
+                .mergePoint(idProcessor3)
+                .onAny().complete()
+
+                .mergePoint(idProcessor4)
+                .onAny().complete()
+
+                .coordinates()
+
+                .buildGraph();
+
+        printGraph(graph);
+
+        reactor.registerReactorGraph(graph);
+
+        val resultFuture = reactor.submit(new DeadTransitionPayload()).getResultFuture();
+
+        //wait for 4 seconds to test if graph executes merge points 2, 3
+        try {
+            val result = resultFuture.get(4, TimeUnit.SECONDS);
+            fail("Failed to wait graph execution. " + result);
+        } catch (TimeoutException exc) {
+            //ignore timeout exception
+        }
+
+        processor4mergerSemaphore.release();
+
+        val result = resultFuture.get(5, TimeUnit.MINUTES);
+
+        assertEquals(Arrays.asList(0, 4), result.getIdSequence());
+    }
 }
