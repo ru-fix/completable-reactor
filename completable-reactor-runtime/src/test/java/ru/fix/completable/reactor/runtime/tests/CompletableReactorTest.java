@@ -295,8 +295,8 @@ public class CompletableReactorTest {
 
         CompletableReactor.Execution<PayloadWithMergeGroup> result = reactor.submit(new PayloadWithMergeGroup(), TimeUnit.DAYS.toMillis(1));
         try {
-            log.info("Waiting for 1 seconds to ensure that merge group waits all merge points to complete.");
-            result.getResultFuture().get(1, TimeUnit.SECONDS);
+            log.info("Waiting for 2 seconds to ensure that merge group waits all merge points to complete.");
+            result.getResultFuture().get(2, TimeUnit.SECONDS);
 
             fail("result future completed before processor 3 is complete");
         } catch (TimeoutException exc) {
@@ -1094,9 +1094,10 @@ public class CompletableReactorTest {
 
         val resultFuture = reactor.submit(new DeadTransitionPayload()).getResultFuture();
 
-        //wait for 4 seconds to test if graph executes merge points 2, 3
+
         try {
-            val result = resultFuture.get(4, TimeUnit.SECONDS);
+            log.info("wait for 2 seconds to test if graph executes merge points number 2 or 3");
+            val result = resultFuture.get(2, TimeUnit.SECONDS);
             fail("Failed to wait graph execution. " + result);
         } catch (TimeoutException exc) {
             //ignore timeout exception
