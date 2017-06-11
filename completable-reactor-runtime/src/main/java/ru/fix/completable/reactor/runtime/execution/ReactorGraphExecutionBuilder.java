@@ -699,8 +699,8 @@ public class ReactorGraphExecutionBuilder {
                              * Mark as terminal all outgoing flows from merge point
                              */
                             vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
-                        }
-                        if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isTerminal)) {
+
+                        } else if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isTerminal)) {
                             /**
                              * Terminal state reached.
                              * Mark as terminal all outgoing flows from merge point
@@ -749,29 +749,43 @@ public class ReactorGraphExecutionBuilder {
                                     merge(vertex, Optional.empty(), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
                                 }
                             } else {
-                                if (activeIncomingMergeFlows.size() == 0) {
+                                /**
+                                 * Processors MergePoint
+                                 */
+                                if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isDeadTransition)) {
                                     /**
-                                     * There is no active incoming merge flow for given merge point.
+                                     * Processors Merge Point have at least on incoming dead transition.
+                                     * Mark as dead all outgoing flows from merge point
                                      */
-                                    merge(vertex,
-                                            handlePayloadContext.getProcessorResult(),
-                                            handlePayloadContext.getPayload(),
-                                            executionResultFuture);
+                                    vertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
 
                                 } else {
-                                    if (activeIncomingMergeFlows.size() > 1) {
-                                        log.warn("There is more than one active incoming flow for merge point for processor {}." +
-                                                        " Payload context will be used only from one of active flows." +
-                                                        " Other active flows will be ignored." +
-                                                        " Possible loss of computation results." +
-                                                        " Possible concurrent modifications of payload.",
-                                                vertex.getProcessingItem().getDebugName());
-                                    }
 
-                                    merge(vertex,
-                                            handlePayloadContext.getProcessorResult(),
-                                            activeIncomingMergeFlows.get(0).getPayload(),
-                                            executionResultFuture);
+                                    if (activeIncomingMergeFlows.size() == 0) {
+                                        /**
+                                         * There is no active incoming merge flow for given merge point.
+                                         */
+                                        merge(vertex,
+                                                handlePayloadContext.getProcessorResult(),
+                                                handlePayloadContext.getPayload(),
+                                                executionResultFuture);
+
+                                    } else {
+
+                                        if (activeIncomingMergeFlows.size() > 1) {
+                                            log.warn("There is more than one active incoming flow for merge point for processor {}." +
+                                                            " Payload context will be used only from one of active flows." +
+                                                            " Other active flows will be ignored." +
+                                                            " Possible loss of computation results." +
+                                                            " Possible concurrent modifications of payload.",
+                                                    vertex.getProcessingItem().getDebugName());
+                                        }
+
+                                        merge(vertex,
+                                                handlePayloadContext.getProcessorResult(),
+                                                activeIncomingMergeFlows.get(0).getPayload(),
+                                                executionResultFuture);
+                                    }
                                 }
                             }
                         }
