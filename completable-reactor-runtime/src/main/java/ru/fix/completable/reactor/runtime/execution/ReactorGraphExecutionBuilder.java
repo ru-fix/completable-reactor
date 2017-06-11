@@ -556,14 +556,26 @@ public class ReactorGraphExecutionBuilder {
                                         processingItem.getProcessorFuture().complete(new HandlePayloadContext().setDeadTransition(true));
                                     } else {
                                         if (activeIncomingFlows.size() > 1) {
-                                            log.warn("There is more than one active incoming processor flow for processor {}." +
-                                                            " Payload context will be used only from one of active flows." +
-                                                            " Other active flows will be ignored." +
-                                                            " Possible loss of computation results. ",
-                                                    processingItem.getProcessingItem().getDebugName());
-                                        }
 
-                                        handle(processingItem, activeIncomingFlows.get(0), executionResultFuture);
+                                            /**
+                                             * Illegal graph state. Too many active incoming flows.
+                                             * Mark as terminal all outgoing flows
+                                             * Complete graph with exception
+                                             */
+                                            Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
+                                                    "There is more than one active incoming flow for processor %s." +
+                                                            " Reactor can not determinate from which of transitions take payload." +
+                                                            " Possible loss of computation results." +
+                                                            " Possible concurrent modifications of payload.",
+                                                    processingItem.getProcessingItem().getDebugName()));
+
+                                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
+                                            processingItem.getProcessorFuture().complete(new HandlePayloadContext().setTerminal(true));
+
+                                        } else {
+
+                                            handle(processingItem, activeIncomingFlows.get(0), executionResultFuture);
+                                        }
                                     }
                                 }
                             }
@@ -666,7 +678,7 @@ public class ReactorGraphExecutionBuilder {
                         }
 
                         /**
-                         * Active incoming merge flows, could be empty
+                         * Incoming merge flows, could be empty for processors Merge Point
                          */
                         List<MergePayloadContext> incomingMergeFlows = vertex.getIncomingMergeFlows().stream()
                                 .map(future -> {
@@ -720,7 +732,7 @@ public class ReactorGraphExecutionBuilder {
                                 if (activeIncomingMergeFlows.size() == 0) {
 
                                     /**
-                                     * Check that there are at least on incoming transition that marked as dead
+                                     * Check that there are at least one incoming transition that marked as dead
                                      */
                                     if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isDeadTransition)) {
                                         /**
@@ -738,55 +750,79 @@ public class ReactorGraphExecutionBuilder {
 
                                 } else {
                                     if (activeIncomingMergeFlows.size() > 1) {
-                                        log.warn("There is more than one active incoming flow for detached merge point for processor {}." +
-                                                        " Payload context will be used only from one of active flows." +
-                                                        " Other active flows will be ignored." +
+                                        /**
+                                         * Illegal graph state. Too many active incoming flows.
+                                         * Mark as terminal all outgoing flows from merge point
+                                         * Complete graph with exception
+                                         */
+                                        Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
+                                                "There is more than one active incoming flow for routing point %s." +
+                                                        " Reactor can not determinate from which of transitions take payload." +
                                                         " Possible loss of computation results." +
                                                         " Possible concurrent modifications of payload.",
-                                                vertex.getProcessingItem().getDebugName());
-                                    }
+                                                vertex.getProcessingItem().getDebugName()));
 
-                                    merge(vertex, Optional.empty(), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
+                                        executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
+                                        vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
+
+                                    } else {
+                                        /**
+                                         * Single active incoming merge flow
+                                         */
+                                        merge(vertex, Optional.empty(), activeIncomingMergeFlows.get(0).getPayload(), executionResultFuture);
+                                    }
                                 }
                             } else {
                                 /**
                                  * Processors MergePoint
                                  */
-                                if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isDeadTransition)) {
+                                if(incomingMergeFlows.size() == 0){
                                     /**
-                                     * Processors Merge Point have at least on incoming dead transition.
-                                     * Mark as dead all outgoing flows from merge point
+                                     * No incoming merge flows, only one flow from processors handle
                                      */
-                                    vertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
-
+                                    merge(vertex,
+                                            handlePayloadContext.getProcessorResult(),
+                                            handlePayloadContext.getPayload(),
+                                            executionResultFuture);
                                 } else {
-
+                                    /**
+                                     * Incoming merge flows exists. But some of them can be marked as dead.
+                                     */
                                     if (activeIncomingMergeFlows.size() == 0) {
                                         /**
                                          * There is no active incoming merge flow for given merge point.
+                                         * Mark merge point as dead.
                                          */
-                                        merge(vertex,
-                                                handlePayloadContext.getProcessorResult(),
-                                                handlePayloadContext.getPayload(),
-                                                executionResultFuture);
+                                        vertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
 
                                     } else {
 
                                         if (activeIncomingMergeFlows.size() > 1) {
-                                            log.warn("There is more than one active incoming flow for merge point for processor {}." +
-                                                            " Payload context will be used only from one of active flows." +
-                                                            " Other active flows will be ignored." +
+                                            /**
+                                             * Illegal graph state. Too many active incoming flows.
+                                             * Mark as terminal all outgoing flows from merge point
+                                             * Complete graph with exception
+                                             */
+                                            Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
+                                                    "There is more than one active incoming flow for merge point for processor %s." +
+                                                            " Reactor can not determinate from which of transitions take payload." +
                                                             " Possible loss of computation results." +
                                                             " Possible concurrent modifications of payload.",
-                                                    vertex.getProcessingItem().getDebugName());
-                                        }
+                                                    vertex.getProcessingItem().getDebugName()));
 
-                                        merge(vertex,
-                                                handlePayloadContext.getProcessorResult(),
-                                                activeIncomingMergeFlows.get(0).getPayload(),
-                                                executionResultFuture);
+                                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
+                                            vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
+
+                                        } else {
+
+                                            merge(vertex,
+                                                    handlePayloadContext.getProcessorResult(),
+                                                    activeIncomingMergeFlows.get(0).getPayload(),
+                                                    executionResultFuture);
+                                        }
                                     }
                                 }
+
                             }
                         }
                     })
