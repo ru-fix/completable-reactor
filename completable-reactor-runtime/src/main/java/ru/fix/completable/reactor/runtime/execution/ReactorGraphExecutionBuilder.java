@@ -118,10 +118,6 @@ public class ReactorGraphExecutionBuilder {
 
         CRReactorGraph.ProcessingItemInfo processingItemInfo;
 
-        CRReactorGraph.MergeGroup mergeGroup;
-
-        boolean inMergeGroup;
-
         final List<TransitionFuture<TransitionPayloadContext>> incomingProcessorFlows = new ArrayList<>();
 
         final List<TransitionFuture<MergePayloadContext>> incomingMergeFlows = new ArrayList<>();
@@ -136,18 +132,6 @@ public class ReactorGraphExecutionBuilder {
          * then we should complete mergePointFuture with Terminal MergePayloadContext
          */
         final List<CRReactorGraph.Transition> mergePointTransition = new ArrayList<>();
-
-        /**
-         * Completes when all incoming transitions to merge group from processors is complete.
-         * Merging process within merge group starts only after this future is completes.
-         */
-        CompletableFuture<Void> beforeMergeGroupMergingFuture;
-
-        /**
-         * Completes when all mergePoint merging within merge group is complete.
-         * Outgoing transitions from merge points within merge group activates only after this future is completes.
-         */
-        CompletableFuture<Void> afterMergeGroupMergingFuture;
     }
 
 
@@ -239,17 +223,7 @@ public class ReactorGraphExecutionBuilder {
 
         /**
          * Populate start point transition
-         *
-         * If there is any detached merge point linked with start point
-         * we have to execute its merge group first and only after merging process is done
-         * can launch other outgoing from start point transitions
-         *
-         * startPointAfterMergeGroupMergingFuture will be triggered right after startPointTransitionFuture if there
-         * is no MergeGroup for startPoint. Otherwise it will be triggered only after its MergeGroup evaluation.
          */
-        CompletableFuture<ReactorGraphExecutionBuilder.TransitionPayloadContext> startPointAfterMergeGroupMergingFuture
-                = new CompletableFuture<>();
-
         for (CRProcessingItem processor : crReactorGraph.getStartPoint().getProcessingItems()) {
             ProcessingVertex vertex = processingVertices.get(processor);
 
@@ -257,7 +231,6 @@ public class ReactorGraphExecutionBuilder {
                 /**
                  * In case of Detached merge point transition from start point is being converted
                  * to a {@link MergePayloadContext}
-                 * And we do no have to wait for startPointAfterMergeGroupMergingFuture
                  */
                 vertex.getIncomingMergeFlows().add(new TransitionFuture<>(
                         startPointTransitionFuture.thenApplyAsync(
@@ -267,85 +240,20 @@ public class ReactorGraphExecutionBuilder {
                                                 .setTerminal(transitionPayloadContext.isTerminal())
                                                 .setPayload(transitionPayloadContext.getPayload())
                                                 .setMergeResult(null))));
-
-
             } else {
-
                 vertex.getIncomingProcessorFlows()
-                        .add(new TransitionFuture<>(startPointAfterMergeGroupMergingFuture));
+                        .add(new TransitionFuture<>(startPointTransitionFuture));
             }
         }
 
         /**
-         * Populate MergePoints without MergeGroup
+         * Populate MergePoints
          */
-        crReactorGraph.getMergePoints().stream()
-                .filter(mergePoint -> !crReactorGraph.getMergeGroups().stream()
-                        .anyMatch(mergeGroup -> mergeGroup.getMergePoints().contains(mergePoint)))
-
+        crReactorGraph.getMergePoints()
                 .forEach(mergePoint -> {
                     ProcessingVertex mergePointVertex = processingVertices.get(mergePoint.asProcessingItem());
-                    mergePointVertex.setInMergeGroup(false);
-
                     mergePoint.getTransitions().forEach(mergePointVertex.getMergePointTransition()::add);
                 });
-
-        /**
-         * Populate MergePoints within MergeGroups
-         */
-        for (CRReactorGraph.MergeGroup mergeGroup : crReactorGraph.getMergeGroups()) {
-
-
-            /**
-             * Future that waits when all processors completes.
-             */
-            CompletableFuture<Void> beforeMergeGroupMergingFuture = CompletableFuture.allOf(
-                    mergeGroup.getMergePoints().stream()
-                            .map(mergePoint -> processingVertices.get(mergePoint.asProcessingItem()))
-                            .filter(vertex -> vertex.getProcessingItemInfo().getProcessingItemType() !=
-                                    CRReactorGraph.ProcessingItemType.MERGE_POINT)
-                            .map(ProcessingVertex::getProcessorFuture)
-                            .toArray(CompletableFuture[]::new)
-            );
-            /**
-             * Future that waits when all merging completes.
-             */
-            CompletableFuture<Void> afterMergeGroupMergingFuture = CompletableFuture.allOf(
-                    mergeGroup.getMergePoints().stream()
-                            .map(mergePoint -> processingVertices.get(mergePoint.asProcessingItem()))
-                            .map(ProcessingVertex::getMergePointFuture)
-                            .toArray(CompletableFuture[]::new)
-            );
-
-            /**
-             * Populate merge group information in vertexes
-             */
-            mergeGroup.getMergePoints().stream()
-                    .map(mergePoint -> processingVertices.get(mergePoint.asProcessingItem()))
-                    .forEach(vertex -> {
-                        vertex.setInMergeGroup(true);
-                        vertex.setMergeGroup(mergeGroup);
-                        vertex.beforeMergeGroupMergingFuture = beforeMergeGroupMergingFuture;
-                        vertex.afterMergeGroupMergingFuture = afterMergeGroupMergingFuture;
-                    });
-        }
-
-        /**
-         * Check if StartPoint have MergeGroup and initialize startPointAfterMergeGroupMergingFuture
-         */
-        if (crReactorGraph.getStartPointMergeGroup().isPresent()) {
-            for (val processingItem : crReactorGraph.getStartPoint().getProcessingItems()) {
-                ProcessingVertex vertex = processingVertices.get(processingItem);
-                if (vertex.getProcessingItemInfo().getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
-                    startPointTransitionFuture.thenCombine(vertex.getAfterMergeGroupMergingFuture(),
-                            (transitionPayloadContext, none) -> transitionPayloadContext)
-                            .thenApply(startPointAfterMergeGroupMergingFuture::complete);
-                    break;
-                }
-            }
-        } else {
-            startPointTransitionFuture.thenApply(startPointAfterMergeGroupMergingFuture::complete);
-        }
 
         /**
          * Populate transitions to all MergePoints
@@ -369,10 +277,6 @@ public class ReactorGraphExecutionBuilder {
             ProcessingVertex mergePointVertex = processingVertices.get(mergePoint.asProcessingItem());
 
             CompletableFuture<MergePayloadContext> mergePointFuture = mergePointVertex.getMergePointFuture();
-            CompletableFuture<MergePayloadContext> groupedMergePointFuture = mergePointVertex.isInMergeGroup() ?
-                    mergePointVertex.getAfterMergeGroupMergingFuture().
-                            thenComposeAsync(any -> mergePointVertex.getMergePointFuture()) :
-                    mergePointVertex.getMergePointFuture();
 
             for (CRReactorGraph.Transition transition : mergePoint.getTransitions()) {
 
@@ -390,7 +294,7 @@ public class ReactorGraphExecutionBuilder {
 
                         processingVertices.get(proc).getIncomingProcessorFlows().add(
                                 new TransitionFuture<>(
-                                        groupedMergePointFuture.thenApplyAsync(
+                                        mergePointFuture.thenApplyAsync(
                                                 context -> {
                                                     if (context.isTerminal()) {
                                                         return new TransitionPayloadContext().setTerminal(true);
@@ -415,29 +319,16 @@ public class ReactorGraphExecutionBuilder {
                     }
 
                     /**
-                     * Populate outgoing merge flow
-                     * if merge point in same merge group activate it as soon as merge point completes
-                     * if merge point does not belong to same merge group - activate it only whole merge group is complete
+                     * Populate outgoing merge flows
                      */
                     if (transition.getMerge() != null) {
                         CRProcessingItem proc = transition.getMerge();
 
                         ProcessingVertex transitionDestinationVertex = processingVertices.get(proc);
 
-                        CompletableFuture<MergePayloadContext> startTransitionFuture;
-
-                        if (mergePointVertex.isInMergeGroup()
-                                && transitionDestinationVertex.isInMergeGroup()
-                                && mergePointVertex.getMergeGroup().equals(transitionDestinationVertex.getMergeGroup())) {
-
-                            startTransitionFuture = mergePointFuture;
-                        } else {
-                            startTransitionFuture = groupedMergePointFuture;
-                        }
-
                         transitionDestinationVertex.getIncomingMergeFlows().add(
                                 new TransitionFuture<>(
-                                        startTransitionFuture.thenApplyAsync(
+                                        mergePointFuture.thenApplyAsync(
                                                 context -> {
                                                     if (context.isTerminal()) {
                                                         return new MergePayloadContext().setTerminal(true);
@@ -597,9 +488,6 @@ public class ReactorGraphExecutionBuilder {
                     .stream()
                     .map(TransitionFuture::getFuture)
                     .forEach(incomingFlows::add);
-            if (vertex.isInMergeGroup()) {
-                incomingFlows.add(vertex.beforeMergeGroupMergingFuture);
-            }
 
             if (vertex.getProcessingItemInfo().getProcessingItemType() != CRReactorGraph.ProcessingItemType.MERGE_POINT) {
                 /**

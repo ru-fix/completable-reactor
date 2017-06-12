@@ -64,13 +64,6 @@ public class ReactorGraphModel {
 
     @Data
     @Accessors(chain = true)
-    public static class MergeGroup {
-        final List<Identity> mergePoints = new ArrayList<>();
-        boolean includesStartPoint;
-    }
-
-    @Data
-    @Accessors(chain = true)
     public static class TransitionDocumentation {
         public String mergeStatus;
         public String[] docs;
@@ -195,11 +188,10 @@ public class ReactorGraphModel {
     }
 
     public enum Version {
-        v1_0_11,
-        v1_0_18
+        v1_0_20
     }
 
-    public Version version = Version.v1_0_18;
+    public Version version = Version.v1_0_20;
 
     public Payload payload;
     public StartPoint startPoint;
@@ -208,7 +200,6 @@ public class ReactorGraphModel {
     public final List<Subgraph> subgraphs = new ArrayList<>();
 
     public final List<MergePoint> mergePoints = new ArrayList<>();
-    public final List<MergeGroup> implicitMergeGroups = new ArrayList<>();
 
 
     public Source serializationPointSource;

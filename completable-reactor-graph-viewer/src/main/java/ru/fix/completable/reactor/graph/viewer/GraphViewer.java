@@ -67,9 +67,6 @@ public class GraphViewer {
                         case GOTO_SERIALIZATION_POINT:
                             actionListener.goToSource(graphViewPane.getGraph().serializationPointSource);
                             break;
-                        case SHOW_HIDE_MERGE_GROUPS:
-                            showMergeGroups(!isMergeGroupsShown());
-                            break;
                         default:
                             throw new IllegalStateException();
                     }
@@ -148,13 +145,5 @@ public class GraphViewer {
 
     public Scene getScene() {
         return scene;
-    }
-
-    public void showMergeGroups(boolean showMergeGroups){
-        graphViewPane.showMergeGroups(showMergeGroups);
-    }
-
-    public boolean isMergeGroupsShown(){
-        return graphViewPane.isMergeGroupShown();
     }
 }

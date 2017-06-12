@@ -5,5 +5,4 @@ package ru.fix.completable.reactor.graph.viewer;
  */
 public enum ShortcutType {
     GOTO_SERIALIZATION_POINT,
-    SHOW_HIDE_MERGE_GROUPS
 }

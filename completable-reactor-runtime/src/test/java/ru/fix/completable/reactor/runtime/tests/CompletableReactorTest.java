@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;
 
@@ -230,91 +229,6 @@ public class CompletableReactorTest {
         assertTrue("execution chain is complete when detached processor is finished", result.getChainExecutionFuture().isDone());
     }
 
-    @Reactored({
-            "Merge group joins merge points in a way that all outgoing transitions",
-            "will be activated only after all merge points from group complete.",
-            "Test will check that merge points outgoing transitions activated only after all incoming",
-            " into merge group transitions completes."
-    })
-    static class PayloadWithMergeGroup extends IdListPayload {
-    }
-
-    @Test
-    public void outgoing_transitions_should_wait_all_merges_to_complete_in_merge_grup() throws Exception {
-
-        AtomicBoolean mergingIsDone = new AtomicBoolean();
-
-        Processor<PayloadWithMergeGroup> idProcessor1 = graphBuilder.processor()
-                .forPayload(PayloadWithMergeGroup.class)
-                .withHandler(new IdProcessor(1)::handle)
-                .withMerger((pld, id) -> {
-                    mergingIsDone.set(true);
-
-                    pld.getIdSequence().add(id);
-                    return Status.OK;
-                })
-                .buildProcessor()
-                .setId(1);
-
-        Processor<IdListPayload> idProcessor2 = buildProcessor(new IdProcessor(2)).setId(2);
-
-        IdProcessor deferredProcessor3 = new IdProcessor(3).withLaunchingLatch();
-        Processor<IdListPayload> idProcessor3 = buildProcessor(deferredProcessor3).setId(3);
-
-
-        ReactorGraph graph = graphBuilder.payload(PayloadWithMergeGroup.class)
-
-                .handle(idProcessor1)
-                .handle(idProcessor2)
-                .handle(idProcessor3)
-
-                .mergePoint(idProcessor1)
-                .onAny().merge(idProcessor2)
-
-                .mergePoint(idProcessor2)
-                .onAny().merge(idProcessor3)
-
-                .mergePoint(idProcessor3)
-                .onAny().complete()
-
-                .coordinates()
-                .start(500, 100)
-                .proc(IdProcessor.class, 1, 372, 174)
-                .proc(IdProcessor.class, 2, 537, 180)
-                .proc(IdProcessor.class, 3, 685, 175)
-                .merge(IdProcessor.class, 1, 419, 275)
-                .merge(IdProcessor.class, 2, 583, 305)
-                .merge(IdProcessor.class, 3, 722, 330)
-                .complete(IdProcessor.class, 3, 721, 434)
-
-                .buildGraph();
-
-        printGraph(graph);
-
-        reactor.registerReactorGraph(graph);
-
-        CompletableReactor.Execution<PayloadWithMergeGroup> result = reactor.submit(new PayloadWithMergeGroup(), TimeUnit.DAYS.toMillis(1));
-        try {
-            log.info("Waiting for 2 seconds to ensure that merge group waits all merge points to complete.");
-            result.getResultFuture().get(2, TimeUnit.SECONDS);
-
-            fail("result future completed before processor 3 is complete");
-        } catch (TimeoutException exc) {
-        }
-        log.info("Done waiting.");
-
-        assertFalse("merging within merge group starts only after all processors handlings is complete", mergingIsDone.get());
-
-        deferredProcessor3.launch();
-
-        assertEquals(Arrays.asList(1, 2, 3), result.getResultFuture().get(3, TimeUnit.SECONDS).getIdSequence());
-
-        assertTrue("merging within merge group starts only after all processors handlings is complete", mergingIsDone.get());
-        assertTrue("result future is complete", result.getResultFuture().isDone());
-
-        result.getChainExecutionFuture().get(5, TimeUnit.SECONDS);
-        assertTrue("execution chain is complete", result.getChainExecutionFuture().isDone());
-    }
 
     @Reactored({
             "Subgraph behave the same way as plain processor.",
@@ -938,8 +852,7 @@ public class CompletableReactorTest {
     }
 
     @Test
-    public void merge_group_for_graph_with_detached_merge_point_connected_to_start_point_with_start_point_merge_group()
-            throws Exception {
+    public void graph_with_detached_merge_point_connected_to_start_point() throws Exception {
 
         val idProcessor0 = buildProcessor(new IdProcessor(0)).setId(0);
         val idProcessor1 = buildProcessor(new IdProcessor(1)).setId(1);
@@ -979,6 +892,7 @@ public class CompletableReactorTest {
 
                 .mergePoint(mergePoint2)
                 .onAny().handle(idProcessor3)
+                .onAny().merge(idProcessor0)
 
                 .mergePoint(idProcessor3)
                 .onAny().complete()

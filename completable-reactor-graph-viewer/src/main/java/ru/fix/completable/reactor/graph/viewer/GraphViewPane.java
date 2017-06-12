@@ -34,7 +34,6 @@ public class GraphViewPane extends ScrollPane {
 
     private Pane pane = new Pane();
 
-    private boolean isMergeGroupShown = false;
 
     private CoordinateTranslator translator = new CoordinateTranslator(WORLD_SIZE);
 
@@ -44,7 +43,6 @@ public class GraphViewPane extends ScrollPane {
     private HashMap<ReactorGraphModel.Identity, Node> processors = new HashMap<>();
     private HashMap<ReactorGraphModel.Identity, MergePointNode> mergePoints = new HashMap<>();
 
-    private ArrayList<MergeGroupNode> mergeGroups = new ArrayList<>();
 
     private List<GraphViewer.CoordinateItem> coordinateItems = new ArrayList<>();
     private ReactorGraphModel graphModel;
@@ -119,10 +117,6 @@ public class GraphViewPane extends ScrollPane {
         serializationMenuItem.setOnAction(event -> actionListener.goToSource(this.graphModel.serializationPointSource));
         contextMenu.getItems().add(serializationMenuItem);
 
-        val showMergeGropusMenuItem = new MenuItem();
-        showMergeGropusMenuItem.setOnAction(event -> showMergeGroups(!isMergeGroupShown));
-        contextMenu.getItems().add(showMergeGropusMenuItem);
-
         pane.setOnContextMenuRequested(contextMenuEvent -> {
 
             val serializationMenuText = new StringBuilder("Graph serialization location");
@@ -130,13 +124,6 @@ public class GraphViewPane extends ScrollPane {
                     shortcut -> serializationMenuText.append(" (" + shortcut.getTitle() + ")"));
 
             serializationMenuItem.setText(serializationMenuText.toString());
-
-
-            val showMergeGropusMenuText = new StringBuilder("Show/Hide MergeGroups");
-            shortcutProvider.apply(ShortcutType.SHOW_HIDE_MERGE_GROUPS).ifPresent(
-                    shortcut -> showMergeGropusMenuText.append(" (" + shortcut.getTitle() + ")"));
-
-            showMergeGropusMenuItem.setText(showMergeGropusMenuText.toString());
 
             contextMenu.show(pane, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
             contextMenuEvent.consume();
@@ -194,28 +181,6 @@ public class GraphViewPane extends ScrollPane {
             pane.getChildren().add(mergePointNode);
         }
 
-
-        /**
-         * MergeGrops
-         */
-        for (val mergeGroup : graphModel.getImplicitMergeGroups()) {
-
-            List<MergePointNode> groupMergePoints = new ArrayList<>();
-
-            mergeGroup.getMergePoints().stream().map(mergePoints::get).forEach(groupMergePoints::add);
-
-            val mergeGroupNode = new MergeGroupNode(
-                    translator,
-                    mergeGroup,
-                    mergeGroup.isIncludesStartPoint() ? Optional.of(startPointNode) : Optional.empty(),
-                    groupMergePoints,
-                    actionListener);
-
-            mergeGroupNode.setVisible(isMergeGroupShown);
-
-            mergeGroups.add(mergeGroupNode);
-            pane.getChildren().add(mergeGroupNode);
-        }
 
         /**
          * Draw transition lines
@@ -343,9 +308,6 @@ public class GraphViewPane extends ScrollPane {
             mergePointNode.toFront();
         }
 
-        for (val mergeGroupNode : mergeGroups) {
-            mergeGroupNode.toBack();
-        }
 
         /**
          * Scroll pane so Payload Node would be in center position
@@ -383,17 +345,5 @@ public class GraphViewPane extends ScrollPane {
                         (WORLD_SIZE / 2 + startPointX  + approximatePayloadNodeWidth / 2) / WORLD_SIZE);
             }
         });
-    }
-
-
-    public void showMergeGroups(boolean showMergeGroups) {
-        this.isMergeGroupShown = showMergeGroups;
-        for (MergeGroupNode mergeGroup : mergeGroups) {
-            mergeGroup.setVisible(showMergeGroups);
-        }
-    }
-
-    public boolean isMergeGroupShown() {
-        return isMergeGroupShown;
     }
 }
