@@ -1,5 +1,5 @@
 {
-  "version" : "v1_0_11",
+  "version" : "v1_0_20",
   "payload" : {
     "payloadName" : "SubscribePayload",
     "payloadClass" : "ru.fix.completable.reactor.example.chain.SubscribePayload",
@@ -13,12 +13,12 @@
     "coordinatesSource" : {
       "className" : "ru.fix.completable.reactor.example.Configuration",
       "fileName" : "Configuration.java",
-      "fileNameLine" : 299
+      "fileNameLine" : 300
     },
     "builderPayloadSource" : {
       "className" : "ru.fix.completable.reactor.example.Configuration",
       "fileName" : "Configuration.java",
-      "fileNameLine" : 269
+      "fileNameLine" : 270
     },
     "processingItems" : [ {
       "type" : "PROCESSOR",
@@ -43,7 +43,7 @@
     "coordinatesSource" : {
       "className" : "ru.fix.completable.reactor.example.Configuration",
       "fileName" : "Configuration.java",
-      "fileNameLine" : 300
+      "fileNameLine" : 301
     },
     "processorDoc" : [ "Withdraw money from Bank account ", "for given user." ],
     "handlerTitle" : "withdrawMoney",
@@ -66,7 +66,7 @@
     "coordinatesSource" : {
       "className" : "ru.fix.completable.reactor.example.Configuration",
       "fileName" : "Configuration.java",
-      "fileNameLine" : 301
+      "fileNameLine" : 302
     },
     "processorDoc" : [ "Send notifications to external system", "Notification about events like purchase.", "We do not need to wait result of notification action for building correct response.", "So we attach notification completable future to async task manager and continue without waiting for its result" ],
     "handlerTitle" : "sendPurchaseNotification",
@@ -89,7 +89,7 @@
     "coordinatesSource" : {
       "className" : "ru.fix.completable.reactor.example.Configuration",
       "fileName" : "Configuration.java",
-      "fileNameLine" : 302
+      "fileNameLine" : 303
     },
     "processorDoc" : [ "Service information processor load data for given service from database.", "Service could be not active. In that case purchase request will be denied." ],
     "handlerTitle" : "loadServiceInformation",
@@ -112,7 +112,7 @@
     "coordinatesSource" : {
       "className" : "ru.fix.completable.reactor.example.Configuration",
       "fileName" : "Configuration.java",
-      "fileNameLine" : 303
+      "fileNameLine" : 304
     },
     "processorDoc" : [ "Store information about transactions.", "Each transaction have user id and money amount" ],
     "handlerTitle" : "logTransactioin",
@@ -135,7 +135,7 @@
     "coordinatesSource" : {
       "className" : "ru.fix.completable.reactor.example.Configuration",
       "fileName" : "Configuration.java",
-      "fileNameLine" : 304
+      "fileNameLine" : 305
     },
     "processorDoc" : [ "Logs information about usres actions.", "Log contains user id" ],
     "handlerTitle" : "logAction",
@@ -158,7 +158,7 @@
     "coordinatesSource" : {
       "className" : "ru.fix.completable.reactor.example.Configuration",
       "fileName" : "Configuration.java",
-      "fileNameLine" : 305
+      "fileNameLine" : 306
     },
     "processorDoc" : [ "UserProfileServices loads information about user from remote database.", "User profile contains information whether user is blocked or not." ],
     "handlerTitle" : "loadUserProfileById",
@@ -187,7 +187,7 @@
       "fileNameLine" : 44
     },
     "mergerTitle" : "updateUserProfile",
-    "mergerDocs" : null,
+    "mergerDocs" : [ ],
     "transitions" : [ {
       "mergeStatuses" : [ "STOP" ],
       "isOnAny" : false,
@@ -201,12 +201,12 @@
       "completeCoordinatesSource" : {
         "className" : "ru.fix.completable.reactor.example.Configuration",
         "fileName" : "Configuration.java",
-        "fileNameLine" : 314
+        "fileNameLine" : 315
       },
       "completeSource" : {
         "className" : "ru.fix.completable.reactor.example.Configuration",
         "fileName" : "Configuration.java",
-        "fileNameLine" : 274
+        "fileNameLine" : 275
       },
       "transitionsDoc" : [ {
         "mergeStatus" : "STOP",
@@ -217,7 +217,7 @@
         "STOP" : {
           "className" : "ru.fix.completable.reactor.example.Configuration",
           "fileName" : "Configuration.java",
-          "fileNameLine" : 274
+          "fileNameLine" : 275
         }
       },
       "mergeStatusSources" : {
@@ -227,8 +227,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : true,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : true
     }, {
       "mergeStatuses" : [ "CONTINUE" ],
       "isOnAny" : false,
@@ -254,7 +254,7 @@
         "CONTINUE" : {
           "className" : "ru.fix.completable.reactor.example.Configuration",
           "fileName" : "Configuration.java",
-          "fileNameLine" : 275
+          "fileNameLine" : 276
         }
       },
       "mergeStatusSources" : {
@@ -264,8 +264,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : false,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : false
     } ]
   }, {
     "identity" : {
@@ -284,13 +284,13 @@
       "fileNameLine" : 231
     },
     "mergerTitle" : "updateServiceInfo",
-    "mergerDocs" : null,
+    "mergerDocs" : [ ],
     "transitions" : [ {
       "mergeStatuses" : [ "CONTINUE" ],
       "isOnAny" : false,
       "isComplete" : false,
       "mergeProcessingItem" : {
-        "type" : "MERGE_POINT",
+        "type" : "ROUTE_POINT",
         "className" : null,
         "id" : 0
       },
@@ -310,7 +310,7 @@
         "CONTINUE" : {
           "className" : "ru.fix.completable.reactor.example.Configuration",
           "fileName" : "Configuration.java",
-          "fileNameLine" : 278
+          "fileNameLine" : 279
         }
       },
       "mergeStatusSources" : {
@@ -320,8 +320,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : false,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : false
     }, {
       "mergeStatuses" : [ "STOP" ],
       "isOnAny" : false,
@@ -335,12 +335,12 @@
       "completeCoordinatesSource" : {
         "className" : "ru.fix.completable.reactor.example.Configuration",
         "fileName" : "Configuration.java",
-        "fileNameLine" : 312
+        "fileNameLine" : 313
       },
       "completeSource" : {
         "className" : "ru.fix.completable.reactor.example.Configuration",
         "fileName" : "Configuration.java",
-        "fileNameLine" : 279
+        "fileNameLine" : 280
       },
       "transitionsDoc" : [ {
         "mergeStatus" : "STOP",
@@ -351,7 +351,7 @@
         "STOP" : {
           "className" : "ru.fix.completable.reactor.example.Configuration",
           "fileName" : "Configuration.java",
-          "fileNameLine" : 279
+          "fileNameLine" : 280
         }
       },
       "mergeStatusSources" : {
@@ -361,12 +361,12 @@
           "fileNameLine" : null
         }
       },
-      "complete" : true,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : true
     } ]
   }, {
     "identity" : {
-      "type" : "MERGE_POINT",
+      "type" : "ROUTE_POINT",
       "className" : null,
       "id" : 0
     },
@@ -407,7 +407,7 @@
         "WITHDRAWAL" : {
           "className" : "ru.fix.completable.reactor.example.Configuration",
           "fileName" : "Configuration.java",
-          "fileNameLine" : 282
+          "fileNameLine" : 283
         }
       },
       "mergeStatusSources" : {
@@ -417,8 +417,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : false,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : false
     }, {
       "mergeStatuses" : [ "NO_WITHDRAWAL" ],
       "isOnAny" : false,
@@ -427,43 +427,6 @@
       "handleByProcessingItem" : {
         "type" : "PROCESSOR",
         "className" : "UserLogProcessor",
-        "id" : 0
-      },
-      "completeCoordinates" : {
-        "x" : 100,
-        "y" : 100
-      },
-      "completeCoordinatesSource" : null,
-      "completeSource" : null,
-      "transitionsDoc" : [ {
-        "mergeStatus" : "NO_WITHDRAWAL",
-        "docs" : [ "No withdrawal required" ]
-      } ],
-      "transitionOnAnySource" : null,
-      "transitionOnStatusSource" : {
-        "NO_WITHDRAWAL" : {
-          "className" : "ru.fix.completable.reactor.example.Configuration",
-          "fileName" : "Configuration.java",
-          "fileNameLine" : 283
-        }
-      },
-      "mergeStatusSources" : {
-        "NO_WITHDRAWAL" : {
-          "className" : "ru.fix.completable.reactor.example.MergeStatus",
-          "fileName" : null,
-          "fileNameLine" : null
-        }
-      },
-      "complete" : false,
-      "onAny" : false
-    }, {
-      "mergeStatuses" : [ "NO_WITHDRAWAL" ],
-      "isOnAny" : false,
-      "isComplete" : false,
-      "mergeProcessingItem" : null,
-      "handleByProcessingItem" : {
-        "type" : "PROCESSOR",
-        "className" : "NotificationProcessor",
         "id" : 0
       },
       "completeCoordinates" : {
@@ -491,8 +454,45 @@
           "fileNameLine" : null
         }
       },
-      "complete" : false,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : false
+    }, {
+      "mergeStatuses" : [ "NO_WITHDRAWAL" ],
+      "isOnAny" : false,
+      "isComplete" : false,
+      "mergeProcessingItem" : null,
+      "handleByProcessingItem" : {
+        "type" : "PROCESSOR",
+        "className" : "NotificationProcessor",
+        "id" : 0
+      },
+      "completeCoordinates" : {
+        "x" : 100,
+        "y" : 100
+      },
+      "completeCoordinatesSource" : null,
+      "completeSource" : null,
+      "transitionsDoc" : [ {
+        "mergeStatus" : "NO_WITHDRAWAL",
+        "docs" : [ "No withdrawal required" ]
+      } ],
+      "transitionOnAnySource" : null,
+      "transitionOnStatusSource" : {
+        "NO_WITHDRAWAL" : {
+          "className" : "ru.fix.completable.reactor.example.Configuration",
+          "fileName" : "Configuration.java",
+          "fileNameLine" : 285
+        }
+      },
+      "mergeStatusSources" : {
+        "NO_WITHDRAWAL" : {
+          "className" : "ru.fix.completable.reactor.example.MergeStatus",
+          "fileName" : null,
+          "fileNameLine" : null
+        }
+      },
+      "onAny" : false,
+      "complete" : false
     } ]
   }, {
     "identity" : {
@@ -511,7 +511,7 @@
       "fileNameLine" : 127
     },
     "mergerTitle" : "updateNewAmount",
-    "mergerDocs" : null,
+    "mergerDocs" : [ ],
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,
@@ -532,12 +532,12 @@
       "transitionOnAnySource" : {
         "className" : "ru.fix.completable.reactor.example.Configuration",
         "fileName" : "Configuration.java",
-        "fileNameLine" : 287
+        "fileNameLine" : 288
       },
       "transitionOnStatusSource" : { },
       "mergeStatusSources" : { },
-      "complete" : false,
-      "onAny" : true
+      "onAny" : true,
+      "complete" : false
     } ]
   }, {
     "identity" : {
@@ -556,7 +556,7 @@
       "fileNameLine" : 71
     },
     "mergerTitle" : null,
-    "mergerDocs" : null,
+    "mergerDocs" : [ ],
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,
@@ -577,12 +577,12 @@
       "transitionOnAnySource" : {
         "className" : "ru.fix.completable.reactor.example.Configuration",
         "fileName" : "Configuration.java",
-        "fileNameLine" : 291
+        "fileNameLine" : 292
       },
       "transitionOnStatusSource" : { },
       "mergeStatusSources" : { },
-      "complete" : false,
-      "onAny" : true
+      "onAny" : true,
+      "complete" : false
     } ]
   }, {
     "identity" : {
@@ -601,7 +601,7 @@
       "fileNameLine" : 80
     },
     "mergerTitle" : null,
-    "mergerDocs" : null,
+    "mergerDocs" : [ ],
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,
@@ -615,40 +615,24 @@
       "completeCoordinatesSource" : {
         "className" : "ru.fix.completable.reactor.example.Configuration",
         "fileName" : "Configuration.java",
-        "fileNameLine" : 313
+        "fileNameLine" : 314
       },
       "completeSource" : {
         "className" : "ru.fix.completable.reactor.example.Configuration",
         "fileName" : "Configuration.java",
-        "fileNameLine" : 296
+        "fileNameLine" : 297
       },
       "transitionsDoc" : [ ],
       "transitionOnAnySource" : {
         "className" : "ru.fix.completable.reactor.example.Configuration",
         "fileName" : "Configuration.java",
-        "fileNameLine" : 295
+        "fileNameLine" : 296
       },
       "transitionOnStatusSource" : { },
       "mergeStatusSources" : { },
-      "complete" : true,
-      "onAny" : true
+      "onAny" : true,
+      "complete" : true
     } ]
-  } ],
-  "implicitMergeGroups" : [ {
-    "mergePoints" : [ {
-      "type" : "PROCESSOR",
-      "className" : "UserProfileService",
-      "id" : 0
-    }, {
-      "type" : "PROCESSOR",
-      "className" : "ServiceInfoProcessor",
-      "id" : 0
-    }, {
-      "type" : "MERGE_POINT",
-      "className" : null,
-      "id" : 0
-    } ],
-    "includesStartPoint" : false
   } ],
   "serializationPointSource" : {
     "className" : "ru.fix.completable.reactor.example.ConfigurationTest",
@@ -658,11 +642,11 @@
   "coordinatesSource" : {
     "className" : "ru.fix.completable.reactor.example.Configuration",
     "fileName" : "Configuration.java",
-    "fileNameLine" : 298
+    "fileNameLine" : 299
   },
   "buildGraphSource" : {
     "className" : "ru.fix.completable.reactor.example.Configuration",
     "fileName" : "Configuration.java",
-    "fileNameLine" : 316
+    "fileNameLine" : 317
   }
 }

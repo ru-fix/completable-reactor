@@ -1,5 +1,5 @@
 {
-  "version" : "v1_0_11",
+  "version" : "v1_0_20",
   "payload" : {
     "payloadName" : "PurchasePayload",
     "payloadClass" : "ru.fix.completable.reactor.example.chain.PurchasePayload",
@@ -187,7 +187,7 @@
       "fileNameLine" : 44
     },
     "mergerTitle" : "updateUserProfile",
-    "mergerDocs" : null,
+    "mergerDocs" : [ ],
     "transitions" : [ {
       "mergeStatuses" : [ "STOP" ],
       "isOnAny" : false,
@@ -227,8 +227,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : true,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : true
     }, {
       "mergeStatuses" : [ "CONTINUE" ],
       "isOnAny" : false,
@@ -264,8 +264,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : false,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : false
     } ]
   }, {
     "identity" : {
@@ -284,7 +284,7 @@
       "fileNameLine" : 153
     },
     "mergerTitle" : "updateServiceInfo",
-    "mergerDocs" : null,
+    "mergerDocs" : [ ],
     "transitions" : [ {
       "mergeStatuses" : [ "WITHDRAWAL" ],
       "isOnAny" : false,
@@ -320,8 +320,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : false,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : false
     }, {
       "mergeStatuses" : [ "NO_WITHDRAWAL" ],
       "isOnAny" : false,
@@ -357,8 +357,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : false,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : false
     }, {
       "mergeStatuses" : [ "NO_WITHDRAWAL" ],
       "isOnAny" : false,
@@ -394,8 +394,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : false,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : false
     }, {
       "mergeStatuses" : [ "STOP" ],
       "isOnAny" : false,
@@ -435,8 +435,8 @@
           "fileNameLine" : null
         }
       },
-      "complete" : true,
-      "onAny" : false
+      "onAny" : false,
+      "complete" : true
     } ]
   }, {
     "identity" : {
@@ -480,8 +480,8 @@
       },
       "transitionOnStatusSource" : { },
       "mergeStatusSources" : { },
-      "complete" : false,
-      "onAny" : true
+      "onAny" : true,
+      "complete" : false
     } ]
   }, {
     "identity" : {
@@ -500,7 +500,7 @@
       "fileNameLine" : 71
     },
     "mergerTitle" : null,
-    "mergerDocs" : null,
+    "mergerDocs" : [ ],
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,
@@ -525,8 +525,8 @@
       },
       "transitionOnStatusSource" : { },
       "mergeStatusSources" : { },
-      "complete" : false,
-      "onAny" : true
+      "onAny" : true,
+      "complete" : false
     } ]
   }, {
     "identity" : {
@@ -545,7 +545,7 @@
       "fileNameLine" : 80
     },
     "mergerTitle" : null,
-    "mergerDocs" : null,
+    "mergerDocs" : [ ],
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,
@@ -574,21 +574,9 @@
       },
       "transitionOnStatusSource" : { },
       "mergeStatusSources" : { },
-      "complete" : true,
-      "onAny" : true
+      "onAny" : true,
+      "complete" : true
     } ]
-  } ],
-  "implicitMergeGroups" : [ {
-    "mergePoints" : [ {
-      "type" : "PROCESSOR",
-      "className" : "UserProfileService",
-      "id" : 0
-    }, {
-      "type" : "PROCESSOR",
-      "className" : "ServiceInfoProcessor",
-      "id" : 0
-    } ],
-    "includesStartPoint" : false
   } ],
   "serializationPointSource" : {
     "className" : "ru.fix.completable.reactor.example.ConfigurationTest",

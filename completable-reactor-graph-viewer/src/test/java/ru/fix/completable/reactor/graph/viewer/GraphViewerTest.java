@@ -92,7 +92,7 @@ public class GraphViewerTest extends Application {
     @Ignore
     @Test
     public void open_grpah_with_subgraph() throws Exception{
-        GraphViewerTest.payload = "ParentGraphPayload.rg";
+        GraphViewerTest.payload = "SubscribePayload.rg";
         Application.launch();
 
     }

@@ -26,7 +26,7 @@ class MergePointNode extends VBox  implements CentrableNode, BorderableNode{
 
     final Pane mergePointCircle = new Pane();
 
-    private Double radius = 20.0;
+    private Double radius = 14.0;
 
     public MergePointNode(
             CoordinateTranslator translator,
@@ -40,8 +40,16 @@ class MergePointNode extends VBox  implements CentrableNode, BorderableNode{
 
         this.getChildren().add(mergePointCircle);
 
-        this.getStyleClass().add("mergePointNode");
-        this.mergePointCircle.getStyleClass().add("mergePoint");
+        switch (mergePoint.getIdentity().getType()) {
+            case SUBGRAPH:
+            case PROCESSOR:
+                this.getStyleClass().add("mergePointNode");
+                this.mergePointCircle.getStyleClass().add("mergePoint");
+                break;
+            case ROUTE_POINT:
+                this.getStyleClass().add("routePointNode");
+                this.mergePointCircle.getStyleClass().add("routePoint");
+        }
 
         this.setLayoutX(translator.translateX(mergePoint.coordinates.x));
         this.setLayoutY(translator.translateY(mergePoint.coordinates.y));
