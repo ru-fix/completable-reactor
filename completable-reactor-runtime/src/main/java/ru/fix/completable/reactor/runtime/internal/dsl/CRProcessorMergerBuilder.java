@@ -21,12 +21,17 @@ public class CRProcessorMergerBuilder<PayloadType, ProcessorResult> implements P
 
     @Override
     public ProcessorDescription<PayloadType> withMerger(ProcessorMerger<PayloadType, ProcessorResult> processorMerger) {
-        return withMerger(null, null, processorMerger);
+        return withMerger(null, new String[]{}, processorMerger);
     }
 
     @Override
     public ProcessorDescription<PayloadType> withMerger(String title, ProcessorMerger<PayloadType, ProcessorResult> processorMerger) {
-        return withMerger(title, null, processorMerger);
+        return withMerger(title, new String[]{}, processorMerger);
+    }
+
+    @Override
+    public ProcessorDescription<PayloadType> withMerger(String title, String doc, ProcessorMerger<PayloadType, ProcessorResult> processorMerger) {
+        return withMerger(title, new String[]{doc}, processorMerger);
     }
 
     @Override
@@ -39,7 +44,7 @@ public class CRProcessorMergerBuilder<PayloadType, ProcessorResult> implements P
             title = mergerMethod.getMethod().getName();
         }
 
-        if(docs == null && mergerMethod != null) {
+        if((docs == null || docs.length == 0) && mergerMethod != null) {
             docs = mergerMethod.getAnnotation().map(Reactored::value).orElse(null);
         }
 

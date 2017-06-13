@@ -22,12 +22,17 @@ public class CRSubgraphMergerBuilder<PayloadType, SubgraphResult> implements Sub
 
     @Override
     public SubgraphDescription<PayloadType> withMerger(SubgraphMerger<PayloadType, SubgraphResult> subgraphMerger) {
-        return withMerger(null, null, subgraphMerger);
+        return withMerger(null, new String[]{}, subgraphMerger);
     }
 
     @Override
     public SubgraphDescription<PayloadType> withMerger(String title, SubgraphMerger<PayloadType, SubgraphResult> subgraphMerger) {
-        return withMerger(title, null, subgraphMerger);
+        return withMerger(title, new String[]{}, subgraphMerger);
+    }
+
+    @Override
+    public SubgraphDescription<PayloadType> withMerger(String title, String doc, SubgraphMerger<PayloadType, SubgraphResult> subgraphMerger) {
+        return withMerger(title, new String[]{doc}, subgraphMerger);
     }
 
     @Override
@@ -40,7 +45,7 @@ public class CRSubgraphMergerBuilder<PayloadType, SubgraphResult> implements Sub
             title = annotatedMethod.getMethod().getName();
         }
 
-        if(docs == null && annotatedMethod != null) {
+        if((docs == null || docs.length == 0) && annotatedMethod != null) {
             docs = annotatedMethod.getAnnotation().map(Reactored::value).orElse(null);
         }
 

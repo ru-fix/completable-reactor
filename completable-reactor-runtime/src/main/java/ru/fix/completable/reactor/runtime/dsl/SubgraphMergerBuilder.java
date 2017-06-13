@@ -9,6 +9,8 @@ public interface SubgraphMergerBuilder<PayloadType, SubgraphResult> {
 
     SubgraphDescription<PayloadType> withMerger(String title, SubgraphMerger<PayloadType, SubgraphResult> subgraphMerger);
 
+    SubgraphDescription<PayloadType> withMerger(String title, String doc, SubgraphMerger<PayloadType, SubgraphResult> subgraphMerger);
+
     SubgraphDescription<PayloadType> withMerger(String title, String[] docs, SubgraphMerger<PayloadType, SubgraphResult> subgraphMerger);
 
     SubgraphDescription<PayloadType> withoutMerger();
