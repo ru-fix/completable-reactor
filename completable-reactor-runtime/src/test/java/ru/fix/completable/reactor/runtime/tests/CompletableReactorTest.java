@@ -999,6 +999,19 @@ public class CompletableReactorTest {
                 .onAny().complete()
 
                 .coordinates()
+                .start(461, 96)
+                .proc(IdProcessor.class, 0, 366, 177)
+                .proc(IdProcessor.class, 1, 502, 178)
+                .proc(IdProcessor.class, 2, 649, 181)
+                .proc(IdProcessor.class, 3, 708, 396)
+                .proc(IdProcessor.class, 4, 289, 339)
+                .merge(IdProcessor.class, 0, 407, 250)
+                .merge(IdProcessor.class, 1, 538, 304)
+                .merge(IdProcessor.class, 2, 682, 315)
+                .merge(IdProcessor.class, 3, 755, 477)
+                .merge(IdProcessor.class, 4, 330, 436)
+                .complete(IdProcessor.class, 3, 820, 514)
+                .complete(IdProcessor.class, 4, 396, 475)
 
                 .buildGraph();
 
