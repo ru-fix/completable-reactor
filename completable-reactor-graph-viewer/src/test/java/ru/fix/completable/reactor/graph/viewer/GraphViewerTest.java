@@ -83,7 +83,7 @@ public class GraphViewerTest extends Application {
      */
     @Ignore
     @Test
-    public void open_pane() throws Exception {
+    public void open_graph_for_purchase_payload() throws Exception {
         GraphViewerTest.payload = "PurchasePayload.rg";
         Application.launch();
     }
@@ -91,7 +91,7 @@ public class GraphViewerTest extends Application {
 
     @Ignore
     @Test
-    public void open_grpah_with_subgraph() throws Exception{
+    public void open_graph_for_subscribe_payload() throws Exception{
         GraphViewerTest.payload = "SubscribePayload.rg";
         Application.launch();
 

@@ -187,7 +187,7 @@
       "fileNameLine" : 44
     },
     "mergerTitle" : "updateUserProfile",
-    "mergerDocs" : [ ],
+    "mergerDocs" : null,
     "transitions" : [ {
       "mergeStatuses" : [ "STOP" ],
       "isOnAny" : false,
@@ -284,13 +284,13 @@
       "fileNameLine" : 231
     },
     "mergerTitle" : "updateServiceInfo",
-    "mergerDocs" : [ ],
+    "mergerDocs" : null,
     "transitions" : [ {
       "mergeStatuses" : [ "CONTINUE" ],
       "isOnAny" : false,
       "isComplete" : false,
       "mergeProcessingItem" : {
-        "type" : "ROUTE_POINT",
+        "type" : "MERGE_POINT",
         "className" : null,
         "id" : 0
       },
@@ -366,7 +366,7 @@
     } ]
   }, {
     "identity" : {
-      "type" : "ROUTE_POINT",
+      "type" : "MERGE_POINT",
       "className" : null,
       "id" : 0
     },
@@ -511,7 +511,7 @@
       "fileNameLine" : 127
     },
     "mergerTitle" : "updateNewAmount",
-    "mergerDocs" : [ ],
+    "mergerDocs" : null,
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,
@@ -556,7 +556,7 @@
       "fileNameLine" : 71
     },
     "mergerTitle" : null,
-    "mergerDocs" : [ ],
+    "mergerDocs" : null,
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,
@@ -601,7 +601,7 @@
       "fileNameLine" : 80
     },
     "mergerTitle" : null,
-    "mergerDocs" : [ ],
+    "mergerDocs" : null,
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,

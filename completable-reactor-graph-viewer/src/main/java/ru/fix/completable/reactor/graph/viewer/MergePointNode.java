@@ -46,9 +46,9 @@ class MergePointNode extends VBox  implements CentrableNode, BorderableNode{
                 this.getStyleClass().add("mergePointNode");
                 this.mergePointCircle.getStyleClass().add("mergePoint");
                 break;
-            case ROUTE_POINT:
-                this.getStyleClass().add("routePointNode");
-                this.mergePointCircle.getStyleClass().add("routePoint");
+            case MERGE_POINT:
+                this.getStyleClass().add("detachedMergePointNode");
+                this.mergePointCircle.getStyleClass().add("detachedMergePoint");
         }
 
         this.setLayoutX(translator.translateX(mergePoint.coordinates.x));

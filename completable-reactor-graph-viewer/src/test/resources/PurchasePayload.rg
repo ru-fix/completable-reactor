@@ -187,7 +187,7 @@
       "fileNameLine" : 44
     },
     "mergerTitle" : "updateUserProfile",
-    "mergerDocs" : [ ],
+    "mergerDocs" : null,
     "transitions" : [ {
       "mergeStatuses" : [ "STOP" ],
       "isOnAny" : false,
@@ -284,7 +284,7 @@
       "fileNameLine" : 153
     },
     "mergerTitle" : "updateServiceInfo",
-    "mergerDocs" : [ ],
+    "mergerDocs" : null,
     "transitions" : [ {
       "mergeStatuses" : [ "WITHDRAWAL" ],
       "isOnAny" : false,
@@ -500,7 +500,7 @@
       "fileNameLine" : 71
     },
     "mergerTitle" : null,
-    "mergerDocs" : [ ],
+    "mergerDocs" : null,
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,
@@ -545,7 +545,7 @@
       "fileNameLine" : 80
     },
     "mergerTitle" : null,
-    "mergerDocs" : [ ],
+    "mergerDocs" : null,
     "transitions" : [ {
       "mergeStatuses" : [ ],
       "isOnAny" : true,

@@ -94,7 +94,7 @@
     -fx-background-radius: 30 30 30 30;
 }
 
-.routePoint {
+.detachedMergePoint {
     -fx-padding: 2, 2, 2, 2;
 
     -fx-background-color:
@@ -105,6 +105,6 @@
     -fx-text-fill: black;
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 5, 0.0 , 0 , 1 );
 
-    -fx-border-radius: 3 3 3 3;
-    -fx-background-radius: 3 3 3 3;
+    -fx-border-radius: 30 30 30 30;
+    -fx-background-radius: 30 30 30 30;
 }
