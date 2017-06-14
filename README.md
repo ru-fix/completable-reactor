@@ -17,6 +17,19 @@ code as graph of execution flows.
  
 ## Concept
 
+To better understanding of CompletableReactor lets start with simple sequential execution model and then evolve it step 
+by step. This model consists of two base elements: *Payload* and *Processor*. Payload is a simple POJO. Processor is 
+active element of model that takes Payload, execute business logic based on that Payload, then modify Payload, store 
+computation result inside this Payload and pass this Payload to the next Processor. All Processors linked in chain one 
+after another. Modification of Payload is optional.
+
+![Alt sequential-model.png](docs/sequential-model.png?raw=true "sequential-model")
+ 
+In given example we have two processors and payload object. Payload consists of two fields: x and result. 
+MultiplyProcessor reads x from payload, multiplies it by 2 store computation result in result field. StdoutProcessor
+does not modify incoming payload and simply prints result field.      
+
+
 ### Payload
 Payload is a plain old java object that encapsulate request, response and intermediate computation data required for request processing.
 CompletableReactor receive payload as an argument. Execute business flows, modify payload during execution and returns it as a computation 
