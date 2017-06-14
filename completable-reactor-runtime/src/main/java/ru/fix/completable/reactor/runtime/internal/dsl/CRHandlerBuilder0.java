@@ -34,7 +34,7 @@ public class CRHandlerBuilder0<PayloadType> implements HandlerBuilder0<PayloadTy
     public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
             Handler0Args<ProcessorResult> handler) {
 
-        return withHandler(null, null, handler);
+        return withHandler(null, new String[]{}, handler);
     }
 
     @Override
@@ -42,7 +42,16 @@ public class CRHandlerBuilder0<PayloadType> implements HandlerBuilder0<PayloadTy
             String title,
             Handler0Args<ProcessorResult> handler) {
 
-        return withHandler(title, null, handler);
+        return withHandler(title, new String[]{}, handler);
+    }
+
+    @Override
+    public <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            String doc,
+            Handler0Args<ProcessorResult> handler) {
+
+        return withHandler(title, new String[]{doc}, handler);
     }
 
     @Override
@@ -58,7 +67,7 @@ public class CRHandlerBuilder0<PayloadType> implements HandlerBuilder0<PayloadTy
             processorDescription.setHandlerTitle(title);
         }
 
-        if(docs != null){
+        if(docs != null && docs.length != 0){
             processorDescription.setHandlerDocs(docs);
         }
 

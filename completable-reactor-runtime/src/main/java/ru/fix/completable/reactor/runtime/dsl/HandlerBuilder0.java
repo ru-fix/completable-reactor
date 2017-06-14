@@ -29,4 +29,10 @@ public interface HandlerBuilder0<PayloadType> {
             String[] docs,
             Handler0Args<ProcessorResult> handler
     );
+
+    <ProcessorResult> ProcessorMergerBuilder<PayloadType, ProcessorResult> withHandler(
+            String title,
+            String doc,
+            Handler0Args<ProcessorResult> handler
+    );
 }
