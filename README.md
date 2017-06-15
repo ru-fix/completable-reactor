@@ -34,8 +34,9 @@ does not modify incoming payload and simply prints result field.
 Now lets make our processors work asynchronously. We will split computation logic of processors in two parts. First 
 one, called *handler*, will read input data from payload and perform computation. Second one, called *merger*, will 
 store computation result inside payload. Handler will be asynchronous function and merger will be synchronous.  
-MultiplyProcessor logic splits to handler and merger functions. Handler reads payload and perform multiplication. 
-Merger gets result of handler as argument and store it inside payload.
+Here is an example how to split MultiplyProcessor logic to handler and merger functions: handler will read 
+argument x from payload, then asynchronously perform multiplication and return CompletableFuture of this operation. 
+Merger will get result of handler function as an argument and will store it inside payload in result filed.
 ```java
 CompletableFuture<Integer> handler(Payload payload){
     return CompletableFuture.supplyAsync(()->{
