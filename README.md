@@ -65,7 +65,14 @@ Now we can simplify visual notation and hide implicit Payload and handler functi
 
 
 ### Parallel handler-merger model
-Now we are ready to make big step to parallel execution.
+Lets update MergePoint and allow it to have several outgoing transitions. When merger inside MergePoint completes 
+merging process it will send Payload through all of outgoing transitions in parallel.  
+![Alt parallel-handler-merger-merge-point.png](docs/parallel-handler-merger-merge-point.png?raw=true "parallel-handler-merger-merge-point")
+  
+Now we are ready to make big step to parallel execution.  
+As an example lets implement ...
+
+
 
 ### Payload
 Payload is a plain old java object that encapsulate request, response and intermediate computation data required for request processing.
