@@ -17,18 +17,54 @@ code as graph of execution flows.
  
 ## Concept
 
+### Simple sequential model
 To better understanding of CompletableReactor lets start with simple sequential execution model and then evolve it step 
 by step. This model consists of two base elements: *Payload* and *Processor*. Payload is a simple POJO. Processor is 
 active element of model that takes Payload, execute business logic based on that Payload, then modify Payload, store 
 computation result inside this Payload and pass this Payload to the next Processor. All Processors linked in chain one 
-after another. Modification of Payload is optional.
+after another. Modification of Payload is optional for Processor.
 
 ![Alt sequential-model.png](docs/sequential-model.png?raw=true "sequential-model")
  
 In given example we have two processors and payload object. Payload consists of two fields: x and result. 
 MultiplyProcessor reads x from payload, multiplies it by 2 store computation result in result field. StdoutProcessor
-does not modify incoming payload and simply prints result field.      
+does not modify incoming payload and simply prints result field.   
 
+### Sequential asynchronous handler-merger model
+Now lets make our processors work asynchronously. We will split computation logic of processors in two parts. First 
+one, called *handler*, will read input data from payload and perform computation. Second one, called *merger*, will 
+store computation result inside payload. Handler will be asynchronous function and merger will be synchronous.  
+MultiplyProcessor logic splits to handler and merger functions. Handler reads payload and perform multiplication. 
+Merger gets result of handler as argument and store it inside payload.
+```java
+CompletableFuture<Integer> handler(Payload payload){
+    return CompletableFuture.supplyAsync(()->{
+        return payload.getX() * 2;
+    });
+}
+
+void merger(Payload paylaod, int result){
+    paylaod.setResult(result);
+}
+```
+Visual representation:  
+![Alt sequential-asynchronous-handler-merger-model.png](docs/sequential-asynchronous-handler-merger-model.png?raw=true "sequential-asynchronous-handler-merger-model")
+
+Visual representation of such computation contains several items:
+ - *Processor* bar that represent asynchronous computation of handler function
+ - *PergePoint* circle that represent synchronous computation of merger function
+ - *Transition* between processor and mergePoint that carries two objects: payload and computation result of handler 
+ function.
+ - *Transition* that goes into Processor and carries single object - Payload.
+ - *Transition* that goes out of MergePoint and carries single object - Payload.  
+ - *Paylaod* object that goes into Processors, then to MergePoint then out of MeregPoint.
+ 
+Now we can simplify visual notation and hide implicit Payload and handler function result.
+![Alt sequential-asynchronous-handler-merger-model2.png](docs/sequential-asynchronous-handler-merger-model2.png?raw=true "sequential-asynchronous-handler-merger-model2")
+
+
+### Parallel handler-merger model
+Now we are ready to make big step to parallel execution.
 
 ### Payload
 Payload is a plain old java object that encapsulate request, response and intermediate computation data required for request processing.
