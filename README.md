@@ -58,9 +58,9 @@ Visual representation of such computation contains several items:
  function.
  - *Transition* that goes into Processor and carries single object - Payload.
  - *Transition* that goes out of MergePoint and carries single object - Payload.  
- - *Paylaod* object that goes into Processors, then to MergePoint then out of MeregPoint.
+ - *Paylaod* object that goes into Processors, then to MergePoint then out of MergerPoint.
  
-Now we can simplify visual notation and hide implicit Payload and handler function result.
+Now we can simplify visual notation and hide implicit Payload and handler function result.  
 ![Alt sequential-asynchronous-handler-merger-model2.png](docs/sequential-asynchronous-handler-merger-model2.png?raw=true "sequential-asynchronous-handler-merger-model2")
 
 
