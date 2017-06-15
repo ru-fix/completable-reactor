@@ -53,7 +53,7 @@ Visual representation:
 
 Visual representation of such computation contains several items:
  - *Processor* bar that represent asynchronous computation of handler function
- - *PergePoint* circle that represent synchronous computation of merger function
+ - *MergePoint* circle that represent synchronous computation of merger function
  - *Transition* between processor and mergePoint that carries two objects: payload and computation result of handler 
  function.
  - *Transition* that goes into Processor and carries single object - Payload.
