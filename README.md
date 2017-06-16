@@ -65,9 +65,23 @@ Now we can simplify visual notation and hide implicit Payload and handler functi
 
 
 ### Parallel handler-merger model
-Lets update MergePoint and allow it to have several outgoing transitions. When merger inside MergePoint completes 
-merging process it will send Payload through all of outgoing transitions in parallel.  
-![Alt parallel-handler-merger-merge-point.png](docs/parallel-handler-merger-merge-point.png?raw=true "parallel-handler-merger-merge-point")
+Lets update MergePoint and allow it to have several outgoing transitions. When merger function inside MergePoint 
+completes merging process it will send Payload through all of outgoing transitions in parallel.  
+![Alt parallel-handler-merger-merge-point.png](docs/parallel-handler-merger-merge-point.png?raw=true 
+"parallel-handler-merger-merge-point")  
+In given example origin Payload and processors Result goes from Processor to MergePoint. Then MergePoint modifies 
+Payload and puts result inside it. Then MergePoint sends this Payload that contains result 42 to all outgoing 
+transitions. 
+
+Also we need another feature in MergePoint - an ability to join two incoming transitions into single outgoing. When 
+MergePoint have two incoming transitions: one from Processor that carries Payload with handler Result and another 
+with simply Payload, MergePoint will chose Result from first transition and will merge it to Payload that it received
+ from second transition. 
+![Alt parallel-handler-merger-merge-point2.png](docs/parallel-handler-merger-merge-point2.png?raw=true)
+In given illustration there are two incoming transitions into MergePoint. First incoming transition carries Payload2 
+and computation result of Processor2 - value 42. Second incoming transition  carries ony Payload1. MergePoint ignores
+Payload2 from first transitions. It takes Payload1 from second transition and takes Result from First transition. 
+Merges them together by merger function and the pass Payload1 to outgoing transition.
   
 Now we are ready to make big step to parallel execution.  
 As an example lets implement ...
