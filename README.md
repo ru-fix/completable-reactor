@@ -81,10 +81,21 @@ with simply Payload, MergePoint will chose Result from first transition and will
 In given illustration there are two incoming transitions into MergePoint. First incoming transition carries Payload2 
 and computation result of Processor2 - value 42. Second incoming transition  carries ony Payload1. MergePoint ignores
 Payload2 from first transitions. It takes Payload1 from second transition and takes Result from First transition. 
-Merges them together by merger function and the pass Payload1 to outgoing transition.
+Merges them together by merger function and passes Payload1 to outgoing transition.
   
 Now we are ready to make big step to parallel execution.  
-As an example lets implement ...
+As an example lets implement purchasing process. Suppose that customer with identifier `userId` want to buy product 
+with identifier `item`. During purchase process we have to reserve money on users account and reserve product in our 
+storage. `BillingService` will provide asynchronous method to reserve money. And StorageFacility will provide 
+asynchronous method to reserve product in the storage. We can require reservation in parallel in both services and 
+then if both services successfully performed reservation we can return answer to the user that purchase accomplished 
+successfully.  
+Plain class `Purchase` will serve as payload object in our model. `userId` and `item` will identify customer and 
+requested product. `moneyReserved` and `productReserved` fields will keep information about reservation status in 
+BillingService and StorageFacility.  
+Lets visualize execution graph and discuss execution steps in detail. 
+![Alt parallel-handler-merer-computation.png](docs/parallel-handler-merer-computation.png?raw=true)
+
 
 
 
