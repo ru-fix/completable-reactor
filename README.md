@@ -139,6 +139,7 @@ void merge(Purchase paylaod, StorageFacilityStatus storageStatus){
 ```
 Then StorageFacility MergePoint sends Payload with BillingService and StorageFacility results through outgoing transition at the end of 
 the given graph.  
+
 Now we can simplify visualisation:  
 ![Alt parallel-handler-merer-computation2.png](docs/parallel-handler-merer-computation2.png?raw=true)
    
