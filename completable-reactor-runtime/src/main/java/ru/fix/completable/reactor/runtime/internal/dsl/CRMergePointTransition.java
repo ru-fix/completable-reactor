@@ -35,21 +35,14 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
     public MergePointBuilder<PayloadType> complete() {
 
         if (this.mergePoint.getTransitions().stream().anyMatch(CRReactorGraph.Transition::isComplete)) {
-            switch (mergePoint.getType()) {
-                case DETACHED:
-                    throw new IllegalArgumentException(String.format(
-                            "Complete transition already present in merge point for processor %s. " +
-                                    "Join condition into single complete transition.",
-                            mergePoint.getProcessor().getDebugName()));
-                case PROCESSOR:
-                case SUBGRAPH:
-                    throw new IllegalArgumentException(String.format(
-                            "Complete transition already present in merge point %s. " +
-                                    "Join condition into single complete transition.",
-                            mergePoint.getMergePoint().getDebugName()));
-                default:
-                    throw new IllegalArgumentException(String.format("Invalid merge point type: %s", mergePoint.getType()));
-            }
+            throw new IllegalArgumentException(String.format(
+                    "Complete transition already present in %s." +
+                            " Join conditions into single complete transition. Instead of using:\n" +
+                            " .on(Status.A).complete()\n" +
+                            " .on(Status.B).complete()\n" +
+                            " use\n" +
+                            " on(Status.A,Status.B).complete()\n",
+                    mergePoint.asProcessingItem().getDebugName()));
         }
 
         this.mergePoint.getTransitions().add(
