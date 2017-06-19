@@ -139,7 +139,12 @@ void merge(Purchase paylaod, StorageFacilityStatus storageStatus){
 ```
 Then StorageFacility MergePoint sends Payload with BillingService and StorageFacility results through outgoing transition at the end of 
 the given graph.  
+Now we can simplify visualisation:
+![Alt parallel-handler-merer-computation2.png](docs/parallel-handler-merer-computation2.png?raw=true)
    
+### Handler-merger model with conditional transitions
+We almost thee. Fasten seat belts. Lets enrich our MergePoint with last feature: conditional transitions.    
+
 ### Payload
 Payload is a plain old java object that encapsulate request, response and intermediate computation data required for request processing.
 CompletableReactor receive payload as an argument. Execute business flows, modify payload during execution and returns it as a computation 
