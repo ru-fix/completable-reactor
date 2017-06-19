@@ -38,13 +38,13 @@ Here is an example how to split MultiplyProcessor logic to handler and merger fu
 argument x from payload, then asynchronously perform multiplication and return CompletableFuture of this operation. 
 Merger will get result of handler function as an argument and will store it inside payload in result filed.
 ```java
-CompletableFuture<Integer> handler(Payload payload){
+CompletableFuture<Integer> handle(Payload payload){
     return CompletableFuture.supplyAsync(()->{
         return payload.getX() * 2;
     });
 }
 
-void merger(Payload paylaod, int result){
+void merge(Payload paylaod, int result){
     paylaod.setResult(result);
 }
 ```
@@ -76,7 +76,7 @@ transitions.
 Also we need another feature in MergePoint - an ability to join two incoming transitions into single outgoing. When 
 MergePoint have two incoming transitions: one from Processor that carries Payload with handler Result and another 
 with simply Payload, MergePoint will chose Result from first transition and will merge it to Payload that it received
- from second transition. 
+ from second transition. For activation MergePoint has to wait for both incoming transitions.   
 ![Alt parallel-handler-merger-merge-point2.png](docs/parallel-handler-merger-merge-point2.png?raw=true)
 In given illustration there are two incoming transitions into MergePoint. First incoming transition carries Payload2 
 and computation result of Processor2 - value 42. Second incoming transition  carries ony Payload1. MergePoint ignores
@@ -88,17 +88,58 @@ As an example lets implement purchasing process. Suppose that customer with iden
 with identifier `item`. During purchase process we have to reserve money on users account and reserve product in our 
 storage. `BillingService` will provide asynchronous method to reserve money. And StorageFacility will provide 
 asynchronous method to reserve product in the storage. We can require reservation in parallel in both services and 
-then if both services successfully performed reservation we can return answer to the user that purchase accomplished 
+then if both services successfully performed reservation we can return answer to the user which purchase accomplished 
 successfully.  
-Plain class `Purchase` will serve as payload object in our model. `userId` and `item` will identify customer and 
-requested product. `moneyReserved` and `productReserved` fields will keep information about reservation status in 
-BillingService and StorageFacility.  
+Plain class `Purchase` will serve as payload object in our model. 
+```java
+class Purchase{
+    Long userId;
+    Long item;
+    Boolean moneyReserved;
+    Boolean productReserved;
+    Boolean result;
+}
+```
+`userId` and `item` will identify customer and requested product. `moneyReserved` and `productReserved` fields will 
+keep information about reservation status returned from BillingService and StorageFacility.  
 Lets visualize execution graph and discuss execution steps in detail. 
 ![Alt parallel-handler-merer-computation.png](docs/parallel-handler-merer-computation.png?raw=true)
-
-
-
-
+As a first step we create Purchase payload and populate userid and item. After that this payload first MergePoint 
+that does not modify payload but simply sends same Payload instance into two places in parallel: to BillingService 
+Processor and StorageFacility Processor. StorageFacility runs reservation logic and send via outgoing transitions two
+ objects: origin Purchase payload and product reservation status. BillingService runs reservation logic and send via 
+ outgoing transition two objects: origin Purchase payload and money reservation status.  
+Left MergePoint that belongs to BillingService Processor waits for BillingService to complete. Then MergePoint takes 
+money reservation status and puts in into Purchase payload (by using it's merger function) and sends this Payload 
+through outgoing transition to MergePoint on right side of the graph.       
+```java
+//BillingService MergePoint merger
+void merge(Purchase paylaod, BillingServiceStatus billingStatus){
+    if(billingStatus == MONEY_RESERVED){
+        paylaod.setMoneyReserved(true);
+    }
+}
+```
+Right MergePoint that belongs to StorageFacility Processor waits two incoming transitions: with StorageFacility 
+result and with Payload from BillingService. Then it takes StorageFacility product reservation status and puts it into 
+Payload that came from BillingService processor. This payload already contains information about BillingService 
+operation status. After that MergePoint checks both fields: `Purchase.moneyReserved` and `Purchase.productReserved`. 
+If both fields are true, MergePoint sets `Purchase.result` to true. This means that purchase accomplished 
+successfully. This process is done by using merge function of StorageFacility MergePoint. 
+```java
+//StorageFacility MergePoint merger
+void merge(Purchase paylaod, StorageFacilityStatus storageStatus){
+    if(storageStatus == PRODUCT_RESERVED){
+        paylaod.setProductReserved(true);
+    }
+    if(paylaod.getMoneyReserved() && payload.getProductReserved()){
+        payload.setResult(true);
+    }
+}
+```
+Then StorageFacility MergePoint sends Payload with BillingService and StorageFacility results through outgoing transition at the end of 
+the given graph.  
+   
 ### Payload
 Payload is a plain old java object that encapsulate request, response and intermediate computation data required for request processing.
 CompletableReactor receive payload as an argument. Execute business flows, modify payload during execution and returns it as a computation 
