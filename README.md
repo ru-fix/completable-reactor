@@ -363,7 +363,7 @@ https://plugins.jetbrains.com/plugin/9599-completable-reactor
 
 Completable Reactor Intellij Idea plugin provides graph visualization and source code navigation within IDE.  
 You can jump to code using double click on graph item or context menu.
-![Alt cr-idea-plugin-graph-example.png](docs/cr-idea-plugin-graph-example.png?raw=true "Graph View")
+![Alt idea-plugin-graph-example.png](docs/idea-plugin-graph-example.png?raw=true "Graph View")
  
 ## Examples
 
