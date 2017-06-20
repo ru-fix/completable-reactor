@@ -41,8 +41,9 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
                 .filter(graphMergePoint -> graphMergePoint.getType() == CRReactorGraph.MergePoint.Type.PROCESSOR)
                 .anyMatch(graphMergePoint -> graphMergePoint.getProcessor().equals(processor))) {
 
-            throw new IllegalArgumentException(String.format("Processor merge point for processor %s already registered.", ((CRProcessor)
-                    processor).getDebugName()));
+            throw new IllegalArgumentException(String.format(
+                    "Processor merge point for processor %s already registered.",
+                    ((CRProcessor) processor).getDebugName()));
         }
 
         CRReactorGraph.MergePoint graphMergePoint = new CRReactorGraph.MergePoint()
@@ -74,7 +75,9 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
                 .filter(graphMergePoint -> graphMergePoint.getType() == CRReactorGraph.MergePoint.Type.SUBGRAPH)
                 .anyMatch(graphMergePoint -> graphMergePoint.getSubgraph().equals(crSubgraph))) {
 
-            throw new IllegalArgumentException(String.format("Subgraph merge point %s already registered.", crSubgraph.getDebugName()));
+            throw new IllegalArgumentException(String.format(
+                    "Subgraph merge point %s already registered.",
+                    crSubgraph.getDebugName()));
         }
 
         CRReactorGraph.MergePoint graphMergePoint = new CRReactorGraph.MergePoint()
@@ -107,7 +110,9 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
                 .filter(graphMergePoint -> graphMergePoint.getType() == CRReactorGraph.MergePoint.Type.DETACHED)
                 .anyMatch(graphMergePoint -> graphMergePoint.getMergePoint().equals(crMergePoint))) {
 
-            throw new IllegalArgumentException(String.format("Detached merge point %s already registered.", crMergePoint.getDebugName()));
+            throw new IllegalArgumentException(String.format(
+                    "Detached merge point %s already registered.",
+                    crMergePoint.getDebugName()));
         }
 
         CRReactorGraph.MergePoint graphMergePoint = new CRReactorGraph.MergePoint()

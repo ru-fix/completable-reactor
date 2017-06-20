@@ -31,13 +31,19 @@ public class UIBuilder {
         String index_js = load("js/index.js");
         String index_css = load("css/index.css");
 
-        index_html = index_html.replace("<link rel=\"stylesheet\" type=\"text/css\" href=\"./css/index.css\">", "<style>"+index_css+"</style>");
-        index_html = index_html.replace("<script src='./js/index.js'></script>", "<script>" + index_js + "</script>");
+        index_html = index_html.replace(
+                "<link rel=\"stylesheet\" type=\"text/css\" href=\"./css/index.css\">",
+                "<style>"+index_css+"</style>");
+        index_html = index_html.replace(
+                "<script src='./js/index.js'></script>",
+                "<script>" + index_js + "</script>");
 
         htmlPage = index_html;
     }
 
     public static String buildHtmlPage(String modelJson) {
-        return htmlPage.replace("<script src='./data/index.js'></script>", "<script>var _data = " + modelJson + "</script>");
+        return htmlPage.replace(
+                "<script src='./data/index.js'></script>",
+                "<script>var _data = " + modelJson + "</script>");
     }
 }

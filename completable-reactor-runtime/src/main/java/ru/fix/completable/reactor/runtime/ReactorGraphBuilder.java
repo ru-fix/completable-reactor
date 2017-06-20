@@ -54,7 +54,9 @@ public class ReactorGraphBuilder {
     public ProcessorDescriptionBuilder processor() {
         return new ProcessorDescriptionBuilder() {
             @Override
-            public <PayloadType> ru.fix.completable.reactor.runtime.dsl.HandlerBuilder0<PayloadType> forPayload(Class<PayloadType> payloadType) {
+            public <PayloadType> ru.fix.completable.reactor.runtime.dsl.HandlerBuilder0<PayloadType> forPayload(
+                    Class<PayloadType> payloadType) {
+
                 val processorDescription = new CRProcessorDescription<PayloadType>();
                 return new CRHandlerBuilder0<>(processorDescription);
             }
@@ -77,10 +79,13 @@ public class ReactorGraphBuilder {
     /**
      * Build SubgraphDescription
      */
-    public <SubgraphPayloadType> SubgraphBuilder<SubgraphPayloadType> subgraph(Class<SubgraphPayloadType> subgraphPayload) {
+    public <SubgraphPayloadType> SubgraphBuilder<SubgraphPayloadType> subgraph(
+            Class<SubgraphPayloadType> subgraphPayload) {
+
         return new SubgraphBuilder<SubgraphPayloadType>() {
             @Override
-            public <PayloadType> SubgraphHandlerBuilder<SubgraphPayloadType, PayloadType> forPayload(Class<PayloadType> payloadType) {
+            public <PayloadType> SubgraphHandlerBuilder<SubgraphPayloadType, PayloadType> forPayload(
+                    Class<PayloadType> payloadType) {
 
                 CRSubgraphDescription<PayloadType> subgraphDescription = new CRSubgraphDescription<>(subgraphPayload);
                 subgraphDescription.setBuildSource(ReactorReflector.getMethodInvocationPoint().orElse(null));

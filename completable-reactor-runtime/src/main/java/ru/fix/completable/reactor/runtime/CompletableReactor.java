@@ -83,7 +83,10 @@ public class CompletableReactor implements AutoCloseable {
         }
 
         @Override
-        public void afterHandle(Object tracingMarker, ReactorGraphModel.Identity identity, Object handlerResult, Throwable throwable) {
+        public void afterHandle(Object tracingMarker,
+                                ReactorGraphModel.Identity identity,
+                                Object handlerResult,
+                                Throwable throwable) {
             tracer.afterHandle(tracingMarker, identity, handlerResult, throwable);
         }
 
@@ -156,14 +159,16 @@ public class CompletableReactor implements AutoCloseable {
     }
 
     /**
-     * @return timeout in milliseconds reactor will wain for flow to execute until terminating it with TimeoutException
+     * @return timeout in milliseconds reactor will wain for flow to execute until terminating
+     * it with TimeoutException
      */
     public long getExecutionTimeoutMs() {
         return executionTimeoutMs;
     }
 
     /**
-     * @param value timeout in milliseconds reactor will wain for flow to execute until terminating it with TimeoutException
+     * @param value timeout in milliseconds reactor will wain for flow to execute until terminating
+     *             it with TimeoutException
      */
     public void setExecutionTimeoutMs(long value) {
         executionTimeoutMs = value;
@@ -195,7 +200,8 @@ public class CompletableReactor implements AutoCloseable {
     /**
      * Register functional graph implementation.
      * For test subgraph mocking purpose.
-     * If graph with same payload already registered by {@link #registerReactorGraph(ReactorGraph)} it will be unregistered.
+     * If graph with same payload already registered by {@link #registerReactorGraph(ReactorGraph)}
+     * it will be unregistered.
      *
      * @param payloadType
      * @param payloadProcessingFunction
@@ -233,7 +239,10 @@ public class CompletableReactor implements AutoCloseable {
 
     private static ScheduledThreadPoolExecutor newScheduledThreadPool(int poolSize, String threadsNamePrefix) {
         AtomicInteger counter = new AtomicInteger();
-        ThreadFactory threadFactory = runnable -> new Thread(runnable, threadsNamePrefix + counter.getAndIncrement());
+        ThreadFactory threadFactory = runnable -> new Thread(
+                runnable,
+                threadsNamePrefix + counter.getAndIncrement());
+
         return new ScheduledThreadPoolExecutor(poolSize, threadFactory);
     }
 
@@ -242,7 +251,8 @@ public class CompletableReactor implements AutoCloseable {
         this.immutabilityControlLevel.set(immutabilityControlLevel);
     }
 
-    final AtomicReference<ImmutabilityControlLevel> immutabilityControlLevel = new AtomicReference<>(ImmutabilityControlLevel.NO_CONTROL);
+    final AtomicReference<ImmutabilityControlLevel> immutabilityControlLevel =
+            new AtomicReference<>(ImmutabilityControlLevel.NO_CONTROL);
 
     public StatisticsReport buildStatisticsReport() {
         StatisticsReport report = new StatisticsReport();
@@ -278,11 +288,15 @@ public class CompletableReactor implements AutoCloseable {
     }
 
 
-    public <PayloadType> Execution<PayloadType> submit(PayloadType payload) throws PendingOperationsLimitOverflowException {
+    public <PayloadType> Execution<PayloadType> submit(PayloadType payload)
+            throws PendingOperationsLimitOverflowException {
+
         return submit(payload, executionTimeoutMs);
     }
 
-    public <PayloadType> Execution<PayloadType> submit(PayloadType payload, long timeoutMs) throws PendingOperationsLimitOverflowException {
+    public <PayloadType> Execution<PayloadType> submit(PayloadType payload, long timeoutMs)
+            throws PendingOperationsLimitOverflowException {
+
         return trySubmit(payload, timeoutMs)
                 .orElseThrow(() ->
                         new PendingOperationsLimitOverflowException(String.format(
@@ -302,7 +316,8 @@ public class CompletableReactor implements AutoCloseable {
     public <PayloadType> Optional<Execution<PayloadType>> trySubmit(PayloadType payload, long timeoutMs) {
 
         if (isClosed.get()) {
-            throw new IllegalStateException(String.format("CompletableReactor is closed. Payload %s is discarded.", payload));
+            throw new IllegalStateException(String.format(
+                    "CompletableReactor is closed. Payload %s is discarded.", payload));
         }
 
         if (pendingRequestCount.get() > maxPendingRequestCount.get()) {
@@ -317,7 +332,9 @@ public class CompletableReactor implements AutoCloseable {
          */
         Function inlineGraphFunction = inlinePayloadGraphs.get(payload.getClass());
         if (inlineGraphFunction != null) {
-            CompletableFuture<PayloadType> inlineGraphResult = (CompletableFuture<PayloadType>) inlineGraphFunction.apply(payload);
+            CompletableFuture<PayloadType> inlineGraphResult =
+                    (CompletableFuture<PayloadType>) inlineGraphFunction.apply(payload);
+
             inlineGraphResult.thenAcceptAsync(any -> payloadCall.stop());
 
             return Optional.of(
@@ -334,7 +351,8 @@ public class CompletableReactor implements AutoCloseable {
 
         ReactorGraph<PayloadType> graph = payloadGraphs.get(payload.getClass());
         if (graph == null) {
-            throw new IllegalArgumentException(String.format("Rector graph not found for payload %s", payload.getClass()));
+            throw new IllegalArgumentException(String.format(
+                    "Rector graph not found for payload %s", payload.getClass()));
         }
 
         ReactorGraphExecution<PayloadType> execution = executionBuilder.build(graph);
@@ -345,7 +363,10 @@ public class CompletableReactor implements AutoCloseable {
          */
         pendingRequestCount.incrementAndGet();
 
-        PayloadStatCounters statistics = payloadStatCounters.computeIfAbsent(payload.getClass(), key -> new PayloadStatCounters());
+        PayloadStatCounters statistics = payloadStatCounters.computeIfAbsent(
+                payload.getClass(),
+                key -> new PayloadStatCounters());
+
         statistics.getRunningTotal().increment();
 
         execution.getChainExecutionFuture().handleAsync((result, thr) -> {
@@ -376,12 +397,14 @@ public class CompletableReactor implements AutoCloseable {
                     if (!execution.getResultFuture().isDone()) {
                         execution.getResultFuture().completeExceptionally(
                                 new TimeoutException(
-                                        String.format("Response for payload %s took more than %d ms.", payload, timeoutMs)));
+                                        String.format(
+                                                "Response for payload %s took more than %d ms.", payload, timeoutMs)));
                     }
                     if (!execution.getChainExecutionFuture().isDone()) {
                         execution.getChainExecutionFuture().completeExceptionally(
                                 new TimeoutException(
-                                        String.format("Execution of payload %s took more than %d ms.", payload, timeoutMs)));
+                                        String.format(
+                                                "Execution of payload %s took more than %d ms.", payload, timeoutMs)));
                     }
                 },
                 timeoutMs,

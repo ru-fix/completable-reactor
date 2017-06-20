@@ -108,7 +108,9 @@ public class TransitionLine extends Group {
                     Label statusLabel = new Label(status);
                     labelsPane.getChildren().add(statusLabel);
 
-                    if (transitionItem.transitionOnStatusSource != null && transitionItem.transitionOnStatusSource.get(status) != null) {
+                    if (transitionItem.transitionOnStatusSource != null
+                            && transitionItem.transitionOnStatusSource.get(status) != null) {
+
                         statusLabel.setOnMouseClicked(mouseEvent -> {
                             if (mouseEvent.getClickCount() == 2) {
                                 ReactorGraphModel.Source source = transitionItem.transitionOnStatusSource.get(status);
@@ -308,7 +310,8 @@ public class TransitionLine extends Group {
         Map<String, String[]> mergeStatusDocumentation = new HashMap<>();
 
         this.transition.map(transitionItem -> transitionItem.mergeStatuses)
-                .ifPresent(statuses -> statuses.forEach(status -> mergeStatusDocumentation.put(status, new String[]{})));
+                .ifPresent(statuses -> statuses.forEach(status ->
+                        mergeStatusDocumentation.put(status, new String[]{})));
 
         this.transition.map(transitionItem -> transitionItem.transitionsDoc)
                 .ifPresent(docs -> docs.forEach(doc -> {

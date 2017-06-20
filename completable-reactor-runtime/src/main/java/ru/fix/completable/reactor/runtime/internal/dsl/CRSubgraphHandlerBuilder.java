@@ -8,7 +8,9 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
-public class CRSubgraphHandlerBuilder<SubgraphPayloadType, PayloadType> implements SubgraphHandlerBuilder<SubgraphPayloadType, PayloadType> {
+public class CRSubgraphHandlerBuilder<SubgraphPayloadType, PayloadType>
+        implements SubgraphHandlerBuilder<SubgraphPayloadType, PayloadType> {
+
     final CRSubgraphDescription<PayloadType> subgraphDescription;
 
     public CRSubgraphHandlerBuilder(CRSubgraphDescription<PayloadType> subgraphDescription) {
@@ -16,13 +18,17 @@ public class CRSubgraphHandlerBuilder<SubgraphPayloadType, PayloadType> implemen
     }
 
     @Override
-    public SubgraphMergerBuilder<PayloadType, SubgraphPayloadType> passArg(Function<PayloadType, SubgraphPayloadType> arg) {
+    public SubgraphMergerBuilder<PayloadType, SubgraphPayloadType> passArg(
+            Function<PayloadType, SubgraphPayloadType> arg) {
+
         this.subgraphDescription.arg = arg;
         return new CRSubgraphMergerBuilder<>(subgraphDescription);
     }
 
     @Override
-    public SubgraphMergerBuilder<PayloadType, SubgraphPayloadType> copyArg(Function<PayloadType, SubgraphPayloadType> arg) {
+    public SubgraphMergerBuilder<PayloadType, SubgraphPayloadType> copyArg(
+            Function<PayloadType, SubgraphPayloadType> arg) {
+
         this.subgraphDescription.arg = arg;
         this.subgraphDescription.isCopyArg = true;
 
