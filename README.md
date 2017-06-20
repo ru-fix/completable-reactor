@@ -144,61 +144,74 @@ Now we can simplify visualisation:
 ![Alt parallel-handler-merer-computation2.png](docs/parallel-handler-merer-computation2.png?raw=true)
    
 ### Handler-merger model with conditional transitions
-We almost thee. Fasten seat belts. Lets enrich our MergePoint with last feature: conditional transitions.    
+We almost thee. Fasten seat belts. Lets enrich our MergePoint with last feature: conditional transitions:    
+![Alt merge-point.png](docs/merge-point.png?raw=true "MergePoint")
+
+Each outgoing transitions now have enum value associated with it. In graph this enum value illustrated as text label 
+near arrow.  
+Merger function signature is changed too. Now merger should return enum that will control which outgoing transition 
+will be activated and which is not.
+```java
+Enum merge(Payload payload, HandlerResult handlerResult) {...}
+``` 
+When MergePoint is activated by incoming transition it evaluates merger function and checks merger result status. 
+After that MergePoint deactivates all outgoing transitions which associated enum values does not match the one 
+returned by merger function. After that MergePoint activates all outgoing transitions which associated enum values  
+matches enum value returned by merger function.  
+If there are two or more outgoing transitions that matches enum function result then all of them activates and runs 
+in parallel.   
+In given illustration we can control by which way execution flow goes by returning enum value FIRST or SECOND from 
+merger function of the MergePoint.    
+
+## Completable Reactor model
+It is essential to read Concept paragraph to better understanding CompletableReactor model.
 
 ### Payload
-Payload is a plain old java object that encapsulate request, response and intermediate computation data required for request processing.
-CompletableReactor receive payload as an argument. Execute business flows, modify payload during execution and returns it as a computation 
-result.
+Payload is a plain old java object that encapsulate request, response and intermediate computation data required for 
+request processing. CompletableReactor receive payload as an argument. Execute business flows, modify payload during 
+execution and returns it as a computation result.
 ```java
-class MyPayload{
-    static class Request {
-        String data1;
-        int data2;
-    }
-    static class Response {
-        boolean result;
-    }
-    static class IntermediateData {
-        String someData;
-    }
-    
-    final Request request = new Request();
-    final Response response = new Request();
-    final IntermediateData intermediateData = new IntermediateData();
-}
-```
-or simply
-```java
-class MyPayload{
+class Purchase{
     //request parameters
-    String data1;
-    int data2;
+    Long userId;
+    Long productId;
     
     //intermediate data
-    String someData;
+    Boolean moneyReservationStatus;
+    Boolean productReservationStatus;
     
     //execution results
-    boolean result;
+    Boolean purchaseStatus;
 }
 ```
+```java
+Execution<Purchase> execution = completableReactor.submit(
+        new Purchase()
+            .setUserId(107)
+            .setProductId(42));
 
+Purchase purchase = execution.getResultFuture().get();
+System.out.print( purchase.getPurchaseStatus() );
+```
+Start point of each graph represented by graphs Paylaod:    
 ![Alt payload.png](docs/payload.png?raw=true "Payload")
 
+
 ### Handler
-Handler is an asynchronous method that takes information from Payload and returns computation result. Handler implements atomic business 
-logic of the execution flow. It could be reused in different flows several time. Handler MUST NOT change Payload because same instance of 
-Payload passed to other handlers in parallel. Is is ok to concurrently read payload from several handlers but not to modify payload. The 
-only point of payload modification is MergePoint.
- 
+Handler is an asynchronous function that takes information from Payload and returns computation result. Handler 
+implements atomic business logic of the execution flow. It could be reused in different flows several time. Handler 
+MUST NOT change Payload because same instance of Payload passed to other handlers in parallel. Is is ok to 
+concurrently read payload from several handlers but not to modify payload. The only point of payload modification is 
+MergePoint.  
 ```java
 @Reactored("myNiceHandler documentation")
 CompletableFuture<HanlderResultType> myNiceHandler(String arg1, int arg2)` 
 ```
 
 ### Processor
-Processor is a service that encapsulates coupled business logic. Usually Processor contains several Handlers. Processors could be reused
- between different business scenarios in different business flows. They encapsulate reusable logic.
+Processor is a visual graph item that represent a handler invocation. Processor encapsulates coupled business logic 
+that usually can be reused. Processors graph item could be reused between different business scenarios in different 
+business flows.
  
 ```java
 @Reactored("MyNiceService description")
@@ -213,8 +226,8 @@ class MyNiceService {
 ![Alt processor.png](docs/processor.png?raw=true "MergePoint")
 
 ### Merger
-Merger is a synchronous method that takes Handlers computation result and uses it to update Payload. Merger is being invoked by 
-framework sequentially. That is why it is safe to modify payload within merger.
+Merger is a synchronous function that takes Handlers computation result and uses it to update Payload. It is safe to 
+modify payload within merger.
 ```java
 @Reactored("myNiceMerger documentation")
 Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult){
@@ -223,15 +236,17 @@ Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult){
 }
 ```
 ### MergePoint
-MergePoint is a graph processing item that uses Merger method to make modification on Payload.
+MergePoint is a visual graph item that uses Merger method to make modification on Payload. And uses Merger result to 
+select which outgoing transitions to activate and which to deactivate. 
 
 ![Alt merge-point.png](docs/merge-point.png?raw=true "MergePoint")
 
 ### Transition
-Transition is a Enum instance that represent transition during flow execution. MergePoint merger returns instance of Enum. 
-Outgoing transition will be activated according to this value. If mergere returns status PLAN_B, then all outgoing transitions with 
-condition status PLAN_B will be activated and all transitions without PLAN_B status will be marked as dead. For unconditional transitions 
-there is no distinct status. That transitions  will be always activated regardless of the merger result.
+Transition is a Enum instance that represent jumps between graph items during flow execution. MergePoint merger 
+returns instance of Enum. Outgoing transition will be activated according to this value. If merger returns status 
+PLAN_B, then all outgoing transitions with condition status PLAN_B will be activated and all transitions without 
+PLAN_B status will be deactivated or marked as dead transition. For unconditional transitions (onAny) there is no 
+distinct status. That transitions will be always activated regardless of the merger result.
 
 ```java
 enum MyTransitions{
@@ -242,9 +257,9 @@ enum MyTransitions{
 }
 ```
 ### EndPoint
-EndPoint is a graph item that indicates end of flow execution. When graph execution reaches EndPoint then all transitions marked as dead
- and CompletableReactor immediately returns graph result. The only exception is detached processors or subgraphs. They will continue to 
- exectue.   
+EndPoint is a visual graph item that indicates end of flow execution. When graph execution reaches EndPoint then all 
+transitions marked as terminated  and CompletableReactor immediately returns graph result. The only exception
+ is detached processors or subgraphs. They will continue to execute but their execution result will be ignored.   
 
 ![Alt end-point.png](docs/end-point.png?raw=true "EndPoint")
 
@@ -253,29 +268,31 @@ EndPoint is a graph item that indicates end of flow execution. When graph execut
 
 ![Alt processor-with-merge-point.png](docs/processor-with-merge-point.png?raw=true "Processor with MergePoint")
 
-Processor uses Handler to make asynchronous computation, MergePoint uses Merger to apply Handler computation result on Payload.  
-Origin payload is passed to Processors handler, then after handler computation is done origin payload is passed together with handler 
-result to merge point. Inside merge point origin payload is modified and became Payload*. Outgoing transitions from merge point pass 
-this new Payload* to next nodes.  
-
+Processor uses Handler to make asynchronous computation, MergePoint uses Merger to apply Handler computation result 
+on Payload. Origin payload is passed to Processors handler, then after handler computation origin payload is passed 
+together with handler result to merge point. Inside merge point origin payload is modified and became Payload*. 
+Outgoing transitions from merge point pass this new Payload* to next nodes.  
 
 ### MergePoint decision
 
-If all of outgoing transitions from MergePoint have distinct statuses then flow will continue to execute only by one of transitions.
+If all of outgoing transitions from MergePoint have distinct statuses then flow will continue to execute only by one 
+of transitions.
 
 ![Alt merge-point-decision.png](docs/merge-point-decision.png?raw=true "MergePoint decision")
 
-If MergePoint merger will return FAIL status then execution completes immediately. In case of FIRST status flow will continue and 
-Processor2 will be invoked. In case of SECOND status - Processor3
+If MergePoint merger will return FAIL status then execution completes immediately. In case of FIRST status flow will 
+continue and Processor2 will be invoked. In case of SECOND status - Processor3
 In given example there could be three options:  
 * Payload -> Processor1 -> End (if merger returns FAIL status)
 * Payload -> Processor1 -> Processor2 -> End (if merger returns FIRST status)
 * Payload -> Processor1 -> Processor3 -> End (if merger returns SECOND status)
 
-First payload goes to Processor1 and passed to Processor1 handler. Then framework waits when CompletableFuture returned by Processor1 
-handler completes. After that MergePoint merger will be invoked and Payload with Processor1 handler result will be passed to this merger.
-Merger will check Processor1 handler result, modify Payload if needed and returns one of statuses: FAIL, FIRST, SECOND.  After that 
-execution will continue along with one of transitions (FAIL leads to END, FIRST - to Processor1, SECOND - to Processor3).
+First payload goes to Processor1 and passed to Processor1 handler. Then framework waits when CompletableFuture 
+returned by Processor1 handler completes. After that MergePoint merger will be invoked and Payload with Processor1 
+handler result will be passed to this merger.  
+Merger will check Processor1 handler result, modify Payload if needed and returns one of statuses: FAIL, FIRST, 
+SECOND.  After that execution will continue along with one of transitions:
+FAIL leads to END, FIRST - to Processor1, SECOND - to Processor3.
 
 ### Parallel execution
 
@@ -335,22 +352,6 @@ Merge Point uses same rules to chose Payload for merging.
 * Case when there is more that one Processors transition is not allowed.
 
 ![Alt merge-point-chose-payload.png](docs/merge-point-chose-payload.png?raw=true "MergePoint chose payload")
-
-### Implicit MergeGroups
-
-MergePoints is the only place where it is allowed to modify Payload. During execution of parallel flows CompletableReactor protects 
-Payload from concurrent reading and modification. In given example there are two processors: Processor2 and Processor3 that start in 
-parallel. It is possible that Processor3 finishes first and triggers execution of MergePoint of Processor3. In that case there are could 
-be the risk of parallel reading Payload by Processor2 in Payload modification by Processor3. To prevent that CompletableReactor joins two 
-MergePoints into implicit MergeGroup. This MergeGroup prevents its MergePoint from execution until all incoming transitions to this 
-MergePoint is activated or marked as dead. This way even in Processor3 completes before Processor2, MergePoint of Processor3 will stay 
-inactive. And only after second incoming transitions to MergeGroup (transition from Processor2 to MergePoint of Processor2) is activated 
-MergeGroup will launch execution of MergePoint of Processor3.    
-
-![Alt merge-group.png](docs/merge-group.png?raw=true "MergeGroups")
-
-MergeGroups generated by CompletableReactorBuilder automatically during graph building process. CompletableReactorBuilder analyzes graph,
-adds implicit MergeGroups where needed and then build ReactorGraph instance.
 
 ### Validation
 
