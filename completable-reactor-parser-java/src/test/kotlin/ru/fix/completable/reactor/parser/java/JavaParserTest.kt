@@ -12,9 +12,16 @@ class JavaParserTest {
     @Test
     fun parse() {
         val body = JavaParserTest::class.java.getResourceAsStream("/example1.java.txt")
-                .use { it.reader(StandardCharsets.UTF_8).readText() }
+                .reader(StandardCharsets.UTF_8)
+                .use { it.readText() }
 
-        val models = JavaParser().parse(body)
+        val symbolsResolver: SymbolResolver = object: SymbolResolver {
+            override fun resolveFullClassNameByShortName(shortClassName: String): String {
+                TODO("not implemented")
+            }
+        }
+
+        val models = JavaParser(symbolsResolver).parse(body)
 
         assertEquals(2, models.size)
 

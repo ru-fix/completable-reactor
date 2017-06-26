@@ -39,7 +39,7 @@ public class Main extends Application {
 
             } else if (path.endsWith(".java")){
                 String javaModel = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-                viewer.openGraph(new JavaParser().parse(javaModel).get(0));
+                viewer.openGraph(new JavaParser(null).parse(javaModel).get(0));
             } else {
                 throw new IllegalArgumentException(String.format("Invalid model: {}", path.toAbsolutePath()));
             }
