@@ -18,18 +18,21 @@ class JavaParser(
 
     val imports = ArrayList<String>()
 
+    val context = Context(null)
+
+
     fun parse(javaCode: String): List<ReactorGraphModel> {
 
         val result = ArrayList<ReactorGraphModel>()
 
-
+        // parse imports
         var matcher = importPattern.matcher(javaCode)
         while (matcher.find()) {
             imports.add(matcher.group(1))
         }
 
+        // parse payload graphs
         matcher = payloadPattern.matcher(javaCode)
-
         while (matcher.find()) {
             val paylaod = matcher.group(1)
             val model = ReactorGraphModel()
@@ -38,6 +41,10 @@ class JavaParser(
 
             result.add(model)
         }
+
+        // parse
+
+
 
         return result
     }
