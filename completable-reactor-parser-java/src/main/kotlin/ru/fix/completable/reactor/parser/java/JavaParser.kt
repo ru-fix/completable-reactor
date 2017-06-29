@@ -16,9 +16,13 @@ class JavaParser(
     val payloadPattern = Pattern.compile(
             "\\w+\\s*\\.\\s*payload\\s*\\(\\s*(\\w*)\\.class\\s*\\).+?(?=buildGraph)", Pattern.DOTALL)
 
+    val descriptionPattern = Pattern.compile(
+            "\\w+\\s*=\\s*\\w+\\s*\\.\\s*processor\\s*\\(\\s*\\)\\s*\\.\\s*forPayload\\s*\\(\\s*[\\w\\.]+\\s*\\)(\\s*\\.\\s*passArg\\s*\\()"
+    )
+
     val imports = ArrayList<String>()
 
-    val context = Context(null)
+//    val context = Context(null)
 
 
     fun parse(javaCode: String): List<ReactorGraphModel> {
@@ -43,6 +47,8 @@ class JavaParser(
         }
 
         // parse
+//        Context c;
+
 
 
 
