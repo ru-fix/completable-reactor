@@ -48,26 +48,34 @@ class JavaParserTest {
         val tokens = CommonTokenStream(lexer)
         val parser = Java8Parser(tokens)
 
-        parser.setV(V())
+        parser.addParseListener(L())
 
-        println(parser.compilationUnit())
-
+        parser.compilationUnit()
+//        V().visitCompilationUnit(parser.compilationUnit())
 
 
     }
 
     class V : Java8BaseVisitor<Void?>() {
         override fun visitFieldDeclaration(ctx: Java8Parser.FieldDeclarationContext?): Void? {
-            print("Visit: $ctx")
+
+            print("V: $ctx")
             return null
         }
     }
 
     class L : Java8BaseListener() {
         override fun enterFieldDeclaration(ctx: Java8Parser.FieldDeclarationContext?) {
-            println("Enter: $ctx")
+
+            println("L: ${ctx?.fieldModifier()}")
+        }
+
+        override fun exitFieldDeclaration(ctx: Java8Parser.FieldDeclarationContext?) {
+            println("L: exit $ctx")
         }
     }
+
+
 
 
 }
