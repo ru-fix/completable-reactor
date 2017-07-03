@@ -12,9 +12,9 @@ import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder;
-import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
+import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
@@ -68,7 +68,7 @@ public class CompletableReactor implements AutoCloseable {
 
     private final AtomicLong closeTimeoutMs = new AtomicLong(120_000);
 
-    private static class ReactorTracer implements Tracer{
+    private static class ReactorTracer implements Tracer {
 
         private volatile Tracer tracer;
 
@@ -168,21 +168,21 @@ public class CompletableReactor implements AutoCloseable {
 
     /**
      * @param value timeout in milliseconds reactor will wain for flow to execute until terminating
-     *             it with TimeoutException
+     *              it with TimeoutException
      */
     public void setExecutionTimeoutMs(long value) {
         executionTimeoutMs = value;
     }
 
-    public void setTracer(Tracer tracer){
+    public void setTracer(Tracer tracer) {
         this.reactorTracer.tracer = tracer;
     }
 
-    public Tracer getTracer(){
+    public Tracer getTracer() {
         return this.reactorTracer.tracer;
     }
 
-    public void removeTracer(){
+    public void removeTracer() {
         this.reactorTracer.tracer = null;
     }
 
@@ -243,7 +243,10 @@ public class CompletableReactor implements AutoCloseable {
                 runnable,
                 threadsNamePrefix + counter.getAndIncrement());
 
-        return new ScheduledThreadPoolExecutor(poolSize, threadFactory);
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor =
+                new ScheduledThreadPoolExecutor(poolSize, threadFactory);
+        scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+        return scheduledThreadPoolExecutor;
     }
 
 
