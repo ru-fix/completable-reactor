@@ -394,31 +394,31 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             return null;
         }
 
-        return String.format("%s@%d",
+        return String.format("%s@%s",
                 graphProcessor.getProcessorDescription().getProcessorType().getSimpleName(),
-                graphProcessor.getId());
+                graphProcessor.getIdentity().getName());
     }
 
-    public static String serialize(Class processorType, int id) {
-        return String.format("%s@%d",
+    public static String serialize(Class processorType, String name) {
+        return String.format("%s@%s",
                 processorType.getSimpleName(),
-                id);
+                name);
     }
 
-    public static String serializeMergePoint(int id) {
-        return String.format("MergePoint@%d", id);
+    public static String serializeMergePoint(String name) {
+        return String.format("MergePoint@%d", name);
     }
 
     public static String serialize(CRMergePoint graphMergePoint) {
-        return serializeMergePoint(graphMergePoint.getId());
+        return serializeMergePoint(graphMergePoint.getIdentity().getName());
     }
 
 
     public static String serialize(CRSubgraph subgraphProcessor) {
         return subgraphProcessor == null ? null :
-                String.format("%s@%d",
+                String.format("%s@%s",
                         subgraphProcessor.getPayloadClass().getSimpleName(),
-                        subgraphProcessor.getId());
+                        subgraphProcessor.getIdentity().getName());
     }
 
 
@@ -446,6 +446,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
 
     public void ensureProcessingItemRegistered(CRProcessor<?> graphProcessor) {
         Objects.requireNonNull(graphProcessor);
+        Objects.requireNonNull(graphProcessor.getIdentity().getName());
 
         if (this.getProcessingItems().keySet().stream()
                 .anyMatch(item -> item.getIdentity().equals(graphProcessor.getIdentity()) && item != graphProcessor)) {
@@ -469,6 +470,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
 
     public void ensureProcessingItemRegistered(CRSubgraph<?> subgraphProcessor) {
         Objects.requireNonNull(subgraphProcessor);
+        Objects.requireNonNull(subgraphProcessor.getIdentity().getName());
 
         if (this.getProcessingItems().keySet().stream()
                 .anyMatch(item -> item.getIdentity().equals(subgraphProcessor.getIdentity()) && item != subgraphProcessor)) {

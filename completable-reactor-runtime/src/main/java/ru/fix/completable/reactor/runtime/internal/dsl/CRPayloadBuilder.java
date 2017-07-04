@@ -37,8 +37,7 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
     @Override
     public PayloadBuilder<PayloadType> handle(Processor<? super PayloadType> processor) {
         CRProcessor<?> crProcessor = (CRProcessor<?>) processor;
-
-        crProcessor.setId(builderContext.resolveConfigField(processor));
+        crProcessor.setName(builderContext.resolveConfigField(processor));
 
         graph.ensureProcessingItemRegistered(crProcessor);
 
@@ -49,6 +48,8 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
     @Override
     public PayloadBuilder<PayloadType> handle(Subgraph<? super PayloadType> subgraph) {
         CRSubgraph<?> crSubgraph = (CRSubgraph<?>) subgraph;
+        crSubgraph.setName(builderContext.resolveConfigField(subgraph));
+
         graph.ensureProcessingItemRegistered(crSubgraph);
 
         addToStartPoint(crSubgraph);
@@ -58,6 +59,8 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
     @Override
     public PayloadBuilder<PayloadType> merge(MergePoint<PayloadType> mergePoint) {
         CRMergePoint<?> crMergePoint = (CRMergePoint<?>) mergePoint;
+        crMergePoint.setName(builderContext.resolveConfigField(mergePoint));
+
         graph.ensureProcessingItemRegistered(crMergePoint);
 
         addToStartPoint(crMergePoint);

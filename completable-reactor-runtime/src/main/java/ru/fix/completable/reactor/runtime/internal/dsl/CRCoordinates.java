@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.dsl.Coordinates;
+import ru.fix.completable.reactor.runtime.dsl.Processor;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 import ru.fix.completable.reactor.runtime.internal.ReactorReflector;
 
@@ -38,7 +39,12 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
     }
 
     @Override
-    public Coordinates<PayloadType> proc(Class type, int id, int x, int y) {
+    Coordinates<PayloadType> proc(Processor<PayloadType> processor, int x, int y) {
+        return proc(processor, x, y);
+    }
+
+
+    Coordinates<PayloadType> proc(Object processingItem, int id, int x, int y) {
         var matchedProcessors = graph.getProcessingItems().entrySet().stream()
                 .filter(entry -> {
                     switch (entry.getValue().getProcessingItemType()) {
@@ -234,10 +240,10 @@ public class CRCoordinates<PayloadType> implements Coordinates<PayloadType> {
     }
 
     @Override
-    public Coordinates<PayloadType> complete(int id, int x, int y) {
+    public Coordinates<PayloadType> complete(String na, int x, int y) {
         List<CRReactorGraph.MergePoint> matchedMergePoints = graph.getMergePoints().stream()
                 .filter(mergePoint -> mergePoint.getType() == CRReactorGraph.MergePoint.Type.DETACHED)
-                .filter(mergePoint -> mergePoint.getMergePoint().getId() == id)
+                .filter(mergePoint -> mergePoint.getMergePoint().getIdentity().getName() == id)
                 .collect(Collectors.toList());
 
         if(matchedMergePoints.size() > 0) {
