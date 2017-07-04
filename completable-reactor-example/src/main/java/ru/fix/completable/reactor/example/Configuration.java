@@ -19,10 +19,10 @@ import java.math.BigDecimal;
  */
 public class Configuration {
 
-    final ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder();
+    final ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
 
     /**
-     * Processors
+     * Services
      */
     UserProfileService userProfile = new UserProfileService();
     ServiceInfoProcessor serviceInfo = new ServiceInfoProcessor();
@@ -144,7 +144,7 @@ public class Configuration {
             .buildProcessor();
 
 
-    ReactorGraph<PurchasePayload> purchaseGraph() throws Exception {
+    public ReactorGraph<PurchasePayload> purchaseGraph() throws Exception {
 
         Processor<ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.processor()
                 .forPayload(ServiceInfoPayloadMixin.class)
@@ -222,50 +222,48 @@ public class Configuration {
                 .buildGraph();
     }
 
-    ReactorGraph<SubscribePayload> subscribeGraph() throws Exception {
+    Processor<ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.processor()
+            .forPayload(ServiceInfoPayloadMixin.class)
+            .passArg(pld -> pld.getServiceId())
+            .withHandler(serviceInfo::loadServiceInformation)
+            .withMerger(
+                    "updateServiceInfo",
+                    (pld, result) -> {
+                        if (pld.getStatus() != null) {
+                            return MergeStatus.STOP;
+                        }
 
-        Processor<ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.processor()
-                .forPayload(ServiceInfoPayloadMixin.class)
-                .passArg(pld -> pld.getServiceId())
-                .withHandler(serviceInfo::loadServiceInformation)
-                .withMerger(
-                        "updateServiceInfo",
-                        (pld, result) -> {
-                            if (pld.getStatus() != null) {
+                        switch (result.getStatus()) {
+                            case SERVICE_NOT_FOUND:
+                                pld.setStatus(result.getStatus());
                                 return MergeStatus.STOP;
-                            }
+                            case OK:
+                                pld.setServiceInfo(result.getServiceInfo());
 
-                            switch (result.getStatus()) {
-                                case SERVICE_NOT_FOUND:
-                                    pld.setStatus(result.getStatus());
-                                    return MergeStatus.STOP;
-                                case OK:
-                                    pld.setServiceInfo(result.getServiceInfo());
+                                if (result.getServiceInfo().isActive()) {
+                                    return MergeStatus.CONTINUE;
+                                } else {
+                                    return MergeStatus.NO_WITHDRAWAL;
+                                }
+                        }
+                        return MergeStatus.CONTINUE;
+                    }).buildProcessor();
 
-                                    if (result.getServiceInfo().isActive()) {
-                                        return MergeStatus.CONTINUE;
-                                    } else {
-                                        return MergeStatus.NO_WITHDRAWAL;
-                                    }
-                            }
-                            return MergeStatus.CONTINUE;
-                        }).buildProcessor();
+    MergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.mergePoint()
+            .forPayload(SubscribePayload.class)
+            .withMerger(
+                    "checkTrialPeriod",
+                    new String[]{"Checks whether service supports trial period"},
+                    payload -> {
+                        if (payload.getServiceInfo().isSupportTrialPeriod()) {
+                            return MergeStatus.WITHDRAWAL;
+                        } else {
+                            return MergeStatus.NO_WITHDRAWAL;
+                        }
+                    })
+            .buildMergePoint();
 
-
-        MergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.mergePoint()
-                .forPayload(SubscribePayload.class)
-                .withMerger(
-                        "checkTrialPeriod",
-                        new String[]{"Checks whether service supports trial period"},
-                        payload -> {
-                            if (payload.getServiceInfo().isSupportTrialPeriod()) {
-                                return MergeStatus.WITHDRAWAL;
-                            } else {
-                                return MergeStatus.NO_WITHDRAWAL;
-                            }
-                        })
-                .buildMergePoint();
-
+    public ReactorGraph<SubscribePayload> subscribeGraph() throws Exception {
         return graphBuilder
                 .payload(SubscribePayload.class)
                 .handle(gUserProfile)
@@ -315,7 +313,6 @@ public class Configuration {
                 .complete(UserProfileService.class, 0, 920, 300)
 
                 .buildGraph();
-
     }
 
 

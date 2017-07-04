@@ -26,7 +26,6 @@ public class CRProcessor<PayloadType> implements Processor<PayloadType>, CRProce
         ;
     }
 
-    @Override
     public CRProcessor<PayloadType> setId(int id){
         this.identity.setId(id);
         return this;

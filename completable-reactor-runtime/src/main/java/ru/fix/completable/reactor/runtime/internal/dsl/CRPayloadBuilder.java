@@ -37,6 +37,9 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
     @Override
     public PayloadBuilder<PayloadType> handle(Processor<? super PayloadType> processor) {
         CRProcessor<?> crProcessor = (CRProcessor<?>) processor;
+
+        crProcessor.setId(builderContext.resolveConfigField(processor));
+
         graph.ensureProcessingItemRegistered(crProcessor);
 
         addToStartPoint(crProcessor);

@@ -27,8 +27,11 @@ import java.util.Optional;
 public class ReactorGraphBuilder {
 
     final List<GraphValidator> graphValidators = new ArrayList<>();
+    final Object graphConfiguration;
 
-    public ReactorGraphBuilder() {
+    public ReactorGraphBuilder(Object graphConfiguration) {
+        this.graphConfiguration = graphConfiguration;
+
         graphValidators.add(new TerminalVertexExistValidator());
         graphValidators.add(new ProcessorsHaveIncomingFlowsValidator());
     }
