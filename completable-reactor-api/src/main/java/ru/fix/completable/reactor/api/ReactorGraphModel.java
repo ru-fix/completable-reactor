@@ -188,10 +188,10 @@ public class ReactorGraphModel {
     }
 
     public enum Version {
-        v1_0_20
+        v1_0_21
     }
 
-    public Version version = Version.v1_0_20;
+    public Version version = Version.v1_0_21;
 
     public Payload payload;
     public StartPoint startPoint;
