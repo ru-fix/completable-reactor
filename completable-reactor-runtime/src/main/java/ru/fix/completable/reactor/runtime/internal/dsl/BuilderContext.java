@@ -52,6 +52,14 @@ public class BuilderContext<PayloadType> {
             }
         }
 
-        return graphConfigFields.get(configField);
+        String name = graphConfigFields.get(configField);
+        if (name == null) {
+            throw new IllegalArgumentException(String.format("" +
+                    "Failed to resolve field within class %s that reference given object %s" +
+                    "Than could happen if you are passing local variable instead of class field to reactor builder.",
+                    graphConfig.getClass(),
+                    configField));
+        }
+        return name;
     }
 }

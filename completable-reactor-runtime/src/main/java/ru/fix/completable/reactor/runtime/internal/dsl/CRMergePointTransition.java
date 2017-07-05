@@ -55,6 +55,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
     @Override
     public MergePointBuilder<PayloadType> handle(Processor<? super PayloadType> processor) {
         CRProcessor<?> crProcessor = (CRProcessor<?>) processor;
+        crProcessor.setName(builderContext.resolveConfigField(processor));
         graph.ensureProcessingItemRegistered(crProcessor);
 
         val newTransition = transitionSupplier.get()
@@ -68,6 +69,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
     @Override
     public MergePointBuilder<PayloadType> handle(Subgraph<? super PayloadType> subgraph) {
         CRSubgraph<?> crSubgraph = (CRSubgraph<?>) subgraph;
+        crSubgraph.setName(builderContext.resolveConfigField(subgraph));
         graph.ensureProcessingItemRegistered(crSubgraph);
 
         val newTransition = transitionSupplier.get()
@@ -81,6 +83,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
     @Override
     public MergePointBuilder<PayloadType> merge(Processor<? super PayloadType> processor) {
         CRProcessor<?> crProcessor = (CRProcessor<?>) processor;
+        crProcessor.setName(builderContext.resolveConfigField(processor));
         graph.ensureProcessingItemRegistered(crProcessor);
 
         val newTransition = transitionSupplier.get()
@@ -94,6 +97,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
     @Override
     public MergePointBuilder<PayloadType> merge(Subgraph<? super PayloadType> subgraph) {
         CRSubgraph<?> crSubgraph = (CRSubgraph<?>) subgraph;
+        crSubgraph.setName(builderContext.resolveConfigField(subgraph));
         graph.ensureProcessingItemRegistered(crSubgraph);
 
         val newTransition = transitionSupplier.get()
@@ -107,6 +111,7 @@ public class CRMergePointTransition<PayloadType> implements MergePointTransition
     @Override
     public MergePointBuilder<PayloadType> merge(MergePoint<? super PayloadType> mergePoint) {
         CRMergePoint<?> crMergePoint = (CRMergePoint<?>) mergePoint;
+        crMergePoint.setName(builderContext.resolveConfigField(mergePoint));
         graph.ensureProcessingItemRegistered(crMergePoint);
 
         val newTransition = transitionSupplier.get()
