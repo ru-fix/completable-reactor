@@ -406,7 +406,7 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
     }
 
     public static String serializeMergePoint(String name) {
-        return String.format("MergePoint@%d", name);
+        return String.format("MergePoint@%s", name);
     }
 
     public static String serialize(CRMergePoint graphMergePoint) {

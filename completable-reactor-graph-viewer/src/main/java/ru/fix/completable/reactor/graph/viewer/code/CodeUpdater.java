@@ -101,34 +101,31 @@ public class CodeUpdater {
             case START_POINT:
                 return String.format(".start(%d, %d)", item.getX(), item.getY());
             case PROCESSOR:
-                return String.format(".proc(%s.class, %d, %d, %d)",
-                        item.getIdentity().getClassName(),
-                        item.getIdentity().getId(),
+                return String.format(".proc(%s, %d, %d)",
+                        item.getIdentity().getName(),
                         item.getX(),
                         item.getY());
             case MERGE_POINT:
                 if (item.getIdentity().getClassName() == null) {
-                    return String.format(".merge(%d, %d, %d)",
-                            item.getIdentity().getId(),
+                    return String.format(".merge(%s, %d, %d)",
+                            item.getIdentity().getName(),
                             item.getX(),
                             item.getY());
                 } else {
-                    return String.format(".merge(%s.class, %d, %d, %d)",
-                            item.getIdentity().getClassName(),
-                            item.getIdentity().getId(),
+                    return String.format(".merge(%s, %d, %d)",
+                            item.getIdentity().getName(),
                             item.getX(),
                             item.getY());
                 }
             case END_POINT:
                 if (item.getIdentity().getClassName() == null) {
-                    return String.format(".complete(%d, %d, %d)",
-                            item.getIdentity().getId(),
+                    return String.format(".complete(%s, %d, %d)",
+                            item.getIdentity().getName(),
                             item.getX(),
                             item.getY());
                 } else {
-                    return String.format(".complete(%s.class, %d, %d, %d)",
-                            item.getIdentity().getClassName(),
-                            item.getIdentity().getId(),
+                    return String.format(".complete(%s, %d, %d)",
+                            item.getIdentity().getName(),
                             item.getX(),
                             item.getY());
                 }

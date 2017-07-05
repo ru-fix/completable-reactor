@@ -40,8 +40,7 @@ public class ReactorGraphBuilder {
      * Build ReactorGraph for given payload
      */
     public <PayloadType> PayloadBuilder<PayloadType> payload(Class<PayloadType> payloadClass) {
-        val builderContext = new BuilderContext<PayloadType>();
-        builderContext.setGraph(new CRReactorGraph<>(payloadClass));
+        val builderContext = new BuilderContext<PayloadType>(graphConfiguration, new CRReactorGraph<>(payloadClass));
         builderContext.getGraphValidators().addAll(graphValidators);
 
         builderContext.getGraph().getStartPoint().setBuilderPayloadSource(

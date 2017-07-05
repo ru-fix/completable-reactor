@@ -32,7 +32,7 @@ public class CodeUpdaterTest {
                 GraphViewer.CoordinateItem.Type.PROCESSOR,
                 new ReactorGraphModel.Identity()
                         .setClassName("SmsRequestConstructProcessor")
-                        .setId(4),
+                        .setName("smsRequestConstructProcessor4"),
                 910,
                 901));
 
@@ -40,7 +40,7 @@ public class CodeUpdaterTest {
                 GraphViewer.CoordinateItem.Type.PROCESSOR,
                 new ReactorGraphModel.Identity()
                         .setClassName("SmsRequestConstructProcessor")
-                        .setId(5),
+                        .setName("smsRequestConstructProcessor5"),
                 1170,
                 1270));
 
@@ -48,7 +48,7 @@ public class CodeUpdaterTest {
                 GraphViewer.CoordinateItem.Type.PROCESSOR,
                 new ReactorGraphModel.Identity()
                         .setClassName("ServiceFetchProcessor")
-                        .setId(0),
+                        .setName("serviceFetchProcessor"),
                 320,
                 1141));
 
@@ -56,7 +56,7 @@ public class CodeUpdaterTest {
                 GraphViewer.CoordinateItem.Type.MERGE_POINT,
                 new ReactorGraphModel.Identity()
                         .setClassName("ServiceFetchProcessor")
-                        .setId(5),
+                        .setName("serviceFetchProcessor5"),
                 1210,
                 401));
 
@@ -64,7 +64,7 @@ public class CodeUpdaterTest {
                 GraphViewer.CoordinateItem.Type.END_POINT,
                 new ReactorGraphModel.Identity()
                         .setClassName("SmsRequestConstructProcessor")
-                        .setId(6),
+                        .setName("smsRequestConstructProcessor6"),
 
                 1500,
                 511));

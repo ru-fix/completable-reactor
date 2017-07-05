@@ -19,9 +19,13 @@ import java.util.*;
 @Accessors(chain = true)
 public class BuilderContext<PayloadType> {
     final List<GraphValidator> graphValidators = new ArrayList<>();
-    Object graphConfig;
+    final Object graphConfig;
+    final CRReactorGraph<PayloadType> graph;
 
-    CRReactorGraph<PayloadType> graph;
+    public BuilderContext(Object graphConfig, CRReactorGraph<PayloadType> graph) {
+        this.graphConfig = graphConfig;
+        this.graph = graph;
+    }
 
     Map<Object, String> graphConfigFields;
 
@@ -29,16 +33,19 @@ public class BuilderContext<PayloadType> {
 
     public String resolveConfigField(Object configField) {
         if (graphConfigFields == null) {
-            graphConfigFields = new HashMap<>();
+            graphConfigFields = new IdentityHashMap<>();
 
             for (Class clazz = graphConfig.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
 
                 Arrays.stream(clazz.getDeclaredFields())
                         .filter(field ->
-                                graphItems.stream().anyMatch(graphItemClass -> graphItemClass.isAssignableFrom(field
-                                        .getDeclaringClass())))
+                                graphItems.stream().anyMatch(
+                                        graphItemClass -> graphItemClass.isAssignableFrom(field.getType())))
                         .forEach(field -> {
                             try {
+                                if(!field.isAccessible()){
+                                    field.setAccessible(true);
+                                }
                                 Object value = field.get(graphConfig);
                                 graphConfigFields.put(value, field.getName());
                             } catch (Exception exc) {

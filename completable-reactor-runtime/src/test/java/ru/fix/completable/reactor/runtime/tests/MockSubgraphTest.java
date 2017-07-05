@@ -9,7 +9,10 @@ import ru.fix.commons.profiler.Profiler;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
+import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
+import ru.fix.completable.reactor.runtime.dsl.Processor;
+import ru.fix.completable.reactor.runtime.dsl.Subgraph;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -38,21 +41,19 @@ public class MockSubgraphTest {
     enum Status {OK}
 
     @Reactored()
-    static class Processor1{
-        public CompletableFuture<Void> handle(){
+    static class Processor1 {
+        public CompletableFuture<Void> handle() {
             return CompletableFuture.completedFuture(null);
         }
     }
 
-
     final Profiler profiler = new SimpleProfiler();
-    final ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder();
 
     CompletableReactor reactor;
 
 
     @Before
-    public void before(){
+    public void before() {
         reactor = new CompletableReactor(profiler)
                 .setDebugProcessingVertexGraphState(true);
     }
@@ -60,40 +61,47 @@ public class MockSubgraphTest {
     @Test
     public void mock_subgraph() throws Exception {
 
-        val processor1 = graphBuilder.processor()
-                .forPayload(MainPayload.class)
-                .withHandler(new Processor1()::handle)
-                .withMerger((mainPayload, any) -> Status.OK)
-                .buildProcessor();
+        class Config {
+            final ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
 
-        val subgraph = graphBuilder.subgraph(SubgraphPayload.class)
-                .forPayload(MainPayload.class)
-                .passArg(pld -> new SubgraphPayload().setData(pld.getData()))
-                .withMerger((mainPayload, subgraphPayload) -> {
-                    mainPayload.setData(subgraphPayload.getData());
-                    return Status.OK;
-                })
-                .buildSubgraph();
+            Processor<MainPayload> processor1 = graphBuilder.processor()
+                    .forPayload(MainPayload.class)
+                    .withHandler(new Processor1()::handle)
+                    .withMerger((mainPayload, any) -> Status.OK)
+                    .buildProcessor();
+
+            Subgraph<MainPayload> subgraph = graphBuilder.subgraph(SubgraphPayload.class)
+                    .forPayload(MainPayload.class)
+                    .passArg(pld -> new SubgraphPayload().setData(pld.getData()))
+                    .withMerger((mainPayload, subgraphPayload) -> {
+                        mainPayload.setData(subgraphPayload.getData());
+                        return Status.OK;
+                    })
+                    .buildSubgraph();
 
 
-        val graph = graphBuilder.payload(MainPayload.class)
-                .handle(processor1)
+            ReactorGraph<MainPayload> graph() {
+                return graphBuilder.payload(MainPayload.class)
+                        .handle(processor1)
 
-                .mergePoint(processor1)
-                .onAny().handle(subgraph)
+                        .mergePoint(processor1)
+                        .onAny().handle(subgraph)
 
-                .mergePoint(subgraph)
-                .onAny().complete()
-                .coordinates()
-                .start(488, -51)
-                .proc(Processor1.class, 0, 483, 19)
-                .proc(SubgraphPayload.class, 0, 465, 175)
-                .merge(Processor1.class, 0, 519, 104)
-                .merge(SubgraphPayload.class, 0, 526, 259)
-                .complete(SubgraphPayload.class, 0, 532, 336)
+                        .mergePoint(subgraph)
+                        .onAny().complete()
+                        .coordinates()
+                        .start(488, -51)
+                        .proc(processor1, 483, 19)
+                        .proc(subgraph, 465, 175)
+                        .merge(processor1, 519, 104)
+                        .merge(subgraph, 526, 259)
+                        .complete(subgraph, 532, 336)
 
-                .buildGraph();
+                        .buildGraph();
+            }
+        }
 
+        val graph = new Config().graph();
         ReactorGraphBuilder.write(graph);
         reactor.registerReactorGraph(graph);
 
