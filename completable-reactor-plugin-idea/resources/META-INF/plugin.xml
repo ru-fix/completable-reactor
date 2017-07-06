@@ -16,6 +16,7 @@
 
   <change-notes>
     <![CDATA[
+      1.0.21 New graph items API: remove explicit id.
       1.0.20 Fix graph zoom in IDE on MacOS. Remove Merge Groups.
       1.0.18 Navigate to subgraph by clicking on subgraph node.
       1.0.13 Fix update end point coordinates for detached merge points.<br>
