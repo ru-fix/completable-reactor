@@ -123,7 +123,7 @@ class ProcessorNode extends VBox {
     }
 
     String serialize(ReactorGraphModel.Identity identity){
-        return identity.getClassName() + "@" + identity.getName();
+        return String.format("%s: %s", identity.getName(), identity.getClassName());
     }
 
 }

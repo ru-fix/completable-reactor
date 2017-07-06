@@ -1,5 +1,5 @@
 {
-  "version" : "v1_0_20",
+  "version" : "v1_0_21",
   "payload" : {
     "payloadName" : "DetachedMergePointFromProcessorsMergePointPayload",
     "payloadClass" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$DetachedMergePointFromProcessorsMergePointPayload",
@@ -11,39 +11,39 @@
       "y" : 62
     },
     "coordinatesSource" : {
-      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
       "fileName" : "CompletableReactorTest.java",
-      "fileNameLine" : 627
+      "fileNameLine" : 690
     },
     "builderPayloadSource" : {
-      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
       "fileName" : "CompletableReactorTest.java",
-      "fileNameLine" : 612
+      "fileNameLine" : 675
     },
     "processingItems" : [ {
       "type" : "PROCESSOR",
       "className" : "IdProcessor",
-      "id" : 0
+      "name" : "idProcessor0"
     }, {
       "type" : "PROCESSOR",
       "className" : "IdProcessor",
-      "id" : 1
+      "name" : "idProcessor1"
     } ]
   },
   "processors" : [ {
     "identity" : {
       "type" : "PROCESSOR",
       "className" : "IdProcessor",
-      "id" : 0
+      "name" : "idProcessor0"
     },
     "coordinates" : {
       "x" : 164,
       "y" : 131
     },
     "coordinatesSource" : {
-      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
       "fileName" : "CompletableReactorTest.java",
-      "fileNameLine" : 628
+      "fileNameLine" : 691
     },
     "processorDoc" : [ "IdProcessor return it's id" ],
     "handlerTitle" : "handle",
@@ -51,22 +51,22 @@
     "withHandlerSource" : {
       "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
       "fileName" : "CompletableReactorTest.java",
-      "fileNameLine" : 70
+      "fileNameLine" : 65
     }
   }, {
     "identity" : {
       "type" : "PROCESSOR",
       "className" : "IdProcessor",
-      "id" : 1
+      "name" : "idProcessor1"
     },
     "coordinates" : {
       "x" : 330,
       "y" : 127
     },
     "coordinatesSource" : {
-      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
       "fileName" : "CompletableReactorTest.java",
-      "fileNameLine" : 629
+      "fileNameLine" : 692
     },
     "processorDoc" : [ "IdProcessor return it's id" ],
     "handlerTitle" : "handle",
@@ -74,7 +74,7 @@
     "withHandlerSource" : {
       "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
       "fileName" : "CompletableReactorTest.java",
-      "fileNameLine" : 70
+      "fileNameLine" : 65
     }
   } ],
   "subgraphs" : [ ],
@@ -82,7 +82,7 @@
     "identity" : {
       "type" : "PROCESSOR",
       "className" : "IdProcessor",
-      "id" : 0
+      "name" : "idProcessor0"
     },
     "coordinates" : {
       "x" : 235,
@@ -92,7 +92,7 @@
     "mergeSource" : {
       "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
       "fileName" : "CompletableReactorTest.java",
-      "fileNameLine" : 71
+      "fileNameLine" : 66
     },
     "mergerTitle" : null,
     "mergerDocs" : [ ],
@@ -103,7 +103,7 @@
       "mergeProcessingItem" : {
         "type" : "PROCESSOR",
         "className" : "IdProcessor",
-        "id" : 1
+        "name" : "idProcessor1"
       },
       "handleByProcessingItem" : null,
       "completeCoordinates" : {
@@ -114,9 +114,9 @@
       "completeSource" : null,
       "transitionsDoc" : [ ],
       "transitionOnAnySource" : {
-        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
         "fileName" : "CompletableReactorTest.java",
-        "fileNameLine" : 618
+        "fileNameLine" : 681
       },
       "transitionOnStatusSource" : { },
       "mergeStatusSources" : { },
@@ -127,7 +127,7 @@
     "identity" : {
       "type" : "PROCESSOR",
       "className" : "IdProcessor",
-      "id" : 1
+      "name" : "idProcessor1"
     },
     "coordinates" : {
       "x" : 357,
@@ -137,7 +137,7 @@
     "mergeSource" : {
       "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
       "fileName" : "CompletableReactorTest.java",
-      "fileNameLine" : 71
+      "fileNameLine" : 66
     },
     "mergerTitle" : null,
     "mergerDocs" : [ ],
@@ -148,7 +148,7 @@
       "mergeProcessingItem" : {
         "type" : "MERGE_POINT",
         "className" : null,
-        "id" : 0
+        "name" : "mergePoint"
       },
       "handleByProcessingItem" : null,
       "completeCoordinates" : {
@@ -159,9 +159,9 @@
       "completeSource" : null,
       "transitionsDoc" : [ ],
       "transitionOnAnySource" : {
-        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
         "fileName" : "CompletableReactorTest.java",
-        "fileNameLine" : 621
+        "fileNameLine" : 684
       },
       "transitionOnStatusSource" : { },
       "mergeStatusSources" : { },
@@ -172,7 +172,7 @@
     "identity" : {
       "type" : "MERGE_POINT",
       "className" : null,
-      "id" : 0
+      "name" : "mergePoint"
     },
     "coordinates" : {
       "x" : 461,
@@ -180,9 +180,9 @@
     },
     "coordinatesSource" : null,
     "mergeSource" : {
-      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+      "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
       "fileName" : "CompletableReactorTest.java",
-      "fileNameLine" : 599
+      "fileNameLine" : 662
     },
     "mergerTitle" : "addMergePointId",
     "mergerDocs" : [ "Adds merge point id", "to payload sequence" ],
@@ -197,20 +197,20 @@
         "y" : 369
       },
       "completeCoordinatesSource" : {
-        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
         "fileName" : "CompletableReactorTest.java",
-        "fileNameLine" : 633
+        "fileNameLine" : 696
       },
       "completeSource" : {
-        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
         "fileName" : "CompletableReactorTest.java",
-        "fileNameLine" : 624
+        "fileNameLine" : 687
       },
       "transitionsDoc" : [ ],
       "transitionOnAnySource" : {
-        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+        "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
         "fileName" : "CompletableReactorTest.java",
-        "fileNameLine" : 624
+        "fileNameLine" : 687
       },
       "transitionOnStatusSource" : { },
       "mergeStatusSources" : { },
@@ -221,16 +221,16 @@
   "serializationPointSource" : {
     "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
     "fileName" : "CompletableReactorTest.java",
-    "fileNameLine" : 79
+    "fileNameLine" : 74
   },
   "coordinatesSource" : {
-    "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+    "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
     "fileName" : "CompletableReactorTest.java",
-    "fileNameLine" : 626
+    "fileNameLine" : 689
   },
   "buildGraphSource" : {
-    "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest",
+    "className" : "ru.fix.completable.reactor.runtime.tests.CompletableReactorTest$9Config",
     "fileName" : "CompletableReactorTest.java",
-    "fileNameLine" : 635
+    "fileNameLine" : 698
   }
 }
