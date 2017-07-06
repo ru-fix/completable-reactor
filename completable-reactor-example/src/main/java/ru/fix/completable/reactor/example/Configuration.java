@@ -144,47 +144,46 @@ public class Configuration {
             .buildProcessor();
 
 
-    public ReactorGraph<PurchasePayload> purchaseGraph() throws Exception {
+    Processor<ServiceInfoPayloadMixin> gPurchaseServiceInfo = graphBuilder.processor()
+            .forPayload(ServiceInfoPayloadMixin.class)
+            .passArg(pld -> pld.getServiceId())
+            .withHandler(serviceInfo::loadServiceInformation)
+            .withMerger(
+                    "updateServiceInfo",
+                    (pld, result) -> {
+                        if (pld.getStatus() != null) {
+                            return MergeStatus.STOP;
+                        }
 
-        Processor<ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.processor()
-                .forPayload(ServiceInfoPayloadMixin.class)
-                .passArg(pld -> pld.getServiceId())
-                .withHandler(serviceInfo::loadServiceInformation)
-                .withMerger(
-                        "updateServiceInfo",
-                        (pld, result) -> {
-                            if (pld.getStatus() != null) {
+                        switch (result.getStatus()) {
+                            case SERVICE_NOT_FOUND:
+                                pld.setStatus(result.getStatus());
                                 return MergeStatus.STOP;
-                            }
+                            case OK:
+                                pld.setServiceInfo(result.getServiceInfo());
 
-                            switch (result.getStatus()) {
-                                case SERVICE_NOT_FOUND:
-                                    pld.setStatus(result.getStatus());
-                                    return MergeStatus.STOP;
-                                case OK:
-                                    pld.setServiceInfo(result.getServiceInfo());
+                                if (result.getServiceInfo().isActive()) {
+                                    return MergeStatus.WITHDRAWAL;
+                                } else {
+                                    return MergeStatus.NO_WITHDRAWAL;
+                                }
+                        }
+                        return MergeStatus.CONTINUE;
+                    })
+            .buildProcessor();
 
-                                    if (result.getServiceInfo().isActive()) {
-                                        return MergeStatus.WITHDRAWAL;
-                                    } else {
-                                        return MergeStatus.NO_WITHDRAWAL;
-                                    }
-                            }
-                            return MergeStatus.CONTINUE;
-                        })
-                .buildProcessor();
-
+    public ReactorGraph<PurchasePayload> purchaseGraph() throws Exception {
 
         return graphBuilder.payload(PurchasePayload.class)
                 .handle(gUserProfile)
-                .handle(gServiceInfo)
+                .handle(gPurchaseServiceInfo)
 
                 .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
-                .on(MergeStatus.CONTINUE).merge(gServiceInfo)
+                .on(MergeStatus.CONTINUE).merge(gPurchaseServiceInfo)
 
 
-                .mergePoint(gServiceInfo)
+                .mergePoint(gPurchaseServiceInfo)
                 .on(MergeStatus.WITHDRAWAL).handle(gBankPurchase)
                 .on(MergeStatus.NO_WITHDRAWAL).handle(gUserLog)
                 .on(MergeStatus.NO_WITHDRAWAL).handle(gNotification)
@@ -206,23 +205,23 @@ public class Configuration {
                 .start(680, 60)
                 .proc(gBankPurchase, 410, 440)
                 .proc(gNotification, 880, 430)
-                .proc(gServiceInfo, 480, 120)
+                .proc(gPurchaseServiceInfo, 480, 120)
                 .proc(gTxLog, 420, 650)
                 .proc(gUserLog, 680, 820)
                 .proc(gUserProfile, 770, 120)
                 .merge(gBankPurchase, 480, 550)
-                .merge(gServiceInfo, 640, 280)
+                .merge(gPurchaseServiceInfo, 640, 280)
                 .merge(gTxLog, 530, 770)
                 .merge(gUserLog, 760, 930)
                 .merge(gUserProfile, 806, 201)
-                .complete(gServiceInfo, 480, 310)
+                .complete(gPurchaseServiceInfo, 480, 310)
                 .complete(gUserLog, 740, 1020)
                 .complete(gUserProfile, 963, 258)
 
                 .buildGraph();
     }
 
-    Processor<ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.processor()
+    Processor<ServiceInfoPayloadMixin> gSubscribeServiceInfo = graphBuilder.processor()
             .forPayload(ServiceInfoPayloadMixin.class)
             .passArg(pld -> pld.getServiceId())
             .withHandler(serviceInfo::loadServiceInformation)
@@ -267,13 +266,13 @@ public class Configuration {
         return graphBuilder
                 .payload(SubscribePayload.class)
                 .handle(gUserProfile)
-                .handle(gServiceInfo)
+                .handle(gSubscribeServiceInfo)
 
                 .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
-                .on(MergeStatus.CONTINUE).merge(gServiceInfo)
+                .on(MergeStatus.CONTINUE).merge(gSubscribeServiceInfo)
 
-                .mergePoint(gServiceInfo)
+                .mergePoint(gSubscribeServiceInfo)
                 .on(MergeStatus.CONTINUE).merge(trialPeriodCheck)
                 .on(MergeStatus.STOP).complete()
 
@@ -298,17 +297,17 @@ public class Configuration {
                 .start(680, 60)
                 .proc(gBankSubsribe, 410, 440)
                 .proc(gNotification, 889, 465)
-                .proc(gServiceInfo, 480, 120)
+                .proc(gSubscribeServiceInfo, 480, 120)
                 .proc(gTxLog, 420, 650)
                 .proc(gUserLog, 680, 820)
                 .proc(gUserProfile, 770, 120)
                 .merge(gBankSubsribe, 480, 550)
                 .merge(trialPeriodCheck, 702, 363)
-                .merge(gServiceInfo, 640, 280)
+                .merge(gSubscribeServiceInfo, 640, 280)
                 .merge(gTxLog, 530, 770)
                 .merge(gUserLog, 760, 930)
                 .merge(gUserProfile, 830, 250)
-                .complete(gServiceInfo, 480, 310)
+                .complete(gSubscribeServiceInfo, 480, 310)
                 .complete(gUserLog, 740, 1020)
                 .complete(gUserProfile, 920, 300)
 

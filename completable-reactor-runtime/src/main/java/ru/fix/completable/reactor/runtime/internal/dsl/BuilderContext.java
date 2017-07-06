@@ -62,6 +62,9 @@ public class BuilderContext<PayloadType> {
         String name = graphConfigFields.get(configField);
         if (name == null) {
             throw new IllegalArgumentException(String.format("" +
+                    "You are probably using local variable instead of class field in ReactorGraph builder API. " +
+                    "Convert local variable to field.\n" +
+                    "\n" +
                     "Failed to resolve field within class %s that reference given object %s" +
                     "Than could happen if you are passing local variable instead of class field to reactor builder.",
                     graphConfig.getClass(),

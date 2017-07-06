@@ -9,6 +9,7 @@ public interface ThreadsafeCopyMaker {
      * It should be safe to read data from copy while origin pojo is being modified in different thread.
      *
      * If pojo or any part of pojo is immutable then it is possible copy only references to immutable objects.
+     * @param object any java object
      */
-    <T> T makeThreadsafeCopy(T pojo);
+    <T> T makeThreadsafeCopy(T object);
 }
