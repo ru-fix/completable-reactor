@@ -427,12 +427,15 @@ public class ReactorGraphExecutionBuilder {
                                         })
                                         .collect(Collectors.toList());
 
-                                if (incomingFlows.stream().anyMatch(context -> context == INVALID_TRANSITION_PAYLOAD_CONTEXT)) {
+                                if (incomingFlows.stream().anyMatch(
+                                        context -> context == INVALID_TRANSITION_PAYLOAD_CONTEXT)) {
                                     /**
                                      * Invalid graph execution state
                                      * Mark as terminal all outgoing flows from processor
                                      */
-                                    processingItem.getProcessorFuture().complete(new HandlePayloadContext().setTerminal(true));
+                                    processingItem.getProcessorFuture().complete(
+                                            new HandlePayloadContext()
+                                                    .setTerminal(true));
 
                                 } else if (incomingFlows.stream().anyMatch(TransitionPayloadContext::isTerminal)) {
                                     /**
@@ -501,7 +504,8 @@ public class ReactorGraphExecutionBuilder {
                     .map(TransitionFuture::getFuture)
                     .forEach(incomingFlows::add);
 
-            if (vertex.getProcessingItemInfo().getProcessingItemType() != CRReactorGraph.ProcessingItemType.MERGE_POINT) {
+            if (vertex.getProcessingItemInfo().getProcessingItemType() !=
+                    CRReactorGraph.ProcessingItemType.MERGE_POINT) {
                 /**
                  * Ignore processor future for detached merge point
                  * And use it for all other cases
@@ -588,7 +592,8 @@ public class ReactorGraphExecutionBuilder {
                                         if (!future.getFuture().isDone()) {
 
                                             RuntimeException resultException = new RuntimeException(String.format(
-                                                    "Illegal graph execution state. Incoming merge future is not complete." +
+                                                    "Illegal graph execution state. Incoming merge future" +
+                                                            " is not complete." +
                                                             " ProcessingVertex: %s", vertex));
                                             log.error(resultException.getMessage(), resultException);
                                             executionResultFuture.completeExceptionally(resultException);
@@ -639,11 +644,13 @@ public class ReactorGraphExecutionBuilder {
                                      */
                                     if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isDeadTransition)) {
                                         /**
-                                         * Detached MergePoint marked as Dead, because there are no active incoming flows and
-                                         * there is at least one incoming dead transition
+                                         * Detached MergePoint marked as Dead, because there are no active incoming
+                                         * flows and there is at least one incoming dead transition
                                          * Mark as dead all outgoing flows from merge point
                                          */
-                                        vertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
+                                        vertex.getMergePointFuture().complete(
+                                                new MergePayloadContext()
+                                                        .setDeadTransition(true));
                                     } else {
                                         throw new IllegalStateException(String.format(
                                                 "There is no incoming merge flows for detached merge point %s." +
@@ -660,13 +667,16 @@ public class ReactorGraphExecutionBuilder {
                                          */
                                         Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
                                                 "There is more than one active incoming flow for routing point %s." +
-                                                        " Reactor can not determinate from which of transitions take payload." +
+                                                        " Reactor can not determinate from which of transitions take" +
+                                                        " payload." +
                                                         " Possible loss of computation results." +
                                                         " Possible concurrent modifications of payload.",
                                                 vertex.getProcessingItem().getDebugName()));
 
                                         executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                                        vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
+                                        vertex.getMergePointFuture().complete(
+                                                new MergePayloadContext()
+                                                        .setTerminal(true));
 
                                     } else {
                                         /**
@@ -712,14 +722,18 @@ public class ReactorGraphExecutionBuilder {
                                              * Complete graph with exception
                                              */
                                             Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
-                                                    "There is more than one active incoming flow for merge point for processor %s." +
-                                                            " Reactor can not determinate from which of transitions take payload." +
+                                                    "There is more than one active incoming flow for merge point for" +
+                                                            " processor %s." +
+                                                            " Reactor can not determinate from which of transitions" +
+                                                            " take payload." +
                                                             " Possible loss of computation results." +
                                                             " Possible concurrent modifications of payload.",
                                                     vertex.getProcessingItem().getDebugName()));
 
                                             executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                                            vertex.getMergePointFuture().complete(new MergePayloadContext().setTerminal(true));
+                                            vertex.getMergePointFuture().complete(
+                                                    new MergePayloadContext()
+                                                            .setTerminal(true));
 
                                         } else {
 
@@ -1149,7 +1163,9 @@ public class ReactorGraphExecutionBuilder {
                 }
                 break;
             case MERGE_POINT:
-                mergerInvocation = () -> (Enum) processorInfo.getDetachedMergePointDescription().getMerger().merge(payload);
+                mergerInvocation = () -> (Enum) processorInfo.getDetachedMergePointDescription()
+                        .getMerger()
+                        .merge(payload);
                 break;
 
             default:

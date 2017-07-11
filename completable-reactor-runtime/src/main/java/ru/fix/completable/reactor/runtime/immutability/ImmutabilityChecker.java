@@ -22,7 +22,8 @@ public interface ImmutabilityChecker {
 
     /**
      * Compares pojo with give snapshot.
-     * @return EMPTY if new version of pojo is equal to previous one. Otherwise return human readable description of difference.
+     * @return EMPTY if new version of pojo is equal to previous one. Otherwise return human readable
+     * description of difference.
      */
     <T> Optional<String> diff(Snapshot pojoSnapshot, T pojo);
 }

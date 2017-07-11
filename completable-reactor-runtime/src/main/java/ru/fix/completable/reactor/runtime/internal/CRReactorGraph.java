@@ -79,7 +79,8 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
 
         public ReactorGraphModel.MergePoint serialize() {
             ReactorGraphModel.MergePoint model = new ReactorGraphModel.MergePoint();
-            model.coordinates = this.coordinates != null ? this.coordinates : new ReactorGraphModel.Coordinates(100, 100);
+            model.coordinates = this.coordinates != null ? this.coordinates :
+                    new ReactorGraphModel.Coordinates(100, 100);
             model.coordinatesSource = coordinatesSource;
 
             switch (this.getType()) {
@@ -134,7 +135,8 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             this.mergeStatuses = new HashSet<>(Arrays.asList(mergeStatuses));
 
             for (Enum<?> status : mergeStatuses) {
-                mergeStatusSources.put(status.name(), new ReactorGraphModel.Source().setClassName(status.getClass().getName()));
+                mergeStatusSources.put(status.name(), new ReactorGraphModel.Source().setClassName(
+                        status.getClass().getName()));
             }
         }
 
@@ -147,11 +149,14 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
             model.isComplete = isComplete;
             model.isOnAny = isOnAny;
 
-            model.mergeProcessingItem = Optional.ofNullable(merge).map(CRProcessingItem::getIdentity).orElse(null);
+            model.mergeProcessingItem = Optional.ofNullable(merge).map(CRProcessingItem::getIdentity)
+                    .orElse(null);
 
-            model.handleByProcessingItem = Optional.ofNullable(handleBy).map(CRProcessingItem::getIdentity).orElse(null);
+            model.handleByProcessingItem = Optional.ofNullable(handleBy).map(CRProcessingItem::getIdentity)
+                    .orElse(null);
 
-            model.completeCoordinates = completeCoordinates != null ? completeCoordinates : new ReactorGraphModel.Coordinates(100, 100);
+            model.completeCoordinates = completeCoordinates != null ? completeCoordinates :
+                    new ReactorGraphModel.Coordinates(100, 100);
 
             model.completeCoordinatesSource = completeCoordinatesSource;
 
@@ -214,7 +219,8 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
                 case MERGE_POINT:
                     return detachedMergePointDescription.getMerger() != null;
                 default:
-                    throw new IllegalArgumentException(String.format("Invalid processing item type: %s", processingItemType));
+                    throw new IllegalArgumentException(String.format("Invalid processing item type: %s",
+                            processingItemType));
             }
         }
 
@@ -270,7 +276,8 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
 
         public ReactorGraphModel.StartPoint serialize() {
             ReactorGraphModel.StartPoint model = new ReactorGraphModel.StartPoint();
-            model.coordinates = this.coordinates != null ? this.coordinates : new ReactorGraphModel.Coordinates(500, 100);
+            model.coordinates = this.coordinates != null ? this.coordinates :
+                    new ReactorGraphModel.Coordinates(500, 100);
             model.coordinatesSource = this.coordinatesSource;
 
             model.setBuilderPayloadSource(this.getBuilderPayloadSource());
@@ -360,7 +367,8 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
                         case MERGE_POINT:
                             break;
                         default:
-                            throw new IllegalStateException("Invalid type: " + entry.getValue().getProcessingItemType());
+                            throw new IllegalStateException("Invalid type: "
+                                    + entry.getValue().getProcessingItemType());
 
 
                     }
@@ -386,7 +394,8 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         if (CRProcessingItem instanceof CRMergePoint) {
             return serialize((CRMergePoint) CRProcessingItem);
         }
-        throw new IllegalArgumentException(String.format("Instance of class %s not supported.", CRProcessingItem.getClass()));
+        throw new IllegalArgumentException(String.format("Instance of class %s not supported.",
+                CRProcessingItem.getClass()));
     }
 
     public static String serialize(CRProcessor graphProcessor) {
@@ -426,7 +435,8 @@ public class CRReactorGraph<PayloadType> implements ReactorGraph<PayloadType> {
         Objects.requireNonNull(graphMergePoint);
 
         if (this.getProcessingItems().keySet().stream()
-                .anyMatch(item -> item.getIdentity().equals(graphMergePoint.getIdentity()) && item != graphMergePoint)) {
+                .anyMatch(item -> item.getIdentity().equals(graphMergePoint.getIdentity())
+                        && item != graphMergePoint)) {
             throw new IllegalArgumentException(String.format(
                     "There are two MergePoint object with same id but different reference: %s." +
                             " It could lead to ambiguous graph structure declaration.",

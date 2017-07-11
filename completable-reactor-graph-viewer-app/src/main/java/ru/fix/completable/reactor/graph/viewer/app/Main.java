@@ -29,7 +29,9 @@ public class Main extends Application {
 
         try {
 
-            val graphModel = new String(Files.readAllBytes(Paths.get(getParameters().getRaw().get(0))), StandardCharsets.UTF_8);
+            val graphModel = new String(Files.readAllBytes(
+                    Paths.get(getParameters().getRaw().get(0))),
+                    StandardCharsets.UTF_8);
 
             val viewer = new GraphViewer();
 

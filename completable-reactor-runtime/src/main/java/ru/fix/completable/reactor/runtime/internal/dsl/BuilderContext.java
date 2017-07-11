@@ -43,7 +43,7 @@ public class BuilderContext<PayloadType> {
                                         graphItemClass -> graphItemClass.isAssignableFrom(field.getType())))
                         .forEach(field -> {
                             try {
-                                if(!field.isAccessible()){
+                                if (!field.isAccessible()) {
                                     field.setAccessible(true);
                                 }
                                 Object value = field.get(graphConfig);
@@ -53,7 +53,8 @@ public class BuilderContext<PayloadType> {
                                         "Failed to access field %s of class %s in object %s",
                                         field,
                                         configField.getClass().getName(),
-                                        configField));
+                                        configField),
+                                        exc);
                             }
                         });
             }
@@ -62,11 +63,13 @@ public class BuilderContext<PayloadType> {
         String name = graphConfigFields.get(configField);
         if (name == null) {
             throw new IllegalArgumentException(String.format("" +
-                    "You are probably using local variable instead of class field in ReactorGraph builder API. " +
-                    "Convert local variable to field.\n" +
-                    "\n" +
-                    "Failed to resolve field within class %s that reference given object %s" +
-                    "Than could happen if you are passing local variable instead of class field to reactor builder.",
+                            "You are probably using local variable instead of class field in ReactorGraph" +
+                            " builder API. " +
+                            "Convert local variable to field.\n" +
+                            "\n" +
+                            "Failed to resolve field within class %s that reference given object %s" +
+                            "Than could happen if you are passing local variable instead of class field" +
+                            " to reactor builder.",
                     graphConfig.getClass(),
                     configField));
         }
