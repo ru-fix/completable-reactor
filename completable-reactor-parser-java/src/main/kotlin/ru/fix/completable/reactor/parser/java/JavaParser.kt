@@ -6,9 +6,7 @@ import java.util.regex.Pattern
 /**
  * @author Kamil Asfandiyarov
  */
-class JavaParser(
-        val symbolResolver: SymbolResolver) {
-
+class JavaParser(val symbolResolver: SymbolResolver) {
 
     val importPattern = Pattern.compile(
             "import\\s+([\\w\\.]*)\\s*;", Pattern.DOTALL)
@@ -48,8 +46,6 @@ class JavaParser(
 
         // parse
 //        Context c;
-
-
 
 
         return result
