@@ -11,6 +11,9 @@ class JavaParser(val symbolResolver: SymbolResolver) {
     val importPattern = Pattern.compile(
             "import\\s+([\\w\\.]*)\\s*;", Pattern.DOTALL)
 
+    val graphPattern = "\\w+".toRegex(RegexOption.DOT_MATCHES_ALL)
+
+
     val payloadPattern = Pattern.compile(
             "\\w+\\s*\\.\\s*payload\\s*\\(\\s*(\\w*)\\.class\\s*\\).+?(?=buildGraph)", Pattern.DOTALL)
 
@@ -26,6 +29,16 @@ class JavaParser(val symbolResolver: SymbolResolver) {
     fun parse(javaCode: String): List<ReactorGraphModel> {
 
         val result = ArrayList<ReactorGraphModel>()
+
+
+        val scanner = JavaScanner(javaCode)
+
+        while(scanner.findPayload()){
+            scanner.parse()
+        }
+
+
+
 
         // parse imports
         var matcher = importPattern.matcher(javaCode)
