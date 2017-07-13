@@ -45,7 +45,8 @@ public class CRGraphBuilder<PayloadType> {
 
         /**
          * Generate possible graph executions and validate each execution
-         * will be implemented supposedly by {@link CombinatoricGraphValidator} that will call {@link GraphValidator#validateExecution(ReactorGraph)}
+         * will be implemented supposedly by {@link CombinatoricGraphValidator} that will call
+         * {@link GraphValidator#validateExecution(ReactorGraph)}
          */
         return graph;
     }

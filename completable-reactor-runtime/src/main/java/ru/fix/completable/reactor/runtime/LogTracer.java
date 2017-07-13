@@ -20,18 +20,28 @@ public abstract class LogTracer implements Tracer {
     }
 
     @Override
-    public void afterHandle(Object tracingMarker, ReactorGraphModel.Identity identity, Object handlerResult, Throwable throwable) {
+    public void afterHandle(Object tracingMarker,
+                            ReactorGraphModel.Identity identity,
+                            Object handlerResult,
+                            Throwable throwable) {
         log.info("afterHandle {}: {}", identity, serializer.dumpObject(handlerResult), throwable);
     }
 
     @Override
-    public Object beforeMerge(ReactorGraphModel.Identity identity, Object payload, Object handleResult) {
-        log.info("beforeMerge {}: {}, {}", identity, serializer.dumpObject(payload), serializer.dumpObject(handleResult));
+    public Object beforeMerge(ReactorGraphModel.Identity identity,
+                              Object payload,
+                              Object handleResult) {
+        log.info("beforeMerge {}: {}, {}",
+                identity,
+                serializer.dumpObject(payload),
+                serializer.dumpObject(handleResult));
         return null;
     }
 
     @Override
-    public void afterMerger(Object tracingMarker, ReactorGraphModel.Identity identity, Object payload) {
+    public void afterMerger(Object tracingMarker,
+                            ReactorGraphModel.Identity identity,
+                            Object payload) {
         log.info("afterMerger {}: {}", identity, serializer.dumpObject(payload));
     }
 }

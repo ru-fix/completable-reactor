@@ -10,7 +10,9 @@ import java.util.function.Function;
 /**
  * @author Kamil Asfandiyarov
  */
-public class CRHandlerBuilder4<PayloadType, Arg1, Arg2, Arg3, Arg4> implements HandlerBuilder4<PayloadType, Arg1, Arg2, Arg3, Arg4> {
+public class CRHandlerBuilder4<PayloadType, Arg1, Arg2, Arg3, Arg4> implements
+        HandlerBuilder4<PayloadType, Arg1, Arg2, Arg3, Arg4> {
+
     final CRProcessorDescription<PayloadType> processorDescription;
 
     CRHandlerBuilder4(CRProcessorDescription<PayloadType> processorDescription) {

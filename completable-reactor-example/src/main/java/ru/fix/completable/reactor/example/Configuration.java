@@ -19,10 +19,10 @@ import java.math.BigDecimal;
  */
 public class Configuration {
 
-    final ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder();
+    final ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
 
     /**
-     * Processors
+     * Services
      */
     UserProfileService userProfile = new UserProfileService();
     ServiceInfoProcessor serviceInfo = new ServiceInfoProcessor();
@@ -144,47 +144,46 @@ public class Configuration {
             .buildProcessor();
 
 
-    ReactorGraph<PurchasePayload> purchaseGraph() throws Exception {
+    Processor<ServiceInfoPayloadMixin> gPurchaseServiceInfo = graphBuilder.processor()
+            .forPayload(ServiceInfoPayloadMixin.class)
+            .passArg(pld -> pld.getServiceId())
+            .withHandler(serviceInfo::loadServiceInformation)
+            .withMerger(
+                    "updateServiceInfo",
+                    (pld, result) -> {
+                        if (pld.getStatus() != null) {
+                            return MergeStatus.STOP;
+                        }
 
-        Processor<ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.processor()
-                .forPayload(ServiceInfoPayloadMixin.class)
-                .passArg(pld -> pld.getServiceId())
-                .withHandler(serviceInfo::loadServiceInformation)
-                .withMerger(
-                        "updateServiceInfo",
-                        (pld, result) -> {
-                            if (pld.getStatus() != null) {
+                        switch (result.getStatus()) {
+                            case SERVICE_NOT_FOUND:
+                                pld.setStatus(result.getStatus());
                                 return MergeStatus.STOP;
-                            }
+                            case OK:
+                                pld.setServiceInfo(result.getServiceInfo());
 
-                            switch (result.getStatus()) {
-                                case SERVICE_NOT_FOUND:
-                                    pld.setStatus(result.getStatus());
-                                    return MergeStatus.STOP;
-                                case OK:
-                                    pld.setServiceInfo(result.getServiceInfo());
+                                if (result.getServiceInfo().isActive()) {
+                                    return MergeStatus.WITHDRAWAL;
+                                } else {
+                                    return MergeStatus.NO_WITHDRAWAL;
+                                }
+                        }
+                        return MergeStatus.CONTINUE;
+                    })
+            .buildProcessor();
 
-                                    if (result.getServiceInfo().isActive()) {
-                                        return MergeStatus.WITHDRAWAL;
-                                    } else {
-                                        return MergeStatus.NO_WITHDRAWAL;
-                                    }
-                            }
-                            return MergeStatus.CONTINUE;
-                        })
-                .buildProcessor();
-
+    public ReactorGraph<PurchasePayload> purchaseGraph() throws Exception {
 
         return graphBuilder.payload(PurchasePayload.class)
                 .handle(gUserProfile)
-                .handle(gServiceInfo)
+                .handle(gPurchaseServiceInfo)
 
                 .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
-                .on(MergeStatus.CONTINUE).merge(gServiceInfo)
+                .on(MergeStatus.CONTINUE).merge(gPurchaseServiceInfo)
 
 
-                .mergePoint(gServiceInfo)
+                .mergePoint(gPurchaseServiceInfo)
                 .on(MergeStatus.WITHDRAWAL).handle(gBankPurchase)
                 .on(MergeStatus.NO_WITHDRAWAL).handle(gUserLog)
                 .on(MergeStatus.NO_WITHDRAWAL).handle(gNotification)
@@ -204,78 +203,76 @@ public class Configuration {
 
                 .coordinates()
                 .start(680, 60)
-                .proc(BankProcessor.class, 0, 410, 440)
-                .proc(NotificationProcessor.class, 0, 880, 430)
-                .proc(ServiceInfoProcessor.class, 0, 480, 120)
-                .proc(TransactionLogProcessor.class, 0, 420, 650)
-                .proc(UserLogProcessor.class, 0, 680, 820)
-                .proc(UserProfileService.class, 0, 770, 120)
-                .merge(BankProcessor.class, 0, 480, 550)
-                .merge(ServiceInfoProcessor.class, 0, 640, 280)
-                .merge(TransactionLogProcessor.class, 0, 530, 770)
-                .merge(UserLogProcessor.class, 0, 760, 930)
-                .merge(UserProfileService.class, 0, 806, 201)
-                .complete(ServiceInfoProcessor.class, 0, 480, 310)
-                .complete(UserLogProcessor.class, 0, 740, 1020)
-                .complete(UserProfileService.class, 0, 963, 258)
+                .proc(gBankPurchase, 410, 440)
+                .proc(gNotification, 880, 430)
+                .proc(gPurchaseServiceInfo, 480, 120)
+                .proc(gTxLog, 420, 650)
+                .proc(gUserLog, 680, 820)
+                .proc(gUserProfile, 770, 120)
+                .merge(gBankPurchase, 480, 550)
+                .merge(gPurchaseServiceInfo, 640, 280)
+                .merge(gTxLog, 530, 770)
+                .merge(gUserLog, 760, 930)
+                .merge(gUserProfile, 806, 201)
+                .complete(gPurchaseServiceInfo, 480, 310)
+                .complete(gUserLog, 740, 1020)
+                .complete(gUserProfile, 963, 258)
 
                 .buildGraph();
     }
 
-    ReactorGraph<SubscribePayload> subscribeGraph() throws Exception {
+    Processor<ServiceInfoPayloadMixin> gSubscribeServiceInfo = graphBuilder.processor()
+            .forPayload(ServiceInfoPayloadMixin.class)
+            .passArg(pld -> pld.getServiceId())
+            .withHandler(serviceInfo::loadServiceInformation)
+            .withMerger(
+                    "updateServiceInfo",
+                    (pld, result) -> {
+                        if (pld.getStatus() != null) {
+                            return MergeStatus.STOP;
+                        }
 
-        Processor<ServiceInfoPayloadMixin> gServiceInfo = graphBuilder.processor()
-                .forPayload(ServiceInfoPayloadMixin.class)
-                .passArg(pld -> pld.getServiceId())
-                .withHandler(serviceInfo::loadServiceInformation)
-                .withMerger(
-                        "updateServiceInfo",
-                        (pld, result) -> {
-                            if (pld.getStatus() != null) {
+                        switch (result.getStatus()) {
+                            case SERVICE_NOT_FOUND:
+                                pld.setStatus(result.getStatus());
                                 return MergeStatus.STOP;
-                            }
+                            case OK:
+                                pld.setServiceInfo(result.getServiceInfo());
 
-                            switch (result.getStatus()) {
-                                case SERVICE_NOT_FOUND:
-                                    pld.setStatus(result.getStatus());
-                                    return MergeStatus.STOP;
-                                case OK:
-                                    pld.setServiceInfo(result.getServiceInfo());
+                                if (result.getServiceInfo().isActive()) {
+                                    return MergeStatus.CONTINUE;
+                                } else {
+                                    return MergeStatus.NO_WITHDRAWAL;
+                                }
+                        }
+                        return MergeStatus.CONTINUE;
+                    }).buildProcessor();
 
-                                    if (result.getServiceInfo().isActive()) {
-                                        return MergeStatus.CONTINUE;
-                                    } else {
-                                        return MergeStatus.NO_WITHDRAWAL;
-                                    }
-                            }
-                            return MergeStatus.CONTINUE;
-                        }).buildProcessor();
+    MergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.mergePoint()
+            .forPayload(SubscribePayload.class)
+            .withMerger(
+                    "checkTrialPeriod",
+                    new String[]{"Checks whether service supports trial period"},
+                    payload -> {
+                        if (payload.getServiceInfo().isSupportTrialPeriod()) {
+                            return MergeStatus.WITHDRAWAL;
+                        } else {
+                            return MergeStatus.NO_WITHDRAWAL;
+                        }
+                    })
+            .buildMergePoint();
 
-
-        MergePoint<SubscribePayload> trialPeriodCheck = graphBuilder.mergePoint()
-                .forPayload(SubscribePayload.class)
-                .withMerger(
-                        "checkTrialPeriod",
-                        new String[]{"Checks whether service supports trial period"},
-                        payload -> {
-                            if (payload.getServiceInfo().isSupportTrialPeriod()) {
-                                return MergeStatus.WITHDRAWAL;
-                            } else {
-                                return MergeStatus.NO_WITHDRAWAL;
-                            }
-                        })
-                .buildMergePoint();
-
+    public ReactorGraph<SubscribePayload> subscribeGraph() throws Exception {
         return graphBuilder
                 .payload(SubscribePayload.class)
                 .handle(gUserProfile)
-                .handle(gServiceInfo)
+                .handle(gSubscribeServiceInfo)
 
                 .mergePoint(gUserProfile)
                 .on(MergeStatus.STOP).complete()
-                .on(MergeStatus.CONTINUE).merge(gServiceInfo)
+                .on(MergeStatus.CONTINUE).merge(gSubscribeServiceInfo)
 
-                .mergePoint(gServiceInfo)
+                .mergePoint(gSubscribeServiceInfo)
                 .on(MergeStatus.CONTINUE).merge(trialPeriodCheck)
                 .on(MergeStatus.STOP).complete()
 
@@ -298,24 +295,23 @@ public class Configuration {
 
                 .coordinates()
                 .start(680, 60)
-                .proc(BankProcessor.class, 0, 410, 440)
-                .proc(NotificationProcessor.class, 0, 889, 465)
-                .proc(ServiceInfoProcessor.class, 0, 480, 120)
-                .proc(TransactionLogProcessor.class, 0, 420, 650)
-                .proc(UserLogProcessor.class, 0, 680, 820)
-                .proc(UserProfileService.class, 0, 770, 120)
-                .merge(BankProcessor.class, 0, 480, 550)
-                .merge(0, 702, 363)
-                .merge(ServiceInfoProcessor.class, 0, 640, 280)
-                .merge(TransactionLogProcessor.class, 0, 530, 770)
-                .merge(UserLogProcessor.class, 0, 760, 930)
-                .merge(UserProfileService.class, 0, 830, 250)
-                .complete(ServiceInfoProcessor.class, 0, 480, 310)
-                .complete(UserLogProcessor.class, 0, 740, 1020)
-                .complete(UserProfileService.class, 0, 920, 300)
+                .proc(gBankSubsribe, 410, 440)
+                .proc(gNotification, 889, 465)
+                .proc(gSubscribeServiceInfo, 480, 120)
+                .proc(gTxLog, 420, 650)
+                .proc(gUserLog, 680, 820)
+                .proc(gUserProfile, 770, 120)
+                .merge(gBankSubsribe, 480, 550)
+                .merge(trialPeriodCheck, 702, 363)
+                .merge(gSubscribeServiceInfo, 640, 280)
+                .merge(gTxLog, 530, 770)
+                .merge(gUserLog, 760, 930)
+                .merge(gUserProfile, 830, 250)
+                .complete(gSubscribeServiceInfo, 480, 310)
+                .complete(gUserLog, 740, 1020)
+                .complete(gUserProfile, 920, 300)
 
                 .buildGraph();
-
     }
 
 

@@ -22,19 +22,14 @@ public class CRMergePoint<PayloadType> implements MergePoint<PayloadType>, CRPro
         this.mergePointDescription = mergePointDescription;
     }
 
-    @Override
-    public CRMergePoint<PayloadType> setId(int id){
-        this.identity.setId(id);
+    public CRMergePoint<PayloadType> setName(String name){
+        this.identity.setName(name);
         return this;
-    }
-
-    public int getId() {
-        return this.identity.getId();
     }
 
     @Override
     public String getProfilingName() {
-        return "mergePoint." + this.identity.getId();
+        return "mergePoint." + this.identity.getName();
     }
 
     @Override

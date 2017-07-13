@@ -22,18 +22,12 @@ public class CRProcessor<PayloadType> implements Processor<PayloadType>, CRProce
     CRProcessor(CRProcessorDescription<PayloadType> description) {
         this.processorDescription = description;
         this.identity
-                .setClassName(processorDescription.processorType.getSimpleName())
-        ;
+                .setClassName(processorDescription.processorType.getSimpleName());
     }
 
-    @Override
-    public CRProcessor<PayloadType> setId(int id){
-        this.identity.setId(id);
+    public CRProcessor<PayloadType> setName(String name){
+        this.identity.setName(name);
         return this;
-    }
-
-    public int getId() {
-        return this.identity.getId();
     }
 
     @Override

@@ -10,26 +10,42 @@ public interface Coordinates<PayloadType> {
      * Payload start point coordinates
      */
     Coordinates<PayloadType> start(int x, int y);
+
     /**
-     * Processor or Subgraph coordinates
+     * Processor coordinates
      */
-    Coordinates<PayloadType> proc(Class type, int id, int x, int y);
+    Coordinates<PayloadType> proc(Processor<? super PayloadType> processor, int x, int y);
     /**
-     * Processors or Subgraphs merge point coordinates
+     * Subgraph coordinates
      */
-    Coordinates<PayloadType> merge(Class type, int id, int x, int y);
+    Coordinates<PayloadType> proc(Subgraph<? super PayloadType> subgraph, int x, int y);
+
+    /**
+     * Processors merge point coordinates
+     */
+    Coordinates<PayloadType> merge(Processor<? super PayloadType> processor, int x, int y);
+    /**
+     * Subgraphs merge point coordinates
+     */
+    Coordinates<PayloadType> merge(Subgraph<? super PayloadType> subgraph, int x, int y);
     /**
      * Detached merge point coordinates
      */
-    Coordinates<PayloadType> merge(int id, int x, int y);
+    Coordinates<PayloadType> merge(MergePoint<? super PayloadType> mergePoint, int x, int y);
+
     /**
-     * Processors or Subgraphs merge point endpoint coordinates
+     * Processors merge point endpoint coordinates
      */
-    Coordinates<PayloadType> complete(Class type, int id, int x, int y);
+    Coordinates<PayloadType> complete(Processor<? super PayloadType> processor, int x, int y);
+    /**
+     * Subgraph merge point endpoint coordinates
+     */
+    Coordinates<PayloadType> complete(Subgraph<? super PayloadType> subgraph, int x, int y);
+
     /**
      * Detached merge point endpoint coordinates
      */
-    Coordinates<PayloadType> complete(int id, int x, int y);
+    Coordinates<PayloadType> complete(MergePoint<? super PayloadType> mergePoint, int x, int y);
 
     /**
      * Build Reactor Graph

@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.runtime.tests;
 
 import lombok.Data;
+import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
@@ -23,7 +24,6 @@ public class CompletableReactorHandlerArgumentsTest {
 
     private SimpleProfiler profiler;
     private CompletableReactor reactor;
-    private ReactorGraphBuilder graphBuilder;
 
     enum Status {OK}
 
@@ -33,7 +33,6 @@ public class CompletableReactorHandlerArgumentsTest {
         reactor = new CompletableReactor(profiler)
                 .setDebugProcessingVertexGraphState(true);
 
-        graphBuilder = new ReactorGraphBuilder();
     }
 
     @Test
@@ -54,25 +53,32 @@ public class CompletableReactorHandlerArgumentsTest {
 
         final Service service = new Service();
 
-        Processor<Payload> processor = graphBuilder.processor()
-                .forPayload(Payload.class)
-                .withHandler(service::foo)
-                .withMerger((payload, result) -> {
-                    payload.data = result;
-                    return CompletableReactorTest.Status.OK;
-                })
-                .buildProcessor();
+        class Config {
+            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+
+            Processor<Payload> processor = graphBuilder.processor()
+                    .forPayload(Payload.class)
+                    .withHandler(service::foo)
+                    .withMerger((payload, result) -> {
+                        payload.data = result;
+                        return CompletableReactorTest.Status.OK;
+                    })
+                    .buildProcessor();
 
 
-        ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handle(processor)
+            ReactorGraph<Payload> graph() {
+                return graphBuilder.payload(Payload.class)
+                        .handle(processor)
 
-                .mergePoint(processor)
-                .onAny()
-                .complete()
-                .coordinates()
-                .buildGraph();
+                        .mergePoint(processor)
+                        .onAny()
+                        .complete()
+                        .coordinates()
+                        .buildGraph();
+            }
+        }
 
+        val graph = new Config().graph();
         reactor.registerReactorGraph(graph);
 
         assertEquals("", reactor.submit(new Payload())
@@ -101,27 +107,33 @@ public class CompletableReactorHandlerArgumentsTest {
 
         final Service service = new Service();
 
-        Processor<Payload> processor = graphBuilder.processor()
-                .forPayload(Payload.class)
-                .passArg(pld -> 7L)
-                .withHandler(service::foo)
-                .withMerger((payload, result) -> {
-                    payload.data = result;
-                    return CompletableReactorTest.Status.OK;
-                })
-                .buildProcessor();
+        class Config {
+            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+
+            Processor<Payload> processor = graphBuilder.processor()
+                    .forPayload(Payload.class)
+                    .passArg(pld -> 7L)
+                    .withHandler(service::foo)
+                    .withMerger((payload, result) -> {
+                        payload.data = result;
+                        return CompletableReactorTest.Status.OK;
+                    })
+                    .buildProcessor();
 
 
-        ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handle(processor)
+            ReactorGraph<Payload> graph(){
+                return graphBuilder.payload(Payload.class)
+                        .handle(processor)
 
-                .mergePoint(processor)
-                .onAny()
-                .complete()
-                .coordinates()
-                .buildGraph();
+                        .mergePoint(processor)
+                        .onAny()
+                        .complete()
+                        .coordinates()
+                        .buildGraph();
+            }
+        }
 
-        reactor.registerReactorGraph(graph);
+        reactor.registerReactorGraph(new Config().graph());
 
         assertEquals("7", reactor.submit(new Payload())
                 .getResultFuture()
@@ -150,27 +162,33 @@ public class CompletableReactorHandlerArgumentsTest {
 
         final Service service = new Service();
 
-        Processor<Payload> processor = graphBuilder.processor()
-                .forPayload(Payload.class)
-                .passArg(pld -> BigInteger.valueOf(6L))
-                .passArg(pld -> 7L)
-                .withHandler(service::foo)
-                .withMerger((payload, result) -> {
-                    payload.data = result;
-                    return CompletableReactorTest.Status.OK;
-                })
-                .buildProcessor();
+        class Config {
+            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+            Processor<Payload> processor = graphBuilder.processor()
+                    .forPayload(Payload.class)
+                    .passArg(pld -> BigInteger.valueOf(6L))
+                    .passArg(pld -> 7L)
+                    .withHandler(service::foo)
+                    .withMerger((payload, result) -> {
+                        payload.data = result;
+                        return CompletableReactorTest.Status.OK;
+                    })
+                    .buildProcessor();
 
 
-        ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handle(processor)
+            ReactorGraph<Payload> graph() {
+                return graphBuilder.payload(Payload.class)
+                        .handle(processor)
 
-                .mergePoint(processor)
-                .onAny()
-                .complete()
-                .coordinates()
-                .buildGraph();
+                        .mergePoint(processor)
+                        .onAny()
+                        .complete()
+                        .coordinates()
+                        .buildGraph();
 
+            }
+        }
+        val graph = new Config().graph();
         reactor.registerReactorGraph(graph);
 
         assertEquals("67", reactor.submit(new Payload())
@@ -201,29 +219,35 @@ public class CompletableReactorHandlerArgumentsTest {
 
         final Service service = new Service();
 
-        Processor<Payload> processor = graphBuilder.processor()
-                .forPayload(Payload.class)
-                .passArg(pld -> true)
-                .passArg(pld -> BigInteger.valueOf(6L))
-                .passArg(pld -> 7L)
-                .withHandler(service::foo)
-                .withMerger((payload, result) -> {
-                    payload.data = result;
-                    return CompletableReactorTest.Status.OK;
-                })
-                .buildProcessor();
+        class Config {
+            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+
+            Processor<Payload> processor = graphBuilder.processor()
+                    .forPayload(Payload.class)
+                    .passArg(pld -> true)
+                    .passArg(pld -> BigInteger.valueOf(6L))
+                    .passArg(pld -> 7L)
+                    .withHandler(service::foo)
+                    .withMerger((payload, result) -> {
+                        payload.data = result;
+                        return CompletableReactorTest.Status.OK;
+                    })
+                    .buildProcessor();
 
 
-        ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handle(processor)
+            ReactorGraph<Payload> graph() {
+                return graphBuilder.payload(Payload.class)
+                        .handle(processor)
 
-                .mergePoint(processor)
-                .onAny()
-                .complete()
-                .coordinates()
-                .buildGraph();
+                        .mergePoint(processor)
+                        .onAny()
+                        .complete()
+                        .coordinates()
+                        .buildGraph();
+            }
+        }
 
-        reactor.registerReactorGraph(graph);
+        reactor.registerReactorGraph(new Config().graph());
 
         assertEquals("true67", reactor.submit(new Payload())
                 .getResultFuture()
@@ -255,29 +279,35 @@ public class CompletableReactorHandlerArgumentsTest {
 
         final Service service = new Service();
 
-        Processor<Payload> processor = graphBuilder.processor()
-                .forPayload(Payload.class)
-                .passArg(pld -> (short) 3)
-                .passArg(pld -> true)
-                .passArg(pld -> BigInteger.valueOf(6L))
-                .passArg(pld -> 7L)
-                .withHandler(service::foo)
-                .withMerger((payload, result) -> {
-                    payload.data = result;
-                    return CompletableReactorTest.Status.OK;
-                })
-                .buildProcessor();
+        class Config {
+            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+
+            Processor<Payload> processor = graphBuilder.processor()
+                    .forPayload(Payload.class)
+                    .passArg(pld -> (short) 3)
+                    .passArg(pld -> true)
+                    .passArg(pld -> BigInteger.valueOf(6L))
+                    .passArg(pld -> 7L)
+                    .withHandler(service::foo)
+                    .withMerger((payload, result) -> {
+                        payload.data = result;
+                        return CompletableReactorTest.Status.OK;
+                    })
+                    .buildProcessor();
 
 
-        ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handle(processor)
+            ReactorGraph<Payload> graph() {
+                return graphBuilder.payload(Payload.class)
+                        .handle(processor)
 
-                .mergePoint(processor)
-                .onAny()
-                .complete()
-                .coordinates()
-                .buildGraph();
-
+                        .mergePoint(processor)
+                        .onAny()
+                        .complete()
+                        .coordinates()
+                        .buildGraph();
+            }
+        }
+        val graph = new Config().graph();
         reactor.registerReactorGraph(graph);
 
         assertEquals("3true67", reactor.submit(new Payload())
@@ -311,29 +341,36 @@ public class CompletableReactorHandlerArgumentsTest {
 
         final Service service = new Service();
 
-        Processor<Payload> processor = graphBuilder.processor()
-                .forPayload(Payload.class)
-                .passArg(pld -> "1")
-                .passArg(pld -> (short) 3)
-                .passArg(pld -> true)
-                .passArg(pld -> BigInteger.valueOf(6L))
-                .passArg(pld -> 7L)
-                .withHandler(service::foo)
-                .withMerger((payload, result) -> {
-                    payload.data = result;
-                    return CompletableReactorTest.Status.OK;
-                })
-                .buildProcessor();
+        class Config {
+            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+
+            Processor<Payload> processor = graphBuilder.processor()
+                    .forPayload(Payload.class)
+                    .passArg(pld -> "1")
+                    .passArg(pld -> (short) 3)
+                    .passArg(pld -> true)
+                    .passArg(pld -> BigInteger.valueOf(6L))
+                    .passArg(pld -> 7L)
+                    .withHandler(service::foo)
+                    .withMerger((payload, result) -> {
+                        payload.data = result;
+                        return CompletableReactorTest.Status.OK;
+                    })
+                    .buildProcessor();
 
 
-        ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handle(processor)
+            ReactorGraph<Payload> graph() {
+                return graphBuilder.payload(Payload.class)
+                        .handle(processor)
 
-                .mergePoint(processor)
-                .onAny()
-                .complete()
-                .coordinates()
-                .buildGraph();
+                        .mergePoint(processor)
+                        .onAny()
+                        .complete()
+                        .coordinates()
+                        .buildGraph();
+            }
+        }
+        val graph = new Config().graph();
 
         reactor.registerReactorGraph(graph);
 
@@ -369,31 +406,38 @@ public class CompletableReactorHandlerArgumentsTest {
 
         final Service service = new Service();
 
-        Processor<Payload> processor = graphBuilder.processor()
-                .forPayload(Payload.class)
-                .passArg(pld -> "1")
-                .passArg(pld -> (short) 3)
-                .passArg(pld -> true)
-                .passArg(pld -> 5)
-                .passArg(pld -> BigInteger.valueOf(6L))
-                .passArg(pld -> 7L)
-                .withHandler(service::foo)
-                .withMerger((payload, result) -> {
-                    payload.data = result;
-                    return CompletableReactorTest.Status.OK;
-                })
-                .buildProcessor();
+        class Config {
+            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+
+            Processor<Payload> processor = graphBuilder.processor()
+                    .forPayload(Payload.class)
+                    .passArg(pld -> "1")
+                    .passArg(pld -> (short) 3)
+                    .passArg(pld -> true)
+                    .passArg(pld -> 5)
+                    .passArg(pld -> BigInteger.valueOf(6L))
+                    .passArg(pld -> 7L)
+                    .withHandler(service::foo)
+                    .withMerger((payload, result) -> {
+                        payload.data = result;
+                        return CompletableReactorTest.Status.OK;
+                    })
+                    .buildProcessor();
 
 
-        ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handle(processor)
+            ReactorGraph<Payload> graph() {
+                return graphBuilder.payload(Payload.class)
+                        .handle(processor)
 
-                .mergePoint(processor)
-                .onAny()
-                .complete()
-                .coordinates()
-                .buildGraph();
+                        .mergePoint(processor)
+                        .onAny()
+                        .complete()
+                        .coordinates()
+                        .buildGraph();
+            }
+        }
 
+        val graph = new Config().graph();
         reactor.registerReactorGraph(graph);
 
         assertEquals("13true567", reactor.submit(new Payload())
@@ -429,33 +473,38 @@ public class CompletableReactorHandlerArgumentsTest {
 
         final Service service = new Service();
 
-        Processor<Payload> processor = graphBuilder.processor()
-                .forPayload(Payload.class)
-                .passArg(pld -> "1")
-                .passArg(pld -> 2)
-                .passArg(pld -> (short) 3)
-                .passArg(pld -> true)
-                .passArg(pld -> 5)
-                .passArg(pld -> BigInteger.valueOf(6L))
-                .passArg(pld -> 7L)
-                .withHandler(service::foo)
-                .withMerger((payload, result) -> {
-                    payload.data = result;
-                    return CompletableReactorTest.Status.OK;
-                })
-                .buildProcessor();
+        class Config {
+            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+
+            Processor<Payload> processor = graphBuilder.processor()
+                    .forPayload(Payload.class)
+                    .passArg(pld -> "1")
+                    .passArg(pld -> 2)
+                    .passArg(pld -> (short) 3)
+                    .passArg(pld -> true)
+                    .passArg(pld -> 5)
+                    .passArg(pld -> BigInteger.valueOf(6L))
+                    .passArg(pld -> 7L)
+                    .withHandler(service::foo)
+                    .withMerger((payload, result) -> {
+                        payload.data = result;
+                        return CompletableReactorTest.Status.OK;
+                    })
+                    .buildProcessor();
 
 
-        ReactorGraph<Payload> graph = graphBuilder.payload(Payload.class)
-                .handle(processor)
+            ReactorGraph<Payload> graph() {
+                return graphBuilder.payload(Payload.class)
+                        .handle(processor)
 
-                .mergePoint(processor)
-                .onAny()
-                .complete()
-                .coordinates()
-                .buildGraph();
-
-        reactor.registerReactorGraph(graph);
+                        .mergePoint(processor)
+                        .onAny()
+                        .complete()
+                        .coordinates()
+                        .buildGraph();
+            }
+        }
+        reactor.registerReactorGraph(new Config().graph());
 
         assertEquals("123true567", reactor.submit(new Payload())
                 .getResultFuture()

@@ -109,7 +109,7 @@ public class ReactorGraphModel {
          */
         String className;
 
-        int id;
+        String name;
 
         @Override
         public int compareTo(Identity other) {
@@ -121,7 +121,7 @@ public class ReactorGraphModel {
             }
 
             if (item1.getClassName() == null && item2.getClassName() == null) {
-                return Integer.compare(item1.getId(), item2.getId());
+                return item1.getName().compareTo(item2.getName());
             }
             if (item1.getClassName() == null) {
                 return 1;
@@ -136,20 +136,20 @@ public class ReactorGraphModel {
                 return cmp;
             }
 
-            return Integer.compare(item1.getId(), item2.getId());
+            return item1.getName().compareTo(item2.getName());
         }
 
         @Override
         public String toString() {
             switch (type) {
                 case PROCESSOR:
-                    return className + "@" + id;
+                    return className + "@" + name;
 
                 case SUBGRAPH:
-                    return className + "@" + id;
+                    return className + "@" + name;
 
                 case MERGE_POINT:
-                    return "mergePoint@" + id;
+                    return "mergePoint@" + name;
 
                 default:
                     throw new IllegalArgumentException("Invalid type: " + type);
@@ -188,10 +188,10 @@ public class ReactorGraphModel {
     }
 
     public enum Version {
-        v1_0_20
+        v1_0_21
     }
 
-    public Version version = Version.v1_0_20;
+    public Version version = Version.v1_0_21;
 
     public Payload payload;
     public StartPoint startPoint;

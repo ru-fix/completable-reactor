@@ -27,8 +27,11 @@ import java.util.Optional;
 public class ReactorGraphBuilder {
 
     final List<GraphValidator> graphValidators = new ArrayList<>();
+    final Object graphConfiguration;
 
-    public ReactorGraphBuilder() {
+    public ReactorGraphBuilder(Object graphConfiguration) {
+        this.graphConfiguration = graphConfiguration;
+
         graphValidators.add(new TerminalVertexExistValidator());
         graphValidators.add(new ProcessorsHaveIncomingFlowsValidator());
     }
@@ -37,8 +40,7 @@ public class ReactorGraphBuilder {
      * Build ReactorGraph for given payload
      */
     public <PayloadType> PayloadBuilder<PayloadType> payload(Class<PayloadType> payloadClass) {
-        val builderContext = new BuilderContext<PayloadType>();
-        builderContext.setGraph(new CRReactorGraph<>(payloadClass));
+        val builderContext = new BuilderContext<PayloadType>(graphConfiguration, new CRReactorGraph<>(payloadClass));
         builderContext.getGraphValidators().addAll(graphValidators);
 
         builderContext.getGraph().getStartPoint().setBuilderPayloadSource(

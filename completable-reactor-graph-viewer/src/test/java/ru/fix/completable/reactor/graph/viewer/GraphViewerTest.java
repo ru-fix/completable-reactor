@@ -97,4 +97,14 @@ public class GraphViewerTest extends Application {
 
     }
 
+    @Ignore
+    @Test
+    public void open_graph_for_detached_payload() throws Exception{
+        GraphViewerTest.payload = "DetachedMergePointFromProcessorsMergePointPayload.rg";
+        Application.launch();
+
+    }
+
+
+
 }

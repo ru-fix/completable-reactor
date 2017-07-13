@@ -2,6 +2,8 @@ package ru.fix.completable.reactor.runtime;
 
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.fix.commons.profiler.PrefixedProfiler;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
@@ -12,9 +14,9 @@ import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder;
-import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
+import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
@@ -30,6 +32,7 @@ import java.util.function.Function;
  * @author Kamil Asfandiyarov
  */
 public class CompletableReactor implements AutoCloseable {
+    private static final Logger log = LoggerFactory.getLogger(CompletableReactor.class);
 
     private final Profiler profiler;
 
@@ -68,7 +71,7 @@ public class CompletableReactor implements AutoCloseable {
 
     private final AtomicLong closeTimeoutMs = new AtomicLong(120_000);
 
-    private static class ReactorTracer implements Tracer{
+    private static class ReactorTracer implements Tracer {
 
         private volatile Tracer tracer;
 
@@ -111,7 +114,7 @@ public class CompletableReactor implements AutoCloseable {
                 threadsafeCopyMaker,
                 payload -> {
                     try {
-                        return this.submit(payload).getResultFuture();
+                        return this.internalSubmit(payload, executionTimeoutMs).getResultFuture();
                     } catch (Exception exc) {
                         CompletableFuture result = new CompletableFuture();
                         result.completeExceptionally(exc);
@@ -168,21 +171,21 @@ public class CompletableReactor implements AutoCloseable {
 
     /**
      * @param value timeout in milliseconds reactor will wain for flow to execute until terminating
-     *             it with TimeoutException
+     *              it with TimeoutException
      */
     public void setExecutionTimeoutMs(long value) {
         executionTimeoutMs = value;
     }
 
-    public void setTracer(Tracer tracer){
+    public void setTracer(Tracer tracer) {
         this.reactorTracer.tracer = tracer;
     }
 
-    public Tracer getTracer(){
+    public Tracer getTracer() {
         return this.reactorTracer.tracer;
     }
 
-    public void removeTracer(){
+    public void removeTracer() {
         this.reactorTracer.tracer = null;
     }
 
@@ -243,7 +246,10 @@ public class CompletableReactor implements AutoCloseable {
                 runnable,
                 threadsNamePrefix + counter.getAndIncrement());
 
-        return new ScheduledThreadPoolExecutor(poolSize, threadFactory);
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor =
+                new ScheduledThreadPoolExecutor(poolSize, threadFactory);
+        scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+        return scheduledThreadPoolExecutor;
     }
 
 
@@ -288,40 +294,44 @@ public class CompletableReactor implements AutoCloseable {
     }
 
 
-    public <PayloadType> Execution<PayloadType> submit(PayloadType payload)
-            throws PendingOperationsLimitOverflowException {
-
-        return submit(payload, executionTimeoutMs);
-    }
-
-    public <PayloadType> Execution<PayloadType> submit(PayloadType payload, long timeoutMs)
-            throws PendingOperationsLimitOverflowException {
-
-        return trySubmit(payload, timeoutMs)
-                .orElseThrow(() ->
-                        new PendingOperationsLimitOverflowException(String.format(
-                                "Limit pending operations has been exceeded." +
-                                        " Max pending operations: %d." +
-                                        " Pending operations: %d. " +
-                                        " Payload %s is rejected.",
-                                maxPendingRequestCount.get(),
-                                pendingRequestCount.get(),
-                                payload)));
-    }
-
     public <PayloadType> Optional<Execution<PayloadType>> trySubmit(PayloadType payload) {
         return trySubmit(payload, executionTimeoutMs);
     }
 
     public <PayloadType> Optional<Execution<PayloadType>> trySubmit(PayloadType payload, long timeoutMs) {
+        if (pendingRequestCount.get() > maxPendingRequestCount.get()) {
+            return Optional.empty();
+        }
+        return Optional.of(submit(payload, timeoutMs));
+    }
 
+    public <PayloadType> Execution<PayloadType> submit(PayloadType payload) {
+        return submit(payload, executionTimeoutMs);
+    }
+
+    public <PayloadType> Execution<PayloadType> submit(PayloadType payload, long timeoutMs) {
         if (isClosed.get()) {
             throw new IllegalStateException(String.format(
                     "CompletableReactor is closed. Payload %s is discarded.", payload));
         }
+        return internalSubmit(payload, timeoutMs);
+    }
+
+    /**
+     * Submit request without checking whether reactor closed or not.
+     * If maxPendingRequestCount limit is reached prints error message and accepts request.
+     * @param payload
+     * @param timeoutMs
+     * @param <PayloadType>
+     * @return
+     */
+    private <PayloadType> Execution<PayloadType> internalSubmit(PayloadType payload, long timeoutMs) {
 
         if (pendingRequestCount.get() > maxPendingRequestCount.get()) {
-            return Optional.empty();
+            log.error("Max pending request count is reached. Request will be accepted but there is a possibility of " +
+                    "OOM or something wrong with back pressure logic in client code.\n" +
+                    "Use trySubmit method that supports back pressure or correctly handle the load on " +
+                    "CompletableReactor on client side.");
         }
 
         ProfiledCall payloadCall = profiler.profiledCall(ProfilerNames.PAYLOAD + payload.getClass().getSimpleName())
@@ -337,11 +347,10 @@ public class CompletableReactor implements AutoCloseable {
 
             inlineGraphResult.thenAcceptAsync(any -> payloadCall.stop());
 
-            return Optional.of(
-                    Execution.<PayloadType>builder()
+            return Execution.<PayloadType>builder()
                             .chainExecutionFuture(inlineGraphResult.thenAccept(any -> {/* do nothing */}))
                             .resultFuture(inlineGraphResult)
-                            .build());
+                            .build();
 
         }
 
@@ -423,12 +432,11 @@ public class CompletableReactor implements AutoCloseable {
 
         execution.getResultFuture().thenRunAsync(payloadCall::stop);
 
-        return Optional.of(
-                Execution.<PayloadType>builder()
+        return Execution.<PayloadType>builder()
                         .chainExecutionFuture(execution.getChainExecutionFuture())
                         .resultFuture(execution.getResultFuture())
                         .debugProcessingVertexGraphState(execution.getDebugProcessingVertexGraphState())
-                        .build());
+                        .build();
     }
 
     /**

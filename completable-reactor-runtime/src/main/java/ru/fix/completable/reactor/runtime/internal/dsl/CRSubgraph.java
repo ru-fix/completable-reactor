@@ -28,14 +28,9 @@ public class CRSubgraph<PayloadType> implements Subgraph<PayloadType>, CRProcess
         return subgraphDescription.subgraphPayload;
     }
 
-    @Override
-    public Subgraph<PayloadType> setId(int id){
-        this.identity.setId(id);
+    public Subgraph<PayloadType> setName(String name){
+        this.identity.setName(name);
         return this;
-    }
-
-    public int getId() {
-        return identity.getId();
     }
 
     @Override

@@ -27,6 +27,7 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
         val graph = builderContext.graph;
 
         CRProcessor crProcessor = (CRProcessor) processor;
+        crProcessor.setName(builderContext.resolveConfigField(processor));
         graph.ensureProcessingItemRegistered(crProcessor);
 
         if (crProcessor.getProcessorDescription().merger == null) {
@@ -61,6 +62,7 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
         val graph = builderContext.graph;
 
         CRSubgraph crSubgraph = (CRSubgraph) subgraph;
+        crSubgraph.setName(builderContext.resolveConfigField(subgraph));
         graph.ensureProcessingItemRegistered(crSubgraph);
 
         if (crSubgraph.getSubgraphDescription().merger == null) {
@@ -96,6 +98,7 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
         val graph = builderContext.graph;
 
         CRMergePoint crMergePoint = (CRMergePoint) mergePoint;
+        crMergePoint.setName(builderContext.resolveConfigField(mergePoint));
         graph.ensureProcessingItemRegistered(crMergePoint);
 
         if (((CRMergePoint) mergePoint).getMergePointDescription().merger == null) {
