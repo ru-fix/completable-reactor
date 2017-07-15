@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.parser.java
 
 import ru.fix.completable.reactor.api.ReactorGraphModel
+import sun.misc.Regexp
 import java.util.*
 
 /**
@@ -29,8 +30,8 @@ class JavaScanner(val input: String) {
         try {
             val result = ReactorGraphModel()
 
-            skipDot()
-            skip
+            skip(Token.PAYLOAD)
+            skip(Token.BRACKETS)
 
 
 
@@ -44,14 +45,20 @@ class JavaScanner(val input: String) {
 
     enum class Token{
         PAYLOAD,
-        DOT
+        DOT,
+
+        BRACKETS
+    }
+
+    fun parse(regexp: Regexp):String{
+        regexp.
     }
 
     fun findNext(token: Token): Boolean {
         TODO()
     }
 
-    fun skip(Token): Boolean {
+    fun skip(token: Token): Boolean {
         TODO()
     }
 
