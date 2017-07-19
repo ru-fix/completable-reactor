@@ -50,8 +50,7 @@ class JavaScanner(val input: String) {
         BRACKETS
     }
 
-    fun parse(regexp: Regexp):String{
-        regexp.
+    fun parse(regexp: Regexp): String{
     }
 
     fun findNext(token: Token): Boolean {
@@ -62,5 +61,46 @@ class JavaScanner(val input: String) {
         TODO()
     }
 
+    fun skipIrrelevant(){
+        while ( skipWhitespace() || skipLineComments());
+    }
+
+    fun skipWhitespace(): Boolean{
+        val start = position
+        while (input[position].isWhitespace()){
+            position++
+        }
+        return start == position
+    }
+    fun skipLineComments(): Boolean {
+        if(!have(2)){
+            return false
+        }
+        val start = position
+        if(check('/') && check(1) == '/'){
+            skip(2)
+            while (check() != '\n'){
+                position++
+            }
+        }
+    }
+
+    fun isEnd(): Boolean = position == input.length
+    fun have(symbolsCount: Int) = position + symbolsCount <= input.length
+    fun skip(symbolsCount: Int) {
+        position += symbolsCount
+    }
+    fun check(offset: Int = 0, symbol: Char): Boolean {
+        if(!have(offset + 1)){
+            return false
+        }
+        return input[position + offset] == symbol
+    }
+
+    fun check(sample: String) {
+        if(!have(sample.length)){
+
+        }
+    }
 
 }
