@@ -72,17 +72,28 @@ public class CompletableReactor implements AutoCloseable {
     private final AtomicLong closeTimeoutMs = new AtomicLong(120_000);
 
     private static class ReactorTracer implements Tracer {
+        private static final Logger log = LoggerFactory.getLogger(ReactorTracer.class);
 
         private volatile Tracer tracer;
 
         @Override
         public boolean isTraceable(Object payload) {
-            return tracer != null && tracer.isTraceable(payload);
+            try {
+                return tracer != null && tracer.isTraceable(payload);
+            } catch (Exception exc) {
+                log.error("Failed to call isTraceable method of tracer.", exc);
+                return false;
+            }
         }
 
         @Override
         public Object beforeHandle(ReactorGraphModel.Identity identity, Object payload) {
-            return tracer.beforeHandle(identity, payload);
+            try {
+                return tracer.beforeHandle(identity, payload);
+            } catch (Exception exc) {
+                log.error("Failed to call beforeHandle method of tracer.", exc);
+                return null;
+            }
         }
 
         @Override
@@ -90,17 +101,30 @@ public class CompletableReactor implements AutoCloseable {
                                 ReactorGraphModel.Identity identity,
                                 Object handlerResult,
                                 Throwable throwable) {
-            tracer.afterHandle(tracingMarker, identity, handlerResult, throwable);
+            try {
+                tracer.afterHandle(tracingMarker, identity, handlerResult, throwable);
+            } catch (Exception exc) {
+                log.error("Failed to call afterHandle method of tracer.", exc);
+            }
         }
 
         @Override
         public Object beforeMerge(ReactorGraphModel.Identity identity, Object payload, Object handleResult) {
-            return tracer.beforeMerge(identity, payload, handleResult);
+            try {
+                return tracer.beforeMerge(identity, payload, handleResult);
+            } catch (Exception exc) {
+                log.error("Failed to call beforeMerge method of tracer.", exc);
+                return null;
+            }
         }
 
         @Override
         public void afterMerger(Object tracingMarker, ReactorGraphModel.Identity identity, Object payload) {
-            tracer.afterMerger(tracingMarker, identity, payload);
+            try {
+                tracer.afterMerger(tracingMarker, identity, payload);
+            } catch (Exception exc) {
+                log.error("Failed to call afterMerger method of tracer.", exc);
+            }
         }
     }
 
@@ -320,6 +344,7 @@ public class CompletableReactor implements AutoCloseable {
     /**
      * Submit request without checking whether reactor closed or not.
      * If maxPendingRequestCount limit is reached prints error message and accepts request.
+     *
      * @param payload
      * @param timeoutMs
      * @param <PayloadType>
@@ -348,9 +373,9 @@ public class CompletableReactor implements AutoCloseable {
             inlineGraphResult.thenAcceptAsync(any -> payloadCall.stop());
 
             return Execution.<PayloadType>builder()
-                            .chainExecutionFuture(inlineGraphResult.thenAccept(any -> {/* do nothing */}))
-                            .resultFuture(inlineGraphResult)
-                            .build();
+                    .chainExecutionFuture(inlineGraphResult.thenAccept(any -> {/* do nothing */}))
+                    .resultFuture(inlineGraphResult)
+                    .build();
 
         }
 
@@ -433,10 +458,10 @@ public class CompletableReactor implements AutoCloseable {
         execution.getResultFuture().thenRunAsync(payloadCall::stop);
 
         return Execution.<PayloadType>builder()
-                        .chainExecutionFuture(execution.getChainExecutionFuture())
-                        .resultFuture(execution.getResultFuture())
-                        .debugProcessingVertexGraphState(execution.getDebugProcessingVertexGraphState())
-                        .build();
+                .chainExecutionFuture(execution.getChainExecutionFuture())
+                .resultFuture(execution.getResultFuture())
+                .debugProcessingVertexGraphState(execution.getDebugProcessingVertexGraphState())
+                .build();
     }
 
     /**
