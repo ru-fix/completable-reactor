@@ -314,7 +314,10 @@ public class ReactorGraphExecutionBuilder {
                                                                 .setDeadTransition(true);
                                                     }
                                                 }
-                                        )
+                                        ).exceptionally(exc -> {
+                                            log.error("Failed to activate");
+                                            return null;
+                                        })
                                 )
                         );
 
@@ -1115,6 +1118,13 @@ public class ReactorGraphExecutionBuilder {
                         .setPayload(payload)
                         .setProcessorResult(res));
             }
+            return null;
+        }).exceptionally(exc -> {
+            log.error("Failed to execute afterHandle block for {}",
+                    Optional.of(processingVertex)
+                            .map(ProcessingVertex::getProcessingItem)
+                            .map(CRProcessingItem::getDebugName)
+                            .orElse("?"), exc);
             return null;
         });
     }

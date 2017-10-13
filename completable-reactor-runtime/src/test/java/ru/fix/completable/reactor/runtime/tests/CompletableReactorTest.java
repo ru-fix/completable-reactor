@@ -1133,4 +1133,53 @@ public class CompletableReactorTest {
 
         assertEquals(Arrays.asList(0, 4), result.getIdSequence());
     }
+
+    @Reactored({
+            "Test will check that single detached merge point id end up at payloads idList.",
+            "Expected result: {1}"
+    })
+    static class SingleDetachedMergePointPayload extends IdListPayload {
+    }
+
+    @Test
+    public void single_detached_merge_point() throws Exception {
+
+        class Config {
+            final ReactorGraphBuilder builder = new ReactorGraphBuilder(this);
+
+            MergePoint<IdListPayload> mergePoint = builder.mergePoint()
+                    .forPayload(IdListPayload.class)
+                    .withMerger(pld -> {
+                        pld.idSequence.add(1);
+                        return Status.OK;
+                    })
+                    .buildMergePoint();
+
+
+            ReactorGraph buildGraph() {
+                return builder.payload(SingleDetachedMergePointPayload.class)
+                        .merge(mergePoint)
+                        .mergePoint(mergePoint)
+                        .onAny().complete()
+                        .coordinates()
+                        .start(500, 100)
+                        .merge(mergePoint, 615, 179)
+                        .complete(mergePoint, 615, 263)
+
+                        .buildGraph();
+            }
+        }
+
+        val graph = new Config().buildGraph();
+
+        printGraph(graph);
+
+        reactor.registerReactorGraph(graph);
+
+        SingleDetachedMergePointPayload resultPayload = reactor.submit(new SingleDetachedMergePointPayload())
+                .getResultFuture()
+                .get(10, TimeUnit.SECONDS);
+
+        assertEquals(Arrays.asList(1), resultPayload.getIdSequence());
+    }
 }
