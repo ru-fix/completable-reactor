@@ -88,9 +88,14 @@ public class SpringTest {
         System.out.println("SpringTest.with: " + Arrays.deepToString(types));
     }
 
+    public static class BaseConfig{
+        void bar(){
+            System.out.println("BaseConfig.bar");
+        }
+    }
 
     @Configuration
-    public static class GraphConfig {
+    public static class GraphConfig extends BaseConfig {
 //
 //
 //        Proc procA1 = with(A.class).handle(pld, a -> {a.invokeSomeSmartMtehod(pld.arg1, pld.arg2, pld.arg3)})
@@ -101,37 +106,37 @@ public class SpringTest {
 //        Proc procA3 = procA1.clone();
 //
 //
-//        @Bean
-//        public Proc procA(A theA) {
-//            System.out.println("GraphConfig.procA");
-//            return new ProcDesc("desc of: " + theA).buildProc();
-//        }
-//
-//
-
-        Proc procAB;
-        void procAB(A theOtherA, B b) {
-            bindHandler(a -> sdfsldf)
-            bindMerger(a -> sdfjsdlf)
-            procAB = buildProc()
-            procA1 = buildProc()
-
-
-            procA3 = bindHandler()
-                    .bindMerger()
-                    .build();
-            procA4 = buildProc();
-            procA5 = buildProc();
-
-
+        @Bean
+        public Proc procA(A theA) {
+            System.out.println("GraphConfig.procA");
+            return new ProcDesc("desc of: " + theA).buildProc();
         }
+//
+//
+
+//        Proc procAB;
+//        void procAB(A theOtherA, B b) {
+//            bindHandler(a -> sdfsldf)
+//            bindMerger(a -> sdfjsdlf)
+//            procAB = buildProc()
+//            procA1 = buildProc()
+//
+//
+//            procA3 = bindHandler()
+//                    .bindMerger()
+//                    .build();
+//            procA4 = buildProc();
+//            procA5 = buildProc();
+//
+//
+//        }
 
 
 
         @Bean
         String graph105() {
 
-            with(this::procAB);
+//            with(this::procAB);
 
 
 //            System.out.println("procA1=" + procA1);
