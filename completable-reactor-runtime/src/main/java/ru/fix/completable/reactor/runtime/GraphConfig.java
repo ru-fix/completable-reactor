@@ -42,8 +42,15 @@ public class GraphConfig<Payload> {
     }
 
 
-    public <HandlerResult> GraphConfig<Payload> merger(String comment, Merger<Payload, HandlerResult> merger) {
+    public Vertex router(Router<Payload> router) {
         throw new UnsupportedOperationException();
     }
 
+    public Vertex router(String title, Router<Payload> router) {
+        throw new UnsupportedOperationException();
+    }
+
+    public Vertex router(String title, String[] docs, Router<Payload> router) {
+        throw new UnsupportedOperationException();
+    }
 }

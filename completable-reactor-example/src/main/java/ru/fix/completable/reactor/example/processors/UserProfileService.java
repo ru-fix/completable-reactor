@@ -66,9 +66,7 @@ public class UserProfileService {
 
 
     @Reactored("Load user profile from database by user id.")
-    public CompletableFuture<UserProfileResult> loadUserProfileById(long userId, String nonNullUnusedParam) {
-
-        Objects.nonNull(nonNullUnusedParam);
+    public CompletableFuture<UserProfileResult> loadUserProfileById(long userId) {
 
         return CompletableFuture
                 .supplyAsync(() ->

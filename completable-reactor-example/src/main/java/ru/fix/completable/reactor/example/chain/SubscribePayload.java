@@ -9,7 +9,7 @@ import ru.fix.completable.reactor.example.processors.AccountInfo;
 /**
  * Created by swarmshine on 16.10.2016.
  */
-public class SubscribePayload implements ServiceInfoPayloadMixin, UserProfilePayloadMixin {
+public class SubscribePayload {
 
     @Data
     @Accessors()
@@ -36,48 +36,5 @@ public class SubscribePayload implements ServiceInfoPayloadMixin, UserProfilePay
     public final PurchasePayload.Request request = new PurchasePayload.Request();
     public final PurchasePayload.IntermediateData intermediateData = new PurchasePayload.IntermediateData();
     public final PurchasePayload.Response response = new PurchasePayload.Response();
-
-
-
-    @Override
-    public Long getServiceId() {
-        return request.serviceId;
-    }
-
-    @Override
-    public ServiceInfo getServiceInfo() {
-        return intermediateData.serviceInfo;
-    }
-
-    @Override
-    public void setServiceInfo(ServiceInfo serviceInfo) {
-        intermediateData.serviceInfo = serviceInfo;
-    }
-
-    @Override
-    public Long getUserId() {
-        return request.userId;
-    }
-
-    @Override
-    public UserProfile getUserProfile() {
-        return intermediateData.userInfo;
-    }
-
-    @Override
-    public void setUserProfile(UserProfile userProfile) {
-        intermediateData.userInfo = userProfile;
-    }
-
-    @Override
-    public void setStatus(Enum status) {
-        response.status = status;
-    }
-
-    @Override
-    public Enum getStatus() {
-        return response.status;
-    }
-
 
 }

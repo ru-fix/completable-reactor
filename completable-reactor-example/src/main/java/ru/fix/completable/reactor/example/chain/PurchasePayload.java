@@ -12,9 +12,9 @@ import java.math.BigDecimal;
  * @author Kamil Asfandiyarov
  */
 @Reactored({
-        "Represent purchase request"
+        "Purchase procedure when user buys goods in a shop"
 })
-public class PurchasePayload{
+public class PurchasePayload {
 
     @Data
     @Accessors(chain = true)
@@ -30,16 +30,15 @@ public class PurchasePayload{
         BigDecimal newAmount;
         boolean withdrawalWasInMinus;
 
-        public Response setStatusIfNull(Enum status){
+        public Response setStatusIfNull(Enum status) {
             this.status = status;
             return this;
         }
     }
 
-
     @Data
     @Accessors
-    public static class IntermediateData{
+    public static class IntermediateData {
         ServiceInfo serviceInfo;
         UserProfile userInfo;
 
@@ -49,36 +48,4 @@ public class PurchasePayload{
     public final IntermediateData intermediateData = new IntermediateData();
     public final Response response = new Response();
 
-
-    public Long getServiceId() {
-        return request.serviceId;
-    }
-
-    public ServiceInfo getServiceInfo() {
-        return intermediateData.serviceInfo;
-    }
-
-    public void setServiceInfo(ServiceInfo serviceInfo) {
-        intermediateData.serviceInfo = serviceInfo;
-    }
-
-    public Long getUserId() {
-        return request.userId;
-    }
-
-    public UserProfile getUserProfile() {
-        return intermediateData.userInfo;
-    }
-
-    public void setUserProfile(UserProfile userProfile) {
-        intermediateData.userInfo = userProfile;
-    }
-
-    public void setStatus(Enum status) {
-        this.response.status = status;
-    }
-
-    public Enum getStatus() {
-        return response.status;
-    }
 }
