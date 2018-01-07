@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Reactored({
         "Represent purchase request"
 })
-public class PurchasePayload implements ServiceInfoPayloadMixin, UserProfilePayloadMixin {
+public class PurchasePayload{
 
     @Data
     @Accessors(chain = true)
@@ -50,45 +50,35 @@ public class PurchasePayload implements ServiceInfoPayloadMixin, UserProfilePayl
     public final Response response = new Response();
 
 
-    @Override
     public Long getServiceId() {
         return request.serviceId;
     }
 
-    @Override
     public ServiceInfo getServiceInfo() {
         return intermediateData.serviceInfo;
     }
 
-    @Override
     public void setServiceInfo(ServiceInfo serviceInfo) {
         intermediateData.serviceInfo = serviceInfo;
     }
 
-    @Override
     public Long getUserId() {
         return request.userId;
     }
 
-    @Override
     public UserProfile getUserProfile() {
         return intermediateData.userInfo;
     }
 
-    @Override
     public void setUserProfile(UserProfile userProfile) {
         intermediateData.userInfo = userProfile;
     }
 
-    @Override
     public void setStatus(Enum status) {
         this.response.status = status;
     }
 
-    @Override
     public Enum getStatus() {
         return response.status;
     }
-
-
 }

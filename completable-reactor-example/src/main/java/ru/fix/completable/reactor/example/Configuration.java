@@ -6,6 +6,7 @@ import ru.fix.completable.reactor.example.chain.ServiceInfoPayloadMixin;
 import ru.fix.completable.reactor.example.chain.SubscribePayload;
 import ru.fix.completable.reactor.example.chain.UserProfilePayloadMixin;
 import ru.fix.completable.reactor.example.processors.*;
+import ru.fix.completable.reactor.runtime.GraphConfig;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
 import ru.fix.completable.reactor.runtime.dsl.MergePoint;
@@ -17,9 +18,7 @@ import java.math.BigDecimal;
 /**
  * Created by Kamil Asfandiyarov
  */
-public class Configuration {
-
-    final ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+public class Configuration extends GraphConfig<PurchasePayload> {
 
     /**
      * Services
@@ -36,7 +35,7 @@ public class Configuration {
      * Graph processors
      */
     ProcessorDescription<UserProfilePayloadMixin> gUserProfileDescription =
-            graphBuilder.processor()
+            processor()
                     .forPayload(UserProfilePayloadMixin.class)
                     .passArg(pld -> pld.getUserId())
                     .passArg(pld -> pld.getUserId().toString())
