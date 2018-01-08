@@ -24,6 +24,7 @@
     <module>completable-reactor-ui</module>
     <module>completable-reactor-graph-viewer</module>
     <module>completable-reactor-graph-viewer-app</module>
+    <module>completable-reactor-spring</module>
   </modules>
 
   <properties>
