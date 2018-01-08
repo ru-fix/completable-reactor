@@ -64,4 +64,14 @@ public class GraphConfig<Payload> {
     public Vertex router(String title, String[] docs, Router<Payload> router) {
         throw new UnsupportedOperationException();
     }
+
+    public interface DependencyInjector {
+        <T> T inject(String name, Class<T> type);
+    }
+
+    private static DependencyInjector dependencyInjector;
+
+    public static void registerDependecnyInjector(DependencyInjector dependencyInjector) {
+        GraphConfig.dependencyInjector = dependencyInjector;
+    }
 }
