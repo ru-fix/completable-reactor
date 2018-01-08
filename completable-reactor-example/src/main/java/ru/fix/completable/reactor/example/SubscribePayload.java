@@ -1,10 +1,10 @@
-package ru.fix.completable.reactor.example.chain;
+package ru.fix.completable.reactor.example;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import ru.fix.completable.reactor.example.processors.ServiceInfo;
-import ru.fix.completable.reactor.example.processors.UserProfile;
-import ru.fix.completable.reactor.example.processors.AccountInfo;
+import ru.fix.completable.reactor.example.services.ServiceInfo;
+import ru.fix.completable.reactor.example.services.UserProfile;
+import ru.fix.completable.reactor.example.services.AccountInfo;
 
 /**
  * Created by swarmshine on 16.10.2016.

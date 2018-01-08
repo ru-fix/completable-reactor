@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.example.processors;
+package ru.fix.completable.reactor.example.services;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
         "Withdraw money from Bank account ",
         "for given user."
 })
-public class BankProcessor {
+public class Bank {
 
 
     /**
@@ -26,7 +26,7 @@ public class BankProcessor {
      */
     final Map<Long, AtomicReference<BigDecimal>> wallets = new ConcurrentHashMap<>();
 
-    public BankProcessor() {
+    public Bank() {
         wallets.put(1L, new AtomicReference<>(BigDecimal.valueOf(1000.00)));
         wallets.put(2L, new AtomicReference<>(BigDecimal.valueOf(1000.00)));
     }

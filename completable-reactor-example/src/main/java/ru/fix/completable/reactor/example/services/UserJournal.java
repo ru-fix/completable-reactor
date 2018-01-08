@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.example.processors;
+package ru.fix.completable.reactor.example.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +14,8 @@ import java.util.concurrent.CompletableFuture;
         "Logs information about usres actions.",
         "Log contains user id",
 })
-public class UserLogProcessor {
-    private static final Logger log = LoggerFactory.getLogger(UserLogProcessor.class);
+public class UserJournal {
+    private static final Logger log = LoggerFactory.getLogger(UserJournal.class);
 
     public CompletableFuture<Void> logAction(Long userId, String message) {
         log.info("Userlog id: {} message: {}", userId, message);

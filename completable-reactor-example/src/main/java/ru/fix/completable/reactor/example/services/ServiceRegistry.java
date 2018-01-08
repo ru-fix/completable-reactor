@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.example.processors;
+package ru.fix.completable.reactor.example.services;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -16,10 +16,10 @@ import java.util.stream.Stream;
  * @author Kamil Asfandiyarov
  */
 @Reactored({
-        "Service information processor load data for given service from database.",
+        "Service registry load data for given service from database.",
         "Service could be not active. In that case purchase request will be denied.",
 })
-public class ServiceInfoProcessor  {
+public class ServiceRegistry {
     public static final long SERVICE_ID_CAR_WASH = 1L;
     public static final long SERVICE_ID_HAIR_CUT = 2L;
     public static final long SERVICE_ID_INVALID = 3L;

@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.example.processors;
+package ru.fix.completable.reactor.example.services;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.fix.completable.reactor.api.Reactored;
@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 
 })
 @Slf4j
-public class TransactionLogProcessor  {
+public class TransactionLog {
 
     public CompletableFuture<Void> logTransactioin(Long userId) {
         return CompletableFuture.runAsync(() ->

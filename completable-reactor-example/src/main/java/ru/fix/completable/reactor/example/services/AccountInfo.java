@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.example.processors;
+package ru.fix.completable.reactor.example.services;
 
 import java.math.BigDecimal;
 

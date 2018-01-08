@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.example;
 
-import ru.fix.completable.reactor.example.chain.PurchasePayload;
-import ru.fix.completable.reactor.example.processors.*;
+import ru.fix.completable.reactor.example.services.*;
 import ru.fix.completable.reactor.runtime.GraphConfig;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.gl.Vertex;
@@ -14,7 +13,7 @@ import java.math.BigDecimal;
 public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
 
     Vertex userProfile = new Vertex() {
-        UserProfileService userProfile = new UserProfileService();
+        UserProfileManager userProfile = new UserProfileManager();
 
         {
             handler("load user profile",
@@ -22,18 +21,18 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
             ).withMerger("check profile state",
                     (pld, result) -> {
                         if (pld.response.getStatus() != null) {
-                            return MergeStatus.STOP;
+                            return Flow.STOP;
                         }
 
                         switch (result.status) {
                             case USER_NOT_FOUND:
                             case USER_IS_BLOCKED:
                                 pld.response.setStatus(result.status);
-                                return MergeStatus.STOP;
+                                return Flow.STOP;
 
                             case OK:
                                 pld.intermediateData.setUserInfo(result.userProfile);
-                                return MergeStatus.CONTINUE;
+                                return Flow.CONTINUE;
                         }
                         throw new IllegalArgumentException("result.status = " + result.status);
                     });
@@ -41,26 +40,26 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
     };
 
     Vertex txLog = new Vertex() {
-        TransactionLogProcessor txLog = new TransactionLogProcessor();
+        TransactionLog txLog = new TransactionLog();
 
         {
             handler(
                     pld -> txLog.logTransactioin(pld.request.getUserId())
             ).withMerger(
-                    (pld, any) -> MergeStatus.CONTINUE
+                    (pld, any) -> Flow.CONTINUE
             );
         }
     };
 
-    Vertex userLog = new Vertex() {
-        UserLogProcessor userLog = new UserLogProcessor();
+    Vertex userJournal = new Vertex() {
+        UserJournal userJournal = new UserJournal();
 
         {
             handler(
-                    pld -> userLog.logAction(
+                    pld -> userJournal.logAction(
                             pld.request.getUserId(),
                             String.format("Request type: %s", pld.getClass().getSimpleName()))
-            ).withMerger((pld, result) -> MergeStatus.CONTINUE);
+            ).withMerger((pld, result) -> Flow.CONTINUE);
         }
     };
 
@@ -76,7 +75,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                     .withoutMerger();
 
     Vertex bank = new Vertex() {
-        BankProcessor bank = new BankProcessor();
+        Bank bank = new Bank();
 
         {
             handler(
@@ -95,13 +94,13 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                             case WALLET_NOT_FOUND:
                             case USER_IS_BLOCKED:
                                 pld.response.setStatus(withdraw.getStatus());
-                                return MergeStatus.STOP;
+                                return Flow.STOP;
                             case OK:
                                 pld.response
                                         .setNewAmount(withdraw.getNewAmount())
                                         .setWithdrawalWasInMinus(withdraw.getNewAmount().compareTo(BigDecimal.ZERO) < 0)
-                                        .setStatus(BankProcessor.Withdraw.Status.OK);
-                                return MergeStatus.CONTINUE;
+                                        .setStatus(Bank.Withdraw.Status.OK);
+                                return Flow.CONTINUE;
                             default:
                                 throw new IllegalArgumentException("Status: " + withdraw.getStatus());
                         }
@@ -110,7 +109,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
     };
 
     Vertex serviceInfo = new Vertex() {
-        ServiceInfoProcessor serviceInfo = new ServiceInfoProcessor();
+        ServiceRegistry serviceInfo = new ServiceRegistry();
 
         {
             handler(pld -> serviceInfo.loadServiceInformation(pld.request.getServiceId()))
@@ -118,26 +117,48 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                             "checkServiceState",
                             (pld, result) -> {
                                 if (pld.response.getStatus() != null) {
-                                    return MergeStatus.STOP;
+                                    return Flow.STOP;
                                 }
 
                                 switch (result.getStatus()) {
                                     case SERVICE_NOT_FOUND:
                                         pld.response.setStatus(result.getStatus());
-                                        return MergeStatus.STOP;
+                                        return Flow.STOP;
                                     case OK:
                                         pld.intermediateData.setServiceInfo(result.getServiceInfo());
 
                                         if (result.getServiceInfo().isActive()) {
-                                            return MergeStatus.WITHDRAWAL;
+                                            return Flow.WITHDRAWAL;
                                         } else {
-                                            return MergeStatus.NO_WITHDRAWAL;
+                                            return Flow.NO_WITHDRAWAL;
                                         }
                                 }
-                                return MergeStatus.CONTINUE;
+                                return Flow.CONTINUE;
                             });
         }
     };
+
+    Vertex marketingCampaign = new Vertex() {
+        MarketingService marketingService = new MarketingService();
+
+        {
+            handlerSync(pld -> marketingService.checkBonuses(pld.request.userId, pld.request.serviceId)
+            ).withMerger((pld, bonus) -> {
+                if (bonus.isPresent()) {
+                    pld.intermediateData.bonusService = bonus.get();
+                    return Flow.BONUS_EXIST;
+                } else {
+                    return Flow.NO_BONUS;
+                }
+            });
+        }
+    };
+
+    Vertex bonusPurchaseSubgraph =
+            subgraph(PurchasePayload.class
+            ).withMerger((pld, subgraphResult) ->
+                    pld.response.bonusServiceStatus = subgraphResult.response.status
+            );
 
     public ReactorGraph<PurchasePayload> purchaseGraph() {
 
@@ -146,23 +167,28 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                 .handleBy(serviceInfo);
 
         userProfile
-                .on(MergeStatus.STOP).complete()
-                .on(MergeStatus.CONTINUE).mergeBy(serviceInfo);
+                .on(Flow.STOP).complete()
+                .on(Flow.CONTINUE).mergeBy(serviceInfo);
 
         serviceInfo
-                .on(MergeStatus.WITHDRAWAL).handleBy(bank)
-                .on(MergeStatus.NO_WITHDRAWAL).handleBy(userLog)
-                .on(MergeStatus.NO_WITHDRAWAL).handleBy(webNotification)
-                .on(MergeStatus.NO_WITHDRAWAL).handleBy(smsNotification)
-                .on(MergeStatus.STOP).complete();
-
+                .on(Flow.WITHDRAWAL).handleBy(bank)
+                .on(Flow.NO_WITHDRAWAL).handleBy(userJournal)
+                .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
+                .on(Flow.NO_WITHDRAWAL).handleBy(smsNotification)
+                .on(Flow.STOP).complete();
 
 
         bank.onAny().handleBy(txLog);
 
-        txLog.onAny().handleBy(userLog);
+        txLog.onAny().handleBy(userJournal);
 
-        userLog.onAny().complete();
+        userJournal.onAny().handleBy(marketingCampaign);
+
+        marketingCampaign
+                .on(Flow.BONUS_EXIST).handleBy(bonusPurchaseSubgraph)
+                .on(Flow.NO_BONUS).complete();
+
+        bonusPurchaseSubgraph.onAny().complete();
 
         coordinates()
                 .payload(680, 60)
@@ -171,15 +197,15 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                 .handler(smsNotification, 850, 450)
                 .handler(serviceInfo, 480, 120)
                 .handler(txLog, 420, 650)
-                .handler(userLog, 680, 820)
+                .handler(userJournal, 680, 820)
                 .handler(userProfile, 770, 120)
                 .merger(bank, 480, 550)
                 .merger(serviceInfo, 640, 280)
                 .merger(txLog, 530, 770)
-                .merger(userLog, 760, 930)
+                .merger(userJournal, 760, 930)
                 .merger(userProfile, 806, 201)
                 .complete(serviceInfo, 480, 310)
-                .complete(userLog, 740, 1020)
+                .complete(userJournal, 740, 1020)
                 .complete(userProfile, 963, 258);
 
         return buildGraph();

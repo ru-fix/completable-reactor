@@ -1,10 +1,10 @@
-package ru.fix.completable.reactor.example.chain;
+package ru.fix.completable.reactor.example;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 import ru.fix.completable.reactor.api.Reactored;
-import ru.fix.completable.reactor.example.processors.ServiceInfo;
-import ru.fix.completable.reactor.example.processors.UserProfile;
+import ru.fix.completable.reactor.example.services.ServiceInfo;
+import ru.fix.completable.reactor.example.services.UserProfile;
 
 import java.math.BigDecimal;
 
@@ -29,6 +29,7 @@ public class PurchasePayload {
         Enum status;
         BigDecimal newAmount;
         boolean withdrawalWasInMinus;
+        Enum bonusServiceStatus;
 
         public Response setStatusIfNull(Enum status) {
             this.status = status;
@@ -41,7 +42,7 @@ public class PurchasePayload {
     public static class IntermediateData {
         ServiceInfo serviceInfo;
         UserProfile userInfo;
-
+        Long bonusService;
     }
 
     public final Request request = new Request();

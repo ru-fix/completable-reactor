@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.example.processors;
+package ru.fix.completable.reactor.example.services;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -16,5 +16,8 @@ public class ServiceInfo {
     boolean isActive;
     BigDecimal servicePrice;
     boolean isSupportTrialPeriod;
+
+    Long bonusMarketing;
+    Long bonusService;
 
 }

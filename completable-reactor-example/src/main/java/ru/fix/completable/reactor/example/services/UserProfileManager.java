@@ -1,26 +1,25 @@
-package ru.fix.completable.reactor.example.processors;
+package ru.fix.completable.reactor.example.services;
 
 import ru.fix.completable.reactor.api.Reactored;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static ru.fix.completable.reactor.example.processors.UserProfileService.Status.OK;
-import static ru.fix.completable.reactor.example.processors.UserProfileService.Status.USER_NOT_FOUND;
+import static ru.fix.completable.reactor.example.services.UserProfileManager.Status.OK;
+import static ru.fix.completable.reactor.example.services.UserProfileManager.Status.USER_NOT_FOUND;
 
 /**
  * @author Kamil Asfandiyarov
  */
 
 @Reactored({
-        "UserProfileServices loads information about user from remote database.",
+        "Loads information about user from remote database.",
         "User profile contains information whether user is blocked or not."
 
 })
-public class UserProfileService {
+public class UserProfileManager {
 
     public static final Long USER_ID_JOHN = 1L;
     public static final Long USER_ID_JACK = 2L;
