@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime;
 
 
 import ru.fix.completable.reactor.runtime.gl.*;
+import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
 
 public class GraphConfig<Payload> {
 
@@ -35,6 +36,9 @@ public class GraphConfig<Payload> {
     public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
             String title,
             Handler<Payload, HandlerResult> handler) {
+
+        ConfigContext context = ConfigContext.get();
+        if(context.)
         throw new UnsupportedOperationException();
     }
 
