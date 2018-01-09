@@ -1,5 +1,9 @@
 package ru.fix.completable.reactor.runtime.gl;
 
+import ru.fix.completable.reactor.runtime.gl.GlMergerBuilder;
+import ru.fix.completable.reactor.runtime.gl.Merger;
+import ru.fix.completable.reactor.runtime.gl.Vertex;
+
 class GlMergerBuilderImpl<Payload, HandlerResult> implements GlMergerBuilder<Payload, HandlerResult> {
 
     private final Vertex vertex;
@@ -24,12 +28,12 @@ class GlMergerBuilderImpl<Payload, HandlerResult> implements GlMergerBuilder<Pay
 
     @Override
     public Vertex withMerger(String title, String doc, Merger<Payload, HandlerResult> merger) {
-        return vertex;
+        return withMerger(merger);
     }
 
     @Override
     public Vertex withMerger(String title, String[] docs, Merger<Payload, HandlerResult> merger) {
-        return vertex;
+        return withMerger(merger);
     }
 
     @Override

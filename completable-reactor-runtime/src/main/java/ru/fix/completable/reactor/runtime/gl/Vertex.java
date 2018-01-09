@@ -5,18 +5,26 @@ import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
 public class Vertex {
 
     {
-        if(!this.getClass().equals(Vertex.class)) {
+        if (!this.getClass().equals(Vertex.class)) {
             // user derived class that extends Vertex
             ConfigContext.get().setVertex(this);
         }
     }
 
-    public GlTransitionBuilder on(Enum<?>... mergeStatuses){
-        throw new UnsupportedOperationException();
+    public GlTransitionBuilder on(Enum<?>... mergeStatuses) {
+        return new GlTransitionBuilderImpl(
+                this,
+                new GlTransition()
+                        .setMergeStatuses(mergeStatuses)
+        );
     }
 
-    public GlTransitionBuilder onAny(){
-        throw new UnsupportedOperationException();
+    public GlTransitionBuilder onAny() {
+        return new GlTransitionBuilderImpl(
+                this,
+                new GlTransition()
+                        .setOnAny(true)
+        );
     }
 
     Handler handler;

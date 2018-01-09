@@ -3,21 +3,26 @@ package ru.fix.completable.reactor.runtime.gl;
 
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
+import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 
 import java.util.concurrent.CompletableFuture;
 
 public abstract class GraphConfig<Payload> {
+
+    GlReactorGraph<Payload> graph = new GlReactorGraph<>();
 
     public GlPayload<Payload> payload() {
         throw new UnsupportedOperationException();
     }
 
     public GlCoordinates coordinates() {
-        throw new UnsupportedOperationException();
+        return new GlCoordinatesImpl();
     }
 
     public ReactorGraph<Payload> buildGraph() {
-        throw new UnsupportedOperationException();
+        GlReactorGraph<Payload> result = this.graph;
+        this.graph = new GlReactorGraph<>();
+        return result;
     }
 
     public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
