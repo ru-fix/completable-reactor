@@ -7,13 +7,6 @@ public class ConfigContext {
 
     private Vertex vertex;
 
-    enum State {
-        VERTEX_INITIALIZATION
-    }
-
-    private State state;
-
-
     public static ConfigContext get(){
         ConfigContext context = ConfigContext.configContext.get();
         if(context == null){
@@ -23,8 +16,17 @@ public class ConfigContext {
         return context;
     }
 
-    public void vertexInitialization(Vertex vertex) {
+    public void setVertex(Vertex vertex) {
         this.vertex = vertex;
-        this.state = State.VERTEX_INITIALIZATION;
+    }
+
+    public Vertex extractVertexOrDefault(Vertex defaultVertex) {
+        if(this.vertex != null){
+            Vertex result = this.vertex;
+            this.vertex = null;
+            return result;
+        } else {
+            return defaultVertex;
+        }
     }
 }

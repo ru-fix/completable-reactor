@@ -1,6 +1,6 @@
 package ru.fix.completable.reactor.runtime.gl;
 
-public interface TransitionBuilder {
+public interface GlTransitionBuilder {
 
     Vertex complete();
 

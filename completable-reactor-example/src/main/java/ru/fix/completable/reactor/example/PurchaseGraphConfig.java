@@ -1,7 +1,8 @@
 package ru.fix.completable.reactor.example;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.fix.completable.reactor.example.services.*;
-import ru.fix.completable.reactor.runtime.GraphConfig;
+import ru.fix.completable.reactor.runtime.gl.GraphConfig;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.gl.Vertex;
 
@@ -13,7 +14,7 @@ import java.math.BigDecimal;
 public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
 
     Vertex userProfile = new Vertex() {
-        UserProfileManager userProfile = new UserProfileManager();
+        UserProfileManager userProfile;
 
         {
             handler("load user profile",
@@ -40,7 +41,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
     };
 
     Vertex txLog = new Vertex() {
-        TransactionLog txLog = new TransactionLog();
+        TransactionLog txLog;
 
         {
             handler(
@@ -52,7 +53,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
     };
 
     Vertex userJournal = new Vertex() {
-        UserJournal userJournal = new UserJournal();
+        UserJournal userJournal;
 
         {
             handler(
@@ -63,7 +64,8 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
         }
     };
 
-    Notifier notifier = new Notifier();
+    @Autowired
+    Notifier notifier;
 
 
     Vertex webNotification =
@@ -75,7 +77,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                     .withoutMerger();
 
     Vertex bank = new Vertex() {
-        Bank bank = new Bank();
+        Bank bank;
 
         {
             handler(
@@ -109,10 +111,10 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
     };
 
     Vertex serviceInfo = new Vertex() {
-        ServiceRegistry serviceInfo = new ServiceRegistry();
+        ServiceRegistry serviceRegistry;
 
         {
-            handler(pld -> serviceInfo.loadServiceInformation(pld.request.getServiceId()))
+            handler(pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
                     .withMerger(
                             "checkServiceState",
                             (pld, result) -> {
@@ -139,7 +141,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
     };
 
     Vertex marketingCampaign = new Vertex() {
-        MarketingService marketingService = new MarketingService();
+        MarketingService marketingService;
 
         {
             handlerSync(pld -> marketingService.checkBonuses(pld.request.userId, pld.request.serviceId)

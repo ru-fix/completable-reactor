@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.spring;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import ru.fix.completable.reactor.runtime.GraphConfig;
+import ru.fix.completable.reactor.runtime.gl.GraphConfig;
 
 public class CompletableReactorSpringSupportBean implements ApplicationContextAware {
 
