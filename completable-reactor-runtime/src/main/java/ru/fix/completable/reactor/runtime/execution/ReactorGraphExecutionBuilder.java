@@ -363,6 +363,9 @@ public class ReactorGraphExecutionBuilder {
             }
         }
 
+        //TODO FIX!! allow detached processor to read data from payload and only after that execute merge point
+        // down the flow, so merge point and detached processor would not run concurrently
+
         /**
          * Join incoming processor flows to single processor invocation
          */

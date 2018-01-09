@@ -8,8 +8,10 @@ public class ConfigContext {
     private Vertex vertex;
 
     enum State {
-        INSIDE_VERTEX_INIT
+        VERTEX_INITIALIZATION
     }
+
+    private State state;
 
 
     public static ConfigContext get(){
@@ -21,7 +23,8 @@ public class ConfigContext {
         return context;
     }
 
-    public void setVertex(Vertex vertex) {
+    public void vertexInitialization(Vertex vertex) {
         this.vertex = vertex;
+        this.state = State.VERTEX_INITIALIZATION;
     }
 }

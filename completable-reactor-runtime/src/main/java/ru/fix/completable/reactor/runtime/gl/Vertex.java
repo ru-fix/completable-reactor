@@ -5,7 +5,7 @@ import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
 public class Vertex {
 
     {
-        ConfigContext.get().setVertex(this);
+        ConfigContext.get().vertexInitialization(this);
     }
 
     public TransitionBuilder on(Enum<?>... mergeStatuses){
