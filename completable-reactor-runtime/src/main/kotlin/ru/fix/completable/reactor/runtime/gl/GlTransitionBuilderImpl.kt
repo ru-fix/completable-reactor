@@ -1,6 +1,6 @@
 package ru.fix.completable.reactor.runtime.gl
 
-internal class GlTransitionBuilderImpl(
+class GlTransitionBuilderImpl(
         val vertex: Vertex,
         val transition: GlTransition) : GlTransitionBuilder {
 

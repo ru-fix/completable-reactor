@@ -1,6 +1,6 @@
 package ru.fix.completable.reactor.runtime.gl
 
-internal class GlTransition (
+class GlTransition (
 
     var mergeStatuses: Set<Enum<*>>? = null,
 

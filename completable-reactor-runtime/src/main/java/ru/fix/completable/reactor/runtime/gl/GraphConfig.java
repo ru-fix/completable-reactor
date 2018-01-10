@@ -12,7 +12,7 @@ public abstract class GraphConfig<Payload> {
     GlReactorGraph<Payload> graph = new GlReactorGraph<>();
 
     public GlPayload<Payload> payload() {
-        throw new UnsupportedOperationException();
+        return new GlPayloadImpl<>(graph);
     }
 
     public GlCoordinates coordinates() {
