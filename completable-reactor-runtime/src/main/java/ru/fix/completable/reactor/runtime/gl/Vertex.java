@@ -1,6 +1,5 @@
 package ru.fix.completable.reactor.runtime.gl;
 
-import kotlin.jvm.JvmField;
 import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
 
 import java.util.Arrays;
