@@ -28,7 +28,7 @@ public abstract class GraphConfig<Payload> {
     public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
             Handler<Payload, HandlerResult> handler) {
 
-        Vertex vertex = ConfigContext.get().extractVertexOrDefault(new Vertex());
+        Vertex vertex = ConfigContext.Companion.get().extractVertexOrDefault(new Vertex());
         requireNull(vertex.handler, "handler method used twice on same vertex");
         requireNull(vertex.merger, "handler method used after merger initialization for given vertex");
         requireNull(vertex.router, "handler method used after router initialization for given vertex");
@@ -39,7 +39,7 @@ public abstract class GraphConfig<Payload> {
     }
 
     public Vertex router(Router<Payload> router) {
-        Vertex vertex = ConfigContext.get().extractVertexOrDefault(new Vertex());
+        Vertex vertex = ConfigContext.Companion.get().extractVertexOrDefault(new Vertex());
         requireNull(vertex.handler, "router method used after handler initialization for given vertex");
         requireNull(vertex.merger, "router method used after merger initialization for given vertex");
         requireNull(vertex.router, "router method used twice on same vertex");
@@ -52,7 +52,7 @@ public abstract class GraphConfig<Payload> {
     public <SubgraphPayload> GlMergerBuilder<Payload, SubgraphPayload> subgraph(
             Class<SubgraphPayload> subgraphPayloadClass) {
 
-        Vertex vertex = ConfigContext.get().extractVertexOrDefault(new Vertex());
+        Vertex vertex = ConfigContext.Companion.get().extractVertexOrDefault(new Vertex());
         requireNull(vertex.handler, "subgraph method used after handler initialization for given vertex");
         requireNull(vertex.merger, "subgraph method used after merger initialization for given vertex");
         requireNull(vertex.router, "subgraph method used after router initialization for given vertex");
