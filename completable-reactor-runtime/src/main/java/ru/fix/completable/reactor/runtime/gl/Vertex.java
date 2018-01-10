@@ -12,7 +12,7 @@ public class Vertex {
     {
         if (!this.getClass().equals(Vertex.class)) {
             // user derived class that extends Vertex
-            ConfigContext.Companion.get().setVertex(this);
+            ConfigContext.get().setVertex(this);
         }
     }
 

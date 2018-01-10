@@ -24,6 +24,7 @@ class ConfigContext {
     companion object {
         private val configContext = ThreadLocal<ConfigContext>()
 
+        @JvmStatic
         fun get(): ConfigContext {
             var context: ConfigContext? = ConfigContext.configContext.get()
             if (context == null) {

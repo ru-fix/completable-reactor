@@ -18,6 +18,7 @@ import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
+import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
 import java.util.Collection;
@@ -219,6 +220,11 @@ public class CompletableReactor implements AutoCloseable {
      * @param reactorGraph
      */
     public void registerReactorGraph(ReactorGraph reactorGraph) {
+
+        if(reactorGraph instanceof GlReactorGraph){
+            throw new UnsupportedOperationException("GlReactorGraph not supported yet");
+        }
+
         val crReactorGraph = (CRReactorGraph) reactorGraph;
         payloadGraphs.put(crReactorGraph.getPayloadClass(), crReactorGraph);
         inlinePayloadGraphs.remove(crReactorGraph.getPayloadClass());

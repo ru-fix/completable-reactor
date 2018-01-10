@@ -9,6 +9,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.example.services.*;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
+import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.spring.CompletableReactorSpringSupportConfiguration;
 
 import java.util.concurrent.TimeUnit;
@@ -82,10 +83,9 @@ public class PurchaseGraphConfigTest {
 
     @Test
     public void purchase_car_wash() throws Exception {
-        PurchaseGraphConfig configuration = new PurchaseGraphConfig();
-
         CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
-        reactor.registerReactorGraph(configuration.purchaseGraph());
+        ReactorGraph<PurchasePayload> purchaseGraph = new PurchaseGraphConfig().purchaseGraph();
+        reactor.registerReactorGraph(purchaseGraph);
 
         PurchasePayload payload = new PurchasePayload();
         payload.request.setUserId(UserProfileManager.USER_ID_JOHN).setServiceId(ServiceRegistry.SERVICE_ID_CAR_WASH);
