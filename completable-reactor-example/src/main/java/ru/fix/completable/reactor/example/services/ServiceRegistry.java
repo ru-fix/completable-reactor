@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.example.services;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+
 import ru.fix.completable.reactor.api.Reactored;
 
 import java.math.BigDecimal;
@@ -45,11 +44,27 @@ public class ServiceRegistry {
 
     }
 
-    @Data
-    @Accessors(chain = true)
     public static class ServiceInfoResult {
         Status status;
         ServiceInfo serviceInfo;
+
+        public Status getStatus() {
+            return status;
+        }
+
+        public ServiceInfoResult setStatus(Status status) {
+            this.status = status;
+            return this;
+        }
+
+        public ServiceInfo getServiceInfo() {
+            return serviceInfo;
+        }
+
+        public ServiceInfoResult setServiceInfo(ServiceInfo serviceInfo) {
+            this.serviceInfo = serviceInfo;
+            return this;
+        }
     }
 
     @Reactored({"Load service information from database."})

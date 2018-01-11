@@ -1,7 +1,5 @@
 package ru.fix.completable.reactor.example.services;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
 import ru.fix.completable.reactor.api.Reactored;
 
 import java.math.BigDecimal;
@@ -31,8 +29,7 @@ public class Bank {
         wallets.put(2L, new AtomicReference<>(BigDecimal.valueOf(1000.00)));
     }
 
-    @Data
-    @Accessors(chain = true)
+
     public static class Withdraw {
         public enum Status {
             OK,
@@ -43,6 +40,33 @@ public class Bank {
         Long userId;
         Status status;
         BigDecimal newAmount;
+
+        public Long getUserId() {
+            return userId;
+        }
+
+        public Withdraw setUserId(Long userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public Status getStatus() {
+            return status;
+        }
+
+        public Withdraw setStatus(Status status) {
+            this.status = status;
+            return this;
+        }
+
+        public BigDecimal getNewAmount() {
+            return newAmount;
+        }
+
+        public Withdraw setNewAmount(BigDecimal newAmount) {
+            this.newAmount = newAmount;
+            return this;
+        }
     }
 
 
