@@ -1,6 +1,5 @@
 package ru.fix.completable.reactor.example;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
