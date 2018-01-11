@@ -6,6 +6,7 @@ import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
 import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public abstract class GraphConfig<Payload> {
 
@@ -54,7 +55,8 @@ public abstract class GraphConfig<Payload> {
     }
 
     public <SubgraphPayload> GlMergerBuilder<Payload, SubgraphPayload> subgraph(
-            Class<SubgraphPayload> subgraphPayloadClass) {
+            Class<SubgraphPayload> subgraphPayloadClass,
+            SubgraphPayloadBuilder<Payload, SubgraphPayload> subgraphPayloadBuilder) {
 
         Vertex vertex = ConfigContext.Companion.get().extractVertexOrDefault(new Vertex());
         requireNull(vertex.handler, "subgraph method used after handler initialization for given vertex");
@@ -63,6 +65,7 @@ public abstract class GraphConfig<Payload> {
         requireNull(vertex.subgraph, "subgrah method used twice on same vertex");
 
         vertex.subgraph = subgraphPayloadClass;
+        vertex.subgraphPayloadBuilder = subgraphPayloadBuilder;
         return new GlMergerBuilderImpl<>(vertex);
     }
 

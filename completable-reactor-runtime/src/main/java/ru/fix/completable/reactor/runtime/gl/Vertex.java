@@ -49,6 +49,7 @@ public class Vertex {
     Merger merger;
     Router router;
     Class subgraph;
+    SubgraphPayloadBuilder subgraphPayloadBuilder;
 
     List<GlTransition> transitions = new ArrayList<>();
 }

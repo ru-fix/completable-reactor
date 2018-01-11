@@ -157,7 +157,16 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
     };
 
     Vertex bonusPurchaseSubgraph =
-            subgraph(PurchasePayload.class
+            subgraph(
+                    PurchasePayload.class,
+                    pld -> {
+                        PurchasePayload subgraphRequest = new PurchasePayload();
+                        subgraphRequest.request
+                                .setServiceId(107L)
+                                .setUserId(pld.request.userId);
+                        return subgraphRequest;
+                    }
+
             ).withMerger((pld, subgraphResult) ->
                     pld.response.bonusServiceStatus = subgraphResult.response.status
             );
