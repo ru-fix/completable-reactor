@@ -5,19 +5,19 @@ internal class GlCoordinatesImpl : GlCoordinates {
         return this
     }
 
-    override fun handler(vertex: Vertex, x: Int, y: Int): GlCoordinates {
+    override fun handler(vertex: Vertex<*>, x: Int, y: Int): GlCoordinates {
         return this
     }
 
-    override fun merger(vertex: Vertex, x: Int, y: Int): GlCoordinates {
+    override fun merger(vertex: Vertex<*>, x: Int, y: Int): GlCoordinates {
         return this
     }
 
-    override fun router(vertex: Vertex, x: Int, y: Int): GlCoordinates {
+    override fun router(vertex: Vertex<*>, x: Int, y: Int): GlCoordinates {
         return this
     }
 
-    override fun complete(vertex: Vertex, x: Int, y: Int): GlCoordinates {
+    override fun complete(vertex: Vertex<*>, x: Int, y: Int): GlCoordinates {
         return this
     }
 }

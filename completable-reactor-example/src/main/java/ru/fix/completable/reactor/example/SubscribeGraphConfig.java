@@ -3,7 +3,6 @@ package ru.fix.completable.reactor.example;
 import ru.fix.completable.reactor.example.services.*;
 import ru.fix.completable.reactor.runtime.gl.GraphConfig;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
-import ru.fix.completable.reactor.runtime.gl.Vertex;
 
 /**
  * Created by Kamil Asfandiyarov
