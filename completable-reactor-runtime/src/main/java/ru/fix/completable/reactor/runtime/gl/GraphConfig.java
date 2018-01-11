@@ -11,6 +11,10 @@ public abstract class GraphConfig<Payload> {
 
     GlReactorGraph<Payload> graph = new GlReactorGraph<>();
 
+    {
+        ConfigContext.get().setGraphConfig(this);
+    }
+
     public GlPayload<Payload> payload() {
         return new GlPayloadImpl<>(graph);
     }

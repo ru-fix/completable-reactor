@@ -1,10 +1,12 @@
 package ru.fix.completable.reactor.runtime.internal.gl
 
+import ru.fix.completable.reactor.runtime.gl.GraphConfig
 import ru.fix.completable.reactor.runtime.gl.Vertex
 
 class ConfigContext {
 
     private var vertex: Vertex? = null
+    var graphConfig: GraphConfig<*>? = null
 
     fun setVertex(vertex: Vertex) {
         this.vertex = vertex
@@ -20,6 +22,7 @@ class ConfigContext {
             return defaultVertex
         }
     }
+
 
     companion object {
         private val configContext = ThreadLocal<ConfigContext>()

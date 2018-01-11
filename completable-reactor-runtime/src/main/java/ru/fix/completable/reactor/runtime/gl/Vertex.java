@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.runtime.gl;
 
 import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
+import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,12 @@ public class Vertex {
             // user derived class that extends Vertex
             ConfigContext.get().setVertex(this);
         }
+
+        GraphConfig<?> currentGraphConfig = ConfigContext.get().getGraphConfig();
+        if(currentGraphConfig == null){
+            throw new IllegalStateException("Vertex created not inside GraphConfig");
+        }
+        currentGraphConfig.graph.getVertices().add(this);
     }
 
     public GlTransitionBuilder on(Enum<?>... mergeStatuses) {
