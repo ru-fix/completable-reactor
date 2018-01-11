@@ -1,10 +1,8 @@
 package ru.fix.completable.reactor.runtime.gl
 
+internal class GlMergerBuilderImpl<Payload, HandlerResult>(private val vertex: Vertex) : GlMergerBuilder<Payload, HandlerResult> {
 
-internal class GlMergerBuilderImpl<Payload, HandlerResult>(private val vertex: Vertex<Payload>) : GlMergerBuilder<Payload,
-        HandlerResult> {
-
-    override fun withMerger(merger: Merger<Payload, HandlerResult>): Vertex<Payload> {
+    override fun withMerger(merger: Merger<Payload, HandlerResult>): Vertex {
         if (vertex.merger != null) {
             throw IllegalStateException("withMerger method used twice on same vertex")
         }
@@ -12,19 +10,19 @@ internal class GlMergerBuilderImpl<Payload, HandlerResult>(private val vertex: V
         return vertex
     }
 
-    override fun withMerger(title: String, merger: Merger<Payload, HandlerResult>): Vertex<Payload> {
+    override fun withMerger(title: String, merger: Merger<Payload, HandlerResult>): Vertex {
         return withMerger(merger)
     }
 
-    override fun withMerger(title: String, doc: String, merger: Merger<Payload, HandlerResult>): Vertex<Payload> {
+    override fun withMerger(title: String, doc: String, merger: Merger<Payload, HandlerResult>): Vertex {
         return withMerger(merger)
     }
 
-    override fun withMerger(title: String, docs: Array<String>, merger: Merger<Payload, HandlerResult>): Vertex<Payload> {
+    override fun withMerger(title: String, docs: Array<String>, merger: Merger<Payload, HandlerResult>): Vertex {
         return withMerger(merger)
     }
 
-    override fun withoutMerger(): Vertex<Payload> {
+    override fun withoutMerger(): Vertex {
         return vertex
     }
 }

@@ -5,53 +5,9 @@ import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
 import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class GraphConfig<Payload> {
-
-    public class Vertex {
-
-        {
-            if (!this.getClass().equals(Vertex.class)) {
-                // user derived class that extends Vertex
-                ConfigContext.get().setVertex(this);
-            }
-        }
-
-        public GlTransitionBuilder on(Enum<?>... mergeStatuses) {
-            GlTransition transition = new GlTransition();
-            transition.setMergeStatuses(new HashSet<>(Arrays.asList(mergeStatuses)));
-            transitions.add(transition);
-
-            return new GlTransitionBuilderImpl(
-                    this,
-                    transition
-            );
-        }
-
-        public GlTransitionBuilder onAny() {
-            GlTransition transition = new GlTransition();
-            transition.setOnAny(true);
-            transitions.add(transition);
-
-            return new GlTransitionBuilderImpl(
-                    this,
-                    transition
-            );
-        }
-
-        Handler handler;
-        Merger merger;
-        Router router;
-        Class subgraph;
-
-        List<GlTransition> transitions = new ArrayList<>();
-    }
-
 
     GlReactorGraph<Payload> graph = new GlReactorGraph<>();
 
@@ -72,8 +28,7 @@ public abstract class GraphConfig<Payload> {
     public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
             Handler<Payload, HandlerResult> handler) {
 
-        Vertex vertex = (Vertex) ConfigContext.get().extractVertexOrDefault(new Vertex());
-
+        Vertex vertex = ConfigContext.Companion.get().extractVertexOrDefault(new Vertex());
         requireNull(vertex.handler, "handler method used twice on same vertex");
         requireNull(vertex.merger, "handler method used after merger initialization for given vertex");
         requireNull(vertex.router, "handler method used after router initialization for given vertex");
@@ -84,7 +39,7 @@ public abstract class GraphConfig<Payload> {
     }
 
     public Vertex router(Router<Payload> router) {
-        Vertex vertex = (Vertex) ConfigContext.get().extractVertexOrDefault(new Vertex());
+        Vertex vertex = ConfigContext.Companion.get().extractVertexOrDefault(new Vertex());
         requireNull(vertex.handler, "router method used after handler initialization for given vertex");
         requireNull(vertex.merger, "router method used after merger initialization for given vertex");
         requireNull(vertex.router, "router method used twice on same vertex");
@@ -97,7 +52,7 @@ public abstract class GraphConfig<Payload> {
     public <SubgraphPayload> GlMergerBuilder<Payload, SubgraphPayload> subgraph(
             Class<SubgraphPayload> subgraphPayloadClass) {
 
-        Vertex vertex = (Vertex)ConfigContext.get().extractVertexOrDefault(new Vertex());
+        Vertex vertex = ConfigContext.Companion.get().extractVertexOrDefault(new Vertex());
         requireNull(vertex.handler, "subgraph method used after handler initialization for given vertex");
         requireNull(vertex.merger, "subgraph method used after merger initialization for given vertex");
         requireNull(vertex.router, "subgraph method used after router initialization for given vertex");
@@ -179,6 +134,4 @@ public abstract class GraphConfig<Payload> {
             throw new IllegalStateException(message);
         }
     }
-
-
 }
