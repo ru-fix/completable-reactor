@@ -2,12 +2,15 @@ package ru.fix.completable.reactor.parser.java
 
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.junit.Ignore
 import org.junit.Test
-import ru.fix.completable.reactor.parser.java.antlr.Java8BaseListener
-import ru.fix.completable.reactor.parser.java.antlr.Java8BaseVisitor
-import ru.fix.completable.reactor.parser.java.antlr.Java8Lexer
-import ru.fix.completable.reactor.parser.java.antlr.Java8Parser
+import ru.fix.completable.reactor.parser.java.antlr.Java9BaseListener
+import ru.fix.completable.reactor.parser.java.antlr.Java9BaseVisitor
+import ru.fix.completable.reactor.parser.java.antlr.Java9Lexer
+import ru.fix.completable.reactor.parser.java.antlr.Java9Parser
 import java.nio.charset.StandardCharsets
+import java.time.Duration
+import java.time.Instant
 import kotlin.test.assertEquals
 
 /**
@@ -15,6 +18,7 @@ import kotlin.test.assertEquals
  */
 class JavaParserTest {
 
+    @Ignore
     @Test
     fun parse() {
         val body = JavaParserTest::class.java.getResourceAsStream("/example1.java.txt")
@@ -44,33 +48,37 @@ class JavaParserTest {
 
 
 
-        val lexer = Java8Lexer(CharStreams.fromString(body))
+        val startTime = Instant.now()
+
+        val lexer = Java9Lexer(CharStreams.fromString(body))
         val tokens = CommonTokenStream(lexer)
-        val parser = Java8Parser(tokens)
+        val parser = Java9Parser(tokens)
 
-        parser.addParseListener(L())
+//        parser.addParseListener(L())
 
-        parser.compilationUnit()
+        val res = parser.compilationUnit()
 //        V().visitCompilationUnit(parser.compilationUnit())
 
 
+        println("parsed for ${Duration.between(startTime, Instant.now()).seconds}")
+
     }
 
-    class V : Java8BaseVisitor<Void?>() {
-        override fun visitFieldDeclaration(ctx: Java8Parser.FieldDeclarationContext?): Void? {
+    class V : Java9BaseVisitor<Void?>() {
+        override fun visitFieldDeclaration(ctx: Java9Parser.FieldDeclarationContext?): Void? {
 
             print("V: $ctx")
             return null
         }
     }
 
-    class L : Java8BaseListener() {
-        override fun enterFieldDeclaration(ctx: Java8Parser.FieldDeclarationContext?) {
+    class L : Java9BaseListener() {
+        override fun enterFieldDeclaration(ctx: Java9Parser.FieldDeclarationContext?) {
 
             println("L: ${ctx?.fieldModifier()}")
         }
 
-        override fun exitFieldDeclaration(ctx: Java8Parser.FieldDeclarationContext?) {
+        override fun exitFieldDeclaration(ctx: Java9Parser.FieldDeclarationContext?) {
             println("L: exit $ctx")
         }
     }
