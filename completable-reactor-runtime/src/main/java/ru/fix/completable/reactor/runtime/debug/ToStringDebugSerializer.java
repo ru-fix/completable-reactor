@@ -9,6 +9,6 @@ package ru.fix.completable.reactor.runtime.debug;
 public class ToStringDebugSerializer implements DebugSerializer {
     @Override
     public String dumpObject(Object object) {
-        return object.toString();
+        return "" + object;
     }
 }

@@ -93,7 +93,7 @@ public class CRMergePointBuilder<PayloadType> implements MergePointBuilder<Paylo
 
     static <PayloadType> CRMergePointBuilder<PayloadType> startBuildingMergePoint(
             BuilderContext<PayloadType> builderContext,
-            MergePoint<PayloadType> mergePoint) {
+            MergePoint<? super PayloadType> mergePoint) {
 
         val graph = builderContext.graph;
 

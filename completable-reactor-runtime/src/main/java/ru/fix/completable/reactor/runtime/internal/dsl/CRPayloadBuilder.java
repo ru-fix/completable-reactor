@@ -55,7 +55,7 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
     }
 
     @Override
-    public PayloadBuilder<PayloadType> merge(MergePoint<PayloadType> mergePoint) {
+    public PayloadBuilder<PayloadType> merge(MergePoint<? super PayloadType> mergePoint) {
         CRMergePoint<?> crMergePoint = (CRMergePoint<?>) mergePoint;
         crMergePoint.setName(builderContext.resolveConfigField(mergePoint));
         graph.ensureProcessingItemRegistered(crMergePoint);
@@ -81,7 +81,7 @@ public class CRPayloadBuilder<PayloadType> implements PayloadBuilder<PayloadType
     }
 
     @Override
-    public MergePointBuilder<PayloadType> mergePoint(MergePoint<PayloadType> mergePoint) {
+    public MergePointBuilder<PayloadType> mergePoint(MergePoint<? super PayloadType> mergePoint) {
         CRMergePoint<?> crMergePoint = (CRMergePoint<?>) mergePoint;
         crMergePoint.setName(builderContext.resolveConfigField(mergePoint));
 
