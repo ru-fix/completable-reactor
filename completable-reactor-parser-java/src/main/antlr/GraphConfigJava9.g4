@@ -16,9 +16,44 @@ vertexInitializationBlock
     :   'Vertex' Identifier ASSIGN NEW 'Vertex' LPAREN RPAREN ignoreBracesBlock SEMI
     ;
 
+vertexInitializationStaticSection
+    :   '{' dslHandler '}'
+    ;
+
+dslHandler
+    :   ('handler' LPAREN handlerLambda RPAREN dslMerger?)
+    |   ('handler' LPAREN '"' handlerTitle '"' COMMA handlerLambda RPAREN DOT dslMerger?)
+    ;
+
+handlerTitle
+    : Identifier
+    ;
+
+handlerLambda
+    :   (ignoreBracesBlock | ignoreParenthesesBlock | ~RPAREN)+
+    ;
+
+dslMerger
+    :   ('withMerger' LPAREN mergerLambda RPAREN)
+    |   ('withMerger' LPAREN '"' mergerTitle '"' COMMA mergerLambda RPAREN)
+    ;
+
+mergerLambda
+    :   (ignoreBracesBlock | ignoreParenthesesBlock | ~RPAREN)+
+    ;
+
+mergerTitle
+    : Identifier
+    ;
+
 ignoreBracesBlock
     :   LBRACE (~RBRACE | ignoreBracesBlock)* RBRACE
     ;
+
+ignoreParenthesesBlock
+    :   LPAREN (~RPAREN | ignoreParenthesesBlock)* RPAREN
+    ;
+
 
 
 payloadTransitionBlock
