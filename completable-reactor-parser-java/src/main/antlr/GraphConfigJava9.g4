@@ -13,37 +13,38 @@ graphBlock
     ;
 
 vertexInitializationBlock
-    :   'Vertex' Identifier ASSIGN NEW 'Vertex' LPAREN RPAREN ignoreBracesBlock SEMI
+    :   'Vertex' Identifier ASSIGN NEW 'Vertex' LPAREN RPAREN vertexInitializationStaticSection SEMI
     ;
 
 vertexInitializationStaticSection
-    :   '{' dslHandler '}'
+    :   '{' ~'{'* '{' builderHandler SEMI '}' '}'
     ;
 
-dslHandler
-    :   ('handler' LPAREN handlerLambda RPAREN dslMerger?)
-    |   ('handler' LPAREN '"' handlerTitle '"' COMMA handlerLambda RPAREN DOT dslMerger?)
+builderHandler
+    :   ('handler' LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
+    |   ('handler' LPAREN anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
+    ;
+
+builderWithMerger
+    :   ('withMerger' LPAREN mergerTitle COMMA anythingBeforeRParen RPAREN)
+    |   ('withMerger' LPAREN anythingBeforeRParen RPAREN)
     ;
 
 handlerTitle
-    : Identifier
+    : StringLiteral
     ;
 
-handlerLambda
-    :   (ignoreBracesBlock | ignoreParenthesesBlock | ~RPAREN)+
+anythingBeforeRParen
+    :   (~RPAREN | ignoreBracesBlock | ignoreParenthesesBlock)+
     ;
 
-dslMerger
-    :   ('withMerger' LPAREN mergerLambda RPAREN)
-    |   ('withMerger' LPAREN '"' mergerTitle '"' COMMA mergerLambda RPAREN)
+anythingBeforeRBrace
+    :   (~RBRACE | ignoreBracesBlock | ignoreParenthesesBlock)+
     ;
 
-mergerLambda
-    :   (ignoreBracesBlock | ignoreParenthesesBlock | ~RPAREN)+
-    ;
 
 mergerTitle
-    : Identifier
+    : StringLiteral
     ;
 
 ignoreBracesBlock
