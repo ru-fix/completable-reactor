@@ -2,7 +2,7 @@ grammar GraphConfigJava9;
 
 
 sourceFile
-	:	(graphBlock | ignoredChar)+?
+	:	(graphBlock | ignoredToken)+?
 	;
 
 
@@ -10,24 +10,43 @@ graphBlock
     :   payloadTransitionBlock
     |   vertexTransitionBlock
     |   vertexInitializationBlock
+    |   vertexAssignmentBlock
+    |   coordinatesBlock
     ;
 
+vertexAssignmentBlock
+    :   'Vertex' Identifier ASSIGN vertexBuilder SEMI
+    ;
 vertexInitializationBlock
     :   'Vertex' Identifier ASSIGN NEW 'Vertex' LPAREN RPAREN vertexInitializationStaticSection SEMI
     ;
 
 vertexInitializationStaticSection
-    :   '{' ~'{'* '{' builderHandler SEMI '}' '}'
+    :   '{' ~'{'* '{' vertexBuilder SEMI '}' '}'
+    ;
+
+vertexBuilder
+    :   builderHandler
+    |   buliderSubgraph
+    ;
+
+buliderSubgraph
+    :   'subgraph' LPAREN anythingBeforeRParen RPAREN (DOT builderWithMerger)?
     ;
 
 builderHandler
-    :   ('handler' LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
-    |   ('handler' LPAREN anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
+    :   (handler LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
+    |   (handler LPAREN anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
+    ;
+
+handler
+    :   'handler' | 'handlerSync'
     ;
 
 builderWithMerger
     :   ('withMerger' LPAREN mergerTitle COMMA anythingBeforeRParen RPAREN)
     |   ('withMerger' LPAREN anythingBeforeRParen RPAREN)
+    |   ('withoutMerger' LPAREN RPAREN)
     ;
 
 handlerTitle
@@ -74,7 +93,8 @@ vertexTransitionBlock
     ;
 
 vertexTransition
-    :   DOT 'on' LPAREN transitionCondition RPAREN transitionAction
+    :   (DOT 'on' LPAREN transitionCondition RPAREN transitionAction)
+    |   (DOT 'onAny' LPAREN RPAREN transitionAction)
     ;
 
 transitionAction
@@ -83,17 +103,34 @@ transitionAction
     |   DOT 'handleBy' LPAREN Identifier RPAREN
     ;
 
+coordinatesBlock
+    :   'coordinates' LPAREN RPAREN coordinate* SEMI
+    ;
+
+coordinate
+    :   coordinatePayload
+    |   coordinateHandler
+    |   coordinateMerger
+    |   coordinateComplete
+    ;
+
+coordinatePayload : DOT 'payload' LPAREN IntegerLiteral COMMA IntegerLiteral RPAREN;
+coordinateHandler : DOT 'handler' LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
+coordinateMerger : DOT 'merger' LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
+coordinateComplete : DOT 'complete' LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
+
 transitionCondition
     :   Identifier (DOT Identifier)*
     ;
 
-ignoredCharBloc
-    :   ignoredChar+
-    ;
-
-ignoredChar
+ignoredToken
     :   .
     ;
+
+
+
+
+
 
 /*
  * Productions from §3 (Lexical Structure)
