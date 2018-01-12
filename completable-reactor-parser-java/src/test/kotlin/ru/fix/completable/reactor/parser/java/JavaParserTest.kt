@@ -2,12 +2,13 @@ package ru.fix.completable.reactor.parser.java
 
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.ErrorNode
+import org.antlr.v4.runtime.tree.ParseTreeListener
+import org.antlr.v4.runtime.tree.TerminalNode
 import org.junit.Ignore
 import org.junit.Test
-import ru.fix.completable.reactor.parser.java.antlr.Java9BaseListener
-import ru.fix.completable.reactor.parser.java.antlr.Java9BaseVisitor
-import ru.fix.completable.reactor.parser.java.antlr.Java9Lexer
-import ru.fix.completable.reactor.parser.java.antlr.Java9Parser
+import ru.fix.completable.reactor.parser.java.antlr.*
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant
@@ -18,12 +19,16 @@ import kotlin.test.assertEquals
  */
 class JavaParserTest {
 
+    fun readResource(resource: String): String {
+        return JavaParserTest::class.java.getResourceAsStream(resource)
+                .reader(StandardCharsets.UTF_8)
+                .use { it.readText() }
+    }
+
     @Ignore
     @Test
     fun parse() {
-        val body = JavaParserTest::class.java.getResourceAsStream("/example1.java.txt")
-                .reader(StandardCharsets.UTF_8)
-                .use { it.readText() }
+        val body = readResource("/example1.java.txt")
 
         val symbolsResolver: SymbolResolver = object: SymbolResolver {
             override fun resolveFullClassNameByShortName(shortClassName: String): String {
@@ -40,47 +45,65 @@ class JavaParserTest {
     }
 
 
+
     @Test
-    fun antlrTest(){
-        val body = JavaParserTest::class.java.getResourceAsStream("/example1.java.txt")
-                .reader(StandardCharsets.UTF_8)
-                .use { it.readText() }
-
-
+    fun `Parse graph config for java 9`(){
+        val body = readResource("/example1.java.txt")
 
         val startTime = Instant.now()
 
-        val lexer = Java9Lexer(CharStreams.fromString(body))
+        val lexer = GraphConfigJava9Lexer(CharStreams.fromString(body))
         val tokens = CommonTokenStream(lexer)
-        val parser = Java9Parser(tokens)
-
-//        parser.addParseListener(L())
-
-        val res = parser.compilationUnit()
-//        V().visitCompilationUnit(parser.compilationUnit())
+        val parser = GraphConfigJava9Parser(tokens)
 
 
-        println("parsed for ${Duration.between(startTime, Instant.now()).seconds}")
+        val result = parser.sourceFile().graphBlock()
+
+        println("parsed for ${Duration.between(startTime, Instant.now()).toMillis()}")
+
+        val vertices = result.asIterable()
+                .mapNotNull { it.vertexInitializationBlock() }
+                .map { it.Identifier().text }
+                .toList()
+
+        println("vertices: $vertices")
+
+        val payloadTransitions = result.asIterable()
+                .mapNotNull { it.payloadTransitionBlock() }
+                .flatMap { it.handleBy() }
+                .map { it.handleByVertex().Identifier().text }
+                .toList()
+
+        println("payloadTransitions: $payloadTransitions")
 
     }
 
-    class V : Java9BaseVisitor<Void?>() {
-        override fun visitFieldDeclaration(ctx: Java9Parser.FieldDeclarationContext?): Void? {
 
-            print("V: $ctx")
-            return null
-        }
-    }
+    @Test
+    fun `simple regexp approach`(){
+        val body = readResource("/example1.java.txt")
 
-    class L : Java9BaseListener() {
-        override fun enterFieldDeclaration(ctx: Java9Parser.FieldDeclarationContext?) {
+        val startTime = Instant.now()
 
-            println("L: ${ctx?.fieldModifier()}")
-        }
 
-        override fun exitFieldDeclaration(ctx: Java9Parser.FieldDeclarationContext?) {
-            println("L: exit $ctx")
-        }
+        val verticesRegexp = """(?<id>\w+)\s*=\s*new\s+Vertex\s*\(\s*\)\s*"""
+                .toRegex()
+        val vertices = verticesRegexp.findAll(body).map {
+            it.groups["id"]!!.value
+        }.toList()
+
+        val oneOfVertexRegexp = vertices.joinToString("|", "(", ")").toRegex()
+        val payloadRegexp = """\s*payload\s*\(\s*\)\s*(\.\s*handleBy\s*\(\s*(?<vx>$oneOfVertexRegexp)\s*\)\s*)+"""
+                .toRegex()
+
+
+        val handleBys = payloadRegexp.findAll(body).map {
+            it.groups["vx"]!!
+        }.toList()
+
+
+
+        println("parsed for ${Duration.between(startTime, Instant.now()).toMillis()}")
     }
 
 
