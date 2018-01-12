@@ -2,6 +2,7 @@
  * [The "BSD license"]
  *  Copyright (c) 2014 Terence Parr
  *  Copyright (c) 2014 Sam Harwell
+ *  Copyright (c) 2017 Chan Chung Kwong
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -38,20 +39,30 @@
  *
  * You can test with
  *
- *  $ antlr4 Java8.g4
+ *  $ antlr4 Java9.g4
  *  $ javac *.java
- *  $ grun Java8 compilationUnit *.java
+ *  $ grun Java9 compilationUnit *.java
  *
  * Or,
-~/antlr/code/grammars-v4/java8 $ java Test .
-/Users/parrt/antlr/code/grammars-v4/java8/./Java8BaseListener.java
-/Users/parrt/antlr/code/grammars-v4/java8/./Java8Lexer.java
-/Users/parrt/antlr/code/grammars-v4/java8/./Java8Listener.java
-/Users/parrt/antlr/code/grammars-v4/java8/./Java8Parser.java
-/Users/parrt/antlr/code/grammars-v4/java8/./Test.java
+~/antlr/code/grammars-v4/java9 $ java Test .
+/Users/parrt/antlr/code/grammars-v4/java9/./Java9BaseListener.java
+/Users/parrt/antlr/code/grammars-v4/java9/./Java9Lexer.java
+/Users/parrt/antlr/code/grammars-v4/java9/./Java9Listener.java
+/Users/parrt/antlr/code/grammars-v4/java9/./Java9Parser.java
+/Users/parrt/antlr/code/grammars-v4/java9/./Test.java
 Total lexer+parser time 30844ms.
+~/antlr/code/grammars-v4/java9 $ java Test examples/module-info.java
+/home/kwong/projects/grammars-v4/java9/examples/module-info.java
+Total lexer+parser time 914ms.
+~/antlr/code/grammars-v4/java9 $ java Test examples/TryWithResourceDemo.java
+/home/kwong/projects/grammars-v4/java9/examples/TryWithResourceDemo.java
+Total lexer+parser time 3634ms.
+~/antlr/code/grammars-v4/java9 $ java Test examples/helloworld.java 
+/home/kwong/projects/grammars-v4/java9/examples/helloworld.java
+Total lexer+parser time 2497ms.
+
  */
-grammar Java8;
+grammar Java9;
 
 /*
  * Productions from §3 (Lexical Structure)
@@ -104,6 +115,11 @@ referenceType
 	|	arrayType
 	;
 
+/*classOrInterfaceType
+	:	classType
+	|	interfaceType
+	;
+*/
 classOrInterfaceType
 	:	(	classType_lfno_classOrInterfaceType
 		|	interfaceType_lfno_classOrInterfaceType
@@ -195,6 +211,11 @@ wildcardBounds
  * Productions from §6 (Names)
  */
 
+moduleName
+	:	Identifier
+	|	moduleName '.' Identifier
+	;
+
 packageName
 	:	Identifier
 	|	packageName '.' Identifier
@@ -229,7 +250,16 @@ ambiguousName
  */
 
 compilationUnit
+	:	ordinaryCompilation
+	|	modularCompilation
+	;
+
+ordinaryCompilation
 	:	packageDeclaration? importDeclaration* typeDeclaration* EOF
+	;
+
+modularCompilation
+	:	importDeclaration* moduleDeclaration
 	;
 
 packageDeclaration
@@ -267,6 +297,23 @@ typeDeclaration
 	:	classDeclaration
 	|	interfaceDeclaration
 	|	';'
+	;
+
+moduleDeclaration
+	:	annotation* 'open'? 'module' moduleName '{' moduleDirective* '}'
+	;
+
+moduleDirective
+	:	'requires' requiresModifier* moduleName ';'
+	|	'exports' packageName ('to' moduleName (',' moduleName)*)? ';'
+	|	'opens' packageName ('to' moduleName (',' moduleName)*)? ';'
+	|	'uses' typeName ';'
+	|	'provides' typeName 'with' typeName (',' typeName)* ';'
+	;
+
+requiresModifier
+	:	'transitive'
+	|	'static'
 	;
 
 /*
@@ -380,6 +427,12 @@ unannReferenceType
 	|	unannArrayType
 	;
 
+/*unannClassOrInterfaceType
+	:	unannClassType
+	|	unannInterfaceType
+	;
+*/
+
 unannClassOrInterfaceType
 	:	(	unannClassType_lfno_unannClassOrInterfaceType
 		|	unannInterfaceType_lfno_unannClassOrInterfaceType
@@ -456,9 +509,9 @@ methodDeclarator
 	;
 
 formalParameterList
-	:	receiverParameter
-	|	formalParameters ',' lastFormalParameter
+	:	formalParameters ',' lastFormalParameter
 	|	lastFormalParameter
+	|	receiverParameter
 	;
 
 formalParameters
@@ -621,6 +674,7 @@ interfaceMethodDeclaration
 interfaceMethodModifier
 	:	annotation
 	|	'public'
+	|	'private'//Introduced in Java 9
 	|	'abstract'
 	|	'default'
 	|	'static'
@@ -823,7 +877,7 @@ switchBlockStatementGroup
 	;
 
 switchLabels
-	:	switchLabel switchLabel*
+	:	switchLabel+
 	;
 
 switchLabel
@@ -914,7 +968,7 @@ tryStatement
 	;
 
 catches
-	:	catchClause catchClause*
+	:	catchClause+
 	;
 
 catchClause
@@ -947,11 +1001,23 @@ resourceList
 
 resource
 	:	variableModifier* unannType variableDeclaratorId '=' expression
+	|	variableAccess//Introduced in Java 9
+	;
+
+variableAccess
+	:	expressionName
+	|	fieldAccess
 	;
 
 /*
  * Productions from §15 (Expressions)
  */
+
+/*primary
+	:	primaryNoNewArray
+	|	arrayCreationExpression
+	;
+*/
 
 primary
 	:	(	primaryNoNewArray_lfno_primary
@@ -963,8 +1029,7 @@ primary
 
 primaryNoNewArray
 	:	literal
-	|	typeName ('[' ']')* '.' 'class'
-	|	'void' '.' 'class'
+	|	classLiteral
 	|	'this'
 	|	typeName '.' 'this'
 	|	'(' expression ')'
@@ -1044,6 +1109,11 @@ primaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary
 	|	methodReference_lfno_primary
 	;
 
+classLiteral
+	:	(typeName|numericType|'boolean') ('[' ']')* '.' 'class'
+	|	'void' '.' 'class'	
+	;
+
 classInstanceCreationExpression
 	:	'new' typeArguments? annotation* Identifier ('.' annotation* Identifier)* typeArgumentsOrDiamond? '(' argumentList? ')' classBody?
 	|	expressionName '.' 'new' typeArguments? annotation* Identifier typeArgumentsOrDiamond? '(' argumentList? ')' classBody?
@@ -1079,6 +1149,12 @@ fieldAccess_lfno_primary
 	|	typeName '.' 'super' '.' Identifier
 	;
 
+/*arrayAccess
+	:	expressionName '[' expression ']'
+	|	primaryNoNewArray '[' expression ']'
+	;
+*/
+
 arrayAccess
 	:	(	expressionName '[' expression ']'
 		|	primaryNoNewArray_lfno_arrayAccess '[' expression ']'
@@ -1101,6 +1177,7 @@ arrayAccess_lfno_primary
 		(	primaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primary '[' expression ']'
 		)*
 	;
+
 
 methodInvocation
 	:	methodName '(' argumentList? ')'
@@ -1158,7 +1235,7 @@ arrayCreationExpression
 	;
 
 dimExprs
-	:	dimExpr dimExpr*
+	:	dimExpr+
 	;
 
 dimExpr
@@ -1225,7 +1302,7 @@ assignmentOperator
 
 conditionalExpression
 	:	conditionalOrExpression
-	|	conditionalOrExpression '?' expression ':' conditionalExpression
+	|	conditionalOrExpression '?' expression ':' (conditionalExpression|lambdaExpression)
 	;
 
 conditionalOrExpression
@@ -1310,6 +1387,14 @@ unaryExpressionNotPlusMinus
 	|	'!' unaryExpression
 	|	castExpression
 	;
+
+/*postfixExpression
+	:	primary
+	|	expressionName
+	|	postIncrementExpression
+	|	postDecrementExpression
+	;
+*/
 
 postfixExpression
 	:	(	primary
@@ -1396,6 +1481,7 @@ TRY : 'try';
 VOID : 'void';
 VOLATILE : 'volatile';
 WHILE : 'while';
+UNDER_SCORE : '_';//Introduced in Java 9
 
 // §3.10.1 Integer Literals
 
@@ -1668,7 +1754,7 @@ ZeroToThree
 // This is not in the spec but prevents having to preprocess the input
 fragment
 UnicodeEscape
-    :   '\\' 'u'+  HexDigit HexDigit HexDigit HexDigit
+    :   '\\' 'u'+ HexDigit HexDigit HexDigit HexDigit
     ;
 
 // §3.10.7 The Null Literal
@@ -1688,6 +1774,10 @@ RBRACK : ']';
 SEMI : ';';
 COMMA : ',';
 DOT : '.';
+ELLIPSIS : '...';
+AT : '@';
+COLONCOLON : '::';
+
 
 // §3.12 Operators
 
@@ -1698,6 +1788,7 @@ BANG : '!';
 TILDE : '~';
 QUESTION : '?';
 COLON : ':';
+ARROW : '->';
 EQUAL : '==';
 LE : '<=';
 GE : '>=';
@@ -1714,8 +1805,9 @@ BITAND : '&';
 BITOR : '|';
 CARET : '^';
 MOD : '%';
-ARROW : '->';
-COLONCOLON : '::';
+//LSHIFT : '<<';
+//RSHIFT : '>>';
+//URSHIFT : '>>>';
 
 ADD_ASSIGN : '+=';
 SUB_ASSIGN : '-=';
@@ -1758,13 +1850,6 @@ JavaLetterOrDigit
 	;
 
 //
-// Additional symbols not defined in the lexical specification
-//
-
-AT : '@';
-ELLIPSIS : '...';
-
-//
 // Whitespace and comments
 //
 
@@ -1772,9 +1857,9 @@ WS  :  [ \t\r\n\u000C]+ -> skip
     ;
 
 COMMENT
-    :   '/*' .*? '*/' -> skip
+    :   '/*' .*? '*/' -> channel(HIDDEN)
     ;
 
 LINE_COMMENT
-    :   '//' ~[\r\n]* -> skip
+    :   '//' ~[\r\n]* -> channel(HIDDEN)
     ;
