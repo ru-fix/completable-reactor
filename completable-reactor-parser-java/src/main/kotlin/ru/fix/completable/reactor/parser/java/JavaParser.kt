@@ -33,9 +33,9 @@ class JavaParser(val symbolResolver: SymbolResolver) {
 
         val scanner = JavaScanner(javaCode)
 
-        while(scanner.findPayload()){
-            scanner.parse()
-        }
+//        while(scanner.findPayload()){
+//            scanner.parse()
+//        }
 
 
 
