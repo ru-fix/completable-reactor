@@ -28,6 +28,16 @@ public interface GraphConfigJava9Listener extends ParseTreeListener {
 	 */
 	void exitGraphBlock(GraphConfigJava9Parser.GraphBlockContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#vertexAssignmentBlock}.
+	 * @param ctx the parse tree
+	 */
+	void enterVertexAssignmentBlock(GraphConfigJava9Parser.VertexAssignmentBlockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#vertexAssignmentBlock}.
+	 * @param ctx the parse tree
+	 */
+	void exitVertexAssignmentBlock(GraphConfigJava9Parser.VertexAssignmentBlockContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#vertexInitializationBlock}.
 	 * @param ctx the parse tree
 	 */
@@ -38,6 +48,106 @@ public interface GraphConfigJava9Listener extends ParseTreeListener {
 	 */
 	void exitVertexInitializationBlock(GraphConfigJava9Parser.VertexInitializationBlockContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#vertexInitializationStaticSection}.
+	 * @param ctx the parse tree
+	 */
+	void enterVertexInitializationStaticSection(GraphConfigJava9Parser.VertexInitializationStaticSectionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#vertexInitializationStaticSection}.
+	 * @param ctx the parse tree
+	 */
+	void exitVertexInitializationStaticSection(GraphConfigJava9Parser.VertexInitializationStaticSectionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#vertexBuilder}.
+	 * @param ctx the parse tree
+	 */
+	void enterVertexBuilder(GraphConfigJava9Parser.VertexBuilderContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#vertexBuilder}.
+	 * @param ctx the parse tree
+	 */
+	void exitVertexBuilder(GraphConfigJava9Parser.VertexBuilderContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#buliderSubgraph}.
+	 * @param ctx the parse tree
+	 */
+	void enterBuliderSubgraph(GraphConfigJava9Parser.BuliderSubgraphContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#buliderSubgraph}.
+	 * @param ctx the parse tree
+	 */
+	void exitBuliderSubgraph(GraphConfigJava9Parser.BuliderSubgraphContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#builderHandler}.
+	 * @param ctx the parse tree
+	 */
+	void enterBuilderHandler(GraphConfigJava9Parser.BuilderHandlerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#builderHandler}.
+	 * @param ctx the parse tree
+	 */
+	void exitBuilderHandler(GraphConfigJava9Parser.BuilderHandlerContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#handler}.
+	 * @param ctx the parse tree
+	 */
+	void enterHandler(GraphConfigJava9Parser.HandlerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#handler}.
+	 * @param ctx the parse tree
+	 */
+	void exitHandler(GraphConfigJava9Parser.HandlerContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#builderWithMerger}.
+	 * @param ctx the parse tree
+	 */
+	void enterBuilderWithMerger(GraphConfigJava9Parser.BuilderWithMergerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#builderWithMerger}.
+	 * @param ctx the parse tree
+	 */
+	void exitBuilderWithMerger(GraphConfigJava9Parser.BuilderWithMergerContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#handlerTitle}.
+	 * @param ctx the parse tree
+	 */
+	void enterHandlerTitle(GraphConfigJava9Parser.HandlerTitleContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#handlerTitle}.
+	 * @param ctx the parse tree
+	 */
+	void exitHandlerTitle(GraphConfigJava9Parser.HandlerTitleContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#anythingBeforeRParen}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnythingBeforeRParen(GraphConfigJava9Parser.AnythingBeforeRParenContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#anythingBeforeRParen}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnythingBeforeRParen(GraphConfigJava9Parser.AnythingBeforeRParenContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#anythingBeforeRBrace}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnythingBeforeRBrace(GraphConfigJava9Parser.AnythingBeforeRBraceContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#anythingBeforeRBrace}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnythingBeforeRBrace(GraphConfigJava9Parser.AnythingBeforeRBraceContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#mergerTitle}.
+	 * @param ctx the parse tree
+	 */
+	void enterMergerTitle(GraphConfigJava9Parser.MergerTitleContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#mergerTitle}.
+	 * @param ctx the parse tree
+	 */
+	void exitMergerTitle(GraphConfigJava9Parser.MergerTitleContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#ignoreBracesBlock}.
 	 * @param ctx the parse tree
 	 */
@@ -47,6 +157,16 @@ public interface GraphConfigJava9Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIgnoreBracesBlock(GraphConfigJava9Parser.IgnoreBracesBlockContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#ignoreParenthesesBlock}.
+	 * @param ctx the parse tree
+	 */
+	void enterIgnoreParenthesesBlock(GraphConfigJava9Parser.IgnoreParenthesesBlockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#ignoreParenthesesBlock}.
+	 * @param ctx the parse tree
+	 */
+	void exitIgnoreParenthesesBlock(GraphConfigJava9Parser.IgnoreParenthesesBlockContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#payloadTransitionBlock}.
 	 * @param ctx the parse tree
@@ -108,6 +228,66 @@ public interface GraphConfigJava9Listener extends ParseTreeListener {
 	 */
 	void exitTransitionAction(GraphConfigJava9Parser.TransitionActionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#coordinatesBlock}.
+	 * @param ctx the parse tree
+	 */
+	void enterCoordinatesBlock(GraphConfigJava9Parser.CoordinatesBlockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#coordinatesBlock}.
+	 * @param ctx the parse tree
+	 */
+	void exitCoordinatesBlock(GraphConfigJava9Parser.CoordinatesBlockContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#coordinate}.
+	 * @param ctx the parse tree
+	 */
+	void enterCoordinate(GraphConfigJava9Parser.CoordinateContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#coordinate}.
+	 * @param ctx the parse tree
+	 */
+	void exitCoordinate(GraphConfigJava9Parser.CoordinateContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#coordinatePayload}.
+	 * @param ctx the parse tree
+	 */
+	void enterCoordinatePayload(GraphConfigJava9Parser.CoordinatePayloadContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#coordinatePayload}.
+	 * @param ctx the parse tree
+	 */
+	void exitCoordinatePayload(GraphConfigJava9Parser.CoordinatePayloadContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#coordinateHandler}.
+	 * @param ctx the parse tree
+	 */
+	void enterCoordinateHandler(GraphConfigJava9Parser.CoordinateHandlerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#coordinateHandler}.
+	 * @param ctx the parse tree
+	 */
+	void exitCoordinateHandler(GraphConfigJava9Parser.CoordinateHandlerContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#coordinateMerger}.
+	 * @param ctx the parse tree
+	 */
+	void enterCoordinateMerger(GraphConfigJava9Parser.CoordinateMergerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#coordinateMerger}.
+	 * @param ctx the parse tree
+	 */
+	void exitCoordinateMerger(GraphConfigJava9Parser.CoordinateMergerContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#coordinateComplete}.
+	 * @param ctx the parse tree
+	 */
+	void enterCoordinateComplete(GraphConfigJava9Parser.CoordinateCompleteContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#coordinateComplete}.
+	 * @param ctx the parse tree
+	 */
+	void exitCoordinateComplete(GraphConfigJava9Parser.CoordinateCompleteContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#transitionCondition}.
 	 * @param ctx the parse tree
 	 */
@@ -118,25 +298,15 @@ public interface GraphConfigJava9Listener extends ParseTreeListener {
 	 */
 	void exitTransitionCondition(GraphConfigJava9Parser.TransitionConditionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#ignoredCharBloc}.
+	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#ignoredToken}.
 	 * @param ctx the parse tree
 	 */
-	void enterIgnoredCharBloc(GraphConfigJava9Parser.IgnoredCharBlocContext ctx);
+	void enterIgnoredToken(GraphConfigJava9Parser.IgnoredTokenContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#ignoredCharBloc}.
+	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#ignoredToken}.
 	 * @param ctx the parse tree
 	 */
-	void exitIgnoredCharBloc(GraphConfigJava9Parser.IgnoredCharBlocContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#ignoredChar}.
-	 * @param ctx the parse tree
-	 */
-	void enterIgnoredChar(GraphConfigJava9Parser.IgnoredCharContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link GraphConfigJava9Parser#ignoredChar}.
-	 * @param ctx the parse tree
-	 */
-	void exitIgnoredChar(GraphConfigJava9Parser.IgnoredCharContext ctx);
+	void exitIgnoredToken(GraphConfigJava9Parser.IgnoredTokenContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link GraphConfigJava9Parser#literal}.
 	 * @param ctx the parse tree

@@ -40,6 +40,18 @@ public class GraphConfigJava9BaseListener implements GraphConfigJava9Listener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterVertexAssignmentBlock(GraphConfigJava9Parser.VertexAssignmentBlockContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVertexAssignmentBlock(GraphConfigJava9Parser.VertexAssignmentBlockContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterVertexInitializationBlock(GraphConfigJava9Parser.VertexInitializationBlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -52,6 +64,126 @@ public class GraphConfigJava9BaseListener implements GraphConfigJava9Listener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterVertexInitializationStaticSection(GraphConfigJava9Parser.VertexInitializationStaticSectionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVertexInitializationStaticSection(GraphConfigJava9Parser.VertexInitializationStaticSectionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterVertexBuilder(GraphConfigJava9Parser.VertexBuilderContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVertexBuilder(GraphConfigJava9Parser.VertexBuilderContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterBuliderSubgraph(GraphConfigJava9Parser.BuliderSubgraphContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitBuliderSubgraph(GraphConfigJava9Parser.BuliderSubgraphContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterBuilderHandler(GraphConfigJava9Parser.BuilderHandlerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitBuilderHandler(GraphConfigJava9Parser.BuilderHandlerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterHandler(GraphConfigJava9Parser.HandlerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitHandler(GraphConfigJava9Parser.HandlerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterBuilderWithMerger(GraphConfigJava9Parser.BuilderWithMergerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitBuilderWithMerger(GraphConfigJava9Parser.BuilderWithMergerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterHandlerTitle(GraphConfigJava9Parser.HandlerTitleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitHandlerTitle(GraphConfigJava9Parser.HandlerTitleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAnythingBeforeRParen(GraphConfigJava9Parser.AnythingBeforeRParenContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAnythingBeforeRParen(GraphConfigJava9Parser.AnythingBeforeRParenContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAnythingBeforeRBrace(GraphConfigJava9Parser.AnythingBeforeRBraceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAnythingBeforeRBrace(GraphConfigJava9Parser.AnythingBeforeRBraceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMergerTitle(GraphConfigJava9Parser.MergerTitleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMergerTitle(GraphConfigJava9Parser.MergerTitleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterIgnoreBracesBlock(GraphConfigJava9Parser.IgnoreBracesBlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -59,6 +191,18 @@ public class GraphConfigJava9BaseListener implements GraphConfigJava9Listener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitIgnoreBracesBlock(GraphConfigJava9Parser.IgnoreBracesBlockContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIgnoreParenthesesBlock(GraphConfigJava9Parser.IgnoreParenthesesBlockContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIgnoreParenthesesBlock(GraphConfigJava9Parser.IgnoreParenthesesBlockContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -136,6 +280,78 @@ public class GraphConfigJava9BaseListener implements GraphConfigJava9Listener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterCoordinatesBlock(GraphConfigJava9Parser.CoordinatesBlockContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCoordinatesBlock(GraphConfigJava9Parser.CoordinatesBlockContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCoordinate(GraphConfigJava9Parser.CoordinateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCoordinate(GraphConfigJava9Parser.CoordinateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCoordinatePayload(GraphConfigJava9Parser.CoordinatePayloadContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCoordinatePayload(GraphConfigJava9Parser.CoordinatePayloadContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCoordinateHandler(GraphConfigJava9Parser.CoordinateHandlerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCoordinateHandler(GraphConfigJava9Parser.CoordinateHandlerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCoordinateMerger(GraphConfigJava9Parser.CoordinateMergerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCoordinateMerger(GraphConfigJava9Parser.CoordinateMergerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCoordinateComplete(GraphConfigJava9Parser.CoordinateCompleteContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCoordinateComplete(GraphConfigJava9Parser.CoordinateCompleteContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTransitionCondition(GraphConfigJava9Parser.TransitionConditionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -148,25 +364,13 @@ public class GraphConfigJava9BaseListener implements GraphConfigJava9Listener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIgnoredCharBloc(GraphConfigJava9Parser.IgnoredCharBlocContext ctx) { }
+	@Override public void enterIgnoredToken(GraphConfigJava9Parser.IgnoredTokenContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitIgnoredCharBloc(GraphConfigJava9Parser.IgnoredCharBlocContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterIgnoredChar(GraphConfigJava9Parser.IgnoredCharContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitIgnoredChar(GraphConfigJava9Parser.IgnoredCharContext ctx) { }
+	@Override public void exitIgnoredToken(GraphConfigJava9Parser.IgnoredTokenContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

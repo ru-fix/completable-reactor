@@ -23,17 +23,89 @@ public interface GraphConfigJava9Visitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitGraphBlock(GraphConfigJava9Parser.GraphBlockContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#vertexAssignmentBlock}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVertexAssignmentBlock(GraphConfigJava9Parser.VertexAssignmentBlockContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#vertexInitializationBlock}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitVertexInitializationBlock(GraphConfigJava9Parser.VertexInitializationBlockContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#vertexInitializationStaticSection}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVertexInitializationStaticSection(GraphConfigJava9Parser.VertexInitializationStaticSectionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#vertexBuilder}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVertexBuilder(GraphConfigJava9Parser.VertexBuilderContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#buliderSubgraph}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBuliderSubgraph(GraphConfigJava9Parser.BuliderSubgraphContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#builderHandler}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBuilderHandler(GraphConfigJava9Parser.BuilderHandlerContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#handler}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitHandler(GraphConfigJava9Parser.HandlerContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#builderWithMerger}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBuilderWithMerger(GraphConfigJava9Parser.BuilderWithMergerContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#handlerTitle}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitHandlerTitle(GraphConfigJava9Parser.HandlerTitleContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#anythingBeforeRParen}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAnythingBeforeRParen(GraphConfigJava9Parser.AnythingBeforeRParenContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#anythingBeforeRBrace}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAnythingBeforeRBrace(GraphConfigJava9Parser.AnythingBeforeRBraceContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#mergerTitle}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMergerTitle(GraphConfigJava9Parser.MergerTitleContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#ignoreBracesBlock}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIgnoreBracesBlock(GraphConfigJava9Parser.IgnoreBracesBlockContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#ignoreParenthesesBlock}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIgnoreParenthesesBlock(GraphConfigJava9Parser.IgnoreParenthesesBlockContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#payloadTransitionBlock}.
 	 * @param ctx the parse tree
@@ -71,23 +143,53 @@ public interface GraphConfigJava9Visitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitTransitionAction(GraphConfigJava9Parser.TransitionActionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#coordinatesBlock}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCoordinatesBlock(GraphConfigJava9Parser.CoordinatesBlockContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#coordinate}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCoordinate(GraphConfigJava9Parser.CoordinateContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#coordinatePayload}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCoordinatePayload(GraphConfigJava9Parser.CoordinatePayloadContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#coordinateHandler}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCoordinateHandler(GraphConfigJava9Parser.CoordinateHandlerContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#coordinateMerger}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCoordinateMerger(GraphConfigJava9Parser.CoordinateMergerContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#coordinateComplete}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCoordinateComplete(GraphConfigJava9Parser.CoordinateCompleteContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#transitionCondition}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTransitionCondition(GraphConfigJava9Parser.TransitionConditionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#ignoredCharBloc}.
+	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#ignoredToken}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitIgnoredCharBloc(GraphConfigJava9Parser.IgnoredCharBlocContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#ignoredChar}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIgnoredChar(GraphConfigJava9Parser.IgnoredCharContext ctx);
+	T visitIgnoredToken(GraphConfigJava9Parser.IgnoredTokenContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link GraphConfigJava9Parser#literal}.
 	 * @param ctx the parse tree
