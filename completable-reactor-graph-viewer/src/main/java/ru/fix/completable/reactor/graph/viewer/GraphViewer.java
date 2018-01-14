@@ -77,7 +77,21 @@ public class GraphViewer {
     }
 
     public void openGraph(ReactorGraphModel graph) {
+        fixCoordinates(graph);
         graphViewPane.setGraph(graph);
+    }
+
+    int DEFAULT_POSITION = 100;
+    /**
+     * исправляет координаты у графа, если она не заполненны
+     * @param graph
+     */
+    public void fixCoordinates(ReactorGraphModel graph) {
+        System.out.println("graph " + graph.startPoint.coordinates.x + ", " + graph.startPoint.coordinates.y);
+//        graph.startPoint.coordinates.x;
+        for (val mergePoint : graph.getMergePoints()) {
+            val x = mergePoint.coordinates.x;
+        }
     }
 
     public void openGraph(String graph) throws Exception {
