@@ -8,7 +8,7 @@ import java.util.*
 class GlReactorGraph<Payload> : ReactorGraph<Payload> {
 
     var vertices: List<Vertex> = ArrayList()
-    var start: MutableList<Vertex> = ArrayList()
+    var startPoint: MutableList<Vertex> = ArrayList()
 
     override fun serialize(): ReactorGraphModel {
         throw UnsupportedOperationException("CR GL does not support serialization, it is deprecated.")
