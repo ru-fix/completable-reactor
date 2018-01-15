@@ -37,22 +37,22 @@ class ReactorGraphVisualModel {
     }
 
     class StartPoint : Figure() {
-        val handleBy: MutableList<NamedTransitionableFigure> = ArrayList()
+        val handleBy: MutableList<NamedTransitionalFigure> = ArrayList()
     }
 
     class EndPoint : Figure()
 
-    abstract class NamedTransitionableFigure(
+    abstract class NamedTransitionalFigure(
             var name: String,
             val transitions: ArrayList<Transition> = ArrayList()
     ) : Figure()
 
-    class Handler(name: String) : NamedTransitionableFigure(name)
-    class Merger(name: String) : NamedTransitionableFigure(name){
+    class Handler(name: String) : NamedTransitionalFigure(name)
+    class Merger(name: String) : NamedTransitionalFigure(name){
         var title: String? = null
     }
-    class Router(name: String) : NamedTransitionableFigure(name)
-    class Subgraph(name: String) : NamedTransitionableFigure(name)
+    class Router(name: String) : NamedTransitionalFigure(name)
+    class Subgraph(name: String) : NamedTransitionalFigure(name)
 
     val startPoint = StartPoint()
 }
