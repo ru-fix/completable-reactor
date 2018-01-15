@@ -31,22 +31,29 @@ vertexBuilder
     ;
 
 buliderSubgraph
-    :   'subgraph' LPAREN anythingBeforeRParen RPAREN (DOT builderWithMerger)?
+    :   'subgraph' LPAREN anythingBeforeRParen RPAREN DOT builderMerger
     ;
 
 builderHandler
-    :   (handler LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
-    |   (handler LPAREN anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
+    :   (handler LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN builderMerger)
+    |   (handler LPAREN anythingBeforeRParen RPAREN DOT builderMerger)
     ;
 
 handler
     :   'handler' | 'handlerSync'
     ;
 
+builderMerger
+    :   builderWithMerger | builderWithoutMerger
+    ;
+
 builderWithMerger
     :   ('withMerger' LPAREN mergerTitle COMMA anythingBeforeRParen RPAREN)
     |   ('withMerger' LPAREN anythingBeforeRParen RPAREN)
-    |   ('withoutMerger' LPAREN RPAREN)
+    ;
+
+builderWithoutMerger
+    :   ('withoutMerger' LPAREN RPAREN)
     ;
 
 handlerTitle
