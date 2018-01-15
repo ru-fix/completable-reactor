@@ -48,7 +48,9 @@ class ReactorGraphVisualModel {
     ) : Figure()
 
     class Handler(name: String) : NamedTransitionableFigure(name)
-    class Merger(name: String) : NamedTransitionableFigure(name)
+    class Merger(name: String) : NamedTransitionableFigure(name){
+        var title: String? = null
+    }
     class Router(name: String) : NamedTransitionableFigure(name)
     class Subgraph(name: String) : NamedTransitionableFigure(name)
 

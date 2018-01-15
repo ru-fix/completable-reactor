@@ -80,13 +80,10 @@
         <configuration>
           <sourceDirectory>${basedir}/src/main/antlr</sourceDirectory>
           <includes>
-            <!--<include>KotlinLexer.g4</include>-->
-            <!--<include>KotlinParser.g4</include>-->
-            <!--<include>Java8.g4</include>-->
             <include>GraphConfigJava9.g4</include>
           </includes>
-          <visitor>true</visitor>
-          <listener>true</listener>
+          <visitor>false</visitor>
+          <listener>false</listener>
           <arguments>
             <argument>-package</argument>
             <argument>ru.fix.completable.reactor.parser.java.antlr</argument>

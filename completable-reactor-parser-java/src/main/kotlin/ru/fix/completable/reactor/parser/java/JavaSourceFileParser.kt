@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.parser.java
 
+import com.sun.scenario.effect.Merge
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import ru.fix.completable.reactor.api.gl.ReactorGraphVisualModel
@@ -28,18 +29,29 @@ class JavaSourceFileParser {
         graphBlocks.asIterable()
                 .mapNotNull { it.vertexInitializationBlock() }
                 .forEach {
-                    val name = it.Identifier().text!!
+                    val vertexName = it.Identifier().text!!
+
                     it.vertexInitializationStaticSection().vertexBuilder().let {
-                        if (it.builderHandler() != null) {
-                            //TODO: detect merger or without merger
 
-                            handlers[name] = Handler(name)
-                            mergers[name] = Merger(name)
+                        it.builderHandler()?.apply {
+                            //handler
+                            handlers[vertexName] = Handler(vertexName)
 
-                        } else if (it.buliderSubgraph() != null) {
-                            subgraphs[name] = Subgraph(name)
-                            //TODO: detect merger or without merger
-                            mergers[name] = Merger(name)
+                            builderMerger().builderWithMerger()?.apply {
+                                mergers[vertexName] = Merger(vertexName).apply {
+                                    title = mergerTitle()?.text
+                                }
+                            }
+
+                        } ?: it.buliderSubgraph().apply {
+                            //subgraph
+                            subgraphs[vertexName] = Subgraph(vertexName)
+
+                            builderMerger().builderWithMerger()?.apply {
+                                mergers[vertexName] = Merger(vertexName).apply {
+                                    title = mergerTitle()?.text
+                                }
+                            }
                         }
                     }
                 }
@@ -61,10 +73,20 @@ class JavaSourceFileParser {
                     val vertex = vertexByName(it.Identifier().text)
 
                     it.vertexTransition().forEach {
-                        if (it.transitionCondition() == null) { //onAny
 
-                            it.transitionAction()
+                        val transition = Transition()
+                        vertex.transitions.add(transition)
+
+
+                        it.vertexTransitionOnAny()?.apply {
+                            transition.isOnAny = true
+                            //TODO process
+                            transitionAction()
+                        } ?: it.vertexTransitionOn().apply {
+                            transition.mergeStatuses = transitionCondition().Identifier().map { text }.toList()
+                            transitionAction()
                         }
+
                     }
 
                 }
