@@ -31,22 +31,29 @@ vertexBuilder
     ;
 
 buliderSubgraph
-    :   'subgraph' LPAREN anythingBeforeRParen RPAREN (DOT builderWithMerger)?
+    :   'subgraph' LPAREN anythingBeforeRParen RPAREN DOT builderMerger
     ;
 
 builderHandler
-    :   (handler LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
-    |   (handler LPAREN anythingBeforeRParen RPAREN (DOT builderWithMerger)?)
+    :   (handler LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN builderMerger)
+    |   (handler LPAREN anythingBeforeRParen RPAREN DOT builderMerger)
     ;
 
 handler
     :   'handler' | 'handlerSync'
     ;
 
+builderMerger
+    :   builderWithMerger | builderWithoutMerger
+    ;
+
 builderWithMerger
     :   ('withMerger' LPAREN mergerTitle COMMA anythingBeforeRParen RPAREN)
     |   ('withMerger' LPAREN anythingBeforeRParen RPAREN)
-    |   ('withoutMerger' LPAREN RPAREN)
+    ;
+
+builderWithoutMerger
+    :   ('withoutMerger' LPAREN RPAREN)
     ;
 
 handlerTitle
@@ -93,14 +100,33 @@ vertexTransitionBlock
     ;
 
 vertexTransition
-    :   (DOT 'on' LPAREN transitionCondition RPAREN transitionAction)
-    |   (DOT 'onAny' LPAREN RPAREN transitionAction)
+    :   vertexTransitionOn
+    |   vertexTransitionOnAny
+    ;
+
+vertexTransitionOn
+    :   DOT 'on' LPAREN transitionCondition RPAREN transitionAction
+    ;
+vertexTransitionOnAny
+    :   DOT 'onAny' LPAREN RPAREN transitionAction
     ;
 
 transitionAction
+    :   transitionActionComplete
+    |   transitionActionMergeBy
+    |   transitionActionHandleBy
+    ;
+
+transitionActionComplete
     :   DOT 'complete' LPAREN RPAREN
-    |   DOT 'mergeBy' LPAREN Identifier RPAREN
-    |   DOT 'handleBy' LPAREN Identifier RPAREN
+    ;
+
+transitionActionMergeBy
+    :   DOT 'mergeBy' LPAREN Identifier RPAREN
+    ;
+
+transitionActionHandleBy
+    :   DOT 'handleBy' LPAREN Identifier RPAREN
     ;
 
 coordinatesBlock
