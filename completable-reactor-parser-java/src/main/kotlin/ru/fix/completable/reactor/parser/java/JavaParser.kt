@@ -1,75 +1,47 @@
 package ru.fix.completable.reactor.parser.java
 
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
 import ru.fix.completable.reactor.api.ReactorGraphModel
-import java.util.regex.Pattern
+import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Lexer
+import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Parser
 
 /**
  * @author Kamil Asfandiyarov
  */
-class JavaParser(val symbolResolver: SymbolResolver) {
-
-    val importPattern = Pattern.compile(
-            "import\\s+([\\w\\.]*)\\s*;", Pattern.DOTALL)
-
-    val graphPattern = "\\w+".toRegex(RegexOption.DOT_MATCHES_ALL)
-
-
-    val payloadPattern = Pattern.compile(
-            "\\w+\\s*\\.\\s*payload\\s*\\(\\s*(\\w*)\\.class\\s*\\).+?(?=buildGraph)", Pattern.DOTALL)
-
-    val descriptionPattern = Pattern.compile(
-            "\\w+\\s*=\\s*\\w+\\s*\\.\\s*processor\\s*\\(\\s*\\)\\s*\\.\\s*forPayload\\s*\\(\\s*[\\w\\.]+\\s*\\)(\\s*\\.\\s*passArg\\s*\\()"
-    )
-
-    val imports = ArrayList<String>()
-
-//    val context = Context(null)
-
-
+class JavaParser {
     fun parse(javaCode: String): List<ReactorGraphModel> {
 
         val result = ArrayList<ReactorGraphModel>()
 
-
-        val scanner = JavaScanner(javaCode)
-
-//        while(scanner.findPayload()){
-//            scanner.parse()
-//        }
+        val lexer = GraphConfigJava9Lexer(CharStreams.fromString(javaCode))
+        val tokens = CommonTokenStream(lexer)
+        val parser = GraphConfigJava9Parser(tokens)
 
 
+        val graphBlocks = parser.sourceFile().graphBlock()
 
 
-        // parse imports
-        var matcher = importPattern.matcher(javaCode)
-        while (matcher.find()) {
-            imports.add(matcher.group(1))
-        }
+        val model = ReactorGraphModel()
+        result.add(model)
 
-        // parse payload graphs
-        matcher = payloadPattern.matcher(javaCode)
-        while (matcher.find()) {
-            val paylaod = matcher.group(1)
-            val model = ReactorGraphModel()
-            model.payload = ReactorGraphModel.Payload()
-            model.payload.payloadClass = resolveClassByShortName(paylaod)
+        val vertices = graphBlocks.asIterable()
+                .mapNotNull { it.vertexInitializationBlock() }
+                .map { it.Identifier().text }
+                .toList()
 
-            result.add(model)
-        }
+        println("vertices: $vertices")
 
-        // parse
-//        Context c;
+        val payloadTransitions = graphBlocks.asIterable()
+                .mapNotNull { it.payloadTransitionBlock() }
+                .flatMap { it.handleBy() }
+                .map { it.handleByVertex().Identifier().text }
+                .toList()
+
+        println("payloadTransitions: $payloadTransitions")
 
 
         return result
     }
 
-    fun resolveClassByShortName(className: String): String {
-        val fullClassName = imports.find { it.endsWith("." + className) }
-        if (fullClassName != null) {
-            return fullClassName
-        } else {
-            return symbolResolver.resolveFullClassNameByShortName(className)
-        }
-    }
 }
