@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.graph.viewer.model.TreeNode;
 
 import java.util.List;
 import java.util.Map;
@@ -89,9 +90,25 @@ public class GraphViewer {
     public void fixCoordinates(ReactorGraphModel graph) {
         System.out.println("graph " + graph.startPoint.coordinates.x + ", " + graph.startPoint.coordinates.y);
 //        graph.startPoint.coordinates.x;
-        for (val mergePoint : graph.getMergePoints()) {
-            val x = mergePoint.coordinates.x;
+        TreeNode treeNode = new TreeNode(graph.startPoint);
+        for (val identity : graph.startPoint.processingItems) {
+            ReactorGraphModel.Processor processor = findProcessor(graph.processors, identity);
+            if (processor != null) {
+                treeNode.addChild(processor);
+            }
         }
+        System.out.println("tree " + treeNode);
+    }
+
+    public ReactorGraphModel.Processor findProcessor(List<ReactorGraphModel.Processor> processors, ReactorGraphModel.Identity identity) {
+        if (processors != null) {
+            for (val processor : processors) {
+                if (processor.getIdentity().equals(identity)) {
+                    return processor;
+                }
+            }
+        }
+        return null;
     }
 
     public void openGraph(String graph) throws Exception {
