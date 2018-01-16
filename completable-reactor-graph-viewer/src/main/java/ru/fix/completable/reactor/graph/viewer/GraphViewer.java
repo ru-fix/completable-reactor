@@ -9,6 +9,7 @@ import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.graph.viewer.model.TreeNode;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -92,12 +93,65 @@ public class GraphViewer {
 //        graph.startPoint.coordinates.x;
         TreeNode treeNode = new TreeNode(graph.startPoint);
         for (val identity : graph.startPoint.processingItems) {
-            ReactorGraphModel.Processor processor = findProcessor(graph.processors, identity);
-            if (processor != null) {
-                treeNode.addChild(processor);
+            recursiveBuldTree(graph, treeNode, identity);
+        }
+        recursiveFixCoordinates(treeNode,
+                graph.startPoint.coordinates.x, graph.startPoint.coordinates.y, 200, 100);
+        System.out.println("tree " + treeNode);
+    }
+
+    private void recursiveFixCoordinates(TreeNode parentNode, int parentX, int parentY,  int deltaX,  int deltaY) {
+        int index = -1*(parentNode.childs().size()/2);
+        for (val object : parentNode.childs()) {
+            TreeNode node = (TreeNode)object;
+            if ((node.getData() instanceof ReactorGraphModel.Processor)
+                && (((ReactorGraphModel.Processor) node.getData()).coordinates.x == DEFAULT_POSITION)
+                    && (((ReactorGraphModel.Processor) node.getData()).coordinates.y == DEFAULT_POSITION)) {
+                ((ReactorGraphModel.Processor) node.getData()).coordinates.setX(deltaX * index++ + parentX);
+                ((ReactorGraphModel.Processor) node.getData()).coordinates.setY(deltaY + parentY);
+                recursiveFixCoordinates(node, ((ReactorGraphModel.Processor) node.getData()).coordinates.getX(),
+                        ((ReactorGraphModel.Processor) node.getData()).coordinates.getY(), deltaX, deltaY);
             }
         }
-        System.out.println("tree " + treeNode);
+    }
+
+    /**
+     * рекурсивно строим дерево
+     * @param graph
+     * @param parentNode
+     * @param identity
+     */
+    private void recursiveBuldTree(ReactorGraphModel graph, TreeNode parentNode, ReactorGraphModel.Identity identity) {
+        ReactorGraphModel.Processor processor = findProcessor(graph.processors, identity);
+        if (processor != null) {
+            val node = parentNode.addChild(processor);
+            for (val proc : findChildProcessorByMerge(graph, processor.getIdentity())) {
+                recursiveBuldTree(graph, node, proc.getIdentity());
+            }
+        }
+    }
+
+    /**
+     * find merge points for Processor
+     * @param graph
+     * @param identity
+     * @return
+     */
+    public List<ReactorGraphModel.Processor> findChildProcessorByMerge(ReactorGraphModel graph, ReactorGraphModel.Identity identity) {
+        val result = new ArrayList<ReactorGraphModel.Processor>();
+        for (ReactorGraphModel.MergePoint mergePoint : graph.mergePoints) {
+            if (mergePoint.identity.equals(identity)) {
+                for (ReactorGraphModel.Transition transition : mergePoint.getTransitions()) {
+                    if (transition.handleByProcessingItem != null) {
+                        ReactorGraphModel.Processor processor = findProcessor(graph.processors, transition.handleByProcessingItem);
+                        if (processor != null) {
+                            result.add(processor);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     public ReactorGraphModel.Processor findProcessor(List<ReactorGraphModel.Processor> processors, ReactorGraphModel.Identity identity) {

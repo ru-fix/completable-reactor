@@ -24,9 +24,20 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 
     // other features ...
 
+    public List<TreeNode<T>> childs() {
+        return children;
+    }
+
+    public TreeNode<T> getParent() {
+        return parent;
+    }
+
+    public T getData() {
+        return data;
+    }
 
     @Override
     public Iterator<TreeNode<T>> iterator() {
-        return null;
+        return children.iterator();
     }
 }
