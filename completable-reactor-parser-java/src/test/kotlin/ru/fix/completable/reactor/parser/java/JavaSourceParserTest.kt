@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 /**
  * @author Kamil Asfandiyarov
@@ -35,23 +36,50 @@ class JavaSourceParserTest {
 
         fun vertexByName(name: String) = searchVertex(name, model.startPoint.handleBy)
 
-        assertEquals(2, vertexByName("userProfile").transitions.size)
+        fun vertexTransitions(name: String) = vertexByName(name).transitions.asIterable()
 
-
+        vertexTransitions("userProfile")
+                .apply {
+                    assertEquals(2, count())
+                }
+                .apply {
+                    assertNotNull(find {
+                        it.mergeStatuses == listOf("STOP")
+                                && it.isComplete
+                                && !it.isOnAny
+                                && it.target.run {
+                            this is ReactorGraphVisualModel.EndPoint &&
+                                    coordinates == ReactorGraphVisualModel.Coordinates(963, 258)
+                        }
+                    })
+                }
+                .apply {
+                    assertNotNull(find {
+                        it.mergeStatuses == listOf("CONTINUE")
+                        && !it.isComplete
+                        && !it.isOnAny
+                        && it.target.run {
+                            this is VertexFigure &&
+                                    this.name == "serviceInfo"
+                        }
+                    })
+                }
     }
 
-    tailrec fun searchVertex(name: String, vertices: List<VertexFigure>): VertexFigure {
-
-        vertices.find { it.name == name }?.let { return it }
-
-        return searchVertex(name, vertices.flatMap { it.transitions }
-                .mapNotNull {
-                    if (it.target is VertexFigure) {
-                        it.target as VertexFigure
-                    } else {
-                        null
-                    }
-                }.toList())
-    }
 
 }
+
+tailrec fun searchVertex(name: String, vertices: List<VertexFigure>): VertexFigure {
+
+    vertices.find { it.name == name }?.let { return it }
+
+    return searchVertex(name, vertices.flatMap { it.transitions }
+            .mapNotNull {
+                if (it.target is VertexFigure) {
+                    it.target as VertexFigure
+                } else {
+                    null
+                }
+            }.toList())
+}
+
