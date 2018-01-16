@@ -1,6 +1,5 @@
 package ru.fix.completable.reactor.parser.java
 
-import com.sun.scenario.effect.Merge
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import ru.fix.completable.reactor.api.gl.ReactorGraphVisualModel
@@ -8,7 +7,7 @@ import ru.fix.completable.reactor.api.gl.ReactorGraphVisualModel.*
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Lexer
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Parser
 
-class JavaSourceFileParser {
+class JavaSourceParser {
     fun parse(body: String): ReactorGraphVisualModel {
         val result = ReactorGraphVisualModel()
 
@@ -25,35 +24,46 @@ class JavaSourceFileParser {
 
         fun vertexByName(name: String) = handlers[name] ?: subgraphs[name] ?: routers[name]!!
 
-        //named figures
+        fun createVertexFromVertexBuilder(vertexName: String,
+                                          vertexBuilder: GraphConfigJava9Parser.VertexBuilderContext) {
+
+            vertexBuilder.builderHandler()?.apply {
+                //handler
+                handlers[vertexName] = Handler(vertexName)
+
+                builderMerger().builderWithMerger()?.apply {
+                    mergers[vertexName] = Merger(vertexName).apply {
+                        title = mergerTitle()?.text
+                    }
+                }
+
+            } ?: vertexBuilder.buliderSubgraph().apply {
+                //subgraph
+                subgraphs[vertexName] = Subgraph(vertexName)
+
+                builderMerger().builderWithMerger()?.apply {
+                    mergers[vertexName] = Merger(vertexName).apply {
+                        title = mergerTitle()?.text
+                    }
+                }
+            }
+        }
+
+        //vertex
         graphBlocks.asIterable()
                 .mapNotNull { it.vertexInitializationBlock() }
                 .forEach {
                     val vertexName = it.Identifier().text!!
 
-                    it.vertexInitializationStaticSection().vertexBuilder().let {
+                    createVertexFromVertexBuilder(vertexName, it.vertexInitializationStaticSection().vertexBuilder())
+                }
 
-                        it.builderHandler()?.apply {
-                            //handler
-                            handlers[vertexName] = Handler(vertexName)
+        graphBlocks.asIterable()
+                .mapNotNull { it.vertexAssignmentBlock() }
+                .forEach {
+                    val vertexName = it.Identifier().text!!
 
-                            builderMerger().builderWithMerger()?.apply {
-                                mergers[vertexName] = Merger(vertexName).apply {
-                                    title = mergerTitle()?.text
-                                }
-                            }
-
-                        } ?: it.buliderSubgraph().apply {
-                            //subgraph
-                            subgraphs[vertexName] = Subgraph(vertexName)
-
-                            builderMerger().builderWithMerger()?.apply {
-                                mergers[vertexName] = Merger(vertexName).apply {
-                                    title = mergerTitle()?.text
-                                }
-                            }
-                        }
-                    }
+                    createVertexFromVertexBuilder(vertexName, it.vertexBuilder())
                 }
 
         //start point handleBy transitions
@@ -66,7 +76,7 @@ class JavaSourceFileParser {
 
                 }
 
-        //other transitions
+        //vertex handleBy and mergeBy transitions
         graphBlocks.asIterable()
                 .mapNotNull { it.vertexTransitionBlock() }
                 .forEach {
@@ -77,21 +87,26 @@ class JavaSourceFileParser {
                         val transition = Transition()
                         vertex.transitions.add(transition)
 
-
-                        it.vertexTransitionOnAny()?.apply {
+                        it.vertexTransitionOnAny()?.run {
                             transition.isOnAny = true
-                            //TODO process
                             transitionAction()
-                        } ?: it.vertexTransitionOn().apply {
+                        } ?: it.vertexTransitionOn().run {
                             transition.mergeStatuses = transitionCondition().Identifier().map { text }.toList()
                             transitionAction()
+                        }.run {
+                            if (transitionActionComplete() != null) {
+                                transition.isComplete = true
+                            } else {
+                                transitionActionHandleBy()?.Identifier()?.run {
+                                    transition.target = vertexByName(text)
+                                } ?: transitionActionMergeBy()?.Identifier()?.run {
+                                    transition.target = mergers[text]
+                                }
+                            }
                         }
-
                     }
-
                 }
 
         return result
     }
-
 }
