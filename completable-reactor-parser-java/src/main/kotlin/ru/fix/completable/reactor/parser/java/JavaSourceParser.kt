@@ -2,12 +2,18 @@ package ru.fix.completable.reactor.parser.java
 
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.Token
 import ru.fix.completable.reactor.api.gl.ReactorGraphVisualModel
 import ru.fix.completable.reactor.api.gl.ReactorGraphVisualModel.*
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Lexer
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Parser
 
-class JavaSourceParser {
+class JavaSourceParser(val listener: Listener) {
+
+    interface Listener {
+        fun error(msg: String)
+    }
+
     fun parse(body: String): ReactorGraphVisualModel {
         val model = ReactorGraphVisualModel()
 
@@ -88,13 +94,13 @@ class JavaSourceParser {
                         val transition = Transition()
                         vertex.transitions.add(transition)
 
-                        it.vertexTransitionOnAny()?.run {
+                        (it.vertexTransitionOnAny()?.run {
                             transition.isOnAny = true
                             transitionAction()
                         } ?: it.vertexTransitionOn().run {
                             transition.mergeStatuses = listOf(transitionCondition().Identifier().last().text)
                             transitionAction()
-                        }.run {
+                        }).run {
                             if (transitionActionComplete() != null) {
                                 transition.isComplete = true
 
@@ -124,9 +130,18 @@ class JavaSourceParser {
                                 IntegerLiteral()!!.last().text.toInt())
 
                     } ?: it.coordinateComplete()?.run {
-                        endpoints[Identifier().text]!!.coordinates = Coordinates(
+                        val vertexName = Identifier().text
+                        val endpoint = endpoints[vertexName] ?: return@run listener.error(
+                                "Coordinate of endpoint for $vertexName exist" +
+                                        ", but vertex $vertexName does not have complete transition." +
+                                        "\n${this.start.line}")
+                        TODO("line number")
+
+
+                        endpoint.coordinates = Coordinates(
                                 IntegerLiteral().first().text.toInt(),
                                 IntegerLiteral().last().text.toInt())
+
 
                     } ?: it.coordinateHandler()?.run {
                         handlers[Identifier().text]!!.coordinates = Coordinates(

@@ -56,9 +56,22 @@
     </dependency>
 
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.24</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr4-runtime</artifactId>
       <version>${antlr.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.microutils</groupId>
+      <artifactId>kotlin-logging</artifactId>
+      <version>1.4.9</version>
     </dependency>
 
   </dependencies>
@@ -66,12 +79,6 @@
   <build>
 
     <plugins>
-      <plugin>
-        <groupId>de.jflex</groupId>
-        <artifactId>jflex-maven-plugin</artifactId>
-        <version>1.6.1</version>
-      </plugin>
-
 
       <plugin>
         <groupId>org.antlr</groupId>
