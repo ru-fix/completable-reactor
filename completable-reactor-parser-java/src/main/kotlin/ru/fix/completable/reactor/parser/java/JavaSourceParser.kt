@@ -9,7 +9,7 @@ import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Parser
 
 class JavaSourceParser {
     fun parse(body: String): ReactorGraphVisualModel {
-        val result = ReactorGraphVisualModel()
+        val model = ReactorGraphVisualModel()
 
         val lexer = GraphConfigJava9Lexer(CharStreams.fromString(body))
         val tokens = CommonTokenStream(lexer)
@@ -21,6 +21,7 @@ class JavaSourceParser {
         val mergers = HashMap<String, Merger>()
         val routers = HashMap<String, Router>()
         val subgraphs = HashMap<String, Subgraph>()
+        val endpoints = HashMap<String, EndPoint>()
 
         fun vertexByName(name: String) = handlers[name] ?: subgraphs[name] ?: routers[name]!!
 
@@ -72,7 +73,7 @@ class JavaSourceParser {
                 .flatMap { it.handleBy() }
                 .map { it.handleByVertex().Identifier().text }
                 .forEach {
-                    result.startPoint.handleBy.add(vertexByName(it))
+                    model.startPoint.handleBy.add(vertexByName(it))
 
                 }
 
@@ -91,11 +92,16 @@ class JavaSourceParser {
                             transition.isOnAny = true
                             transitionAction()
                         } ?: it.vertexTransitionOn().run {
-                            transition.mergeStatuses = transitionCondition().Identifier().map { text }.toList()
+                            transition.mergeStatuses = listOf(transitionCondition().Identifier().last().text)
                             transitionAction()
                         }.run {
                             if (transitionActionComplete() != null) {
                                 transition.isComplete = true
+
+                                val endpoint = EndPoint()
+                                endpoints[vertex.name] = endpoint
+                                transition.target = endpoint
+
                             } else {
                                 transitionActionHandleBy()?.Identifier()?.run {
                                     transition.target = vertexByName(text)
@@ -107,6 +113,32 @@ class JavaSourceParser {
                     }
                 }
 
-        return result
+        //coordinates
+        graphBlocks.asIterable()
+                .mapNotNull { it.coordinatesBlock() }
+                .flatMap { it.coordinate() }
+                .forEach {
+                    it.coordinatePayload()?.run {
+                        model.startPoint.coordinates = Coordinates(
+                                IntegerLiteral()!!.first().text.toInt(),
+                                IntegerLiteral()!!.last().text.toInt())
+
+                    } ?: it.coordinateComplete()?.run {
+                        endpoints[Identifier().text]!!.coordinates = Coordinates(
+                                IntegerLiteral().first().text.toInt(),
+                                IntegerLiteral().last().text.toInt())
+
+                    } ?: it.coordinateHandler()?.run {
+                        handlers[Identifier().text]!!.coordinates = Coordinates(
+                                IntegerLiteral().first().text.toInt(),
+                                IntegerLiteral().last().text.toInt())
+                    } ?: it.coordinateMerger().run {
+                        mergers[Identifier().text]!!.coordinates = Coordinates(
+                                IntegerLiteral().first().text.toInt(),
+                                IntegerLiteral().last().text.toInt())
+                    }
+                }
+
+        return model
     }
 }
