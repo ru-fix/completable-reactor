@@ -1,8 +1,11 @@
 package ru.fix.completable.reactor.graph.viewer.model;
 
+import com.sun.istack.internal.Nullable;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 public class TreeNode<T> implements Iterable<TreeNode<T>> {
 
@@ -39,5 +42,10 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
     @Override
     public Iterator<TreeNode<T>> iterator() {
         return children.iterator();
+    }
+
+    @Override
+    public String toString() {
+        return Optional.ofNullable(data).map(Object::toString).orElseGet(this::toString);
     }
 }

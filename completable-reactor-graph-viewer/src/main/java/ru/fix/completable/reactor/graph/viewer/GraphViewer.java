@@ -84,39 +84,38 @@ public class GraphViewer {
     int DEFAULT_POSITION = 100;
 
     /**
-     * исправляет координаты у графа, если она не заполненны
+     * fix default coordinates on nodes in graph
      *
      * @param graph
      */
     public void fixCoordinates(ReactorGraphModel graph) {
-        System.out.println("graph " + graph.startPoint.coordinates.x + ", " + graph.startPoint.coordinates.y);
-//        graph.startPoint.coordinates.x;
         TreeNode treeNode = new TreeNode(graph.startPoint);
         for (val identity : graph.startPoint.processingItems) {
             recursiveBuldTree(graph, treeNode, identity);
         }
         recursiveFixCoordinates(treeNode,
                 graph.startPoint.coordinates.x, graph.startPoint.coordinates.y, 200, 100);
-        System.out.println("tree " + treeNode);
     }
 
     private void recursiveFixCoordinates(TreeNode parentNode, int parentX, int parentY, int deltaX, int deltaY) {
         int index = -1 * (parentNode.childs().size() / 2);
         for (val object : parentNode.childs()) {
             TreeNode node = (TreeNode) object;
-            if ((node.getData() instanceof ReactorGraphModel.Processor)
-                    && (((ReactorGraphModel.Processor) node.getData()).coordinates.x == DEFAULT_POSITION)
+            if ((node.getData() instanceof ReactorGraphModel.Processor)) {
+                if ((((ReactorGraphModel.Processor) node.getData()).coordinates.x == DEFAULT_POSITION)
                     && (((ReactorGraphModel.Processor) node.getData()).coordinates.y == DEFAULT_POSITION)) {
-                ((ReactorGraphModel.Processor) node.getData()).coordinates.setX(deltaX * index++ + parentX);
-                ((ReactorGraphModel.Processor) node.getData()).coordinates.setY(deltaY + parentY);
+                    ((ReactorGraphModel.Processor) node.getData()).coordinates.setX(deltaX * index++ + parentX);
+                    ((ReactorGraphModel.Processor) node.getData()).coordinates.setY(deltaY + parentY);
+                }
                 recursiveFixCoordinates(node, ((ReactorGraphModel.Processor) node.getData()).coordinates.getX(),
                         ((ReactorGraphModel.Processor) node.getData()).coordinates.getY(), deltaX, deltaY);
             }
-            if ((node.getData() instanceof ReactorGraphModel.MergePoint)
-                    && (((ReactorGraphModel.MergePoint) node.getData()).coordinates.x == DEFAULT_POSITION)
+            if ((node.getData() instanceof ReactorGraphModel.MergePoint)) {
+                if ((((ReactorGraphModel.MergePoint) node.getData()).coordinates.x == DEFAULT_POSITION)
                     && (((ReactorGraphModel.MergePoint) node.getData()).coordinates.y == DEFAULT_POSITION)) {
-                ((ReactorGraphModel.MergePoint) node.getData()).coordinates.setX(deltaX * index++ + parentX);
-                ((ReactorGraphModel.MergePoint) node.getData()).coordinates.setY(deltaY + parentY);
+                    ((ReactorGraphModel.MergePoint) node.getData()).coordinates.setX(deltaX * index++ + parentX);
+                    ((ReactorGraphModel.MergePoint) node.getData()).coordinates.setY(deltaY + parentY);
+                }
                 recursiveFixCoordinates(node, ((ReactorGraphModel.MergePoint) node.getData()).coordinates.getX(),
                         ((ReactorGraphModel.MergePoint) node.getData()).coordinates.getY(), deltaX, deltaY);
                 //END label
