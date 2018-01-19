@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.parser.java
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.Token
+import org.antlr.v4.runtime.tree.TerminalNode
 import ru.fix.completable.reactor.api.gl.model.*
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Lexer
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Parser
@@ -33,7 +34,7 @@ class JavaSourceParser(val listener: Listener) {
 
                     builderMerger().builderWithMerger()?.apply {
                         mergers[vertexName] = Merger(vertexName).apply {
-                            title = mergerTitle()?.text
+                            title = mergerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
                         }
                     }
 
@@ -170,5 +171,13 @@ class JavaSourceParser(val listener: Listener) {
                 line = token.line,
                 lineOffset = token.charPositionInLine
         )
+    }
+
+    private fun textFromStringLiteral(token: TerminalNode): String{
+        val text = token.text
+        if(text.startsWith("\"") && text.endsWith("\"")){
+            return text.substring(1, text.length-1)
+        }
+        return text
     }
 }

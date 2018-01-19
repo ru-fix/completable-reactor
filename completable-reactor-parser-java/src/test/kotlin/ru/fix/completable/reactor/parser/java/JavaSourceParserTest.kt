@@ -24,7 +24,7 @@ class JavaSourceParserTest {
     }
 
     @Test
-    fun build_visual_model_for_example1() {
+    fun `build visual model for example1`() {
         val body = readResource("/example1.java.txt")
 
         val startTime = Instant.now()
@@ -153,6 +153,9 @@ class JavaSourceParserTest {
                                 && it.target.let { it is VertexFigure && it.name == "marketingCampaign" }
                     })
                 }
+
+        assertEquals("checkWithdraw", model.mergers["bank"]!!.title)
+        assertEquals("check profile state", model.mergers["userProfile"]!!.title)
 
 
         assertEquals(Coordinates(680, 60), model.startPoint.coordinates)
