@@ -36,7 +36,7 @@ class JavaSourceParserTest {
             }
         }).parse(body)
 
-        println("Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}")
+        println("Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms")
 
 
         fun vertexTransitions(name: String) = model.transitionable[name]!!.transitions.asIterable()
