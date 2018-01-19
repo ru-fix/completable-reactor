@@ -8,6 +8,7 @@ import lombok.val;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * JSON representation of reactor graph.
@@ -60,6 +61,11 @@ public class ReactorGraphModel {
         public String mergerTitle;
         public String[] mergerDocs;
         public final List<Transition> transitions = new ArrayList<>();
+
+        public String toString() {
+            return "MergePoint " + identity + ", x=" + Optional.ofNullable(coordinates).map(Coordinates::getX).orElse(null)
+                    + ", y=" + Optional.ofNullable(coordinates).map(Coordinates::getY).orElse(null);
+        }
     }
 
     @Data
@@ -171,6 +177,11 @@ public class ReactorGraphModel {
         public String[] handlerDoc;
 
         public Source withHandlerSource;
+
+        public String toString() {
+            return "Processor " + identity + ", x=" + Optional.ofNullable(coordinates).map(Coordinates::getX).orElse(null)
+                    + ", y=" + Optional.ofNullable(coordinates).map(Coordinates::getY).orElse(null);
+        }
     }
 
     @Data

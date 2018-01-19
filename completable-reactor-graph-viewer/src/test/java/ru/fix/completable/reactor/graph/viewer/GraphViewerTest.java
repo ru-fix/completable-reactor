@@ -106,5 +106,14 @@ public class GraphViewerTest extends Application {
     }
 
 
+    @Ignore
+    @Test
+    public void open_graph_with_empty_coordinates() throws Exception{
+        GraphViewerTest.payload = "PayloadWithEmpty.rg";
+        Application.launch();
+
+    }
+
+
 
 }
