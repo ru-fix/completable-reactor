@@ -151,6 +151,7 @@ public class GraphViewer {
 
         /**
          * Viewer asks IDE to navigate to subgraph view
+         * @param subgraphPayloadClass payload class name
          */
         void goToSubgraph(String subgraphPayloadClass);
 

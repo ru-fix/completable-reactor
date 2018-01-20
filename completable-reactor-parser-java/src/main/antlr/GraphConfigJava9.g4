@@ -31,7 +31,11 @@ vertexBuilder
     ;
 
 buliderSubgraph
-    :   'subgraph' LPAREN anythingBeforeRParen RPAREN DOT builderMerger
+    :   'subgraph' LPAREN subgraphPayloadClass DOT 'class' anythingBeforeRParen RPAREN DOT builderMerger
+    ;
+
+subgraphPayloadClass
+    :   Identifier (DOT Identifier)*
     ;
 
 builderHandler

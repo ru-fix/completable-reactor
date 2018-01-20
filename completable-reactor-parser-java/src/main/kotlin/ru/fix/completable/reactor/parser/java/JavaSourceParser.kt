@@ -40,7 +40,10 @@ class JavaSourceParser(val listener: Listener) {
 
                 } ?: vertexBuilder.buliderSubgraph().apply {
                     //subgraph
-                    subgraphs[vertexName] = Subgraph(vertexName)
+                    subgraphs[vertexName] = Subgraph(
+                            name = vertexName,
+                            payloadClass = subgraphPayloadClass().text
+                    )
 
                     builderMerger().builderWithMerger()?.apply {
                         mergers[vertexName] = Merger(vertexName).apply {
@@ -173,10 +176,10 @@ class JavaSourceParser(val listener: Listener) {
         )
     }
 
-    private fun textFromStringLiteral(token: TerminalNode): String{
+    private fun textFromStringLiteral(token: TerminalNode): String {
         val text = token.text
-        if(text.startsWith("\"") && text.endsWith("\"")){
-            return text.substring(1, text.length-1)
+        if (text.startsWith("\"") && text.endsWith("\"")) {
+            return text.substring(1, text.length - 1)
         }
         return text
     }
