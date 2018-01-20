@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.api.gl.model
 import ru.fix.completable.reactor.api.ReactorGraphModel
 import java.util.*
 
-data class Coordinates(val x: Int, val y: Int)
+data class Coordinates(val x: Int = 0, val y: Int = 0)
 
 data class Source(
         var fileName: String? = null,
@@ -31,7 +31,7 @@ data class Transition(
 }
 
 sealed class Figure(
-        var coordinates: Coordinates? = null,
+        var coordinates: Coordinates = Coordinates(),
         var source: Source? = null
 )
 
@@ -51,7 +51,7 @@ class StartPoint : Figure() {
     override fun toString() = "StartPoint"
 }
 
-class EndPoint(coordinates: Coordinates? = null, source: Source? = null) : Figure(coordinates, source) {
+class EndPoint(coordinates: Coordinates? = Coordinates(), source: Source? = null) : Figure(coordinates, source) {
     override fun toString() = "EndPoint"
 }
 
@@ -66,7 +66,10 @@ class Router(name: String) : HandleableVertexFigure(name), TransitionableFigure 
     override val transitions: ArrayList<Transition> = ArrayList()
 }
 
-class Subgraph(name: String) : HandleableVertexFigure(name)
+class Subgraph(
+        name: String,
+        var payloadClass: String
+) : HandleableVertexFigure(name)
 
 class ReactorGraphCompilationModel {
     val startPoint = StartPoint()
