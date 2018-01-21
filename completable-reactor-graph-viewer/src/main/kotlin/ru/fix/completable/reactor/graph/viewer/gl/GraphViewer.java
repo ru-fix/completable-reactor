@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.api.gl.model.Source;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -124,21 +125,7 @@ public class GraphViewer {
                 .findFirst();
     }
 
-    @Data
-    @AllArgsConstructor
-    public static class CoordinateItem {
-        public enum Type {
-            PROCESSOR,
-            MERGE_POINT,
-            START_POINT,
-            END_POINT
-        }
 
-        final Type type;
-        final ReactorGraphModel.Identity identity;
-        volatile int x;
-        volatile int y;
-    }
 
     public interface ActionListener {
 
@@ -147,7 +134,7 @@ public class GraphViewer {
          *
          * @param source source code location
          */
-        void goToSource(ReactorGraphModel.Source source);
+        void goToSource(Source source);
 
         /**
          * Viewer asks IDE to navigate to subgraph view

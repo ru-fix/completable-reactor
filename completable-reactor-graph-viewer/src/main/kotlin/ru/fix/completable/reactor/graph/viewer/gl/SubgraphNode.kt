@@ -5,17 +5,18 @@ import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
+import javafx.scene.text.Text
 import ru.fix.completable.reactor.api.gl.model.Subgraph
 import java.util.*
 
 /**
  * Created by swarmshine on 29.01.2017.
  */
-class SubgraphNode (
-        val coordinateTranslator: CoordinateTranslator,
+class SubgraphNode(
+        val translator: CoordinateTranslator,
         val subgraph: Subgraph,
         val actionListener: GraphViewer.ActionListener,
-        coordinateItems: List<GraphViewer.CoordinateItem>
+        val positionListener: PositionListener
 ) : VBox() {
 
     init {
@@ -24,8 +25,8 @@ class SubgraphNode (
         val x = subgraph.coordinates.x
         val y = subgraph.coordinates.y
 
-        this.layoutX = coordinateTranslator.translateX(x)
-        this.layoutY = coordinateTranslator.translateY(y)
+        this.layoutX = translator.translateX(x)
+        this.layoutY = translator.translateY(y)
 
 
         val nameLabel = Label(subgraph.name)
@@ -43,55 +44,44 @@ class SubgraphNode (
             }
         }
 
-        GraphViewer.CoordinateItem coordinateItem = new GraphViewer.CoordinateItem(
-                GraphViewer.CoordinateItem.Type.PROCESSOR,
-                subgraph.getIdentity(),
-                subgraph.coordinates.getX(),
-                subgraph.coordinates.getY());
-        coordinateItems.add(coordinateItem);
+        val dragger = NodeDragger.attach(this)
 
-        val dragger = NodeDragger.attach(this);
+        dragger.addOnPositionChangedListener {
+            positionListener.positionChanged(
+                    translator.reverseTranslateX(layoutX),
+                    translator.reverseTranslateY(layoutY)
+            )
+        }
 
-        dragger.addOnPositionChangedListener(()->{
-
-            coordinateItem.setX(translator.reverseTranslateX(getLayoutX()));
-            coordinateItem.setY(translator.reverseTranslateY(getLayoutY()));
-
-            actionListener.coordinatesChanged(coordinateItems);
-        });
-
-
-        initializePopupMenu();
+        initializePopupMenu()
     }
 
-    void initializePopupMenu()
-    {
-        ContextMenu contextMenu = buildTooltipContent ();
+    fun initializePopupMenu() {
+        val contextMenu = buildTooltipContent()
 
-        this.setOnContextMenuRequested(contextMenuEvent -> {
-        contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
-        contextMenuEvent.consume();
-    });
+        this.setOnContextMenuRequested { contextMenuEvent ->
+            contextMenu.show(this, contextMenuEvent.screenX, contextMenuEvent.screenY);
+            contextMenuEvent.consume()
+        }
     }
 
-    ContextMenu buildTooltipContent()
-    {
+    fun buildTooltipContent(): ContextMenu {
 
-        ContextMenu contextMenu = new ContextMenu();
-        MenuItem processorMenuItem = new MenuItem();
+        val contextMenu = ContextMenu()
 
-        VBox processorContent = new VBox();
-        processorMenuItem.setGraphic(processorContent);
-        processorMenuItem.setOnAction(event -> actionListener.goToSource(this.subgraph.getBuildSource()));
-        contextMenu.getItems().add(processorMenuItem);
+        val processorContent = VBox()
 
-        processorContent.getChildren().add(new Text (serialize(this.subgraph.getIdentity())));
+        contextMenu.items.add(MenuItem().apply {
+            graphic = processorContent
+            setOnAction { event -> subgraph.source?.let { actionListener.goToSource(it) } }
+        })
 
-        Optional.ofNullable(subgraph.subgraphDoc)
-                .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))
-        .ifPresent(processorContent.getChildren()::add);
+        processorContent.children.apply{
+            add(Text(subgraph.name))
+            add(Text(subgraph.payloadClass))
+        }
 
-        return contextMenu;
+        return contextMenu
     }
 
 }
