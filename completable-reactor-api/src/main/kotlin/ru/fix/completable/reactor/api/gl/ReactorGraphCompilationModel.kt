@@ -62,7 +62,9 @@ class EndPoint(coordinates: Coordinates = Coordinates(), source: Source? = null)
     override fun toString() = "EndPoint"
 }
 
-class Handler(name: String) : HandleableVertexFigure(name)
+class Handler(name: String) : HandleableVertexFigure(name) {
+    var title: String? = null
+}
 
 class Merger(name: String) : VertexFigure(name), TransitionableFigure {
     var title: String? = null

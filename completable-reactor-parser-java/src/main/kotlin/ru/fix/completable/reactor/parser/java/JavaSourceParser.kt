@@ -37,7 +37,9 @@ class JavaSourceParser(val listener: Listener) {
 
                 vertexBuilder.builderHandler()?.apply {
                     //handler
-                    handlers[vertexName] = Handler(vertexName)
+                    handlers[vertexName] = Handler(vertexName).also {
+                        it.title = this.handlerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
+                    }
 
                     builderMerger().builderWithMerger()?.apply {
                         mergers[vertexName] = Merger(vertexName).apply {
@@ -54,7 +56,7 @@ class JavaSourceParser(val listener: Listener) {
 
                     builderMerger().builderWithMerger()?.apply {
                         mergers[vertexName] = Merger(vertexName).apply {
-                            title = mergerTitle()?.text
+                            title = mergerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
                         }
                     }
                 }

@@ -145,7 +145,7 @@ public class GraphViewPane extends ScrollPane {
         coordinateItems.clear();
 
         graphModel.getProcessors().forEach(processor -> {
-            val processorNode = new ProcessorNode(
+            val processorNode = new HandlerNode(
                     translator,
                     processor,
                     actionListener,
