@@ -41,6 +41,8 @@ class JavaSourceParserTest {
 
         fun vertexTransitions(name: String) = model.transitionable[name]!!.transitions.asIterable()
 
+        assertEquals("PurchasePayload", model.startPoint.payloadType)
+
         assertEquals(
                 listOf("userProfile", "serviceInfo"),
                 model.startPoint.handleBy.map { it.name })
