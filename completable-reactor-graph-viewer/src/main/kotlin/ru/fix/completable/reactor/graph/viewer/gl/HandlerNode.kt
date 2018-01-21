@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
  * Created by swarmshine on 29.01.2017.
  */
 class HandlerNode(
-        translator: CoordinateTranslator,
-        handler: Handler,
-        actionListener: GraphViewer.ActionListener,
-        positionListener: PositionListener) : VBox() {
+        val translator: CoordinateTranslator,
+        val handler: Handler,
+        val actionListener: GraphViewer.ActionListener,
+        val positionListener: PositionListener) : VBox() {
 
     init {
 
@@ -35,85 +35,63 @@ class HandlerNode(
         val nameLabel = Label(handler.name)
         nameLabel.font = Font(16.0)
 
-        val methodNameLabel = Label(handler processor.handlerTitle)
-        methodNameLabel.setFont(new Font(14.0));
+        val methodNameLabel = Label(handler.title)
+        methodNameLabel.setFont(Font(14.0))
 
-        this.getChildren().add(nameLabel);
-        this.getChildren().add(methodNameLabel);
+        this.getChildren().add(nameLabel)
+        this.getChildren().add(methodNameLabel)
 
-        this.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                actionListener.goToSource(processor.withHandlerSource);
+        this.setOnMouseClicked { event ->
+            if (event.clickCount == 2) {
+                actionListener.goToSource(handler.source)
             }
-        });
+        }
 
-        GraphViewer.CoordinateItem coordinateItem = new GraphViewer.CoordinateItem(
-                GraphViewer.CoordinateItem.Type.PROCESSOR,
-                processor.getIdentity(),
-                processor.coordinates.getX(),
-                processor.coordinates.getY());
-        coordinateItems.add(coordinateItem);
+        val dragger = NodeDragger.attach(this)
 
-        val dragger = NodeDragger.attach(this);
+        dragger.addOnPositionChangedListener {
+            handler.coordinates.x = translator.reverseTranslateX(getLayoutX())
+            handler.coordinates.y = translator.reverseTranslateY(getLayoutY())
 
-        dragger.addOnPositionChangedListener(()->{
+            positionListener.positionChanged()
+        }
 
-            coordinateItem.setX( translator.reverseTranslateX(getLayoutX()) );
-            coordinateItem.setY( translator.reverseTranslateY(getLayoutY()) );
-
-            actionListener.coordinatesChanged(coordinateItems);
-        });
-
-
-        initializePopupMenu();
+        initializePopupMenu()
     }
 
-    void initializePopupMenu(){
-        ContextMenu contextMenu = buildTooltipContent();
+    fun initializePopupMenu() {
+        val contextMenu = buildTooltipContent()
 
-        this.setOnContextMenuRequested(contextMenuEvent -> {
-            contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
-            contextMenuEvent.consume();
-        });
+        this.setOnContextMenuRequested { contextMenuEvent ->
+            contextMenu.show(this, contextMenuEvent.screenX, contextMenuEvent.screenY)
+            contextMenuEvent.consume()
+        }
     }
 
-    ContextMenu buildTooltipContent(){
+    fun buildTooltipContent(): ContextMenu {
 
-        ContextMenu contextMenu = new ContextMenu();
-        MenuItem processorMenuItem = new MenuItem();
+        val contextMenu = ContextMenu()
+        val processorMenuItem = MenuItem()
 
-        VBox processorContent = new VBox();
+        val processorContent = VBox()
         processorMenuItem.setGraphic(processorContent);
-        processorMenuItem.setOnAction(event -> actionListener.goToSource(this.processor.withHandlerSource));
-        contextMenu.getItems().add(processorMenuItem);
+        processorMenuItem.setOnAction { event ->
+            handler.source?.let { actionListener.goToSource(it) }
+        }
+        contextMenu.items.add(processorMenuItem)
 
-        processorContent.getChildren().add(new Text(serialize(this.processor.getIdentity())));
+        processorContent.children.apply{
+            add(Text(handler.name))
+        }
 
-        Optional.ofNullable(processor.processorDoc)
-                .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))
-                .ifPresent(processorContent.getChildren()::add);
-
-
-        val handlerMenuItem = new MenuItem();
-        val handlerConent = new VBox();
+        val handlerMenuItem = MenuItem()
+        val handlerConent = VBox ()
         handlerMenuItem.setGraphic(handlerConent);
-        handlerMenuItem.setOnAction(event -> actionListener.goToSource(this.processor.withHandlerSource));
+        handlerMenuItem.setOnAction { event -> actionListener.goToSource(handler.source) }
 
-        contextMenu.getItems().addAll(handlerMenuItem);
+        contextMenu.getItems().addAll(handlerMenuItem)
 
-        Optional.ofNullable(processor.handlerTitle)
-                .map(Text::new)
-                .ifPresent(handlerConent.getChildren()::add);
-
-        Optional.ofNullable(processor.handlerDoc)
-                .map(doc -> new Text(Arrays.stream(doc).collect(Collectors.joining("\n"))))
-                .ifPresent(handlerConent.getChildren()::add);
-
-        return contextMenu;
+        handler.title?.let{handlerConent.children.add(Text(it))}
+        return contextMenu
     }
-
-    String serialize(ReactorGraphModel.Identity identity){
-        return String.format("%s: %s", identity.getName(), identity.getClassName());
-    }
-
 }

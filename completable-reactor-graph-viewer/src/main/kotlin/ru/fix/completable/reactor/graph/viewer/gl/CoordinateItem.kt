@@ -22,5 +22,5 @@ class CoordinateItem {
 
 
 interface PositionListener {
-    fun positionChanged(x: Int, y: Int)
+    fun positionChanged()
 }

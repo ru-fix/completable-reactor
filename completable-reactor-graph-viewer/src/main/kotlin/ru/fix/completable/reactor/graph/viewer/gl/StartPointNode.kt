@@ -42,9 +42,9 @@ class StartPointNode(
         val dragger = NodeDragger.attach(this);
 
         dragger.addOnPositionChangedListener {
-            positionListener.positionChanged(
-                    translator.reverseTranslateX(layoutX),
-                    translator.reverseTranslateX(layoutY))
+            startPoint.coordinates.x = translator.reverseTranslateX(layoutX)
+            startPoint.coordinates.y = translator.reverseTranslateX(layoutY)
+            positionListener.positionChanged()
         }
 
         initializePopupMenu()
