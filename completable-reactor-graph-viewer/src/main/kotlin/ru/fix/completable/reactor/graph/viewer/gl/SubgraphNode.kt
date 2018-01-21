@@ -50,10 +50,7 @@ class SubgraphNode(
             subgraph.coordinates.x = translator.reverseTranslateX(layoutX)
             subgraph.coordinates.y = translator.reverseTranslateY(layoutY)
 
-            positionListener.positionChanged(
-                    translator.reverseTranslateX(layoutX),
-                    translator.reverseTranslateY(layoutY)
-            )
+            positionListener.positionChanged()
         }
 
         initializePopupMenu()
