@@ -12,6 +12,15 @@ graphBlock
     |   vertexInitializationBlock
     |   vertexAssignmentBlock
     |   coordinatesBlock
+    |   graphConfigDeclarationBlock
+    ;
+
+graphConfigDeclarationBlock
+    :   'class' Identifier 'extends' 'GraphConfig' '<' payloadType '>'
+    ;
+
+payloadType
+    :   Identifier
     ;
 
 vertexAssignmentBlock

@@ -25,6 +25,13 @@ class JavaSourceParser(val listener: Listener) {
 
         with(model) {
 
+            //startPoint
+            graphBlocks.asIterable()
+                    .mapNotNull { it.graphConfigDeclarationBlock() }
+                    .forEach {
+                        startPoint.payloadType = it.payloadType()?.Identifier()?.text
+                    }
+
             fun createVertexFromVertexBuilder(vertexName: String,
                                               vertexBuilder: GraphConfigJava9Parser.VertexBuilderContext) {
 

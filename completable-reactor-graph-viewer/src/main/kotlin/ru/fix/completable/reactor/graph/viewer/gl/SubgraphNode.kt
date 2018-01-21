@@ -47,6 +47,9 @@ class SubgraphNode(
         val dragger = NodeDragger.attach(this)
 
         dragger.addOnPositionChangedListener {
+            subgraph.coordinates.x = translator.reverseTranslateX(layoutX)
+            subgraph.coordinates.y = translator.reverseTranslateY(layoutY)
+
             positionListener.positionChanged(
                     translator.reverseTranslateX(layoutX),
                     translator.reverseTranslateY(layoutY)
