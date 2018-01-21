@@ -159,6 +159,7 @@ class JavaSourceParserTest {
         assertEquals("checkWithdraw", model.mergers["bank"]!!.title)
         assertEquals("check profile state", model.mergers["userProfile"]!!.title)
 
+        assertEquals("load user profile", model.handlers["userProfile"]!!.title)
 
         assertEquals(Coordinates(680, 60), model.startPoint.coordinates)
         assertEquals(Coordinates(410, 440), model.handleable["bank"]!!.coordinates)

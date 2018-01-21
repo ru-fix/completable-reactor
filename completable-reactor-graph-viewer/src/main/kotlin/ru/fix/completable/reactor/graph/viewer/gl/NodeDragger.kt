@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class NodeDragger private constructor(val node: Node) {
 
-    private val dragDoneHandlers = CopyOnWriteArrayList<PositionChangeListener>()
+    private val dragDoneHandlers = CopyOnWriteArrayList<()->Unit>()
 
     companion object {
         fun attach(node: Node): NodeDragger {

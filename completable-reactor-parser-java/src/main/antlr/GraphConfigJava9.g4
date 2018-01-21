@@ -48,7 +48,7 @@ subgraphPayloadClass
     ;
 
 builderHandler
-    :   (handler LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN builderMerger)
+    :   (handler LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN DOT builderMerger)
     |   (handler LPAREN anythingBeforeRParen RPAREN DOT builderMerger)
     ;
 
