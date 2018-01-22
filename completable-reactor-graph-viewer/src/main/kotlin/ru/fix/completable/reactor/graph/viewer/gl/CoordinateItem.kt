@@ -7,10 +7,11 @@ data class CoordinateItem(
 ) {
 
     enum class Type {
-        HANDLER,
-        MERGER,
-        ROUTER,
         START_POINT,
+        HANDLER,
+        SUBGRAPH,
+        ROUTER,
+        MERGER,
         END_POINT
     }
 }
