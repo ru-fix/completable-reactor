@@ -24,7 +24,7 @@ class HandlerNode(
 
     init {
 
-        this.styleClass.add("processor")
+        this.styleClass.add("handler")
 
         val x = handler.coordinates.x
         val y = handler.coordinates.y
