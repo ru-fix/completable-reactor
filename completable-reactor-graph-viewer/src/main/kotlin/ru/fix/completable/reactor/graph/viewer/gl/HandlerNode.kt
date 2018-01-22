@@ -29,8 +29,8 @@ class HandlerNode(
         val x = handler.coordinates.x
         val y = handler.coordinates.y
 
-        layoutX = translator.translateX(x);
-        layoutY = translator.translateY(y);
+        layoutX = translator.translateX(x.toDouble())
+        layoutY = translator.translateY(y.toDouble())
 
         val nameLabel = Label(handler.name)
         nameLabel.font = Font(16.0)

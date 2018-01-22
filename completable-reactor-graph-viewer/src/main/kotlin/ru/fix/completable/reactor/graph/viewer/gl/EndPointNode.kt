@@ -11,10 +11,10 @@ import ru.fix.completable.reactor.api.gl.model.*
  * Created by swarmshine on 29.01.2017.
  */
 class EndPointNode(
-        val translator: CoordinateTranslator,
-        val endPoint: EndPoint,
-        val actionListener: GraphViewer.ActionListener,
-        val positionListener: PositionListener) : VBox() {
+        private val translator: CoordinateTranslator,
+        private val endPoint: EndPoint,
+        private val actionListener: GraphViewer.ActionListener,
+        private val positionListener: PositionListener) : VBox() {
 
     init {
 
