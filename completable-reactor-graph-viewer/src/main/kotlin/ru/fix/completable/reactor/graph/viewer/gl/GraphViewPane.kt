@@ -7,9 +7,7 @@ import javafx.scene.control.ScrollPane
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Pane
 import ru.fix.completable.reactor.api.gl.model.*
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.xml.ws.Endpoint
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -298,11 +296,11 @@ class GraphViewPane(
         return this
     }
 
-    private val payloadIsWidthCetralized = AtomicBoolean()
+    private val payloadIsWidthCentralized = AtomicBoolean()
     private val payloadIsHeightCentralized = AtomicBoolean()
 
     private fun enableSingleScrollingPayloadToTopCenterOnFirstResize() {
-        payloadIsWidthCetralized.set(false)
+        payloadIsWidthCentralized.set(false)
         payloadIsHeightCentralized.set(false)
     }
 
@@ -319,11 +317,11 @@ class GraphViewPane(
             }
         }
 
-        this.widthProperty().addListener{observable, oldValue, newValue ->
+        this.widthProperty().addListener { observable, oldValue, newValue ->
 
             val model = graphModel ?: return@addListener
 
-            if (payloadIsWidthCetralized.compareAndSet(false, true)) {
+            if (payloadIsWidthCentralized.compareAndSet(false, true)) {
                 val startPointX = model.startPoint.coordinates.x
                 val approximatePayloadNodeWidth = 100.0
                 this.hvalue = (WORLD_SIZE / 2 + startPointX + approximatePayloadNodeWidth / 2) / WORLD_SIZE
@@ -334,7 +332,28 @@ class GraphViewPane(
 
     fun coordinateItemsFromModel(): List<CoordinateItem> {
         val result = ArrayList<CoordinateItem>()
-        TODO()
+
+        with(graphModel!!) {
+
+            result.add(CoordinateItem(
+                    CoordinateItem.Type.START_POINT, startPoint.coordinates.x, startPoint.coordinates.y))
+
+            handlers.values.forEach {
+                result.add(CoordinateItem(CoordinateItem.Type.HANDLER, it.coordinates.x, it.coordinates.y))
+            }
+            subgraphs.values.forEach {
+                result.add(CoordinateItem(CoordinateItem.Type.SUBGRAPH, it.coordinates.x, it.coordinates.y))
+            }
+            routers.values.forEach {
+                result.add(CoordinateItem(CoordinateItem.Type.ROUTER, it.coordinates.x, it.coordinates.y))
+            }
+            mergers.values.forEach {
+                result.add(CoordinateItem(CoordinateItem.Type.MERGER, it.coordinates.x, it.coordinates.y))
+            }
+            endpoints.values.forEach {
+                result.add(CoordinateItem(CoordinateItem.Type.END_POINT, it.coordinates.x, it.coordinates.y))
+            }
+        }
         return result
     }
 }
