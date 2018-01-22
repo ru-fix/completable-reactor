@@ -41,7 +41,7 @@ public class GraphViewPane extends ScrollPane {
      * {@code <Processor or Subgraph id, ProcessorNode or SubgraphNode>}
      */
     private HashMap<ReactorGraphModel.Identity, Node> processors = new HashMap<>();
-    private HashMap<ReactorGraphModel.Identity, MergePointNode> mergePoints = new HashMap<>();
+    private HashMap<ReactorGraphModel.Identity, MergerNode> mergePoints = new HashMap<>();
 
 
     private List<GraphViewer.CoordinateItem> coordinateItems = new ArrayList<>();
@@ -176,7 +176,7 @@ public class GraphViewPane extends ScrollPane {
          * MergePoints
          */
         for (val mergePoint : graphModel.getMergePoints()) {
-            val mergePointNode = new MergePointNode(translator, mergePoint, actionListener, coordinateItems);
+            val mergePointNode = new MergerNode(translator, mergePoint, actionListener, coordinateItems);
             mergePoints.put(mergePoint.getIdentity(), mergePointNode);
             pane.getChildren().add(mergePointNode);
         }

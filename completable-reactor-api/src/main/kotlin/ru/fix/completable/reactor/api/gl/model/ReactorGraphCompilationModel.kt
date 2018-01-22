@@ -72,6 +72,7 @@ class Merger(name: String) : VertexFigure(name), TransitionableFigure {
 }
 
 class Router(name: String) : HandleableVertexFigure(name), TransitionableFigure {
+    var title: String? = null
     override val transitions: ArrayList<Transition> = ArrayList()
 }
 
