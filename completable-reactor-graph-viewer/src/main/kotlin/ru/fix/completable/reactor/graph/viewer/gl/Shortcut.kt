@@ -28,5 +28,5 @@ class Shortcut(
 }
 
 enum class ShortcutType {
-    GOTO_SERIALIZATION_POINT
+    GOTO_GRAPH_CONFIG
 }

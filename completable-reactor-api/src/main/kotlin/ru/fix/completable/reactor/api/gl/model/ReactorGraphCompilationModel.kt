@@ -53,7 +53,7 @@ interface TransitionableFigure {
 
 class StartPoint : Figure() {
     var payloadType: String? = null
-    val handleBy: MutableList<VertexFigure> = ArrayList()
+    val handleBy: MutableList<HandleableVertexFigure> = ArrayList()
 
     override fun toString() = "StartPoint"
 }
@@ -89,8 +89,19 @@ class ReactorGraphCompilationModel {
     val mergers = HashMap<String, Merger>()
     val endpoints = HashMap<String, EndPoint>()
 
+    /**
+     * Location where buildGraph method of GraphConfig was invoked
+     */
+    val buildGraphSource: Source? = null
+    /**
+     * Location where coordinates of graph items are declared
+     */
+    val coordinatesSource: Source? = null
+
     inner class HandeableAccessor {
         operator fun get(name: String): HandleableVertexFigure? = handlers[name] ?: subgraphs[name] ?: routers[name]
+        val values: List<HandleableVertexFigure>
+            get() = handlers.values + subgraphs.values + routers.values
     }
 
     /**
@@ -101,6 +112,8 @@ class ReactorGraphCompilationModel {
 
     inner class TransitionableAccessor {
         operator fun get(name: String): TransitionableFigure? = mergers[name] ?: routers[name]
+        val values: List<TransitionableFigure>
+            get() = mergers.values + routers.values
     }
 
     val transitionable = TransitionableAccessor()

@@ -45,10 +45,10 @@ class TransitionLine(
         fromCenter = NodeCenter(world, fromNode)
         toCenter = NodeCenter(world, toNode)
 
-        fromCenter.getCenterX().addListener { observable, oldValue, newValue -> updateLine() }
-        fromCenter.getCenterY().addListener { observable, oldValue, newValue -> updateLine() }
-        toCenter.getCenterX().addListener { observable, oldValue, newValue -> updateLine() }
-        toCenter.getCenterY().addListener { observable, oldValue, newValue -> updateLine() }
+        fromCenter.centerX.addListener { observable, oldValue, newValue -> updateLine() }
+        fromCenter.centerY.addListener { observable, oldValue, newValue -> updateLine() }
+        toCenter.centerX.addListener { observable, oldValue, newValue -> updateLine() }
+        toCenter.centerY.addListener { observable, oldValue, newValue -> updateLine() }
 
         pointer = Polygon()
         pointer.points.addAll(
@@ -121,10 +121,10 @@ class TransitionLine(
     fun updateLine() {
         //Arrow
         val from = Point2D(
-                fromCenter.getCenterX().doubleValue(),
+                fromCenter.centerX.doubleValue(),
                 fromCenter.getCenterY().doubleValue());
         val to = Point2D(
-                toCenter.getCenterX().doubleValue(),
+                toCenter.centerX.doubleValue(),
                 toCenter.getCenterY().doubleValue());
 
         var minx: Double
