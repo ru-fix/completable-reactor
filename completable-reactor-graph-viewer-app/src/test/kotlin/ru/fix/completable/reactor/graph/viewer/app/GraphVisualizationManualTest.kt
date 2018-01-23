@@ -76,6 +76,6 @@ class GraphVisualizationManualTest : Application() {
         Application.launch("/viewer-test-PurchaseGraphConfig.java")
     }
 
-
+    //TODO add source file dump if there is parsing or visualization error
 
 }
