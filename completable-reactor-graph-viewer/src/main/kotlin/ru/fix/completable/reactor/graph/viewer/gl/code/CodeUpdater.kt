@@ -10,7 +10,7 @@ class CodeUpdater {
 
     companion object {
         private val COORDINATES = ".coordinates()"
-        private val BUILD_GRAPH = ".buildGraph()"
+        private val BUILD_GRAPH = "buildGraph()"
 
         private val coordinateTypeOrder = listOf(
                 Type.START_POINT,
@@ -77,7 +77,7 @@ class CodeUpdater {
                 }
                 .forEach { item ->
                     out.append(padding.toString())
-                    out.append(serialize(item))
+                    out.append(generateCoordinateBuilderCode(item))
                     out.append("\n")
                 }
 
@@ -89,7 +89,7 @@ class CodeUpdater {
     }
 
 
-    private fun serialize(item: CoordinateItem): String {
+    fun generateCoordinateBuilderCode(item: CoordinateItem): String {
         return when (item.type) {
             Type.START_POINT -> String.format(".payload(%d, %d)", item.x, item.y)
             Type.HANDLER -> String.format(".handler(%s, %d, %d)", item.name, item.x, item.y)

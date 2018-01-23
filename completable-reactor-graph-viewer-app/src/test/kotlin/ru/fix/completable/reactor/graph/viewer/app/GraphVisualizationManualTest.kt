@@ -7,6 +7,7 @@ import mu.KotlinLogging
 import org.junit.Ignore
 import org.junit.Test
 import ru.fix.completable.reactor.api.gl.model.Source
+import ru.fix.completable.reactor.graph.viewer.gl.code.CodeUpdater
 import ru.fix.completable.reactor.graph.viewer.gl.CoordinateItem
 import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
 import ru.fix.completable.reactor.graph.viewer.gl.Shortcut
@@ -35,8 +36,16 @@ class GraphVisualizationManualTest : Application() {
 
         override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
             try {
-                println("changeCoordinates:\n" + coordinateItems)
-                //TODO check code updater
+
+                val codeUpdater = CodeUpdater()
+
+                val updatedCoordinates = coordinateItems
+                        .map { codeUpdater.generateCoordinateBuilderCode(it) }
+                        .joinToString("\n")
+
+
+                println("UpdatedCoordinates:\n$updatedCoordinates")
+
             } catch (exc: Exception) {
                 exc.printStackTrace()
             }
@@ -47,7 +56,7 @@ class GraphVisualizationManualTest : Application() {
     override fun start(stage: Stage?) {
         val javaSourceContext = javaClass.getResource(parameters.raw[0]).readText()
 
-        val parser = JavaSourceParser(object: JavaSourceParser.Listener {
+        val parser = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 log.error { msg }
             }
