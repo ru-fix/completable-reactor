@@ -176,6 +176,8 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(806, 201), model.mergers["userProfile"]!!.coordinates)
         assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
         assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
+
+        assertEquals(model.buildGraphSource, Source(null, 221, 15))
     }
 }
 

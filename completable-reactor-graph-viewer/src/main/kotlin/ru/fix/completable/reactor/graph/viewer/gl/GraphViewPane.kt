@@ -88,10 +88,6 @@ class GraphViewPane(
         buildGraphMenuItem.setOnAction { graphModel?.buildGraphSource?.let { actionListener.goToSource(it) } }
         contextMenu.items.add(buildGraphMenuItem)
 
-        val coordinatesMenuItem = MenuItem("Coordinates location")
-        coordinatesMenuItem.setOnAction { graphModel?.coordinatesSource?.let { actionListener.goToSource(it) } }
-        contextMenu.items.add(coordinatesMenuItem);
-
 
         pane.setOnContextMenuRequested { contextMenuEvent ->
             contextMenu.show(pane, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY())

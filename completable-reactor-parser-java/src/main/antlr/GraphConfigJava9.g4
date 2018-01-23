@@ -13,6 +13,7 @@ graphBlock
     |   vertexAssignmentBlock
     |   coordinatesBlock
     |   graphConfigDeclarationBlock
+    |   buildGraphBlock
     ;
 
 graphConfigDeclarationBlock
@@ -166,7 +167,9 @@ ignoredToken
     :   .
     ;
 
-
+buildGraphBlock
+    :   'buildGraph' LPAREN RPAREN SEMI
+    ;
 
 
 
