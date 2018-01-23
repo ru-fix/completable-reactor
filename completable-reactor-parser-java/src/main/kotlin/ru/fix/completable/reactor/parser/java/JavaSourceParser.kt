@@ -170,6 +170,18 @@ class JavaSourceParser(val listener: Listener) {
                                     IntegerLiteral().last().text.toInt())
                         }
                     }
+
+            //buildGraph()
+            graphBlocks.asIterable()
+                    .mapNotNull { it.buildGraphBlock() }
+                    .forEach {
+                        if(buildGraphSource == null){
+                            buildGraphSource = sourceFromToken(it.start)
+                        } else {
+                            listener.error("Found second buildGraph() invocation at ${tokenPosition(it.start)}." +
+                                    " Expected single buildGraph() per source file.")
+                        }
+                    }
         }
 
         return model

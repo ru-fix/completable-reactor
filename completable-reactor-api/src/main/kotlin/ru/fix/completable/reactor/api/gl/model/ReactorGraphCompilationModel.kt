@@ -94,11 +94,8 @@ class ReactorGraphCompilationModel {
     /**
      * Location where buildGraph method of GraphConfig was invoked
      */
-    val buildGraphSource: Source? = null
-    /**
-     * Location where coordinates of graph items are declared
-     */
-    val coordinatesSource: Source? = null
+    var buildGraphSource: Source? = null
+
 
     inner class HandeableAccessor {
         operator fun get(name: String): HandleableVertexFigure? = handlers[name] ?: subgraphs[name] ?: routers[name]
