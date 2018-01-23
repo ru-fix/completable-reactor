@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.graph.viewer.gl
 
 data class CoordinateItem(
         val type: Type,
+        val name: String?,
         var x: Int = 0,
         var y: Int = 0
 ) {

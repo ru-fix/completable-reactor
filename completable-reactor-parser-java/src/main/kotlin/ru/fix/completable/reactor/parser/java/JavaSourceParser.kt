@@ -117,7 +117,9 @@ class JavaSourceParser(val listener: Listener) {
                                 if (transitionActionComplete() != null) {
                                     transition.isComplete = true
 
-                                    val endpoint = EndPoint(source = sourceFromToken(start))
+                                    val endpoint = EndPoint(
+                                            name = vertex.name,
+                                            source = sourceFromToken(start))
                                     endpoints[vertex.name] = endpoint
                                     transition.target = endpoint
 

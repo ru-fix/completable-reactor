@@ -20,4 +20,8 @@ internal class GlCoordinatesImpl : GlCoordinates {
     override fun complete(vertex: Vertex, x: Int, y: Int): GlCoordinates {
         return this
     }
+
+    override fun subgraph(vertex: Vertex, x: Int, y: Int): GlCoordinates {
+        return this
+    }
 }

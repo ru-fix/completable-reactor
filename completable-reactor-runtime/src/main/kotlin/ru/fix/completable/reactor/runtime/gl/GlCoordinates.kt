@@ -12,5 +12,7 @@ interface GlCoordinates {
 
     fun router(vertex: Vertex, x: Int, y: Int): GlCoordinates
 
+    fun subgraph(vertex: Vertex, x: Int, y: Int): GlCoordinates
+
     fun complete(vertex: Vertex, x: Int, y: Int): GlCoordinates
 }
