@@ -17,15 +17,12 @@ import ru.fix.completable.reactor.parser.java.JavaSourceParser
 private val log = KotlinLogging.logger {}
 
 /**
- * Created by swarmshine on 29.01.2017.
+ * Manual test.
+ * Opens java source file and display graph.
+ * source parsing, model building is covered by other test.
+ * This unit purpose is to ensure that there is no visual artifacts during graph visualization.
  */
-
-class GraphViewerTest : Application() {
-
-    companion object {
-        private var payload: String? = null
-    }
-
+class GraphVisualizationManualTest : Application() {
 
     class LogActionListener : GraphViewer.ActionListener {
         override fun goToSource(source: Source) {
@@ -39,10 +36,7 @@ class GraphViewerTest : Application() {
         override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
             try {
                 println("changeCoordinates:\n" + coordinateItems)
-
                 //TODO check code updater
-//                val codeUpdater = CodeUpdater()
-//                javaClass.getResourceAsStream("/viewer-code-block.txt").use { resource -> println("Code:\n" + codeUpdater.updateCoordinates(IOUtils.toString(resource, StandardCharsets.UTF_8), coordinateItems)) }
             } catch (exc: Exception) {
                 exc.printStackTrace()
             }
@@ -51,12 +45,7 @@ class GraphViewerTest : Application() {
     }
 
     override fun start(stage: Stage?) {
-        if (stage == null) {
-            throw IllegalArgumentException("stage is null")
-        }
-
-
-        val javaSourceContext = javaClass.getResource("/" + payload!!).readText()
+        val javaSourceContext = javaClass.getResource(parameters.raw[0]).readText()
 
         val parser = JavaSourceParser(object: JavaSourceParser.Listener {
             override fun error(msg: String) {
@@ -72,19 +61,19 @@ class GraphViewerTest : Application() {
         viewer.setShortcut(ShortcutType.GOTO_BUILD_GRAPH, Shortcut(true, KeyCode.B))
 
         viewer.openGraph(model)
-        stage.scene = viewer.scene
+        stage!!.scene = viewer.scene
 
         stage.show()
     }
 
     /**
      * Manual UI Test
+     * Opens given java source file and display graph
      */
     @Ignore
     @Test
     fun open_graph_for_purchase_payload() {
-        payload = "viewer-test-PurchaseGraphConfig.java"
-        Application.launch()
+        Application.launch("/viewer-test-PurchaseGraphConfig.java")
     }
 
 
