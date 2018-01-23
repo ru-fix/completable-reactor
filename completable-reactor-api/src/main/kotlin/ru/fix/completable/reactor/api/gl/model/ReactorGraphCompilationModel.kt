@@ -29,9 +29,9 @@ data class Transition(
 
         val transitionsDoc: List<TransitionDocumentation> = ArrayList(),
 
-        var transitionOnAnySource: ReactorGraphModel.Source? = null,
-        var transitionOnStatusSource: Map<String, ReactorGraphModel.Source>? = null,
-        var mergeStatusSources: Map<String, ReactorGraphModel.Source>? = null) {
+        var transitionOnAnySource: Source? = null,
+        var transitionOnStatusSource: Map<String, Source>? = null,
+        var mergeStatusSources: Map<String, Source>? = null) {
 
     lateinit var target: Figure
 }

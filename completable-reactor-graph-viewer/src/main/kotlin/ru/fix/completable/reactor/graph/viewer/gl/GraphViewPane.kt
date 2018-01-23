@@ -32,6 +32,7 @@ class GraphViewPane(
     private val translator = CoordinateTranslator(WORLD_SIZE)
 
     var graphModel: ReactorGraphCompilationModel? = null
+        private set
 
     init {
 
@@ -103,7 +104,7 @@ class GraphViewPane(
     }
 
 
-    fun setGraph(graphModel: ReactorGraphCompilationModel): GraphViewPane {
+    fun openGraph(graphModel: ReactorGraphCompilationModel): GraphViewPane {
         this.graphModel = graphModel
 
         pane.children.removeAll()

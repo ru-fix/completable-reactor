@@ -6,16 +6,16 @@ package ru.fix.completable.reactor.graph.viewer.gl
 
 class CoordinateTranslator (var worldSize: Double) {
 
-    fun translateX(x: Integer): Double {
-        return worldSize / 2 + x
+    fun translateX(x: Int): Double {
+        return worldSize / 2 + x.toDouble()
     }
 
     fun translateX(x: Double): Double {
         return worldSize / 2 + x
     }
 
-    fun translateY(y: Integer): Double {
-        return worldSize / 2 + y
+    fun translateY(y: Int): Double {
+        return worldSize / 2 + y.toDouble()
     }
 
     fun translateY(y: Double): Double {

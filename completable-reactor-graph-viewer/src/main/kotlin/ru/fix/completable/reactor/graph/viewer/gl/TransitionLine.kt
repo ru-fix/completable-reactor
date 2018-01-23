@@ -13,7 +13,7 @@ import javafx.scene.shape.Line
 import javafx.scene.shape.Polygon
 import javafx.scene.text.Text
 import javafx.scene.transform.Rotate
-import ru.fix.completable.reactor.api.gl.model.Transition
+import ru.fix.completable.reactor.api.gl.model.*
 import java.util.*
 
 /**
@@ -78,12 +78,12 @@ class TransitionLine(
             if (transitionItem.transitionOnAnySource != null) {
                 anyStatusLabel.setOnMouseClicked { mouseEvent ->
                     if (mouseEvent.getClickCount() == 2) {
-                        actionListener.goToSource(transitionItem.transitionOnAnySource)
+                        transitionItem.transitionOnAnySource?.let { actionListener.goToSource(it) }
                     }
                 }
                 menuArea.setOnMouseClicked { mouseEvent ->
                     if (mouseEvent.getClickCount() == 2) {
-                        actionListener.goToSource(transitionItem.transitionOnAnySource);
+                        transitionItem.transitionOnAnySource?.let { actionListener.goToSource(it) }
                     }
                 }
             }
@@ -122,10 +122,10 @@ class TransitionLine(
         //Arrow
         val from = Point2D(
                 fromCenter.centerX.doubleValue(),
-                fromCenter.getCenterY().doubleValue());
+                fromCenter.centerY.doubleValue())
         val to = Point2D(
                 toCenter.centerX.doubleValue(),
-                toCenter.getCenterY().doubleValue());
+                toCenter.centerY.doubleValue());
 
         var minx: Double
         var miny: Double
@@ -133,10 +133,10 @@ class TransitionLine(
         var maxy: Double
 
         if (toNode is BorderableNode) {
-            minx = toNode.getBorderableX();
-            miny = toNode.getBorderableY();
-            maxx = toNode.getBorderableX() + toNode.getBorderableWidth();
-            maxy = toNode.getBorderableY() + toNode.getBorderableHeight();
+            minx = toNode.borderableX
+            miny = toNode.borderableY;
+            maxx = toNode.borderableX + toNode.borderableWidth;
+            maxy = toNode.borderableY + toNode.borderableHeight;
 
         } else {
             minx = toNode.getLayoutX();
@@ -152,7 +152,7 @@ class TransitionLine(
                 arrayOf(Point2D(maxx, maxy), Point2D(minx, maxy))
         )
 
-        var toNodeBorderIntersection = Point2D(toCenter.getCenterX().get(), toCenter.getCenterY().get())
+        var toNodeBorderIntersection = Point2D(toCenter.centerX.get(), toCenter.centerY.get())
 
         for (i in 0..3) {
             val intersectionPoint = intersection2(
@@ -188,17 +188,17 @@ class TransitionLine(
 
 
         //Line
-        line.setStartX(fromCenter.getCenterX().get())
-        line.setStartY(fromCenter.getCenterY().get())
-        line.setEndX(toCenter.getCenterX().get())
-        line.setEndY(toCenter.getCenterY().get())
+        line.startX = fromCenter.centerX.get()
+        line.startY = fromCenter.centerY.get()
+        line.endX = toCenter.centerX.get()
+        line.endY = toCenter.centerY.get()
 
         //menu area
         menuArea.getPoints().clear()
         val menuAreaWidth = 30.0
 
-        val menu_dx = menuAreaWidth / 2 * Math.cos(angleRad);
-        val menu_dy = menuAreaWidth / 2 * Math.sin(angleRad);
+        val menu_dx = menuAreaWidth / 2 * Math.cos(angleRad)
+        val menu_dy = menuAreaWidth / 2 * Math.sin(angleRad)
 
         menuArea.getPoints().addAll(
                 line.getStartX() + menu_dx, line.getStartY() - menu_dy,
