@@ -27,6 +27,7 @@ class Main : Application() {
 
         try {
 
+            //TODO remove support of rg files after upgrade
             val fileContent = String(Files.readAllBytes(
                     Paths.get(parameters.raw[0])),
                     StandardCharsets.UTF_8)
@@ -41,13 +42,19 @@ class Main : Application() {
                 stage.show()
             } else if (parameters.raw[0].endsWith(".java")){
 
+                //TODO add file monitor, reparsing loop, errors in stdout, parsing time
+
                 val parser = JavaSourceParser(object: JavaSourceParser.Listener {
                     override fun error(msg: String) {
                         log.error { msg }
                     }
                 })
 
+                val timestamp = System.currentTimeMillis()
                 val model = parser.parse(fileContent)
+
+                log.info{ "Parsing took ${System.currentTimeMillis() - timestamp}ms" }
+
                 val viewer2 = ru.fix.completable.reactor.graph.viewer.gl.GraphViewer()
                 viewer2.openGraph(model)
                 stage.scene = viewer2.scene
