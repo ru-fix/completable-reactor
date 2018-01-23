@@ -43,7 +43,7 @@ class HandlerNode(
 
         this.setOnMouseClicked { event ->
             if (event.clickCount == 2) {
-                actionListener.goToSource(handler.source)
+                handler.source?.let { actionListener.goToSource(it) }
             }
         }
 
@@ -80,18 +80,18 @@ class HandlerNode(
         }
         contextMenu.items.add(processorMenuItem)
 
-        processorContent.children.apply{
+        processorContent.children.apply {
             add(Text(handler.name))
         }
 
         val handlerMenuItem = MenuItem()
-        val handlerConent = VBox ()
+        val handlerConent = VBox()
         handlerMenuItem.setGraphic(handlerConent);
-        handlerMenuItem.setOnAction { event -> actionListener.goToSource(handler.source) }
+        handlerMenuItem.setOnAction { event -> handler.source?.let { actionListener.goToSource(it) } }
 
         contextMenu.getItems().addAll(handlerMenuItem)
 
-        handler.title?.let{handlerConent.children.add(Text(it))}
+        handler.title?.let { handlerConent.children.add(Text(it)) }
         return contextMenu
     }
 }

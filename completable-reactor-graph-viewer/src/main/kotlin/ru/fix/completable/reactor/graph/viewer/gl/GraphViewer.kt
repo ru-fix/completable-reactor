@@ -1,10 +1,7 @@
 package ru.fix.completable.reactor.graph.viewer.gl
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.scene.Scene
 import ru.fix.completable.reactor.api.gl.model.*
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -20,13 +17,13 @@ class GraphViewer {
     private val shortcuts: MutableMap<Shortcut, ShortcutType> = ConcurrentHashMap()
 
 
-    val graphModel: ReactorGraphCompilationModel
-        get() = graphViewPane.graph
+    val graphModel: ReactorGraphCompilationModel?
+        get() = graphViewPane.graphModel
 
 
     init {
         val actionListener = object : ActionListener {
-            fun goToSource(source: ReactorGraphModel.Source) {
+            override fun goToSource(source: Source) {
                 for (listener in actionListeners) {
                     listener.goToSource(source)
                 }
@@ -45,7 +42,7 @@ class GraphViewer {
             }
         }
 
-        graphViewPane = GraphViewPane(actionListener, Function<ShortcutType, Optional<Shortcut>> { this.getShortcut(it) })
+        graphViewPane = GraphViewPane(actionListener, { this.getShortcut(it) })
 
         graphViewPane.setPrefSize(700.0, 600.0)
 
@@ -58,8 +55,9 @@ class GraphViewer {
             shortcuts.forEach { shortcut, shortcutType ->
                 if (shortcut.getPredicate().test(keyEvent)) {
                     when (shortcutType) {
-                        ShortcutType.GOTO_SERIALIZATION_POINT -> actionListener.goToSource(graphViewPane.graph.serializationPointSource)
-                        else -> throw IllegalStateException()
+                        ShortcutType.GOTO_BUILD_GRAPH -> graphViewPane.graphModel?.buildGraphSource?.let {
+                            actionListener.goToSource(it)
+                        }
                     }
                 }
 
@@ -68,7 +66,7 @@ class GraphViewer {
     }
 
     fun openGraph(graph: ReactorGraphCompilationModel) {
-        graphViewPane.graph = graph
+        graphViewPane.openGraph(graph)
     }
 
 
@@ -89,7 +87,6 @@ class GraphViewer {
         }
         return null
     }
-
 
     interface ActionListener {
         /**

@@ -1,7 +1,5 @@
 package ru.fix.completable.reactor.graph.viewer.model;
 
-import com.sun.istack.internal.Nullable;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
