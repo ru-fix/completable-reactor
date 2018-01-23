@@ -204,9 +204,10 @@ class GraphViewPane(
             return when (figure) {
                 is Subgraph -> subgraphs[figure]!!
                 is Handler -> handlers[figure]!!
+                is Merger -> mergers[figure]!!
                 is Router -> routers[figure]!!
                 is EndPoint -> endpoints[figure]!!
-                else -> throw IllegalArgumentException("Invalid type: ${figure.javaClass}")
+                is StartPoint -> startPointNode
             }
         }
 
@@ -337,22 +338,45 @@ class GraphViewPane(
         with(graphModel!!) {
 
             result.add(CoordinateItem(
-                    CoordinateItem.Type.START_POINT, startPoint.coordinates.x, startPoint.coordinates.y))
+                    CoordinateItem.Type.START_POINT,
+                    null,
+                    startPoint.coordinates.x,
+                    startPoint.coordinates.y))
 
             handlers.values.forEach {
-                result.add(CoordinateItem(CoordinateItem.Type.HANDLER, it.coordinates.x, it.coordinates.y))
+                result.add(CoordinateItem(
+                        CoordinateItem.Type.HANDLER,
+                        it.name,
+                        it.coordinates.x,
+                        it.coordinates.y))
             }
             subgraphs.values.forEach {
-                result.add(CoordinateItem(CoordinateItem.Type.SUBGRAPH, it.coordinates.x, it.coordinates.y))
+                result.add(CoordinateItem(
+                        CoordinateItem.Type.SUBGRAPH,
+                        it.name,
+                        it.coordinates.x,
+                        it.coordinates.y))
             }
             routers.values.forEach {
-                result.add(CoordinateItem(CoordinateItem.Type.ROUTER, it.coordinates.x, it.coordinates.y))
+                result.add(CoordinateItem(
+                        CoordinateItem.Type.ROUTER,
+                        it.name,
+                        it.coordinates.x,
+                        it.coordinates.y))
             }
             mergers.values.forEach {
-                result.add(CoordinateItem(CoordinateItem.Type.MERGER, it.coordinates.x, it.coordinates.y))
+                result.add(CoordinateItem(
+                        CoordinateItem.Type.MERGER,
+                        it.name,
+                        it.coordinates.x,
+                        it.coordinates.y))
             }
             endpoints.values.forEach {
-                result.add(CoordinateItem(CoordinateItem.Type.END_POINT, it.coordinates.x, it.coordinates.y))
+                result.add(CoordinateItem(
+                        CoordinateItem.Type.END_POINT,
+                        it.name,
+                        it.coordinates.x,
+                        it.coordinates.y))
             }
         }
         return result

@@ -9,7 +9,8 @@ import java.util.concurrent.CopyOnWriteArrayList
  * Created by Kamil Asfandiyarov.
  */
 class GraphViewer {
-    private val scene: Scene
+    var scene: Scene
+        private set
 
     private var actionListeners = CopyOnWriteArrayList<ActionListener>()
     private var graphViewPane: GraphViewPane

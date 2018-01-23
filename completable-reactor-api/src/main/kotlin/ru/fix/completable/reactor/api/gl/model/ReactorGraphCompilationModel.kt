@@ -58,7 +58,9 @@ class StartPoint : Figure() {
     override fun toString() = "StartPoint"
 }
 
-class EndPoint(coordinates: Coordinates = Coordinates(), source: Source? = null) : Figure(coordinates, source) {
+class EndPoint(var name: String? = null,
+               coordinates: Coordinates = Coordinates(),
+               source: Source? = null) : Figure(coordinates, source) {
     override fun toString() = "EndPoint"
 }
 
