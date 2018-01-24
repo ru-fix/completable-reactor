@@ -66,6 +66,7 @@ class EndPoint(var name: String? = null,
 
 class Handler(name: String) : HandleableVertexFigure(name) {
     var title: String? = null
+    var doc: String? = null
 }
 
 class Merger(name: String) : VertexFigure(name), TransitionableFigure {

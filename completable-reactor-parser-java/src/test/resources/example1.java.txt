@@ -81,6 +81,10 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
 
         {
             handler(
+                    /*
+                        Title here.
+                        Title documentation here.
+                    */
                     pld -> bank.withdrawMoneyWithMinus(
                             pld.intermediateData.getUserInfo(),
                             pld.intermediateData.getServiceInfo())
