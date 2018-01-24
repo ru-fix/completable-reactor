@@ -86,7 +86,7 @@ class RouterNode(
         }
 
         val menuItem = MenuItem(
-                if (textBuilder.isNotEmpty()) textBuilder.toString() else "MergePoint"
+                if (textBuilder.isNotEmpty()) textBuilder.toString() else ""
         )
         contextMenu.getItems().add(menuItem)
 
