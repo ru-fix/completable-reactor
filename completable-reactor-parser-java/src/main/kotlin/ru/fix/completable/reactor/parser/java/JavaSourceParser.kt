@@ -39,11 +39,13 @@ class JavaSourceParser(val listener: Listener) {
                     //handler
                     handlers[vertexName] = Handler(vertexName).also {
                         it.title = this.handlerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
+                        it.source = sourceFromToken(this.start)
                     }
 
                     builderMerger().builderWithMerger()?.apply {
                         mergers[vertexName] = Merger(vertexName).apply {
                             title = mergerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
+                            source = sourceFromToken(start)
                         }
                     }
 
@@ -52,11 +54,14 @@ class JavaSourceParser(val listener: Listener) {
                     subgraphs[vertexName] = Subgraph(
                             name = vertexName,
                             payloadClass = subgraphPayloadClass().text
-                    )
+                    ).apply {
+                        source = sourceFromToken(start)
+                    }
 
                     builderMerger().builderWithMerger()?.apply {
                         mergers[vertexName] = Merger(vertexName).apply {
                             title = mergerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
+                            source = sourceFromToken(start)
                         }
                     }
                 }
@@ -82,6 +87,7 @@ class JavaSourceParser(val listener: Listener) {
             //start point handleBy transitions
             graphBlocks.asIterable()
                     .mapNotNull { it.payloadTransitionBlock() }
+                    .also { startPoint.source = sourceFromToken(it.firstOrNull()?.start) }
                     .flatMap { it.handleBy() }
                     .map { it.handleByVertex().Identifier().symbol }
                     .forEach {
@@ -175,7 +181,7 @@ class JavaSourceParser(val listener: Listener) {
             graphBlocks.asIterable()
                     .mapNotNull { it.buildGraphBlock() }
                     .forEach {
-                        if(buildGraphSource == null){
+                        if (buildGraphSource == null) {
                             buildGraphSource = sourceFromToken(it.start)
                         } else {
                             listener.error("Found second buildGraph() invocation at ${tokenPosition(it.start)}." +
