@@ -25,9 +25,23 @@ private val log = KotlinLogging.logger {}
  */
 class GraphVisualizationManualTest : Application() {
 
-    class LogActionListener : GraphViewer.ActionListener {
+    class LogActionListener(val javaSource: String) : GraphViewer.ActionListener {
+        val sourceLines = javaSource.split('\n')
+
         override fun goToSource(source: Source) {
-            println("goToSource: " + source)
+            val sourceContext = source.line?.let {
+                (it - 5..it + 5)
+                        .map {
+                            if (it >= 0 && it < sourceLines.size) {
+                                if (it == source.line!!-1) ">>${sourceLines[it]}" else sourceLines[it]
+                            } else {
+                                ""
+                            }
+                        }
+                        .joinToString("\n>", ">")
+            }
+
+            println("goToSource: $source\n>${sourceContext ?: "unknown context"}")
         }
 
         override fun goToSubgraph(subgraphPayloadType: String) {
@@ -65,7 +79,7 @@ class GraphVisualizationManualTest : Application() {
         val model = parser.parse(javaSourceContext)
 
         val viewer = GraphViewer()
-        viewer.registerListener(LogActionListener())
+        viewer.registerListener(LogActionListener(javaSourceContext))
 
         viewer.setShortcut(ShortcutType.GOTO_BUILD_GRAPH, Shortcut(true, KeyCode.B))
 

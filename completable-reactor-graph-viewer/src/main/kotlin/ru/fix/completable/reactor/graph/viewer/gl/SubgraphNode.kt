@@ -7,7 +7,6 @@ import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.Text
 import ru.fix.completable.reactor.api.gl.model.Subgraph
-import java.util.*
 
 /**
  * Created by swarmshine on 29.01.2017.
