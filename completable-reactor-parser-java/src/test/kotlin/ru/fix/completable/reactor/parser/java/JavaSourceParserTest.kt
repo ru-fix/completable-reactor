@@ -8,6 +8,7 @@ import java.time.Duration
 import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 private val log = KotlinLogging.logger {}
@@ -158,7 +159,6 @@ class JavaSourceParserTest {
 
         assertEquals("checkWithdraw", model.mergers["bank"]!!.title)
         assertEquals("check profile state", model.mergers["userProfile"]!!.title)
-
         assertEquals("load user profile", model.handlers["userProfile"]!!.title)
 
         assertEquals(Coordinates(680, 60), model.startPoint.coordinates)
@@ -177,7 +177,13 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
         assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
 
-        assertEquals(model.buildGraphSource, Source(null, 221, 15))
+        assertEquals(Source(null, 221, 15), model.buildGraphSource)
+        assertEquals(Source(null, 176, 8), model.startPoint.source)
+
+        assertEquals(Source(null, 83, 12), model.handlers["bank"]!!.source)
+        assertEquals(Source(null, 87, 14), model.mergers["bank"]!!.source)
+        assertEquals(Source(null, 72, 12), model.handlers["webNotification"]!!.source)
     }
+
 }
 
