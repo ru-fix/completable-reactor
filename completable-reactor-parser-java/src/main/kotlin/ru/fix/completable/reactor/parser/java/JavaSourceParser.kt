@@ -38,8 +38,19 @@ class JavaSourceParser(val listener: Listener) {
                 vertexBuilder.builderHandler()?.apply {
                     //handler
                     handlers[vertexName] = Handler(vertexName).also {
-                        it.title = this.handlerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
-                        it.source = sourceFromToken(this.start)
+
+                        tokens.getHiddenTokensToRight(this.LPAREN().symbol.tokenIndex)
+                                ?.takeIf { it.size > 0 }
+                                ?.first()
+                                ?.apply {
+                                    val comment = parseComment(text)
+                                    it.title = comment.title
+                                    it.doc = comment.doc
+                                }
+
+//                        TODO remove unused title rules
+//                        it.title = this.handlerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
+//                        it.source = sourceFromToken(this.start)
                     }
 
                     builderMerger().builderWithMerger()?.apply {
@@ -211,5 +222,29 @@ class JavaSourceParser(val listener: Listener) {
             return text.substring(1, text.length - 1)
         }
         return text
+    }
+
+    data class Comment(val title: String, val doc: String?)
+
+    private fun parseComment(commentText: String): Comment {
+        var text = commentText
+
+        if (text.startsWith("/*")) {
+            text = text.substring("/*".length)
+        }
+        if (text.endsWith("*/")) {
+            text = text.substring(0, text.length - "*/".length)
+        }
+
+        text = text.trim()
+
+        val separatorIndex = text.indexOf('\n')
+        if (separatorIndex > 0) {
+            return Comment(
+                    text.substring(0, separatorIndex).trim(),
+                    text.substring(separatorIndex).trimIndent())
+        } else {
+            return Comment(text, null)
+        }
     }
 }
