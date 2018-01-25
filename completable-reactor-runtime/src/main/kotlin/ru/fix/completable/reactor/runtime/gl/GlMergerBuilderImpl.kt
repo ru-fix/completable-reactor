@@ -10,18 +10,6 @@ internal class GlMergerBuilderImpl<Payload, HandlerResult>(private val vertex: V
         return vertex
     }
 
-    override fun withMerger(title: String, merger: Merger<Payload, HandlerResult>): Vertex {
-        return withMerger(merger)
-    }
-
-    override fun withMerger(title: String, doc: String, merger: Merger<Payload, HandlerResult>): Vertex {
-        return withMerger(merger)
-    }
-
-    override fun withMerger(title: String, docs: Array<String>, merger: Merger<Payload, HandlerResult>): Vertex {
-        return withMerger(merger)
-    }
-
     override fun withoutMerger(): Vertex {
         return vertex
     }
