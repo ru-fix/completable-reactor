@@ -43,6 +43,7 @@ public class PurchasePayload {
         BigDecimal newAmount;
         boolean withdrawalWasInMinus;
         Enum bonusServiceStatus;
+        boolean isPartnerService;
 
         public Response setStatusIfNull(Enum status) {
             this.status = status;
@@ -84,6 +85,15 @@ public class PurchasePayload {
             this.bonusServiceStatus = bonusServiceStatus;
             return this;
         }
+
+        public boolean isPartnerService() {
+            return isPartnerService;
+        }
+
+        public Response setPartnerService(boolean partnerService) {
+            isPartnerService = partnerService;
+            return this;
+        }
     }
 
     public static class IntermediateData {
@@ -117,6 +127,8 @@ public class PurchasePayload {
             this.bonusService = bonusService;
             return this;
         }
+
+
     }
 
     public final Request request = new Request();

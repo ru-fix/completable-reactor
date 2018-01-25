@@ -6,7 +6,6 @@ import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
 import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 public abstract class GraphConfig<Payload> {
 
@@ -72,58 +71,6 @@ public abstract class GraphConfig<Payload> {
     public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handlerSync(
             SyncHandler<Payload, HandlerResult> handlerSync) {
         return handler(payload -> CompletableFuture.supplyAsync(() -> handlerSync.handle(payload)));
-    }
-
-    public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handlerSync(
-            String title,
-            SyncHandler<Payload, HandlerResult> handlerSync) {
-        return handler(payload -> CompletableFuture.supplyAsync(() -> handlerSync.handle(payload)));
-    }
-
-    public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handlerSync(
-            String title,
-            String doc,
-            SyncHandler<Payload, HandlerResult> handlerSync) {
-        return handler(payload -> CompletableFuture.supplyAsync(() -> handlerSync.handle(payload)));
-    }
-
-    public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handlerSync(
-            String title,
-            String[] docs,
-            SyncHandler<Payload, HandlerResult> handlerSync) {
-        return handler(payload -> CompletableFuture.supplyAsync(() -> handlerSync.handle(payload)));
-    }
-
-    public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
-            String title,
-            Handler<Payload, HandlerResult> handler) {
-        return handler(handler);
-    }
-
-    public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
-            String title,
-            String doc,
-            Handler<Payload, HandlerResult> handler) {
-        return handler(handler);
-    }
-
-    public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
-            String title,
-            String[] doc,
-            Handler<Payload, HandlerResult> handler) {
-        return handler(handler);
-    }
-
-    public Vertex router(String title, Router<Payload> router) {
-        return router(router);
-    }
-
-    public Vertex router(String title, String doc, Router<Payload> router) {
-        return router(router);
-    }
-
-    public Vertex router(String title, String[] docs, Router<Payload> router) {
-        return router(router);
     }
 
     public interface DependencyInjector {

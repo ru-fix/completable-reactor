@@ -17,9 +17,11 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
         UserProfileManager userProfile;
 
         {
-            handler("load user profile",
+            handler(
+                    //load user profile
                     pld -> userProfile.loadUserProfileById(pld.request.getUserId())
-            ).withMerger("check profile state",
+            ).withMerger(
+                    //check profile state
                     (pld, result) -> {
                         if (pld.response.getStatus() != null) {
                             return Flow.STOP;
@@ -76,6 +78,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
             handler(pld -> notifier.sendSmsPurchaseNotification(pld.request.getUserId()))
                     .withoutMerger();
 
+
     Vertex bank = new Vertex() {
         Bank bank;
 
@@ -85,12 +88,12 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                             pld.intermediateData.getUserInfo(),
                             pld.intermediateData.getServiceInfo())
             ).withMerger(
-                    "checkWithdraw",
-                    new String[]{
-                            "Checks result of withdraw operation",
-                            "Sets new amount and withdrawal status in payload",
-                            "Stops in case if operation is failed"
-                    },
+                    /*
+                        checkWithdraw
+                        Checks result of withdraw operation
+                        Sets new amount and withdrawal status in payload
+                        Stops in case if operation is failed
+                    */
                     (pld, withdraw) -> {
                         switch (withdraw.getStatus()) {
                             case WALLET_NOT_FOUND:
@@ -110,13 +113,28 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
         }
     };
 
+    Vertex router =
+            router(/*
+                       Is partner service.
+                       Check if given service is provided by partner.
+                       Update payload response.
+                   */
+                    pld -> {
+                        if (pld.intermediateData.serviceInfo.isPartnerService()) {
+                            pld.response.isPartnerService = true;
+                            return Flow.CONTINUE;
+                        } else {
+                            return Flow.CONTINUE;
+                        }
+                    });
+
     Vertex serviceInfo = new Vertex() {
         ServiceRegistry serviceRegistry;
 
         {
             handler(pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
                     .withMerger(
-                            "checkServiceState",
+                            //checkServiceState
                             (pld, result) -> {
                                 if (pld.response.getStatus() != null) {
                                     return Flow.STOP;
@@ -188,8 +206,9 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                 .on(Flow.NO_WITHDRAWAL).handleBy(smsNotification)
                 .on(Flow.STOP).complete();
 
+        bank.onAny().handleBy(router);
 
-        bank.onAny().handleBy(txLog);
+        router.onAny().handleBy(txLog);
 
         txLog.onAny().handleBy(userJournal);
 

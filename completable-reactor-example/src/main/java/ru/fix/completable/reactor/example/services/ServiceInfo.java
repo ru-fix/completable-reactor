@@ -11,6 +11,7 @@ public class ServiceInfo {
     boolean isActive;
     BigDecimal servicePrice;
     boolean isSupportTrialPeriod;
+    boolean isPartnerService;
 
     Long bonusMarketing;
     Long bonusService;
@@ -75,6 +76,15 @@ public class ServiceInfo {
 
     public ServiceInfo setBonusService(Long bonusService) {
         this.bonusService = bonusService;
+        return this;
+    }
+
+    public boolean isPartnerService() {
+        return isPartnerService;
+    }
+
+    public ServiceInfo setPartnerService(boolean partnerService) {
+        isPartnerService = partnerService;
         return this;
     }
 }

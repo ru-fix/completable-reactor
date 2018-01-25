@@ -25,8 +25,14 @@ payloadType
     ;
 
 vertexAssignmentBlock
-    :   'Vertex' Identifier ASSIGN vertexBuilder SEMI
+    :   'Vertex' vertexAssignmentName ASSIGN vertexBuilder SEMI
     ;
+
+vertexAssignmentName
+    :   anyGraphKeyword
+    |   Identifier
+    ;
+
 vertexInitializationBlock
     :   'Vertex' Identifier ASSIGN NEW 'Vertex' LPAREN RPAREN vertexInitializationStaticSection SEMI
     ;
@@ -37,24 +43,28 @@ vertexInitializationStaticSection
 
 vertexBuilder
     :   builderHandler
-    |   buliderSubgraph
+    |   builderSubgraph
+    |   builderRouter
     ;
 
-buliderSubgraph
-    :   'subgraph' LPAREN subgraphPayloadClass DOT 'class' anythingBeforeRParen RPAREN DOT builderMerger
+builderSubgraph
+    :   SUBGRAPH LPAREN subgraphPayloadClass DOT 'class' anythingBeforeRParen RPAREN DOT builderMerger
     ;
 
 subgraphPayloadClass
     :   Identifier (DOT Identifier)*
     ;
 
+builderRouter
+    :   ROUTER LPAREN anythingBeforeRParen RPAREN
+    ;
+
 builderHandler
-    :   (handler LPAREN handlerTitle COMMA anythingBeforeRParen RPAREN DOT builderMerger)
-    |   (handler LPAREN anythingBeforeRParen RPAREN DOT builderMerger)
+    :   (handler LPAREN anythingBeforeRParen RPAREN DOT builderMerger)
     ;
 
 handler
-    :   'handler' | 'handlerSync'
+    :   HANDLER | HANDLER_SYNC
     ;
 
 builderMerger
@@ -62,16 +72,11 @@ builderMerger
     ;
 
 builderWithMerger
-    :   ('withMerger' LPAREN mergerTitle COMMA anythingBeforeRParen RPAREN)
-    |   ('withMerger' LPAREN anythingBeforeRParen RPAREN)
+    :   ('withMerger' LPAREN anythingBeforeRParen RPAREN)
     ;
 
 builderWithoutMerger
     :   ('withoutMerger' LPAREN RPAREN)
-    ;
-
-handlerTitle
-    : StringLiteral
     ;
 
 anythingBeforeRParen
@@ -80,11 +85,6 @@ anythingBeforeRParen
 
 anythingBeforeRBrace
     :   (~RBRACE | ignoreBracesBlock | ignoreParenthesesBlock)+
-    ;
-
-
-mergerTitle
-    : StringLiteral
     ;
 
 ignoreBracesBlock
@@ -98,7 +98,7 @@ ignoreParenthesesBlock
 
 
 payloadTransitionBlock
-    :	'payload' LPAREN RPAREN handleBy+ SEMI
+    :	PAYLOAD LPAREN RPAREN handleBy+ SEMI
     ;
 
 handleBy
@@ -132,7 +132,7 @@ transitionAction
     ;
 
 transitionActionComplete
-    :   DOT 'complete' LPAREN RPAREN
+    :   DOT COMPLETE LPAREN RPAREN
     ;
 
 transitionActionMergeBy
@@ -154,10 +154,10 @@ coordinate
     |   coordinateComplete
     ;
 
-coordinatePayload : DOT 'payload' LPAREN IntegerLiteral COMMA IntegerLiteral RPAREN;
-coordinateHandler : DOT 'handler' LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
-coordinateMerger : DOT 'merger' LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
-coordinateComplete : DOT 'complete' LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
+coordinatePayload : DOT PAYLOAD LPAREN IntegerLiteral COMMA IntegerLiteral RPAREN;
+coordinateHandler : DOT HANDLER LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
+coordinateMerger : DOT MERGER LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
+coordinateComplete : DOT COMPLETE LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
 
 transitionCondition
     :   Identifier (DOT Identifier)*
@@ -171,6 +171,24 @@ buildGraphBlock
     :   'buildGraph' LPAREN RPAREN SEMI
     ;
 
+SUBGRAPH : 'subgraph';
+MERGER : 'merger';
+HANDLER : 'handler';
+HANDLER_SYNC : 'handlerSync';
+PAYLOAD : 'payload';
+COMPLETE : 'complete';
+ROUTER : 'router';
+
+
+anyGraphKeyword
+    :   SUBGRAPH
+    |   MERGER
+    |   HANDLER
+    |   HANDLER_SYNC
+    |   PAYLOAD
+    |   COMPLETE
+    |   ROUTER
+    ;
 
 
 
