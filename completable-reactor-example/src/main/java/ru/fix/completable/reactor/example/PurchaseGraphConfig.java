@@ -83,13 +83,17 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
         Bank bank;
 
         {
-            handler(
+            handler(/*
+                        WithdrawMoneyMinus
+                        Withdraw money even if user does not have money on his account.
+                        User will end up with negative balance after this operation.
+                    */
                     pld -> bank.withdrawMoneyWithMinus(
                             pld.intermediateData.getUserInfo(),
                             pld.intermediateData.getServiceInfo())
             ).withMerger(
                     /*
-                        checkWithdraw
+                        CheckWithdraw
                         Checks result of withdraw operation
                         Sets new amount and withdrawal status in payload
                         Stops in case if operation is failed

@@ -159,7 +159,7 @@ class JavaSourceParserTest {
                     })
                 }
 
-        assertEquals("checkWithdraw", model.mergers["bank"]!!.title)
+        assertEquals("CheckWithdraw", model.mergers["bank"]!!.title)
         assertEquals("check profile state", model.mergers["userProfile"]!!.title)
         assertEquals("load user profile", model.handlers["userProfile"]!!.title)
 
@@ -179,11 +179,11 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
         assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
 
-        assertEquals(Source(null, 240, 15), model.buildGraphSource)
-        assertEquals(Source(null, 194, 8), model.startPoint.source)
+        assertEquals(Source(null, 244, 15), model.buildGraphSource)
+        assertEquals(Source(null, 198, 8), model.startPoint.source)
 
         assertEquals(Source(null, 86, 12), model.handlers["bank"]!!.source)
-        assertEquals(Source(null, 90, 14), model.mergers["bank"]!!.source)
+        assertEquals(Source(null, 94, 14), model.mergers["bank"]!!.source)
         assertEquals(Source(null, 74, 12), model.handlers["webNotification"]!!.source)
     }
 
