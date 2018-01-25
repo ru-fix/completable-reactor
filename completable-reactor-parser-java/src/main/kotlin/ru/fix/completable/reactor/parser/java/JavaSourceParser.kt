@@ -253,25 +253,32 @@ class JavaSourceParser(val listener: Listener) {
 
     data class Comment(val title: String, val doc: String?)
 
-    val lineCommentRegex = """^\s+//""".toRegex()
+    val lineCommentRegex = """^\s*//""".toRegex(RegexOption.MULTILINE)
 
     fun parseComment(commentText: String): Comment {
         var text = commentText.trim()
+        var isMultiline = false
 
         if (text.startsWith("/*")) {
             text = text.substring("/*".length)
+            isMultiline = true
         }
         if (text.endsWith("*/")) {
             text = text.substring(0, text.length - "*/".length)
+            isMultiline = true
         }
 
-        text = lineCommentRegex.replace(text, "")
+        if (!isMultiline) {
+            text = lineCommentRegex.replace(text, "")
+        }
+
+        text = text.trimIndent()
 
         val separatorIndex = text.indexOf('\n')
-        return if (separatorIndex > 0) {
+        return if (separatorIndex > 0 && separatorIndex < text.length) {
             Comment(
-                    text.substring(0, separatorIndex).trim(),
-                    text.substring(separatorIndex).trimIndent())
+                    text.substring(0, separatorIndex),
+                    text.substring(separatorIndex+1))
         } else {
             Comment(text, null)
         }

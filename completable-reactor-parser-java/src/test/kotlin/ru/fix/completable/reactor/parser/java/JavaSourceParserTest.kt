@@ -217,9 +217,9 @@ class JavaSourceParserTest {
         assertEquals(
                 JavaSourceParser.Comment("Title here", "And documentation\nmultiline"),
                 parser.parseComment(
-                        "// Title here  \n" +
-                        "       //  And documentation" +
-                        "       //  multiline"))
+                        "//     Title here\n" +
+                        "       //     And documentation\n" +
+                        "       //     multiline"))
     }
 
 }
