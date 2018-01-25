@@ -66,7 +66,7 @@ class JavaSourceParser(val listener: Listener) {
                         }
                     }
 
-                } ?: vertexBuilder.builderSubgraph().apply {
+                } ?: vertexBuilder.builderSubgraph()?.apply {
                     //subgraph
                     subgraphs[vertexName] = Subgraph(
                             name = vertexName,
@@ -141,7 +141,7 @@ class JavaSourceParser(val listener: Listener) {
                     .mapNotNull { it.vertexTransitionBlock() }
                     .forEach {
                         val transitionSourceVertex = it.Identifier().text
-                        val vertex = mergers[transitionSourceVertex] ?: return@forEach listener.error(
+                        val vertex = transitionable[transitionSourceVertex] ?: return@forEach listener.error(
                                 "Outgoing transition detected for vertex $transitionSourceVertex" +
                                         " at ${tokenPosition(it.start)}." +
                                         " But declaration of $transitionSourceVertex not found.")

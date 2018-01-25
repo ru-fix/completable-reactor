@@ -113,7 +113,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
         }
     };
 
-    Vertex router =
+    Vertex isPartnerService =
             router(/*
                        Is partner service.
                        Check if given service is provided by partner.
@@ -206,9 +206,9 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                 .on(Flow.NO_WITHDRAWAL).handleBy(smsNotification)
                 .on(Flow.STOP).complete();
 
-        bank.onAny().handleBy(router);
+        bank.onAny().handleBy(isPartnerService);
 
-        router.onAny().handleBy(txLog);
+        isPartnerService.onAny().handleBy(txLog);
 
         txLog.onAny().handleBy(userJournal);
 
@@ -235,7 +235,6 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                 .merger(userJournal, 760, 930)
                 .merger(userProfile, 806, 201)
                 .complete(serviceInfo, 480, 310)
-                .complete(userJournal, 740, 1020)
                 .complete(userProfile, 963, 258);
 
         return buildGraph();

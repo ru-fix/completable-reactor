@@ -19,7 +19,7 @@ class SubscribeGraphConfig : GraphConfig<SubscribePayload>() {
             handler { pld ->
                 userProfile.loadUserProfileById(pld.request.userId)
             }.withMerger(
-                    "check profile status",
+                    //check profile status
                     { pld, result ->
                         if (pld.response.status != null) {
                             Flow.STOP
@@ -82,7 +82,7 @@ class SubscribeGraphConfig : GraphConfig<SubscribePayload>() {
                         pld.intermediateData.userInfo,
                         pld.intermediateData.serviceInfo)
             }.withMerger(
-                    "update new amount",
+                    //update new amount
                     { pld, withdraw ->
                         when (withdraw.getStatus()) {
                             Bank.Withdraw.Status.WALLET_NOT_FOUND,
@@ -136,8 +136,8 @@ class SubscribeGraphConfig : GraphConfig<SubscribePayload>() {
     }
 
     val checkTrialPeriod = router(
-            "checkTrialPeriod",
-            "Checks whether service supports trial period",
+            //checkTrialPeriod
+            //Checks whether service supports trial period
             { payload ->
 
                 if (payload.intermediateData.serviceInfo!!.isSupportTrialPeriod) {

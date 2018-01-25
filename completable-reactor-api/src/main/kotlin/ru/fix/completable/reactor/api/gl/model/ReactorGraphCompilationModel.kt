@@ -51,7 +51,8 @@ sealed class VertexFigure(var name: String) : Figure() {
 sealed class HandleableVertexFigure(name: String) : VertexFigure(name)
 
 interface TransitionableFigure {
-    val transitions: List<Transition>
+    val name: String
+    val transitions: MutableList<Transition>
 }
 
 class StartPoint : Figure() {

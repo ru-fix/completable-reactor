@@ -131,7 +131,7 @@ class JavaSourceParserTest {
                         it.mergeStatuses == null
                                 && !it.isComplete
                                 && it.isOnAny
-                                && it.target.let { it is VertexFigure && it.name == "txLog" }
+                                && it.target.let { it is VertexFigure && it.name == "isPartnerService" }
                     })
                 }
 
@@ -179,12 +179,12 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
         assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
 
-        assertEquals(Source(null, 221, 15), model.buildGraphSource)
-        assertEquals(Source(null, 176, 8), model.startPoint.source)
+        assertEquals(Source(null, 240, 15), model.buildGraphSource)
+        assertEquals(Source(null, 194, 8), model.startPoint.source)
 
-        assertEquals(Source(null, 83, 12), model.handlers["bank"]!!.source)
-        assertEquals(Source(null, 87, 14), model.mergers["bank"]!!.source)
-        assertEquals(Source(null, 72, 12), model.handlers["webNotification"]!!.source)
+        assertEquals(Source(null, 86, 12), model.handlers["bank"]!!.source)
+        assertEquals(Source(null, 90, 14), model.mergers["bank"]!!.source)
+        assertEquals(Source(null, 74, 12), model.handlers["webNotification"]!!.source)
     }
 
 
