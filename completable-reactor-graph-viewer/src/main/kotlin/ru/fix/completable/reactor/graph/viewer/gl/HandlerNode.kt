@@ -78,6 +78,7 @@ class HandlerNode(
         processorContent.children.apply {
             add(Text(handler.name))
             handler.title?.let{add(Text(it))}
+            handler.doc?.let{add(Text(it))}
         }
 
         return contextMenu

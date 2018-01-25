@@ -75,7 +75,7 @@ class MergerNode(
         val textBuilder = StringBuilder();
 
         if (merger.title != null) {
-            textBuilder.append(merger.title).append("\n");
+            textBuilder.append(merger.title).append("\n")
         }
 
         val menuItem = MenuItem(

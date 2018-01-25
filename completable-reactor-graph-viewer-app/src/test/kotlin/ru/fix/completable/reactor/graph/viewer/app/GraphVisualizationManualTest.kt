@@ -98,6 +98,7 @@ class GraphVisualizationManualTest : Application() {
     fun open_graph_for_purchase_payload() {
         Application.launch("/viewer-test-PurchaseGraphConfig.java.txt")
     }
+    //TODO Fix documentation and titles on all nodes and popup menues
 
     //TODO add source file dump if there is parsing or visualization error
 
