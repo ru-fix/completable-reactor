@@ -27,5 +27,7 @@ public enum Flow {
     NO_BONUS,
 
     @Reactored("No withdrawal required")
-    NO_WITHDRAWAL
+    NO_WITHDRAWAL,
+
+
 }

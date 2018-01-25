@@ -23,6 +23,15 @@ class JavaSourceParser(val listener: Listener) {
 
         val graphBlocks = parser.sourceFile().graphBlock()
 
+        fun checkComments(tokenIndex: Int): Comment? =
+                tokens.getHiddenTokensToRight(tokenIndex)
+                        ?.takeIf { it.size > 0 }
+                        ?.first()
+                        ?.run {
+                            parseComment(text)
+                        }
+
+
         with(model) {
 
             //startPoint
@@ -38,41 +47,59 @@ class JavaSourceParser(val listener: Listener) {
                 vertexBuilder.builderHandler()?.apply {
                     //handler
                     handlers[vertexName] = Handler(vertexName).also {
+                        it.source = sourceFromToken(start)
 
-                        tokens.getHiddenTokensToRight(this.LPAREN().symbol.tokenIndex)
-                                ?.takeIf { it.size > 0 }
-                                ?.first()
-                                ?.apply {
-                                    val comment = parseComment(text)
-                                    it.title = comment.title
-                                    it.doc = comment.doc
-                                }
-
-//                        TODO remove unused title rules
-//                        it.title = this.handlerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
-//                        it.source = sourceFromToken(this.start)
-                    }
-
-                    builderMerger().builderWithMerger()?.apply {
-                        mergers[vertexName] = Merger(vertexName).apply {
-                            title = mergerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
-                            source = sourceFromToken(start)
+                        checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                            it.title = title
+                            it.doc = doc
                         }
                     }
 
-                } ?: vertexBuilder.buliderSubgraph().apply {
+                    builderMerger().builderWithMerger()?.apply {
+                        mergers[vertexName] = Merger(vertexName).also {
+                            it.source = sourceFromToken(start)
+
+                            checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                                it.title = title
+                                it.doc = doc
+                            }
+                        }
+                    }
+
+                } ?: vertexBuilder.builderSubgraph().apply {
                     //subgraph
                     subgraphs[vertexName] = Subgraph(
                             name = vertexName,
                             payloadClass = subgraphPayloadClass().text
-                    ).apply {
-                        source = sourceFromToken(start)
+                    ).also {
+                        it.source = sourceFromToken(start)
+
+                        checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                            it.title = title
+                            it.doc = doc
+                        }
                     }
 
                     builderMerger().builderWithMerger()?.apply {
-                        mergers[vertexName] = Merger(vertexName).apply {
-                            title = mergerTitle()?.StringLiteral()?.let { textFromStringLiteral(it) }
-                            source = sourceFromToken(start)
+                        //merger
+                        mergers[vertexName] = Merger(vertexName).also {
+                            it.source = sourceFromToken(start)
+
+                            checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                                it.title = title
+                                it.doc = doc
+                            }
+
+                        }
+                    }
+                } ?: vertexBuilder.builderRouter()?.apply {
+                    //router
+                    routers[vertexName] = Router(vertexName).also {
+                        it.source = sourceFromToken(start)
+
+                        checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                            it.title = title
+                            it.doc = doc
                         }
                     }
                 }
@@ -90,7 +117,7 @@ class JavaSourceParser(val listener: Listener) {
             graphBlocks.asIterable()
                     .mapNotNull { it.vertexAssignmentBlock() }
                     .forEach {
-                        val vertexName = it.Identifier().text!!
+                        val vertexName = it.vertexAssignmentName().text!!
 
                         createVertexFromVertexBuilder(vertexName, it.vertexBuilder())
                     }
@@ -226,8 +253,10 @@ class JavaSourceParser(val listener: Listener) {
 
     data class Comment(val title: String, val doc: String?)
 
-    private fun parseComment(commentText: String): Comment {
-        var text = commentText
+    val lineCommentRegex = """^\s+//""".toRegex()
+
+    fun parseComment(commentText: String): Comment {
+        var text = commentText.trim()
 
         if (text.startsWith("/*")) {
             text = text.substring("/*".length)
@@ -236,15 +265,15 @@ class JavaSourceParser(val listener: Listener) {
             text = text.substring(0, text.length - "*/".length)
         }
 
-        text = text.trim()
+        text = lineCommentRegex.replace(text, "")
 
         val separatorIndex = text.indexOf('\n')
-        if (separatorIndex > 0) {
-            return Comment(
+        return if (separatorIndex > 0) {
+            Comment(
                     text.substring(0, separatorIndex).trim(),
                     text.substring(separatorIndex).trimIndent())
         } else {
-            return Comment(text, null)
+            Comment(text, null)
         }
     }
 }

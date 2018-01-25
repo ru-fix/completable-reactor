@@ -42,6 +42,9 @@ sealed class Figure(
 )
 
 sealed class VertexFigure(var name: String) : Figure() {
+    var title: String? = null
+    var doc: String? = null
+
     override fun toString() = "${javaClass.simpleName}($name)"
 }
 
@@ -64,18 +67,13 @@ class EndPoint(var name: String? = null,
     override fun toString() = "EndPoint"
 }
 
-class Handler(name: String) : HandleableVertexFigure(name) {
-    var title: String? = null
-    var doc: String? = null
-}
+class Handler(name: String) : HandleableVertexFigure(name)
 
 class Merger(name: String) : VertexFigure(name), TransitionableFigure {
-    var title: String? = null
     override val transitions: ArrayList<Transition> = ArrayList()
 }
 
 class Router(name: String) : HandleableVertexFigure(name), TransitionableFigure {
-    var title: String? = null
     override val transitions: ArrayList<Transition> = ArrayList()
 }
 

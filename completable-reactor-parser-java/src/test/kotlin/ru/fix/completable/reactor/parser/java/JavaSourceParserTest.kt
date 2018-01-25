@@ -2,13 +2,15 @@ package ru.fix.completable.reactor.parser.java
 
 import mu.KotlinLogging
 import org.junit.Test
-import ru.fix.completable.reactor.api.gl.model.*
+import ru.fix.completable.reactor.api.gl.model.Coordinates
+import ru.fix.completable.reactor.api.gl.model.EndPoint
+import ru.fix.completable.reactor.api.gl.model.Source
+import ru.fix.completable.reactor.api.gl.model.VertexFigure
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import kotlin.test.fail
 
 private val log = KotlinLogging.logger {}
@@ -183,6 +185,41 @@ class JavaSourceParserTest {
         assertEquals(Source(null, 83, 12), model.handlers["bank"]!!.source)
         assertEquals(Source(null, 87, 14), model.mergers["bank"]!!.source)
         assertEquals(Source(null, 72, 12), model.handlers["webNotification"]!!.source)
+    }
+
+
+    @Test
+    fun parseComment() {
+        val parser = JavaSourceParser(object : JavaSourceParser.Listener {
+            override fun error(msg: String) {
+                fail(msg)
+            }
+        })
+
+        assertEquals(
+                JavaSourceParser.Comment("Title here", null),
+                parser.parseComment(
+                        "/* \n" +
+                        "   Title here\n" +
+                        "*/"))
+
+        assertEquals(
+                JavaSourceParser.Comment("Title here", "And documentation"),
+                parser.parseComment(
+                        "/*   Title here\n" +
+                        "   And documentation" +
+                        "*/"))
+
+        assertEquals(
+                JavaSourceParser.Comment("Title here", null),
+                parser.parseComment("// Title here  \n"))
+
+        assertEquals(
+                JavaSourceParser.Comment("Title here", "And documentation\nmultiline"),
+                parser.parseComment(
+                        "// Title here  \n" +
+                        "       //  And documentation" +
+                        "       //  multiline"))
     }
 
 }
