@@ -36,6 +36,7 @@ class SubgraphNode(
 
         this.children.add(nameLabel)
         this.children.add(payloadClassLabel)
+        subgraph.title?.let{this.children.add(Text(it))}
 
         this.setOnMouseClicked { event ->
             if (event.clickCount == 2) {
@@ -78,6 +79,8 @@ class SubgraphNode(
         processorContent.children.apply{
             add(Text(subgraph.name))
             add(Text(subgraph.payloadClass))
+            subgraph.title?.let{add(Text(it))}
+            subgraph.doc?.let{add(Text(it))}
         }
 
         return contextMenu
