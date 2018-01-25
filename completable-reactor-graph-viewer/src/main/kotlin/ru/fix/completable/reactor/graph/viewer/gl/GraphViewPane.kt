@@ -196,6 +196,13 @@ class GraphViewPane(
             pane.children.add(routerNode)
         }
 
+        fun transitionable(figure: TransitionableFigure): Node =
+                when (figure) {
+                    is Merger -> mergers[figure]!!
+                    is Router -> routers[figure]!!
+                    else -> throw IllegalArgumentException("figure: $figure")
+                }
+
         fun figureNode(figure: Figure): Node {
             return when (figure) {
                 is Subgraph -> subgraphs[figure]!!
@@ -244,13 +251,13 @@ class GraphViewPane(
          */
         graphModel.transitionable.values.asIterable()
                 .filter { it.transitions.isNotEmpty() }
-                .map { Pair(it, mergers[it]!!) }
-                .forEach { (merger, mergerNode) ->
-                    for (transition in merger.transitions) {
+                .map { Pair(it, transitionable(it)) }
+                .forEach { (transitionable, transitionableNode) ->
+                    for (transition in transitionable.transitions) {
 
                         val line = TransitionLine(
                                 pane,
-                                mergerNode,
+                                transitionableNode,
                                 figureNode(transition.target),
                                 transition,
                                 actionListener)
