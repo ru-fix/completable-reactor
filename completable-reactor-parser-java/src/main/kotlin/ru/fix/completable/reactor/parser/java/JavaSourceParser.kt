@@ -174,7 +174,7 @@ class JavaSourceParser(val listener: Listener) {
                                                         " But declaration of $text not found.")
 
                                     } ?: transitionActionMergeBy()?.Identifier()?.run {
-                                        transition.target = mergers[text] ?: return@run listener.error(
+                                        transition.target = transitionable[text] as? Figure ?: return@run listener.error(
                                                 "Transition target vertex $text at ${tokenPosition(symbol)}." +
                                                         " But declaration of $text not found.")
                                     }
