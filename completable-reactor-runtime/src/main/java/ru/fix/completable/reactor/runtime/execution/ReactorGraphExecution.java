@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.runtime.execution;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder.ProcessingVertex;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -33,6 +34,5 @@ public class ReactorGraphExecution<PayloadType > {
     /**
      * Debug purpose field that allows to check internal execution graph state
      */
-    private final Collection<ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder.ProcessingVertex>
-            debugProcessingVertexGraphState;
+    private final Collection<ProcessingVertex> debugProcessingVertexGraphState;
 }
