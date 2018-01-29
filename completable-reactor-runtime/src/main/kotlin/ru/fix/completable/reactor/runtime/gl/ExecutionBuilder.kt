@@ -1,15 +1,15 @@
-package ru.fix.completable.reactor.runtime.execution.gl
+package ru.fix.completable.reactor.runtime.gl
 
 
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.api.gl.model.Transition
 import ru.fix.completable.reactor.runtime.ProfilerNames;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution
-import ru.fix.completable.reactor.runtime.gl.Vertex
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
@@ -51,56 +51,57 @@ class ExecutionBuilder(
     var immutabilityControlLevel = ImmutabilityControlLevel.NO_CONTROL
 
 
-    class MergePayloadContext {
-        var payload: Any? = null
-        /**
-         * Transition marked as dead when merge status does not match transition condition
-         */
-        var isDeadTransition: Boolean = false
-        /**
-         * Terminal graph state reached.
-         * No further merging (or payload modification) is allowed.
-         * All transitions except copy-transition for detached processors is allowed.
-         */
-        var isTerminal: Boolean = false
+    class MergePayloadContext(
+            var payload: Any? = null,
+            /**
+             * Transition marked as dead when merge status does not match transition condition
+             */
+            var isDeadTransition: Boolean = false,
+            /**
+             * Terminal graph state reached.
+             * No further merging (or payload modification) is allowed.
+             * All transitions except copy-transition for detached processors is allowed.
+             */
+            var isTerminal: Boolean = false,
 
-        var mergeResult: Enum? = null
-    }
+            var mergeResult: Any? = null
+    )
 
     private val INVALID_MERGE_PAYLOAD_CONTEXT = MergePayloadContext()
 
 
-    class TransitionPayloadContext {
-        var payload: Any? = null
-        /**
-         * Transition marked as dead when merge status does not match transition condition
-         */
-        var isDeadTransition: Boolean = false
-        /**
-         * Terminal graph state reached.
-         * No further merging (or payload modification) is allowed.
-         * All transitions except copy-transition for detached processors is allowed.
-         */
-        var isTerminal: Boolean = false
-    }
+    class TransitionPayloadContext(
+            var payload: Any? = null,
+            /**
+             * Transition marked as dead when merge status does not match transition condition
+             */
+            var isDeadTransition: Boolean = false,
+            /**
+             * Terminal graph state reached.
+             * No further merging (or payload modification) is allowed.
+             * All transitions except copy-transition for detached processors is allowed.
+             */
+            var isTerminal: Boolean = false
+    )
 
     val INVALID_TRANSITION_PAYLOAD_CONTEXT = TransitionPayloadContext()
 
 
-    class HandlePayloadContext {
-        var payload: Any? = null
-        /**
-         * Transition marked as dead when merge status does not match transition condition
-         */
-        var isDeadTransition: Boolean = false
-        /**
-         * Terminal graph state reached.
-         * No further merging (or payload modification) is allowed.
-         * All transitions except copy-transition for detached processors is allowed.
-         */
-        var isTerminal: Boolean = false
-        var processorResult: Any? = null
-    }
+    class HandlePayloadContext(
+
+            var payload: Any? = null,
+            /**
+             * Transition marked as dead when merge status does not match transition condition
+             */
+            var isDeadTransition: Boolean = false,
+            /**
+             * Terminal graph state reached.
+             * No further merging (or payload modification) is allowed.
+             * All transitions except copy-transition for detached processors is allowed.
+             */
+            var isTerminal: Boolean = false,
+            var processorResult: Any? = null
+    )
 
     val INVALID_HANDLE_PAYLOAD_CONTEXT = HandlePayloadContext()
 
@@ -109,17 +110,22 @@ class ExecutionBuilder(
     )
 
     /**
+     * Each Processing Vertex (pvx) is mapped to Vertex (vx).
+     * Tree of vertexes (vx) represents graph model and it is immutable.
+     * Tree of Processing Vertexes (pvx) represents execution graph. Runtime build execution graph each time payload
+     * submitted to ReactorGraph.
+     *
      * <img src="./doc-files/processing-item.png" alt="">
      */
-    class ProcessingVertex(val processingItem: Vertex) {
+    class ProcessingVertex(val vertex: Vertex) {
 
         val incomingProcessorFlows = ArrayList<TransitionFuture<TransitionPayloadContext>>()
-
 
         val incomingMergeFlows = ArrayList<TransitionFuture<MergePayloadContext>>()
 
         val processorFuture = CompletableFuture<HandlePayloadContext>()
 
+        //TODO: rename to mergeFeature
         val mergePointFuture = CompletableFuture<MergePayloadContext>()
 
         /**
@@ -127,7 +133,8 @@ class ExecutionBuilder(
          * If during merging process we will receive merge status that match any of terminal transitions
          * then we should complete mergePointFuture with Terminal MergePayloadContext
          */
-        val mergePointTransition = ArrayList<CRReactorGraph.Transition>()
+        //TODO: rename to mergeTransitions
+        val mergePointTransition = ArrayList<GlTransition>()
     }
 
 
@@ -143,7 +150,7 @@ class ExecutionBuilder(
         /**
          * Internal representation of processing graph based on processing vertices.
          */
-        val processingVertices = HashMap<CRProcessingItem, ProcessingVertex>()
+        val processingVertices = IdentityHashMap<Vertex, ProcessingVertex>()
 
 
         val submitFuture = CompletableFuture<PayloadType>()
@@ -152,9 +159,7 @@ class ExecutionBuilder(
          * Will be completed on payload submission to processor chain
          */
         val startPointTransitionFuture = submitFuture.thenApplyAsync { payload ->
-            TransitionPayloadContext().also {
-                it.payload = payload
-            }
+            TransitionPayloadContext(payload = payload)
         }
 
         /**
@@ -163,64 +168,60 @@ class ExecutionBuilder(
         val executionResultFuture = CompletableFuture<PayloadType>()
 
         /**
-         * Init Processing Vertices.
+         * Init Processing Vertices based on graph model vertices
+         *
          */
-        glReactorGraph.vertices.forEach { vertex ->
-            val processingVertex = ProcessingVertex(processingItem = vertex)
+        glReactorGraph.vertices.forEach { vx ->
+            val pvx = ProcessingVertex(vertex = vx)
 
-            if (vertex.router info.getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
+            /**
+             * Populate Routers
+             */
+            if (vx.router != null) {
                 /**
-                 * Detached merge point does not uses {@code {@link ProcessingVertex#getProcessorFuture()}
+                 * Router does not uses {@code {@link ProcessingVertex#getProcessorFuture()}
+                 * Insure that it never invoked during execution.
                  */
-                vertex.getProcessorFuture().completeExceptionally(new IllegalStateException (
-                        String.format("Detached Merge Point %s should not use processorFuture.",
-                                vertex.getProcessingItem().getDebugName())));
+                pvx.processorFuture.completeExceptionally(IllegalStateException(
+                        "Processing vertex of router ${vx.name} should not use processorFuture."))
             }
 
-            processingVertices.put(proc, vertex);
-        });
+            /**
+             * Populate MergePoints transitions
+             */
+            if(vx.transitions.isNotEmpty()){
+                //TODO: replace copy with delegation since mergePointTransition is immutable
+                pvx.mergePointTransition.addAll(vx.transitions)
+            }
+
+            processingVertices[vx] = pvx
+        }
 
         /**
          * Populate start point transition
          */
-        for (CRProcessingItem processor : crReactorGraph.getStartPoint().getProcessingItems()) {
-            ProcessingVertex vertex = processingVertices . get (processor);
+        for (vx in glReactorGraph.startPoint) {
+            val pvx = processingVertices[vx]!!
 
-            if (vertex.getProcessingItemInfo().getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
+            if (vx.router != null) {
                 /**
-                 * In case of Detached merge point transition from start point is being converted
+                 * //TODO check, probably this conversion will ot be used in CR2 model
+                 * In case of Router, transition from start point is being converted
                  * to a {@link MergePayloadContext}
                  */
-                vertex.getIncomingMergeFlows().add(new TransitionFuture < > (
-                        startPointTransitionFuture.thenApplyAsync(
-                                transitionPayloadContext ->
-                new MergePayloadContext ()
-                        .setDeadTransition(transitionPayloadContext.isDeadTransition())
-                        .setTerminal(transitionPayloadContext.isTerminal())
-                        .setPayload(transitionPayloadContext.getPayload())
-                        .setMergeResult(null))));
+                pvx.incomingMergeFlows.add(TransitionFuture(
+                        startPointTransitionFuture.thenApplyAsync { transitionPayloadContext ->
+                            MergePayloadContext(
+                                    isDeadTransition = transitionPayloadContext.isDeadTransition,
+                                    isTerminal = transitionPayloadContext.isTerminal,
+                                    payload = transitionPayloadContext.payload,
+                                    mergeResult = null)
+                        }))
             } else {
-                vertex.getIncomingProcessorFlows()
-                        .add(new TransitionFuture < > (startPointTransitionFuture));
+                pvx.incomingProcessorFlows.add(TransitionFuture(startPointTransitionFuture))
             }
         }
 
-        /**
-         * Populate MergePoints
-         */
-        crReactorGraph.getMergePoints()
-                .forEach(mergePoint -> {
-            ProcessingVertex mergePointVertex = processingVertices . get (mergePoint.asProcessingItem());
-            mergePoint.getTransitions().forEach(mergePointVertex.getMergePointTransition()::add);
-        });
-
-        /**
-         * Populate transitions to all MergePoints
-         */
-        crReactorGraph.getMergePoints().forEach(mergePoint -> {
-            ProcessingVertex mergePointVertex = processingVertices . get (mergePoint.asProcessingItem());
-            mergePoint.getTransitions().forEach(mergePointVertex.getMergePointTransition()::add);
-        });
 
 
         /**
