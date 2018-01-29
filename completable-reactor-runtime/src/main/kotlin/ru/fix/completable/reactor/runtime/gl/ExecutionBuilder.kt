@@ -241,7 +241,7 @@ class ExecutionBuilder(
              * Completion of Mergerable feature triggers completion of outgoing transitions.
              */
 
-            val mergerableFuture = mergerablePvx.mergingFeature
+            val mergingFeature = mergerablePvx.mergingFeature
 
             for (transition in mergerablePvx.outgoingTransitions) {
 
@@ -258,7 +258,7 @@ class ExecutionBuilder(
                         val target = transition.handleBy
 
                         processingVertices[target]!!.incomingHandlingFlows.add(TransitionFuture(
-                                mergerableFuture.thenApplyAsync { context ->
+                                mergingFeature.thenApplyAsync { context ->
 
                                     if (context.isTerminal) {
                                         TransitionPayloadContext(isTerminal = true)
@@ -300,7 +300,7 @@ class ExecutionBuilder(
                         val target = transition.mergeBy
 
                         processingVertices[target]!!.incomingMergingFlows.add(TransitionFuture(
-                                mergerableFuture.thenApplyAsync { context ->
+                                mergingFeature.thenApplyAsync { context ->
                                     if (context.isTerminal) {
                                         MergePayloadContext(isTerminal = true)
 
@@ -340,137 +340,128 @@ class ExecutionBuilder(
 
         /**
          * Join incoming handling flows to single handling invocation
-         * All incoming handling transitions should complete. One of them should carry payload.
+         * All incoming handling transitions should complete.
+         * One of them should carry payload.
          * Other transitions should complete with isDead flag.
          */
-        for((vx, pvx) in processingVertices){ 
-            
+        for ((vx, pvx) in processingVertices) {
+
             if (vx.router != null) {
                 /**
-                 * Router does not have incoming handling flows
-                 * Router only have
-                 * No processor invocation is needed
+                 * Router does not have handler.
+                 * All incomingHandlingFlows is processed with incomingMergingFlows in mergeres section.
                  */
-                if (pvx.incomingHandlingFlows.isNotEmpty()) {
-                    throw IllegalStateException ("""
-                        Invalid graph state.
-                        Router ${vx.name} have more than 0 incoming processors flows.
-                        """)
-                }
                 continue
             }
 
-            if (processingItem.incomingHandlingFlows.size() <= 0) {
-                throw new IllegalArgumentException (String.format(
-                        "Invalid graph descriptor. Processor %s does not have incoming flows." +
-                                " Probably missing handleBy directive for this processor.",
-                        processor.getDebugName()));
+            if (pvx.incomingHandlingFlows.size <= 0) {
+                throw IllegalArgumentException("""
+                        Invalid graph configuration.
+                        Vertex ${vx.name} does not have incoming handling flows.
+                        Probably missing `handleBy` directive for this processor in graph configuration,
+                        """)
             }
 
             CompletableFuture.allOf(
-                    processingItem.incomingHandlingFlows.stream()
-                            .map(TransitionFuture::getFuture)
-                            .toArray(CompletableFuture[]::new)
-            )
+                   *pvx.incomingHandlingFlows.asIterable().map{it.feature}.toTypedArray()
+            ).thenRunAsync{
 
-                    .thenRunAsync(() -> {
+                List<TransitionPayloadContext> incomingFlows = processingItem
+                        .incomingHandlingFlows
+                        .stream()
+                        .map(future -> {
+                try {
+                    /**
+                     * Future should be already complete
+                     */
+                    if (!future.getFuture().isDone()) {
+                        Exception resultException = new Exception(String.format(
+                                "Illegal graph execution state." +
+                                        " Future is not completed. Processor: %s",
+                                processingItem.getProcessingItem().getDebugName()));
 
-            List<TransitionPayloadContext> incomingFlows = processingItem
-                    .incomingHandlingFlows
-                    .stream()
-                    .map(future -> {
-            try {
-                /**
-                 * Future should be already complete
-                 */
-                if (!future.getFuture().isDone()) {
+                        log.error(resultException.getMessage(), resultException);
+                        executionResultFuture.completeExceptionally(resultException);
+                        return INVALID_TRANSITION_PAYLOAD_CONTEXT;
+                    } else {
+                        return future.getFuture().get();
+                    }
+                } catch (Exception exc) {
                     Exception resultException = new Exception(String.format(
-                            "Illegal graph execution state." +
-                                    " Future is not completed. Processor: %s",
-                            processingItem.getProcessingItem().getDebugName()));
-
+                            "Failed to get incoming processor flow future result" +
+                                    " for processor: %s",
+                            processingItem.getProcessingItem().getDebugName()), exc);
                     log.error(resultException.getMessage(), resultException);
                     executionResultFuture.completeExceptionally(resultException);
+
                     return INVALID_TRANSITION_PAYLOAD_CONTEXT;
-                } else {
-                    return future.getFuture().get();
                 }
-            } catch (Exception exc) {
-                Exception resultException = new Exception(String.format(
-                        "Failed to get incoming processor flow future result" +
-                                " for processor: %s",
-                        processingItem.getProcessingItem().getDebugName()), exc);
-                log.error(resultException.getMessage(), resultException);
-                executionResultFuture.completeExceptionally(resultException);
+            })
+                .collect(Collectors.toList());
 
-                return INVALID_TRANSITION_PAYLOAD_CONTEXT;
-            }
-        })
-            .collect(Collectors.toList());
-
-            if (incomingFlows.stream().anyMatch(
-                            context -> context == INVALID_TRANSITION_PAYLOAD_CONTEXT)) {
-            /**
-             * Invalid graph execution state
-             * Mark as terminal all outgoing flows from processor
-             */
-            processingItem.gethandlingFeature().complete(
-                    new HandlePayloadContext ()
-                            .setTerminal(true));
-
-        } else if (incomingFlows.stream().anyMatch(TransitionPayloadContext::isTerminal)) {
-            /**
-             * Terminal state reached.
-             * Mark as terminal all outgoing flows from processor
-             */
-            processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
-                    .setTerminal(true));
-
-        } else {
-            List<TransitionPayloadContext> activeIncomingFlows = incomingFlows . stream ()
-                    .filter(context ->!context.isDeadTransition())
-            .collect(Collectors.toList());
-
-            if (activeIncomingFlows.size() <= 0) {
+                if (incomingFlows.stream().anyMatch(
+                                context -> context == INVALID_TRANSITION_PAYLOAD_CONTEXT)) {
                 /**
-                 * There is no active incoming flow for given processor.
-                 * Processor will not be invoked.
-                 * All outgoing flows from processor will be marked as dead.
+                 * Invalid graph execution state
+                 * Mark as terminal all outgoing flows from processor
+                 */
+                processingItem.gethandlingFeature().complete(
+                        new HandlePayloadContext ()
+                                .setTerminal(true));
+
+            } else if (incomingFlows.stream().anyMatch(TransitionPayloadContext::isTerminal)) {
+                /**
+                 * Terminal state reached.
+                 * Mark as terminal all outgoing flows from processor
                  */
                 processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
-                        .setDeadTransition(true));
+                        .setTerminal(true));
+
             } else {
-                if (activeIncomingFlows.size() > 1) {
+                List<TransitionPayloadContext> activeIncomingFlows = incomingFlows . stream ()
+                        .filter(context ->!context.isDeadTransition())
+                .collect(Collectors.toList());
 
+                if (activeIncomingFlows.size() <= 0) {
                     /**
-                     * Illegal graph state. Too many active incoming flows.
-                     * Mark as terminal all outgoing flows
-                     * Complete graph with exception
+                     * There is no active incoming flow for given processor.
+                     * Processor will not be invoked.
+                     * All outgoing flows from processor will be marked as dead.
                      */
-                    Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
-                            "There is more than one active incoming flow for processor %s." +
-                                    " Reactor can not determinate from which of transitions" +
-                                    " take payload." +
-                                    " Possible loss of computation results." +
-                                    " Possible concurrent modifications of payload.",
-                            processingItem.getProcessingItem().getDebugName()));
-
-                    executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
                     processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
-                            .setTerminal(true));
-
+                            .setDeadTransition(true));
                 } else {
+                    if (activeIncomingFlows.size() > 1) {
 
-                    handle(processingItem, activeIncomingFlows.get(0), executionResultFuture);
+                        /**
+                         * Illegal graph state. Too many active incoming flows.
+                         * Mark as terminal all outgoing flows
+                         * Complete graph with exception
+                         */
+                        Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
+                                "There is more than one active incoming flow for processor %s." +
+                                        " Reactor can not determinate from which of transitions" +
+                                        " take payload." +
+                                        " Possible loss of computation results." +
+                                        " Possible concurrent modifications of payload.",
+                                processingItem.getProcessingItem().getDebugName()));
+
+                        executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
+                        processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
+                                .setTerminal(true));
+
+                    } else {
+
+                        handle(processingItem, activeIncomingFlows.get(0), executionResultFuture);
+                    }
                 }
             }
-        }
-        }
+            }
             )
             .exceptionally(throwable -> {
-            log.error("Join incoming processor flows failed.", throwable);
-            return null;
-        });
+                log.error("Join incoming processor flows failed.", throwable);
+                return null;
+            });
 
         });//processingVertices
 
