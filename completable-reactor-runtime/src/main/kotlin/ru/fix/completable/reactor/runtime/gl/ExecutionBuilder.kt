@@ -210,23 +210,25 @@ class ExecutionBuilder(
         for (vx in glReactorGraph.startPoint) {
             val pvx = processingVertices[vx]!!
 
-            if (vx.router != null) {
-                /**
-                 * //TODO check, probably this conversion will ot be used in CR2 model
-                 * In case of Router, transition from start point is being converted
-                 * to a {@link MergePayloadContext}
-                 */
-                pvx.incomingMergingFlows.add(TransitionFuture(
-                        startPointTransitionFuture.thenApplyAsync { transitionPayloadContext ->
-                            MergePayloadContext(
-                                    isDeadTransition = transitionPayloadContext.isDeadTransition,
-                                    isTerminal = transitionPayloadContext.isTerminal,
-                                    payload = transitionPayloadContext.payload,
-                                    mergeResult = null)
-                        }))
-            } else {
-                pvx.incomingHandlingFlows.add(TransitionFuture(startPointTransitionFuture))
-            }
+//            if (vx.router != null) {
+//                /**
+//                 * //TODO check, probably this conversion will ot be used in CR2 model
+//                 * In case of Router, transition from start point is being converted
+//                 * to a {@link MergePayloadContext}
+//                 */
+//                pvx.incomingMergingFlows.add(TransitionFuture(
+//                        startPointTransitionFuture.thenApplyAsync { transitionPayloadContext ->
+//                            MergePayloadContext(
+//                                    isDeadTransition = transitionPayloadContext.isDeadTransition,
+//                                    isTerminal = transitionPayloadContext.isTerminal,
+//                                    payload = transitionPayloadContext.payload,
+//                                    mergeResult = null)
+//                        }))
+//            } else {
+//                pvx.incomingHandlingFlows.add(TransitionFuture(startPointTransitionFuture))
+//            }
+
+            pvx.incomingHandlingFlows.add(TransitionFuture(startPointTransitionFuture))
         }
 
 
