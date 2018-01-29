@@ -12,6 +12,10 @@ class GlTransitionBuilderImpl(
     }
 
     override fun handleBy(vertex: Vertex): Vertex {
+
+        vertex.
+
+
         if(vertex.name == null){
             vertex.name = ConfigContext.get().resolveVertexName(vertex)
         }

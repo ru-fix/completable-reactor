@@ -117,26 +117,24 @@ class ExecutionBuilder(
      * Tree of Processing Vertexes (pvx) represents execution graph. Runtime build execution graph each time payload
      * submitted to ReactorGraph.
      *
-     * <img src="./doc-files/processing-item.png" alt="">
+     * <img src="./doc-files/ProcessingVertex.png" alt="">
      */
     class ProcessingVertex(val vertex: Vertex) {
 
-        val incomingProcessorFlows = ArrayList<TransitionFuture<TransitionPayloadContext>>()
+        val incomingHandlingFlows = ArrayList<TransitionFuture<TransitionPayloadContext>>()
 
-        val incomingMergeFlows = ArrayList<TransitionFuture<MergePayloadContext>>()
+        val incomingMergingFlows = ArrayList<TransitionFuture<MergePayloadContext>>()
 
-        val processorFuture = CompletableFuture<HandlePayloadContext>()
+        val handlingFeature = CompletableFuture<HandlePayloadContext>()
 
-        //TODO: rename to mergerableFeature
-        val mergePointFuture = CompletableFuture<MergePayloadContext>()
+        val mergingFeature = CompletableFuture<MergePayloadContext>()
 
         /**
          * Holds information about outgoing transitions from this merge point.
          * If during merging process we will receive merge status that match any of terminal transitions
-         * then we should complete mergePointFuture with Terminal MergePayloadContext
+         * then we should complete mergingFeature with Terminal MergePayloadContext
          */
-        //TODO: rename to mergerableTransitions
-        val mergePointTransition = ArrayList<GlTransition>()
+        val outgoingTransitions = ArrayList<GlTransition>()
 
         /**
          * This is Merger or Router
@@ -188,19 +186,19 @@ class ExecutionBuilder(
              */
             if (vx.router != null) {
                 /**
-                 * Router does not uses {@code {@link ProcessingVertex#getProcessorFuture()}
+                 * Router does not uses {@code {@link ProcessingVertex#handlingFeature}
                  * Insure that it never invoked during execution.
                  */
-                pvx.processorFuture.completeExceptionally(IllegalStateException(
-                        "Processing vertex of router ${vx.name} should not use processorFuture."))
+                pvx.handlingFeature.completeExceptionally(IllegalStateException(
+                        "Processing vertex of router ${vx.name} should not use handlingFeature."))
             }
 
             /**
              * Populate MergePoints transitions
              */
             if (vx.transitions.isNotEmpty()) {
-                //TODO: replace copy with delegation since mergePointTransition is immutable
-                pvx.mergePointTransition.addAll(vx.transitions)
+                //TODO: replace copy with delegation since outgoingTransitions is immutable
+                pvx.outgoingTransitions.addAll(vx.transitions)
             }
 
             processingVertices[vx] = pvx
@@ -218,7 +216,7 @@ class ExecutionBuilder(
                  * In case of Router, transition from start point is being converted
                  * to a {@link MergePayloadContext}
                  */
-                pvx.incomingMergeFlows.add(TransitionFuture(
+                pvx.incomingMergingFlows.add(TransitionFuture(
                         startPointTransitionFuture.thenApplyAsync { transitionPayloadContext ->
                             MergePayloadContext(
                                     isDeadTransition = transitionPayloadContext.isDeadTransition,
@@ -227,7 +225,7 @@ class ExecutionBuilder(
                                     mergeResult = null)
                         }))
             } else {
-                pvx.incomingProcessorFlows.add(TransitionFuture(startPointTransitionFuture))
+                pvx.incomingHandlingFlows.add(TransitionFuture(startPointTransitionFuture))
             }
         }
 
@@ -241,9 +239,9 @@ class ExecutionBuilder(
              * Completion of Mergerable feature triggers completion of outgoing transitions.
              */
 
-            val mergerableFuture = mergerablePvx.mergePointFuture
+            val mergerableFuture = mergerablePvx.mergingFeature
 
-            for (transition in mergerablePvx.mergePointTransition) {
+            for (transition in mergerablePvx.outgoingTransitions) {
 
                 /**
                  * Terminal merge point vertex handled synchronously with merging process
@@ -257,7 +255,7 @@ class ExecutionBuilder(
                     if (transition.handleBy != null) {
                         val target = transition.handleBy
 
-                        processingVertices[target]!!.incomingProcessorFlows.add(TransitionFuture(
+                        processingVertices[target]!!.incomingHandlingFlows.add(TransitionFuture(
                                 mergerableFuture.thenApplyAsync { context ->
 
                                     if (context.isTerminal) {
@@ -299,7 +297,7 @@ class ExecutionBuilder(
                     if (transition.mergeBy != null) {
                         val target = transition.mergeBy
 
-                        processingVertices[target]!!.incomingMergeFlows.add(TransitionFuture(
+                        processingVertices[target]!!.incomingMergingFlows.add(TransitionFuture(
                                 mergerableFuture.thenApplyAsync { context ->
                                     if (context.isTerminal) {
                                         MergePayloadContext(isTerminal = true)
@@ -339,25 +337,28 @@ class ExecutionBuilder(
         // down the flow, so merge point and detached processor would not run concurrently
 
         /**
-         * Join incoming processor flows to single processor invocation
+         * Join incoming handling flows to single handling invocation
+         * All incoming handling transitions should complete. One of them should carry payload.
+         * Other transitions should complete with isDead flag.
          */
-        processingVertices.forEach((processor, processingItem) -> {
-
-            if (processingItem.getProcessingItemInfo().getProcessingItemType()
-                    == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
+        for((vx, pvx) in processingVertices){ 
+            
+            if (vx.router != null) {
                 /**
-                 * Detached merge point does not have graph processor, only merge point.
+                 * Router does not have incoming handling flows
+                 * Router only have
                  * No processor invocation is needed
                  */
-                if (processingItem.getIncomingProcessorFlows().size() != 0) {
-                    throw new IllegalStateException (String.format(
-                            "Invalid graph state. Detached merge point %s have more than 0 incoming flows.",
-                            processor.getDebugName()));
+                if (pvx.incomingHandlingFlows.isNotEmpty()) {
+                    throw IllegalStateException ("""
+                        Invalid graph state.
+                        Router ${vx.name} have more than 0 incoming processors flows.
+                        """)
                 }
-                return;
+                continue
             }
 
-            if (processingItem.getIncomingProcessorFlows().size() <= 0) {
+            if (processingItem.incomingHandlingFlows.size() <= 0) {
                 throw new IllegalArgumentException (String.format(
                         "Invalid graph descriptor. Processor %s does not have incoming flows." +
                                 " Probably missing handleBy directive for this processor.",
@@ -365,7 +366,7 @@ class ExecutionBuilder(
             }
 
             CompletableFuture.allOf(
-                    processingItem.getIncomingProcessorFlows().stream()
+                    processingItem.incomingHandlingFlows.stream()
                             .map(TransitionFuture::getFuture)
                             .toArray(CompletableFuture[]::new)
             )
@@ -373,7 +374,7 @@ class ExecutionBuilder(
                     .thenRunAsync(() -> {
 
             List<TransitionPayloadContext> incomingFlows = processingItem
-                    .getIncomingProcessorFlows()
+                    .incomingHandlingFlows
                     .stream()
                     .map(future -> {
             try {
@@ -411,7 +412,7 @@ class ExecutionBuilder(
              * Invalid graph execution state
              * Mark as terminal all outgoing flows from processor
              */
-            processingItem.getProcessorFuture().complete(
+            processingItem.gethandlingFeature().complete(
                     new HandlePayloadContext ()
                             .setTerminal(true));
 
@@ -420,7 +421,7 @@ class ExecutionBuilder(
              * Terminal state reached.
              * Mark as terminal all outgoing flows from processor
              */
-            processingItem.getProcessorFuture().complete(new HandlePayloadContext ()
+            processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
                     .setTerminal(true));
 
         } else {
@@ -434,7 +435,7 @@ class ExecutionBuilder(
                  * Processor will not be invoked.
                  * All outgoing flows from processor will be marked as dead.
                  */
-                processingItem.getProcessorFuture().complete(new HandlePayloadContext ()
+                processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
                         .setDeadTransition(true));
             } else {
                 if (activeIncomingFlows.size() > 1) {
@@ -453,7 +454,7 @@ class ExecutionBuilder(
                             processingItem.getProcessingItem().getDebugName()));
 
                     executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                    processingItem.getProcessorFuture().complete(new HandlePayloadContext ()
+                    processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
                             .setTerminal(true));
 
                 } else {
@@ -477,7 +478,7 @@ class ExecutionBuilder(
         processingVertices.forEach((processor, vertex) -> {
 
             List<CompletableFuture> incomingFlows = new ArrayList<>();
-            vertex.getIncomingMergeFlows()
+            vertex.getincomingMergingFlows()
                     .stream()
                     .map(TransitionFuture::getFuture)
                     .forEach(incomingFlows::add);
@@ -488,7 +489,7 @@ class ExecutionBuilder(
                  * Ignore processor future for detached merge point
                  * And use it for all other cases
                  */
-                incomingFlows.add(vertex.getProcessorFuture());
+                incomingFlows.add(vertex.gethandlingFeature());
             }
 
             CompletableFuture.allOf(incomingFlows.toArray(new CompletableFuture [incomingFlows.size()]))
@@ -503,7 +504,7 @@ class ExecutionBuilder(
             if (vertex.getProcessingItemInfo().getProcessingItemType()
                     != CRReactorGraph.ProcessingItemType.MERGE_POINT) {
 
-                handlePayloadContext = Optional.of(vertex.getProcessorFuture())
+                handlePayloadContext = Optional.of(vertex.gethandlingFeature())
                         .map(future -> {
                     try {
                         if (!future.isDone()) {
@@ -538,7 +539,7 @@ class ExecutionBuilder(
                      * All outgoing flows from merge point will be marked as terminal.
                      * executionResult completed by exception
                      */
-                    vertex.getMergePointFuture().complete(new MergePayloadContext ().setTerminal(true));
+                    vertex.getmergingFeature().complete(new MergePayloadContext ().setTerminal(true));
                     return;
 
                 } else if (handlePayloadContext.isTerminal()) {
@@ -547,7 +548,7 @@ class ExecutionBuilder(
                      * Merging will not be applied to payload.
                      * All outgoing flows from merge point will be marked as terminal.
                      */
-                    vertex.getMergePointFuture().complete(new MergePayloadContext ().setTerminal(true));
+                    vertex.getmergingFeature().complete(new MergePayloadContext ().setTerminal(true));
                     return;
 
                 } else if (handlePayloadContext.isDeadTransition()) {
@@ -556,7 +557,7 @@ class ExecutionBuilder(
                      * Merging will not be applied to payload.
                      * All outgoing flows from merge point will be marked as dead.
                      */
-                    vertex.getMergePointFuture().complete(new MergePayloadContext ().setDeadTransition(true));
+                    vertex.getmergingFeature().complete(new MergePayloadContext ().setDeadTransition(true));
                     return;
                 }
             }
@@ -564,7 +565,7 @@ class ExecutionBuilder(
             /**
              * Incoming merge flows, could be empty for processors Merge Point
              */
-            List<MergePayloadContext> incomingMergeFlows = vertex . getIncomingMergeFlows ().stream()
+            List<MergePayloadContext> incomingMergingFlows = vertex . getincomingMergingFlows ().stream()
                     .map(future -> {
             try {
                 if (!future.getFuture().isDone()) {
@@ -590,23 +591,23 @@ class ExecutionBuilder(
             }
         }).collect(Collectors.toList());
 
-            if (incomingMergeFlows.stream().anyMatch(context -> context == INVALID_MERGE_PAYLOAD_CONTEXT)) {
+            if (incomingMergingFlows.stream().anyMatch(context -> context == INVALID_MERGE_PAYLOAD_CONTEXT)) {
             /**
              * Exception during merging
              * Mark as terminal all outgoing flows from merge point
              */
-            vertex.getMergePointFuture().complete(new MergePayloadContext ().setTerminal(true));
+            vertex.getmergingFeature().complete(new MergePayloadContext ().setTerminal(true));
 
-        } else if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isTerminal)) {
+        } else if (incomingMergingFlows.stream().anyMatch(MergePayloadContext::isTerminal)) {
             /**
              * Terminal state reached.
              * Mark as terminal all outgoing flows from merge point
              */
-            vertex.getMergePointFuture().complete(new MergePayloadContext ().setTerminal(true));
+            vertex.getmergingFeature().complete(new MergePayloadContext ().setTerminal(true));
 
         } else {
 
-            final List < MergePayloadContext > activeIncomingMergeFlows = incomingMergeFlows . stream ()
+            final List < MergePayloadContext > activeincomingMergingFlows = incomingMergingFlows . stream ()
                     .filter(context ->!context.isDeadTransition())
             .collect(Collectors.toList());
 
@@ -615,18 +616,18 @@ class ExecutionBuilder(
                 /**
                  * Detached merge point
                  */
-                if (activeIncomingMergeFlows.size() == 0) {
+                if (activeincomingMergingFlows.size() == 0) {
 
                     /**
                      * Check that there are at least one incoming transition that marked as dead
                      */
-                    if (incomingMergeFlows.stream().anyMatch(MergePayloadContext::isDeadTransition)) {
+                    if (incomingMergingFlows.stream().anyMatch(MergePayloadContext::isDeadTransition)) {
                         /**
                          * Detached MergePoint marked as Dead, because there are no active incoming
                          * flows and there is at least one incoming dead transition
                          * Mark as dead all outgoing flows from merge point
                          */
-                        vertex.getMergePointFuture().complete(
+                        vertex.getmergingFeature().complete(
                                 new MergePayloadContext ()
                                         .setDeadTransition(true));
                     } else {
@@ -637,7 +638,7 @@ class ExecutionBuilder(
                     }
 
                 } else {
-                    if (activeIncomingMergeFlows.size() > 1) {
+                    if (activeincomingMergingFlows.size() > 1) {
                         /**
                          * Illegal graph state. Too many active incoming flows.
                          * Mark as terminal all outgoing flows from merge point
@@ -652,7 +653,7 @@ class ExecutionBuilder(
                                 vertex.getProcessingItem().getDebugName()));
 
                         executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                        vertex.getMergePointFuture().complete(
+                        vertex.getmergingFeature().complete(
                                 new MergePayloadContext ()
                                         .setTerminal(true));
 
@@ -662,7 +663,7 @@ class ExecutionBuilder(
                          */
                         merge(vertex,
                                 Optional.empty(),
-                                activeIncomingMergeFlows.get(0).getPayload(),
+                                activeincomingMergingFlows.get(0).getPayload(),
                                 executionResultFuture);
                     }
                 }
@@ -670,7 +671,7 @@ class ExecutionBuilder(
                 /**
                  * Processors MergePoint
                  */
-                if (incomingMergeFlows.size() == 0) {
+                if (incomingMergingFlows.size() == 0) {
                     /**
                      * No incoming merge flows, only one flow from processors handle
                      */
@@ -682,18 +683,18 @@ class ExecutionBuilder(
                     /**
                      * Incoming merge flows exists. But some of them can be marked as dead.
                      */
-                    if (activeIncomingMergeFlows.size() == 0) {
+                    if (activeincomingMergingFlows.size() == 0) {
                         /**
                          * There is no active incoming merge flow for given merge point.
                          * Mark merge point as dead.
                          */
-                        vertex.getMergePointFuture().complete(new MergePayloadContext ()
+                        vertex.getmergingFeature().complete(new MergePayloadContext ()
 
                                 .setDeadTransition(true));
 
                     } else {
 
-                        if (activeIncomingMergeFlows.size() > 1) {
+                        if (activeincomingMergingFlows.size() > 1) {
                             /**
                              * Illegal graph state. Too many active incoming flows.
                              * Mark as terminal all outgoing flows from merge point
@@ -709,7 +710,7 @@ class ExecutionBuilder(
                                     vertex.getProcessingItem().getDebugName()));
 
                             executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                            vertex.getMergePointFuture().complete(
+                            vertex.getmergingFeature().complete(
                                     new MergePayloadContext ()
                                             .setTerminal(true));
 
@@ -717,7 +718,7 @@ class ExecutionBuilder(
 
                             merge(vertex,
                                     handlePayloadContext.getProcessorResult(),
-                                    activeIncomingMergeFlows.get(0).getPayload(),
+                                    activeincomingMergingFlows.get(0).getPayload(),
                                     executionResultFuture);
                         }
                     }
@@ -740,14 +741,14 @@ class ExecutionBuilder(
         executionResultFuture.thenRunAsync(() -> {
             processingVertices.entrySet().stream()
                     .map(Map.Entry::getValue)
-                    .map(ProcessingVertex::getIncomingProcessorFlows)
+                    .map(ProcessingVertex::getincomingHandlingFlows)
                     .flatMap(Collection::stream)
                     .map(TransitionFuture::getFuture)
                     .forEach(future -> future.complete(new TransitionPayloadContext().setDeadTransition(true)));
 
             processingVertices.entrySet().stream()
                     .map(Map.Entry::getValue)
-                    .map(ProcessingVertex::getIncomingProcessorFlows)
+                    .map(ProcessingVertex::getincomingHandlingFlows)
                     .flatMap(Collection::stream)
                     .map(TransitionFuture::getFuture)
                     .forEach(future -> future.complete(new TransitionPayloadContext().setDeadTransition(true)));
@@ -759,7 +760,7 @@ class ExecutionBuilder(
         /**
          * Collect chain execution processor handling futures
          * Processors futures holds handle invocation result or dead context.
-         * Exception is an detached merge point which processorFuture is not used
+         * Exception is an detached merge point which handlingFeature is not used
          * Then all processors futures completes chainExecutionFuture completes too.
          */
         CompletableFuture<Void> chainExecutionFuture = CompletableFuture . allOf (
@@ -768,7 +769,7 @@ class ExecutionBuilder(
                         //detached merge point does not have processor future
                         .filter(vertex -> vertex.getProcessingItemInfo().getProcessingItemType() !=
         CRReactorGraph.ProcessingItemType.MERGE_POINT)
-        .map(ProcessingVertex::getProcessorFuture)
+        .map(ProcessingVertex::gethandlingFeature)
                 .toArray(CompletableFuture[]::new)
         );
 
@@ -1018,7 +1019,7 @@ class ExecutionBuilder(
 
             log.error(exc.getMessage(), exc);
             executionResultFuture.completeExceptionally(exc);
-            processingVertex.getProcessorFuture().complete(new HandlePayloadContext ().setTerminal(true));
+            processingVertex.gethandlingFeature().complete(new HandlePayloadContext ().setTerminal(true));
             return;
         }
 
@@ -1033,7 +1034,7 @@ class ExecutionBuilder(
 
             log.error(exc.getMessage(), exc);
             executionResultFuture.completeExceptionally(exc);
-            processingVertex.getProcessorFuture().complete(new HandlePayloadContext ().setTerminal(true));
+            processingVertex.gethandlingFeature().complete(new HandlePayloadContext ().setTerminal(true));
             return;
         }
 
@@ -1088,9 +1089,9 @@ class ExecutionBuilder(
             log.error(exc.getMessage(), exc);
             executionResultFuture.completeExceptionally(exc);
 
-            processingVertex.getProcessorFuture().complete(new HandlePayloadContext ().setTerminal(true));
+            processingVertex.gethandlingFeature().complete(new HandlePayloadContext ().setTerminal(true));
         } else {
-            processingVertex.getProcessorFuture().complete(new HandlePayloadContext ()
+            processingVertex.gethandlingFeature().complete(new HandlePayloadContext ()
                     .setPayload(payload)
                     .setProcessorResult(res));
         }
@@ -1128,7 +1129,7 @@ class ExecutionBuilder(
                 /**
                  * This Processor does not have merger
                  */
-                processingVertex.getMergePointFuture().complete(new MergePayloadContext ().setDeadTransition(true));
+                processingVertex.getmergingFeature().complete(new MergePayloadContext ().setDeadTransition(true));
                 return;
             } else {
                 mergerInvocation = () -> (Enum) processorInfo.getDescription().getMerger().merge(
@@ -1141,7 +1142,7 @@ class ExecutionBuilder(
                 /**
                  * This Subgraph does not have merger
                  */
-                processingVertex.getMergePointFuture().complete(new MergePayloadContext ().setDeadTransition(true));
+                processingVertex.getmergingFeature().complete(new MergePayloadContext ().setDeadTransition(true));
                 return;
             } else {
                 mergerInvocation = () -> (Enum) processorInfo.getSubgraphDescription().getMerger().merge(
@@ -1181,7 +1182,7 @@ class ExecutionBuilder(
             /**
              * Select outgoing transitions that matches mergeStatus
              */
-            List<CRReactorGraph.Transition> activeTransitions = processingVertex . getMergePointTransition ().stream()
+            List<CRReactorGraph.Transition> activeTransitions = processingVertex . getoutgoingTransitions ().stream()
                     .filter(transition -> transition.isOnAny() || transition.getMergeStatuses().contains(mergeStatus))
             .collect(Collectors.toList());
 
@@ -1191,7 +1192,7 @@ class ExecutionBuilder(
                         " Expected status from merger function one of: %s",
                         mergeStatus.getDeclaringClass(), mergeStatus,
                         processingVertex.getProcessingItem().getDebugName(),
-                        processingVertex.getMergePointTransition().stream()
+                        processingVertex.getoutgoingTransitions().stream()
                                 .map(CRReactorGraph.Transition::getDebugDescription)
                                 .collect(Collectors.joining(",", "{", "}"))));
             }
@@ -1231,7 +1232,7 @@ class ExecutionBuilder(
                  * Terminal state reached. Execution result completed.
                  * Throw poison pill - terminal context. All following merge points should be deactivated.
                  */
-                processingVertex.getMergePointFuture().complete(new MergePayloadContext ()
+                processingVertex.getmergingFeature().complete(new MergePayloadContext ()
                         .setPayload(null)
                         .setMergeResult(mergeStatus)
                         .setTerminal(true));
@@ -1239,7 +1240,7 @@ class ExecutionBuilder(
                 /**
                  * There is no terminal state reached after merging.
                  */
-                processingVertex.getMergePointFuture().complete(new MergePayloadContext ()
+                processingVertex.getmergingFeature().complete(new MergePayloadContext ()
                         .setPayload(payload)
                         .setMergeResult(mergeStatus));
             }
@@ -1254,7 +1255,7 @@ class ExecutionBuilder(
 
             executionResultFuture.completeExceptionally(exc);
 
-            processingVertex.getMergePointFuture().complete(new MergePayloadContext ().setDeadTransition(true));
+            processingVertex.getmergingFeature().complete(new MergePayloadContext ().setDeadTransition(true));
         }
     }
 }
