@@ -6,7 +6,19 @@ import ru.fix.completable.reactor.runtime.gl.Vertex
 class ConfigContext {
 
     private var vertex: Vertex? = null
+
+    private var configFieldNameResolver: ConfigFieldNameResolver? = null
+
     var graphConfig: GraphConfig<*>? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                this.configFieldNameResolver = ConfigFieldNameResolver(value, listOf(Vertex::class.java))
+            } else {
+                this.configFieldNameResolver = null
+            }
+        }
+
 
     fun setVertex(vertex: Vertex) {
         this.vertex = vertex
@@ -36,5 +48,9 @@ class ConfigContext {
             }
             return context
         }
+    }
+
+    fun resolveVertexName(vertex: Vertex): String? {
+        return configFieldNameResolver?.resolveFieldName(vertex)
     }
 }

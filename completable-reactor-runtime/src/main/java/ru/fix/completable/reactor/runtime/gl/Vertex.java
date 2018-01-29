@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.runtime.gl;
 
 import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
-import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,11 +44,16 @@ public class Vertex {
         );
     }
 
+    /**
+     * Field name of configuration class this Vertex is assigned to
+     */
+    String name;
+
     Handler handler;
     Merger merger;
     Router router;
     Class subgraph;
     SubgraphPayloadBuilder subgraphPayloadBuilder;
 
-    List<GlTransition> transitions = new ArrayList<>();
+    final List<GlTransition> transitions = new ArrayList<>();
 }
