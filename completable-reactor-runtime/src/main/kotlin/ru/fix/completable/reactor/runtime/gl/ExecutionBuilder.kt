@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.runtime.gl
 
 
+import mu.KotlinLogging
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
@@ -23,8 +24,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-typealias SubgraphRunner = (Any) -> CompletableFuture<?>
+typealias SubgraphRunner = (Any) -> CompletableFuture<*>
 
+private val log = KotlinLogging.logger {}
 
 class ExecutionBuilder(
         val profiler: Profiler,
@@ -106,7 +108,7 @@ class ExecutionBuilder(
     val INVALID_HANDLE_PAYLOAD_CONTEXT = HandlePayloadContext()
 
     class TransitionFuture<PayloadContextType>(
-            val future: CompletableFuture<PayloadContextType>
+            val feature: CompletableFuture<PayloadContextType>
     )
 
     /**
@@ -125,7 +127,7 @@ class ExecutionBuilder(
 
         val processorFuture = CompletableFuture<HandlePayloadContext>()
 
-        //TODO: rename to mergeFeature
+        //TODO: rename to mergerableFeature
         val mergePointFuture = CompletableFuture<MergePayloadContext>()
 
         /**
@@ -133,8 +135,14 @@ class ExecutionBuilder(
          * If during merging process we will receive merge status that match any of terminal transitions
          * then we should complete mergePointFuture with Terminal MergePayloadContext
          */
-        //TODO: rename to mergeTransitions
+        //TODO: rename to mergerableTransitions
         val mergePointTransition = ArrayList<GlTransition>()
+
+        /**
+         * This is Merger or Router
+         */
+        val isMergerable: Boolean
+            get() = vertex.merger != null || vertex.router != null
     }
 
 
@@ -149,6 +157,7 @@ class ExecutionBuilder(
 
         /**
          * Internal representation of processing graph based on processing vertices.
+         * //TODO: check, maybe we do not need map and simple list is enough fo rCR2
          */
         val processingVertices = IdentityHashMap<Vertex, ProcessingVertex>()
 
@@ -189,7 +198,7 @@ class ExecutionBuilder(
             /**
              * Populate MergePoints transitions
              */
-            if(vx.transitions.isNotEmpty()){
+            if (vx.transitions.isNotEmpty()) {
                 //TODO: replace copy with delegation since mergePointTransition is immutable
                 pvx.mergePointTransition.addAll(vx.transitions)
             }
@@ -223,104 +232,107 @@ class ExecutionBuilder(
         }
 
 
-
         /**
          * Populate outgoing flows
          */
-        for (CRReactorGraph. MergePoint mergePoint : crReactorGraph . getMergePoints ()) {
+        processingVertices.values.asIterable().filter { it.isMergerable }.forEach { mergerablePvx ->
 
             /**
-             * MergeGroup can contain more that one MergePoint, so we have to wait all merge points to complete before
-             * invoke processors.
-             * We should not wait all merge point to complete if we are invoking other merge point within mergeGroup.
+             * Completion of Mergerable feature triggers completion of outgoing transitions.
              */
-            ProcessingVertex mergePointVertex = processingVertices . get (mergePoint.asProcessingItem());
 
-            CompletableFuture<MergePayloadContext> mergePointFuture = mergePointVertex . getMergePointFuture ();
+            val mergerableFuture = mergerablePvx.mergePointFuture
 
-            for (CRReactorGraph. Transition transition : mergePoint . getTransitions ()) {
-
-            /**
-             * Terminal merge point vertex handled synchronously with merging process
-             * Skip that kind of transition during pre-processing.
-             */
-            if (!transition.isComplete()) {
-                /**
-                 * Populate outgoing processor flows
-                 * activates when all merge points within merge group is completed
-                 */
-                if (transition.getHandleBy() != null) {
-                    CRProcessingItem proc = transition . getHandleBy ();
-
-                    processingVertices.get(proc).getIncomingProcessorFlows().add(
-                            new TransitionFuture < > (
-                                    mergePointFuture.thenApplyAsync(
-                                            context -> {
-                        if (context.isTerminal()) {
-                            return new TransitionPayloadContext ().setTerminal(true);
-
-                        } else if (context.isDeadTransition()) {
-                            return new TransitionPayloadContext ().setDeadTransition(true);
-
-                        } else if (transition.isOnAny()
-                                || transition.getMergeStatuses()
-                                        .contains(context.mergeResult)) {
-
-                            return new TransitionPayloadContext ()
-                                    .setPayload(context.payload);
-                        } else {
-                            return new TransitionPayloadContext ()
-                                    .setPayload(context.payload)
-                                    .setDeadTransition(true);
-                        }
-                    }
-                    ).exceptionally(exc -> {
-                        log.error("Failed to activate");
-                        return null;
-                    })
-                    )
-                    );
-
-                }
+            for (transition in mergerablePvx.mergePointTransition) {
 
                 /**
-                 * Populate outgoing merge flows
+                 * Terminal merge point vertex handled synchronously with merging process
+                 * Skip that kind of transition during pre-processing.
                  */
-                if (transition.getMerge() != null) {
-                    CRProcessingItem proc = transition . getMerge ();
+                if (!transition.isComplete) {
+                    /**
+                     * Populate outgoing handleBy flows
+                     * activates when Mergerable feature is completed
+                     */
+                    if (transition.handleBy != null) {
+                        val target = transition.handleBy
 
-                    ProcessingVertex transitionDestinationVertex = processingVertices . get (proc);
+                        processingVertices[target]!!.incomingProcessorFlows.add(TransitionFuture(
+                                mergerableFuture.thenApplyAsync { context ->
 
-                    transitionDestinationVertex.getIncomingMergeFlows().add(
-                            new TransitionFuture < > (
-                                    mergePointFuture.thenApplyAsync(
-                                            context -> {
-                        if (context.isTerminal()) {
-                            return new MergePayloadContext ().setTerminal(true);
+                                    if (context.isTerminal) {
+                                        TransitionPayloadContext(isTerminal = true)
 
-                        } else if (context.isDeadTransition()) {
-                            return new MergePayloadContext ().setDeadTransition(true);
+                                    } else if (context.isDeadTransition) {
+                                        TransitionPayloadContext(isDeadTransition = true)
 
-                        } else if (transition.isOnAny() ||
-                                transition.getMergeStatuses()
-                                        .contains(context.mergeResult)) {
+                                    } else if (transition.isOnAny
+                                            || transition.mergeStatuses.contains(context.mergeResult)) {
 
-                            return new MergePayloadContext ()
-                                    .setPayload(context.payload)
-                                    .setMergeResult(context.mergeResult);
-                        } else {
-                            return new MergePayloadContext ()
-                                    .setDeadTransition(true);
-                        }
+                                        TransitionPayloadContext(payload = context.payload)
+
+                                    } else {
+                                        TransitionPayloadContext(
+                                                payload = context.payload,
+                                                isDeadTransition = true)
+                                    }
+
+                                }.exceptionally { exc ->
+                                            log.error(exc) {
+                                                """
+                                                Failed to activate handleBy transition.
+                                                Mark transition as dead.
+                                                Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
+                                                Transition: $transition
+                                                """
+                                            }
+
+                                            TransitionPayloadContext(isDeadTransition = true)
+                                        }
+                        ))
+
                     }
-                    )
 
-                    )
-                    );
+                    /**
+                     * Populate outgoing mergeBy flows
+                     */
+                    if (transition.mergeBy != null) {
+                        val target = transition.mergeBy
 
+                        processingVertices[target]!!.incomingMergeFlows.add(TransitionFuture(
+                                mergerableFuture.thenApplyAsync { context ->
+                                    if (context.isTerminal) {
+                                        MergePayloadContext(isTerminal = true)
+
+                                    } else if (context.isDeadTransition) {
+                                        MergePayloadContext(isDeadTransition = true)
+
+                                    } else if (transition.isOnAny ||
+                                            transition.mergeStatuses.contains(context.mergeResult)) {
+
+                                        MergePayloadContext(
+                                                payload = context.payload,
+                                                mergeResult = context.mergeResult)
+                                    } else {
+                                        MergePayloadContext(isDeadTransition = true)
+                                    }
+                                }.exceptionally { exc ->
+                                            log.error(exc) {
+                                                """
+                                                        Failed to activate mergeBy transition.
+                                                        Mark transition as dead.
+                                                        Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
+                                                        Transition: $transition
+                                                        """
+                                            }
+
+                                            MergePayloadContext(isDeadTransition = true)
+                                        }
+                        ))
+
+                    }
                 }
             }
-        }
         }
 
         //TODO FIX!! allow detached processor to read data from payload and only after that execute merge point
