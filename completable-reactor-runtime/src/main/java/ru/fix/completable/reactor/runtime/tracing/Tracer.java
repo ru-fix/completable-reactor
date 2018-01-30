@@ -11,12 +11,22 @@ public interface Tracer {
      */
     boolean isTraceable(Object payload);
     /**
+     * //TODO remove after moving to CR2
      * @param identity Graph processing item identity
      * @param payload Payload instance
      * @return tracingMarker - any object that will be passed to
      * {@link #afterHandle(Object, ReactorGraphModel.Identity, Object, Throwable)} method
      */
     Object beforeHandle(ReactorGraphModel.Identity identity, Object payload);
+
+
+    /**
+     * @param vertexName Vertex name
+     * @param payload Payload instance
+     * @return tracingMarker - any object that will be passed to
+     * {@link #afterHandle(Object, ReactorGraphModel.Identity, Object, Throwable)} method
+     */
+    Object beforeHandle(String vertexName, Object payload);
 
     /**
      *
@@ -26,6 +36,17 @@ public interface Tracer {
      */
     void afterHandle(Object tracingMarker,
                      ReactorGraphModel.Identity identity,
+                     Object handlerResult,
+                     Throwable throwable);
+
+    /**
+     *
+     * @param tracingMarker object returned by {@link #beforeHandle(String, Object)}
+     * @param handlerResult handler result
+     * @param throwable in case handler completed with an exception
+     */
+    void afterHandle(Object tracingMarker,
+                     String vertexName,
                      Object handlerResult,
                      Throwable throwable);
 
