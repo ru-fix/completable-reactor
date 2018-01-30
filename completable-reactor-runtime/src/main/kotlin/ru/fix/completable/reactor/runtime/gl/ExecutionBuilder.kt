@@ -4,8 +4,6 @@ package ru.fix.completable.reactor.runtime.gl
 import mu.KotlinLogging
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
-import ru.fix.completable.reactor.api.ReactorGraphModel;
-import ru.fix.completable.reactor.api.gl.model.Transition
 import ru.fix.completable.reactor.runtime.ProfilerNames;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
@@ -15,7 +13,6 @@ import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
-import ru.fix.completable.reactor.runtime.internal.dsl.CRProcessorDescription;
 import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
@@ -24,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-typealias SubgraphRunner = (Any) -> CompletableFuture<*>
+typealias SubgraphRunner = (Any?) -> CompletableFuture<Any?>
 
 private val log = KotlinLogging.logger {}
 
@@ -107,6 +104,10 @@ class ExecutionBuilder(
 
     val INVALID_HANDLE_PAYLOAD_CONTEXT = HandlePayloadContext()
 
+    /**
+     * Represent deferred computation result of a transition
+     * //TODO replace with type alias
+     */
     class TransitionFuture<PayloadContextType>(
             val feature: CompletableFuture<PayloadContextType>
     )
@@ -346,116 +347,108 @@ class ExecutionBuilder(
          */
         for ((vx, pvx) in processingVertices) {
 
-            if (vx.router != null) {
-                /**
-                 * Router does not have handler.
-                 * All incomingHandlingFlows is processed with incomingMergingFlows in mergeres section.
-                 */
-                continue
-            }
-
             if (pvx.incomingHandlingFlows.size <= 0) {
                 throw IllegalArgumentException("""
                         Invalid graph configuration.
                         Vertex ${vx.name} does not have incoming handling flows.
-                        Probably missing `handleBy` directive for this processor in graph configuration,
+                        Probably missing `.handleBy(${vx.name})` transition that targets this vertex in configuration.
                         """)
             }
 
+            /**
+             * First we should wait for all incoming handleBy transition to complete
+             */
             CompletableFuture.allOf(
-                   *pvx.incomingHandlingFlows.asIterable().map{it.feature}.toTypedArray()
-            ).thenRunAsync{
+                    *pvx.incomingHandlingFlows.asIterable().map { it.feature }.toTypedArray()
 
-                List<TransitionPayloadContext> incomingFlows = processingItem
+            ).thenRunAsync {
+
+                val incomingFlows: List<TransitionPayloadContext> = pvx
                         .incomingHandlingFlows
                         .stream()
-                        .map(future -> {
-                try {
+                        .map { future ->
+                            try {
+                                /**
+                                 * Future should be already complete.
+                                 */
+                                if (!future.feature.isDone()) {
+                                    val resultException = Exception("""
+                                        Illegal graph execution state.
+                                        Future is not completed. Vertex: ${vx.name}
+                                        """)
+
+                                    log.error(resultException) {}
+                                    executionResultFuture.completeExceptionally(resultException)
+
+                                    INVALID_TRANSITION_PAYLOAD_CONTEXT
+                                } else {
+                                    future.feature.get()
+                                }
+                            } catch (exc: Exception) {
+                                val resultException = Exception("""
+                                        Failed to get incoming processor flow future result
+                                        for vertex: ${vx.name}
+                                        """)
+                                log.error(resultException) {}
+                                executionResultFuture.completeExceptionally(resultException)
+
+                                INVALID_TRANSITION_PAYLOAD_CONTEXT
+                            }
+                        }
+                        .collect(Collectors.toList())
+
+                if (incomingFlows.stream().anyMatch { context -> context === INVALID_TRANSITION_PAYLOAD_CONTEXT }) {
                     /**
-                     * Future should be already complete
+                     * Invalid graph execution state
+                     * Mark as terminal all outgoing flows from vertex
                      */
-                    if (!future.getFuture().isDone()) {
-                        Exception resultException = new Exception(String.format(
-                                "Illegal graph execution state." +
-                                        " Future is not completed. Processor: %s",
-                                processingItem.getProcessingItem().getDebugName()));
+                    pvx.handlingFeature.complete(HandlePayloadContext(isTerminal = true))
 
-                        log.error(resultException.getMessage(), resultException);
-                        executionResultFuture.completeExceptionally(resultException);
-                        return INVALID_TRANSITION_PAYLOAD_CONTEXT;
-                    } else {
-                        return future.getFuture().get();
-                    }
-                } catch (Exception exc) {
-                    Exception resultException = new Exception(String.format(
-                            "Failed to get incoming processor flow future result" +
-                                    " for processor: %s",
-                            processingItem.getProcessingItem().getDebugName()), exc);
-                    log.error(resultException.getMessage(), resultException);
-                    executionResultFuture.completeExceptionally(resultException);
-
-                    return INVALID_TRANSITION_PAYLOAD_CONTEXT;
-                }
-            })
-                .collect(Collectors.toList());
-
-                if (incomingFlows.stream().anyMatch(
-                                context -> context == INVALID_TRANSITION_PAYLOAD_CONTEXT)) {
-                /**
-                 * Invalid graph execution state
-                 * Mark as terminal all outgoing flows from processor
-                 */
-                processingItem.gethandlingFeature().complete(
-                        new HandlePayloadContext ()
-                                .setTerminal(true));
-
-            } else if (incomingFlows.stream().anyMatch(TransitionPayloadContext::isTerminal)) {
-                /**
-                 * Terminal state reached.
-                 * Mark as terminal all outgoing flows from processor
-                 */
-                processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
-                        .setTerminal(true));
-
-            } else {
-                List<TransitionPayloadContext> activeIncomingFlows = incomingFlows . stream ()
-                        .filter(context ->!context.isDeadTransition())
-                .collect(Collectors.toList());
-
-                if (activeIncomingFlows.size() <= 0) {
+                } else if (incomingFlows.stream().anyMatch(TransitionPayloadContext::isTerminal)) {
                     /**
-                     * There is no active incoming flow for given processor.
-                     * Processor will not be invoked.
-                     * All outgoing flows from processor will be marked as dead.
+                     * Terminal state reached.
+                     * Mark as terminal all outgoing flows from vertex
                      */
-                    processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
-                            .setDeadTransition(true));
+                    pvx.handlingFeature.complete(HandlePayloadContext(isTerminal = true))
+
                 } else {
-                    if (activeIncomingFlows.size() > 1) {
+                    val activeIncomingFlows: List<TransitionPayloadContext> = incomingFlows
+                            .stream()
+                            .filter { context -> !context.isDeadTransition }
+                            .collect(Collectors.toList())
 
+                    if (activeIncomingFlows.isEmpty()) {
                         /**
-                         * Illegal graph state. Too many active incoming flows.
-                         * Mark as terminal all outgoing flows
-                         * Complete graph with exception
+                         * There is no active incoming flow for given vertex.
+                         * Vertex will not be invoked.
+                         * All outgoing flows from vertex will be marked as dead.
                          */
-                        Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
-                                "There is more than one active incoming flow for processor %s." +
-                                        " Reactor can not determinate from which of transitions" +
-                                        " take payload." +
-                                        " Possible loss of computation results." +
-                                        " Possible concurrent modifications of payload.",
-                                processingItem.getProcessingItem().getDebugName()));
-
-                        executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                        processingItem.gethandlingFeature().complete(new HandlePayloadContext ()
-                                .setTerminal(true));
+                        pvx.handlingFeature.complete(HandlePayloadContext(isDeadTransition = true))
 
                     } else {
+                        if (activeIncomingFlows.size > 1) {
 
-                        handle(processingItem, activeIncomingFlows.get(0), executionResultFuture);
+                            /**
+                             * Illegal graph state. Too many active incoming flows.
+                             * Mark as terminal all outgoing flows
+                             * Complete graph with exception
+                             */
+                            val tooManyActiveIncomingFlowsExc = Exception("""
+                                    There is more than one active incoming flow for vertex ${vx.name}.
+                                    Reactor can not determinate from which of transitions to take payload.
+                                    Possible loss of computation results.
+                                    Possible concurrent modifications of payload.
+                                    """)
+
+                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc)
+                            pvx.handlingFeature.complete(HandlePayloadContext(isTerminal = true)
+
+                        } else {
+
+                            handle(pvx, activeIncomingFlows[0], executionResultFuture)
+                        }
                     }
                 }
-            }
             }
             )
             .exceptionally(throwable -> {
@@ -774,329 +767,198 @@ class ExecutionBuilder(
         .build();
     }
 
-    private CompletableFuture<?> invokeHandlingMethod(
-    CRReactorGraph.ProcessingItemInfo processorInfo,
-    CRProcessingItem processingItem,
-    Object payload)
-    {
+    private fun invokeHandlingMethod(
+            pvx: ProcessingVertex,
+            payload: Any?): CompletableFuture<Any?> {
 
-        switch(processorInfo.getProcessingItemType()) {
-            case PROCESSOR :
-            return invokeProcessorHandlingMethod(processorInfo, processingItem, payload);
-            case SUBGRAPH :
-            return invokeSubgraphHandlingMethod(processorInfo, payload);
-            default:
-            throw new IllegalStateException (
-                    String.format("Processing item %s of type %s not supported",
-                            processingItem.getDebugName(),
-                            processorInfo.getProcessingItemType()));
+        when (pvx.vertex) {
+        //handler
+            handler != null -> invokeProcessorHandlingMethod(processorInfo, processingItem, payload);
+            subgraph != null -> invokeSubgraphHandlingMethod(processorInfo, payload);
+            router != null -> TODO;
+
+            else throw IllegalStateException (
+                String
+                .format("Processing item %s of type %s not supported",
+                    processingItem.getDebugName(),
+                    processorInfo.getProcessingItemType())
+                );
         }
     }
 
-    private CompletableFuture<?> invokeSubgraphHandlingMethod(
-    CRReactorGraph.ProcessingItemInfo processorInfo,
-    Object payload)
-    {
+    private fun invokeSubgraphHandlingMethod(pvx: ProcessingVertex, payload: Any?): CompletableFuture<Any?> {
+        val subgraphPayload = pvx.vertex.subgraphPayloadBuilder.buildPayload(payload)
 
-        Object param = processorInfo . getSubgraphDescription ().getArg().apply(payload);
-        if (processorInfo.getSubgraphDescription().isCopyArg()) {
-            param = threadsafeCopyMaker.makeThreadsafeCopy(param);
-        }
-
-        return subgraphRunner.run(param);
-    }
-
-    private CompletableFuture<?> invokeProcessorHandlingMethod(
-    CRReactorGraph.ProcessingItemInfo processorInfo,
-    CRProcessingItem processingItem,
-    Object payload)
-    {
-
-        CRProcessorDescription description = processorInfo . getDescription ();
-
-        try {
-
-            Object param1 = null;
-            Object param2 = null;
-            Object param3 = null;
-            Object param4 = null;
-            Object param5 = null;
-            Object param6 = null;
-            Object param7 = null;
-
-            if (description.getArg1() != null) {
-                param1 = description.getArg1().apply(payload);
-                if (description.isCopyArg1()) {
-                    param1 = threadsafeCopyMaker.makeThreadsafeCopy(param1);
-                }
-            }
-            if (description.getArg2() != null) {
-                param2 = description.getArg2().apply(payload);
-                if (description.isCopyArg2()) {
-                    param2 = threadsafeCopyMaker.makeThreadsafeCopy(param2);
-                }
-            }
-            if (description.getArg3() != null) {
-                param3 = description.getArg3().apply(payload);
-                if (description.isCopyArg3()) {
-                    param3 = threadsafeCopyMaker.makeThreadsafeCopy(param3);
-                }
-            }
-            if (description.getArg4() != null) {
-                param4 = description.getArg4().apply(payload);
-                if (description.isCopyArg4()) {
-                    param4 = threadsafeCopyMaker.makeThreadsafeCopy(param4);
-                }
-            }
-            if (description.getArg5() != null) {
-                param5 = description.getArg5().apply(payload);
-                if (description.isCopyArg5()) {
-                    param5 = threadsafeCopyMaker.makeThreadsafeCopy(param5);
-                }
-            }
-            if (description.getArg6() != null) {
-                param6 = description.getArg6().apply(payload);
-                if (description.isCopyArg6()) {
-                    param6 = threadsafeCopyMaker.makeThreadsafeCopy(param6);
-                }
-            }
-            if (description.getArg7() != null) {
-                param7 = description.getArg7().apply(payload);
-                if (description.isCopyArg7()) {
-                    param7 = threadsafeCopyMaker.makeThreadsafeCopy(param7);
-                }
-            }
-
-
-            if (description.getHandler0() != null) {
-                return (CompletableFuture) description . getHandler0 ().handle();
-
-            } else if (description.getHandler1() != null) {
-                return (CompletableFuture) description . getHandler1 ().handle(param1);
-
-
-            } else if (description.getHandler2() != null) {
-                return (CompletableFuture) description . getHandler2 ().handle(
-                        param1,
-                        param2
-                );
-            } else if (description.getHandler3() != null) {
-                return (CompletableFuture) description . getHandler3 ().handle(
-                        param1,
-                        param2,
-                        param3
-                );
-
-            } else if (description.getHandler4() != null) {
-                return (CompletableFuture) description . getHandler4 ().handle(
-                        param1,
-                        param2,
-                        param3,
-                        param4
-                );
-
-            } else if (description.getHandler5() != null) {
-                return (CompletableFuture) description . getHandler5 ().handle(
-                        param1,
-                        param2,
-                        param3,
-                        param4,
-                        param5
-                );
-            } else if (description.getHandler6() != null) {
-                return (CompletableFuture) description . getHandler6 ().handle(
-                        param1,
-                        param2,
-                        param3,
-                        param4,
-                        param5,
-                        param6
-                );
-            } else if (description.getHandler7() != null) {
-                return (CompletableFuture) description . getHandler7 ().handle(
-                        param1,
-                        param2,
-                        param3,
-                        param4,
-                        param5,
-                        param6,
-                        param7
-                );
-            } else {
-                CompletableFuture result = new CompletableFuture();
-                result.completeExceptionally(
-                        new IllegalArgumentException (
-                                String.format("There is no handler in processor %s for payload %s %s",
-                                        processingItem.getDebugName(),
-                                        payload.getClass(),
-                                        debugSerializer.dumpObject(payload))));
-                return result;
-            }
-
-        } catch (Exception exc) {
-            CompletableFuture result = new CompletableFuture();
+        return try {
+            subgraphRunner(subgraphPayload)
+        } catch (exc: Exception) {
+            val result = CompletableFuture<Any?>()
             result.completeExceptionally(
-                    new IllegalArgumentException (
-                            String.format("Exception during handling in processor %s for payload %s %s",
-                                    processingItem.getDebugName(),
-                                    payload.getClass(),
-                                    debugSerializer.dumpObject(payload)),
-                    exc));
-            return result;
+                    IllegalArgumentException(
+                            """
+                            Exception during subgraph launching for vertex ${pvx.vertex.name}.
+                            Payload: ${debugSerializer.dumpObject(payload)}
+                            """,
+                            exc))
+            result
+        }
+    }
+
+    private fun invokeProcessorHandlingMethod(pvx: ProcessingVertex, payload: Any?): CompletableFuture<Any?> {
+
+        return try {
+            pvx.vertex.handler.handle(payload)
+        } catch (exc: Exception) {
+            val result = CompletableFuture<Any?>()
+            result.completeExceptionally(
+                    IllegalArgumentException("""
+                            Exception during handler invocation for vertex ${pvx.vertex.name}.
+                            Payload: ${debugSerializer.dumpObject(payload)}
+                            """,
+                            exc))
+            result
         }
     }
 
 
-    private <PayloadType> void handle(ProcessingVertex processingVertex,
-    TransitionPayloadContext payloadContext,
-    CompletableFuture<PayloadType> executionResultFuture)
-    {
+    private fun <PayloadType> handle(
+            pvx: ProcessingVertex,
+            payloadContext: TransitionPayloadContext,
+            executionResultFuture: CompletableFuture<PayloadType>) {
 
-        CRReactorGraph.ProcessingItemInfo processorInfo = processingVertex . getProcessingItemInfo ();
-        Object payload = payloadContext . getPayload ();
+        val vx = pvx.vertex
+        val payload = payloadContext.payload
 
-        /**
-         * In case of detached merge point processor should not have incoming handling transition.
-         */
-        if (processorInfo.getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
-            throw new IllegalStateException (String.format(
-                    "Processor %s is of type %s and should not have any incoming handling transition",
-                    processingVertex.getProcessingItem().getDebugName(),
-                    processorInfo.getProcessingItemType()));
-        }
+        val handleCall = profiler.profiledCall("${ProfilerNames.PROCESSOR_HANDLE}${vx.name}").start()
 
-        ProfiledCall handleCall = profiler . profiledCall (
-                ProfilerNames.PROCESSOR_HANDLE + processingVertex.getProcessingItem().getProfilingName())
-                .start();
+        val isTraceablePayload = tracer.isTraceable(payload)
+        val handleTracingMarker =
+                if (isTraceablePayload) {
+                    tracer.beforeHandle(vx.name, payload)
+                } else {
+                    null
+                }
+        val handleTracingIdentity =
+                if (isTraceablePayload) {
+                    vx.name
+                } else {
+                    null
+                }
+        val handlingResult: CompletableFuture<Any?>? = null
 
-        boolean isTraceablePayload = tracer . isTraceable (payload);
-        Object handleTracingMarker = isTraceablePayload ?
-        tracer.beforeHandle(processingVertex.getProcessingItem().getIdentity(), payload) :
-        null;
-        ReactorGraphModel.Identity handleTracingIdentity = isTraceablePayload ?
-        processingVertex.getProcessingItem().getIdentity() :
-        null;
-
-        CompletableFuture<?> handlingResult;
-
-
-
-        ImmutabilityChecker.Snapshot payloadSnapshot;
+        val payloadSnapshot: ImmutabilityChecker.Snapshot? = null
 
         try {
-            if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
+            if (immutabilityControlLevel != ImmutabilityControlLevel.NO_CONTROL) {
                 /**
                  * Invoke handling with immutability check.
                  */
-                payloadSnapshot = immutabilityChecker.takeSnapshot(payload);
+                payloadSnapshot = immutabilityChecker.takeSnapshot(payload)
 
-                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessingItem(), payload);
+                handlingResult = invokeHandlingMethod(pvx, payload)
 
             } else {
                 /**
                  * Invoke handling without immutability check.
                  */
-                payloadSnapshot = null;
+                payloadSnapshot = null
 
-                handlingResult = invokeHandlingMethod(processorInfo, processingVertex.getProcessingItem(), payload);
+                handlingResult = invokeHandlingMethod(pvx, payload)
             }
-        } catch (Exception handlingException) {
-            RuntimeException exc = new RuntimeException(
-                    String.format(
-                            "Failed handling by processor %s for payload %s %s. Handling method raised exception: %s.",
-                            processingVertex.getProcessingItem().getDebugName(),
-                            payload.getClass(),
-                            debugSerializer.dumpObject(payload),
-                            handlingException),
-                    handlingException);
+        } catch (handlingException: Exception) {
+            val exc = RuntimeException(
+                    """
+                    Failed handling by veretx ${vx.name} for payload ${debugSerializer.dumpObject(payload)}.
+                    Handling method raised exception: $handlingException.
+                    """,
+                    handlingException)
 
-            log.error(exc.getMessage(), exc);
-            executionResultFuture.completeExceptionally(exc);
-            processingVertex.gethandlingFeature().complete(new HandlePayloadContext ().setTerminal(true));
-            return;
+            log.error(exc) {}
+            executionResultFuture.completeExceptionally(exc)
+            pvx.handlingFeature.complete(HandlePayloadContext(isTerminal = true))
+            return
         }
 
         if (handlingResult == null) {
-            RuntimeException exc = new RuntimeException(
-                    String.format(
-                            "Failed handling by processor %s for payload %s %s. Handling method returned NULL." +
-                                    " Instance of CompletableFuture expected.",
-                            processingVertex.getProcessingItem().getDebugName(),
-                            payload.getClass(),
-                            debugSerializer.dumpObject(payload)));
+            val exc = RuntimeException(
+                    """
+                    Failed handling by vertex ${vx.name} for payload ${debugSerializer.dumpObject(payload)}.
+                    Handling method returned NULL.
+                    Instance of CompletableFuture expected.
+                    """)
 
-            log.error(exc.getMessage(), exc);
-            executionResultFuture.completeExceptionally(exc);
-            processingVertex.gethandlingFeature().complete(new HandlePayloadContext ().setTerminal(true));
-            return;
+            log.error(exc){}
+            executionResultFuture.completeExceptionally(exc)
+            pvx.handlingFeature.complete(HandlePayloadContext(isTerminal = true))
+            return
         }
 
-        handlingResult.handleAsync((res, thr) -> {
-        handleCall.stop();
+        handlingResult.handleAsync{result, throwable ->
+            handleCall.stop()
 
-        if (isTraceablePayload) {
-            tracer.afterHandle(handleTracingMarker, handleTracingIdentity, res, thr);
-        }
+            if (isTraceablePayload) {
+                tracer.afterHandle(handleTracingMarker, handleTracingIdentity, result, throwable)
+            }
 
-        if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
+            if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
 
-            Optional<String> diff = immutabilityChecker . diff (payloadSnapshot, payload);
-            if (diff.isPresent()) {
-                String message = String . format ("Concurrent modification of payload %s detected. Diff: %s.",
-                debugSerializer.dumpObject(payload),
-                diff.get());
+                Optional<String> diff = immutabilityChecker . diff (payloadSnapshot, payload);
+                if (diff.isPresent()) {
+                    String message = String . format ("Concurrent modification of payload %s detected. Diff: %s.",
+                    debugSerializer.dumpObject(payload),
+                    diff.get());
 
-                switch(controlLevel) {
-                    case LOG_ERROR :
-                    log.error(message);
-                    break;
-                    case LOG_WARN :
-                    log.warn(message);
-                    break;
-                    case EXCEPTION :
-                    RuntimeException immutabilityException = new RuntimeException(message);
-                    log.error(message, immutabilityException);
+                    switch(controlLevel) {
+                        case LOG_ERROR :
+                        log.error(message);
+                        break;
+                        case LOG_WARN :
+                        log.warn(message);
+                        break;
+                        case EXCEPTION :
+                        RuntimeException immutabilityException = new RuntimeException(message);
+                        log.error(message, immutabilityException);
 
-                    if (thr == null) {
-                        log.error(
-                                "Overwriting execution exception {} by immutability check exception {}.",
-                                thr,
-                                immutabilityException,
-                                thr);
+                        if (throwable == null) {
+                            log.error(
+                                    "Overwriting execution exception {} by immutability check exception {}.",
+                                    throwable,
+                                    immutabilityException,
+                                    throwable);
+                        }
+                        throwable = immutabilityException;
+                        break;
                     }
-                    thr = immutabilityException;
-                    break;
                 }
             }
-        }
 
-        if (thr != null) {
-            RuntimeException exc = new RuntimeException(
-                    String.format(
-                            "Failed handling by processor %s for payload %s %s",
-                            processingVertex.getProcessingItem().getDebugName(),
-                            payload.getClass(),
-                            debugSerializer.dumpObject(payload)),
-                    thr);
+            if (throwable != null) {
+                RuntimeException exc = new RuntimeException(
+                        String.format(
+                                "Failed handling by processor %s for payload %s %s",
+                                processingVertex.getProcessingItem().getDebugName(),
+                                payload.getClass(),
+                                debugSerializer.dumpObject(payload)),
+                        throwable);
 
-            log.error(exc.getMessage(), exc);
-            executionResultFuture.completeExceptionally(exc);
+                log.error(exc.getMessage(), exc);
+                executionResultFuture.completeExceptionally(exc);
 
-            processingVertex.gethandlingFeature().complete(new HandlePayloadContext ().setTerminal(true));
-        } else {
-            processingVertex.gethandlingFeature().complete(new HandlePayloadContext ()
-                    .setPayload(payload)
-                    .setProcessorResult(res));
-        }
-        return null;
-    }).exceptionally(exc -> {
-        log.error("Failed to execute afterHandle block for {}",
-                Optional.of(processingVertex)
-                        .map(ProcessingVertex::getProcessingItem)
-                        .map(CRProcessingItem::getDebugName)
-                        .orElse("?"), exc);
-        return null;
-    });
+                processingVertex.gethandlingFeature().complete(new HandlePayloadContext ().setTerminal(true));
+            } else {
+                processingVertex.gethandlingFeature().complete(new HandlePayloadContext ()
+                        .setPayload(payload)
+                        .setProcessorResult(result));
+            }
+            return null;
+        }).exceptionally(exc -> {
+            log.error("Failed to execute afterHandle block for {}",
+                    Optional.of(processingVertex)
+                            .map(ProcessingVertex::getProcessingItem)
+                            .map(CRProcessingItem::getDebugName)
+                            .orElse("?"), exc);
+            return null;
+        });
     }
 
     /**
@@ -1111,6 +973,34 @@ class ExecutionBuilder(
     Object payload,
     CompletableFuture<PayloadType> executionResultFuture)
     {
+
+
+
+//-->
+        if (vx.router != null) {
+            /**
+             * Router does not participate in mergeBy transitions.
+             * All incomingHandlingFlows is processed with incomingMergingFlows in mergeres section.
+             */
+            continue
+        }
+
+
+
+
+
+        /**
+         * In case of detached merge point processor should not have incoming handling transition.
+         */
+        if (processorInfo.getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
+            throw new IllegalStateException (String.format(
+                    "Processor %s is of type %s and should not have any incoming handling transition",
+                    processingVertex.getProcessingItem().getDebugName(),
+                    processorInfo.getProcessingItemType()));
+        }
+//<--
+
+
 
         CRReactorGraph.ProcessingItemInfo processorInfo = processingVertex . getProcessingItemInfo ();
 

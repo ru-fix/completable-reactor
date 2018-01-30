@@ -5,6 +5,8 @@ package ru.fix.completable.reactor.runtime.cloning;
  */
 public interface ThreadsafeCopyMaker {
     /**
+     * TODO probably should be removed in CR2
+     *
      * Make copy of pojo.
      * It should be safe to read data from copy while origin pojo is being modified in different thread.
      *
