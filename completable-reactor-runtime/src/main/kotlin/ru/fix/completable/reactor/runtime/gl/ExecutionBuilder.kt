@@ -350,32 +350,36 @@ class ExecutionBuilder(
         ).joinIncomingMergeByFlowsToSingleMergingInvocation()
 
 
-
         /**
          * Handle terminal vertices.
          * When execution reaches 'complete' vertex all transitions should be marked dead and complete.
          */
-        executionResultFuture.thenRunAsync(() -> {
-            processingVertices.entrySet().stream()
-                    .map(Map.Entry::getValue)
-                    .map(ProcessingVertex::getincomingHandlingFlows)
-                    .flatMap(Collection::stream)
-                    .map(TransitionFuture::getFuture)
-                    .forEach(future -> future.complete(new TransitionPayloadContext().setDeadTransition(true)));
+        executionResultFuture.thenRunAsync {
+            processingVertices.values
+                    .asIterable()
+                    .flatMap { it.incomingHandlingFlows }
+                    .map { it.feature }
+                    .forEach { future ->
+                        future.complete(TransitionPayloadContext(isDeadTransition = true))
+                    }
 
-            processingVertices.entrySet().stream()
-                    .map(Map.Entry::getValue)
-                    .map(ProcessingVertex::getincomingHandlingFlows)
-                    .flatMap(Collection::stream)
-                    .map(TransitionFuture::getFuture)
-                    .forEach(future -> future.complete(new TransitionPayloadContext().setDeadTransition(true)));
-        }).exceptionally(throwable -> {
-            log.error("Marking transitions as dead is failed.", throwable);
-            return null;
-        });
+            processingVertices.values
+                    .asIterable()
+                    .flatMap { it.incomingHandlingFlows }
+                    .map { it.feature }
+                    .forEach { future ->
+                        future.complete(TransitionPayloadContext(isDeadTransition = true))
+                    }
+        }.exceptionally { throwable ->
+                    log.error(throwable) {
+                        "Marking transitions as dead " +
+                                "after execution result feature is completed is failed."
+                    }
+                    null
+                }
 
         /**
-         * Collect chain execution processor handling futures
+         * Collect chain execution handling futures
          * Processors futures holds handle invocation result or dead context.
          * Exception is an detached merge point which handlingFeature is not used
          * Then all processors futures completes chainExecutionFuture completes too.
@@ -397,7 +401,6 @@ class ExecutionBuilder(
                 .debugProcessingVertexGraphState(debugProcessingVertexGraphState ? processingVertices . values () : null)
         .build();
     }
-
 
 
 }
