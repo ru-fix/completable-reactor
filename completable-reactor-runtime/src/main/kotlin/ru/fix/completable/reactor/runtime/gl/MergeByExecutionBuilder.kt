@@ -1,14 +1,19 @@
 package ru.fix.completable.reactor.runtime.gl
 
+import mu.KotlinLogging
 import ru.fix.commons.profiler.ProfiledCall
 import ru.fix.completable.reactor.runtime.ProfilerNames
-import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.ProcessingVertex
-import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.TransitionFuture
+import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.Companion.INVALID_HANDLE_PAYLOAD_CONTEXT
+import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.Companion.INVALID_MERGE_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.HandlePayloadContext
+import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.ProcessingVertex
+import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.MergePayloadContext
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
+
+private val log = KotlinLogging.logger {}
 
 class MergeByExecutionBuilder<PayloadType>(
         val processingVertices: IdentityHashMap<Vertex, ProcessingVertex>,
@@ -22,11 +27,11 @@ class MergeByExecutionBuilder<PayloadType>(
 
         for ((vx, pvx) in processingVertices) {
 
-            if((vx.handler != null || vx.subgraph != null) && vx.merger == null){
+            if ((vx.handler != null || vx.subgraph != null) && vx.merger == null) {
                 /**
                  * Skip handler/subgraph without merger
                  */
-                if(pvx.outgoingTransitions.isEmpty()){
+                if (pvx.outgoingTransitions.isEmpty()) {
                     throw IllegalStateException("""
                         Invalid graph configuration:
                         Vertex ${vx.name} does not have merger, but has outgoing transitions
@@ -41,8 +46,8 @@ class MergeByExecutionBuilder<PayloadType>(
             val incomingFlows = ArrayList<CompletableFuture<*>>()
             pvx.incomingMergingFlows
                     .asIterable()
-                    .map{it.feature}
-                    .forEach{incomingFlows.add(it)}
+                    .map { it.feature }
+                    .forEach { incomingFlows.add(it) }
 
             /**
              * Handler, Subgraph and Router wait for Handling future to complte before execute merging action.
@@ -54,249 +59,256 @@ class MergeByExecutionBuilder<PayloadType>(
             CompletableFuture.allOf(*incomingFlows.toTypedArray())
                     .thenRunAsync {
 
-                /**
-                 * Handling result could be INVALID_HANDLE_PAYLOAD_CONTEXT in case of exception
-                 * Could be NULL in case of router
-                 */
-                val handlePayloadContext: HandlePayloadContext = null
-
-                if (vx.router == null) {
-                    /**
-                     * Handler or Subgraph
-                     */
-
-                    handlePayloadContext = Optional.of(vertex.gethandlingFeature())
-                            .map(future -> {
-                        try {
-                            if (!future.isDone()) {
-                                RuntimeException resultException = new RuntimeException(String.format(
-                                        "Illegal graph execution state. Processor future" +
-                                                " is not completed. Processor %s",
-                                        vertex.getProcessingItem().getDebugName()));
-                                log.error(resultException.getMessage(), resultException);
-                                executionResultFuture.completeExceptionally(resultException);
-
-                                return ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT;
-                            } else {
-                                return future.get();
-                            }
-                        } catch (Exception exc) {
-                            RuntimeException resultException = new RuntimeException(String.format(
-                                    "Failed to get processor future result for processor: %s",
-                                    vertex.getProcessingItem().getDebugName()), exc);
-
-                            log.error(resultException.getMessage(), resultException);
-                            executionResultFuture.completeExceptionally(resultException);
-
-                            return ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT;
-                        }
-                    })
-                    .orElse(ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT);
-
-                    if (handlePayloadContext == ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT) {
                         /**
-                         * Failed to get processor result.
-                         * Merging will not be applied to payload.
-                         * All outgoing flows from merge point will be marked as terminal.
-                         * executionResult completed by exception
+                         * Handling result could be INVALID_HANDLE_PAYLOAD_CONTEXT in case of exception
+                         * Could be NULL in case of router
                          */
-                        vertex.getmergingFeature().complete(new MergePayloadContext ().setTerminal(true));
-                        return;
+                        var handlePayloadContext: HandlePayloadContext = null
 
-                    } else if (handlePayloadContext.isTerminal()) {
-                        /**
-                         * Processor was marked as terminal during flow by terminal transition.
-                         * Merging will not be applied to payload.
-                         * All outgoing flows from merge point will be marked as terminal.
-                         */
-                        vertex.getmergingFeature().complete(new MergePayloadContext ().setTerminal(true));
-                        return;
-
-                    } else if (handlePayloadContext.isDeadTransition()) {
-                        /**
-                         * Processor was disabled during flow by dead transition.
-                         * Merging will not be applied to payload.
-                         * All outgoing flows from merge point will be marked as dead.
-                         */
-                        vertex.getmergingFeature().complete(new MergePayloadContext ().setDeadTransition(true));
-                        return;
-                    }
-                }
-
-                /**
-                 * Incoming merge flows, could be empty for processors Merge Point
-                 */
-                List<ExecutionBuilder.MergePayloadContext> incomingMergingFlows = vertex . getincomingMergingFlows ().stream()
-                        .map(future -> {
-                try {
-                    if (!future.getFuture().isDone()) {
-
-                        RuntimeException resultException = new RuntimeException(String.format(
-                                "Illegal graph execution state. Incoming merge future" +
-                                        " is not complete." +
-                                        " ProcessingVertex: %s", vertex));
-                        log.error(resultException.getMessage(), resultException);
-                        executionResultFuture.completeExceptionally(resultException);
-                        return ExecutionBuilder.INVALID_MERGE_PAYLOAD_CONTEXT;
-                    } else {
-                        return future.getFuture().get();
-                    }
-                } catch (Exception exc) {
-                    RuntimeException resultException = new RuntimeException(String.format(
-                            "Failed to get incoming merge flow future result for processor: %s",
-                            vertex.getProcessingItem().getDebugName()), exc);
-
-                    log.error(resultException.getMessage(), resultException);
-                    executionResultFuture.completeExceptionally(resultException);
-                    return ExecutionBuilder.INVALID_MERGE_PAYLOAD_CONTEXT;
-                }
-            }).collect(Collectors.toList());
-
-                if (incomingMergingFlows.stream().anyMatch(context -> context == INVALID_MERGE_PAYLOAD_CONTEXT)) {
-                /**
-                 * Exception during merging
-                 * Mark as terminal all outgoing flows from merge point
-                 */
-                vertex.getmergingFeature().complete(new MergePayloadContext ().setTerminal(true));
-
-            } else if (incomingMergingFlows.stream().anyMatch(MergePayloadContext::isTerminal)) {
-                /**
-                 * Terminal state reached.
-                 * Mark as terminal all outgoing flows from merge point
-                 */
-                vertex.getmergingFeature().complete(new MergePayloadContext ().setTerminal(true));
-
-            } else {
-
-                final List < MergePayloadContext > activeincomingMergingFlows = incomingMergingFlows . stream ()
-                        .filter(context ->!context.isDeadTransition())
-                .collect(Collectors.toList());
-
-                if (vertex.getProcessingItemInfo().getProcessingItemType()
-                        == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
-                    /**
-                     * Detached merge point
-                     */
-                    if (activeincomingMergingFlows.size() == 0) {
-
-                        /**
-                         * Check that there are at least one incoming transition that marked as dead
-                         */
-                        if (incomingMergingFlows.stream().anyMatch(ExecutionBuilder.MergePayloadContext::isDeadTransition)) {
+                        if (vx.router == null) {
                             /**
-                             * Detached MergePoint marked as Dead, because there are no active incoming
-                             * flows and there is at least one incoming dead transition
-                             * Mark as dead all outgoing flows from merge point
+                             * This is Handler or Subgraph
                              */
-                            vertex.getmergingFeature().complete(
-                                    new MergePayloadContext ()
-                                            .setDeadTransition(true));
-                        } else {
-                            throw new IllegalStateException (String.format(
-                                    "There is no incoming merge flows for detached merge point %s." +
-                                            " At least dead incoming transition expected.",
-                                    vertex.getProcessingItem().getDebugName()));
-                        }
+                            handlePayloadContext = Optional.of(pvx.handlingFeature)
+                                    .map { feature ->
+                                        try {
+                                            if (!feature.isDone) {
+                                                val resultException = RuntimeException(
+                                                        """
+                                                Illegal graph execution state.
+                                                Handling feature is not completed.
+                                                Vertex: ${vx.name}
+                                                """)
+                                                log.error(resultException) {}
+                                                executionResultFuture.completeExceptionally(resultException)
 
-                    } else {
-                        if (activeincomingMergingFlows.size() > 1) {
-                            /**
-                             * Illegal graph state. Too many active incoming flows.
-                             * Mark as terminal all outgoing flows from merge point
-                             * Complete graph with exception
-                             */
-                            Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
-                                    "There is more than one active incoming flow for routing point %s." +
-                                            " Reactor can not determinate from which of transitions take" +
-                                            " payload." +
-                                            " Possible loss of computation results." +
-                                            " Possible concurrent modifications of payload.",
-                                    vertex.getProcessingItem().getDebugName()));
+                                                return@map INVALID_HANDLE_PAYLOAD_CONTEXT
+                                            } else {
+                                                return@map feature.get()
+                                            }
+                                        } catch (exc: Exception) {
+                                            val resultException = RuntimeException(
+                                                    """
+                                            Failed to get vertex handling feature result for vertex: ${vx.name}
+                                            """,
+                                                    exc)
 
-                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                            vertex.getmergingFeature().complete(
-                                    new MergePayloadContext ()
-                                            .setTerminal(true));
+                                            log.error(resultException) {}
+                                            executionResultFuture.completeExceptionally(resultException)
 
-                        } else {
-                            /**
-                             * Single active incoming merge flow
-                             */
-                            merge(vertex,
-                                    Optional.empty(),
-                                    activeincomingMergingFlows.get(0).getPayload(),
-                                    executionResultFuture);
-                        }
-                    }
-                } else {
-                    /**
-                     * Processors MergePoint
-                     */
-                    if (incomingMergingFlows.size() == 0) {
-                        /**
-                         * No incoming merge flows, only one flow from processors handle
-                         */
-                        merge(vertex,
-                                handlePayloadContext.getProcessorResult(),
-                                handlePayloadContext.getPayload(),
-                                executionResultFuture);
-                    } else {
-                        /**
-                         * Incoming merge flows exists. But some of them can be marked as dead.
-                         */
-                        if (activeincomingMergingFlows.size() == 0) {
-                            /**
-                             * There is no active incoming merge flow for given merge point.
-                             * Mark merge point as dead.
-                             */
-                            vertex.getmergingFeature().complete(new MergePayloadContext ()
+                                            return@map INVALID_HANDLE_PAYLOAD_CONTEXT;
+                                        }
+                                    }
+                                    .orElse(ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT)
 
-                                    .setDeadTransition(true));
-
-                        } else {
-
-                            if (activeincomingMergingFlows.size() > 1) {
+                            if (handlePayloadContext === ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT) {
                                 /**
-                                 * Illegal graph state. Too many active incoming flows.
-                                 * Mark as terminal all outgoing flows from merge point
-                                 * Complete graph with exception
+                                 * Failed to get handler/subgraph result.
+                                 * Merging will not be applied to payload.
+                                 * All outgoing flows from merge point will be marked as terminal.
+                                 * executionResult completed by exception
                                  */
-                                Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
-                                        "There is more than one active incoming flow for merge point for" +
-                                                " processor %s." +
-                                                " Reactor can not determinate from which of transitions" +
-                                                " take payload." +
-                                                " Possible loss of computation results." +
-                                                " Possible concurrent modifications of payload.",
-                                        vertex.getProcessingItem().getDebugName()));
+                                pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                                return@thenRunAsync
 
-                                executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                                vertex.getmergingFeature().complete(
-                                        new MergePayloadContext ()
-                                                .setTerminal(true));
+                            } else if (handlePayloadContext.isTerminal) {
+                                /**
+                                 * Handling context was marked as terminal during flow by terminal transition.
+                                 * Merging will not be applied to payload.
+                                 * All outgoing flows from merge point will be marked as terminal.
+                                 */
+                                pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                                return@thenRunAsync
 
+                            } else if (handlePayloadContext.isDeadTransition) {
+                                /**
+                                 * Vertex was disabled during flow by dead transition.
+                                 * Merging will not be applied to payload.
+                                 * All outgoing flows from merge point will be marked as dead.
+                                 */
+                                pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
+                                return@thenRunAsync
+                            }
+                        }
+
+                        /**
+                         * Incoming merge flows (mergeBy transitions), could be empty.
+                         */
+                        val incomingMergingFlows = pvx.incomingMergingFlows.stream()
+                                .map { feature ->
+                                    try {
+                                        if (!feature.feature.isDone) {
+
+                                            val resultException = RuntimeException(
+                                                    """
+                                Illegal graph execution state.
+                                Incoming merge feature is not complete.
+                                Vertex: ${vx.name}
+                                """)
+                                            log.error(resultException) {}
+                                            executionResultFuture.completeExceptionally(resultException)
+                                            return@map INVALID_MERGE_PAYLOAD_CONTEXT
+                                        } else {
+                                            return@map feature.feature.get()
+                                        }
+                                    } catch (exc: Exception) {
+                                        val resultException = RuntimeException(
+                                                """
+                            Failed to get incoming merge flow feature result for vertex: ${vx.name}
+                            """,
+                                                exc)
+
+                                        log.error(resultException) {}
+                                        executionResultFuture.completeExceptionally(resultException)
+                                        return@map INVALID_MERGE_PAYLOAD_CONTEXT
+                                    }
+                                }.collect(Collectors.toList())
+
+
+                        if (incomingMergingFlows.stream()
+                                        .anyMatch { context -> context === INVALID_MERGE_PAYLOAD_CONTEXT }) {
+                            /**
+                             * Exception during merging
+                             * Mark as terminal all outgoing flows from merge point
+                             */
+                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+
+                        } else if (incomingMergingFlows.stream().anyMatch(MergePayloadContext::isTerminal)) {
+                            /**
+                             * Terminal state reached.
+                             * Mark as terminal all outgoing flows from merge point
+                             */
+                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+
+                        } else {
+
+                            val activeIncomingMergingFlows = incomingMergingFlows
+                                    .stream()
+                                    .filter{context ->!context.isDeadTransition}
+                                    .collect(Collectors.toList())
+
+                            if (vx.router != null ) {
+                                /**
+                                 * Router
+                                 */
+                                if (activeIncomingMergingFlows.isEmpty()) {
+
+                                    /**
+                                     * Check that there are at least one incoming transition that marked as dead
+                                     */
+                                    if (incomingMergingFlows.stream().anyMatch(ExecutionBuilder.MergePayloadContext::isDeadTransition)) {
+                                        /**
+                                         * Detached MergePoint marked as Dead, because there are no active incoming
+                                         * flows and there is at least one incoming dead transition
+                                         * Mark as dead all outgoing flows from merge point
+                                         */
+                                        vertex.getmergingFeature().complete(
+                                                new MergePayloadContext ()
+                                                        .setDeadTransition(true));
+                                    } else {
+                                        throw new IllegalStateException (String.format(
+                                                "There is no incoming merge flows for detached merge point %s." +
+                                                        " At least dead incoming transition expected.",
+                                                vertex.getProcessingItem().getDebugName()));
+                                    }
+
+                                } else {
+                                    if (activeIncomingMergingFlows.size > 1) {
+                                        /**
+                                         * Illegal graph state. Too many active incoming flows.
+                                         * Mark as terminal all outgoing flows from merge point
+                                         * Complete graph with exception
+                                         */
+                                        Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
+                                                "There is more than one active incoming flow for routing point %s." +
+                                                        " Reactor can not determinate from which of transitions take" +
+                                                        " payload." +
+                                                        " Possible loss of computation results." +
+                                                        " Possible concurrent modifications of payload.",
+                                                vertex.getProcessingItem().getDebugName()));
+
+                                        executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
+                                        vertex.getmergingFeature().complete(
+                                                new MergePayloadContext ()
+                                                        .setTerminal(true));
+
+                                    } else {
+                                        /**
+                                         * Single active incoming merge flow
+                                         */
+                                        merge(vertex,
+                                                Optional.empty(),
+                                                activeIncomingMergingFlows.get(0).getPayload(),
+                                                executionResultFuture);
+                                    }
+                                }
                             } else {
+                                /**
+                                 * Handler or Subgraph
+                                 */
+                                if (incomingMergingFlows.isEmpty()) {
+                                    /**
+                                     * No incoming merge flows, only one flow from handling feature
+                                     */
+                                    merge(vertex,
+                                            handlePayloadContext.getProcessorResult(),
+                                            handlePayloadContext.getPayload(),
+                                            executionResultFuture);
+                                } else {
+                                    /**
+                                     * Incoming merge flows exists. But some of them can be marked as dead.
+                                     */
+                                    if (activeIncomingMergingFlows.size() == 0) {
+                                        /**
+                                         * There is no active incoming merge flow for given merge point.
+                                         * Mark merge point as dead.
+                                         */
+                                        vertex.getmergingFeature().complete(new MergePayloadContext ()
 
-                                merge(vertex,
-                                        handlePayloadContext.getProcessorResult(),
-                                        activeincomingMergingFlows.get(0).getPayload(),
-                                        executionResultFuture);
+                                                .setDeadTransition(true));
+
+                                    } else {
+
+                                        if (activeIncomingMergingFlows.size() > 1) {
+                                            /**
+                                             * Illegal graph state. Too many active incoming flows.
+                                             * Mark as terminal all outgoing flows from merge point
+                                             * Complete graph with exception
+                                             */
+                                            Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
+                                                    "There is more than one active incoming flow for merge point for" +
+                                                            " processor %s." +
+                                                            " Reactor can not determinate from which of transitions" +
+                                                            " take payload." +
+                                                            " Possible loss of computation results." +
+                                                            " Possible concurrent modifications of payload.",
+                                                    vertex.getProcessingItem().getDebugName()));
+
+                                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
+                                            vertex.getmergingFeature().complete(
+                                                    new MergePayloadContext ()
+                                                            .setTerminal(true));
+
+                                        } else {
+
+                                            merge(vertex,
+                                                    handlePayloadContext.getProcessorResult(),
+                                                    activeIncomingMergingFlows.get(0).getPayload(),
+                                                    executionResultFuture);
+                                        }
+                                    }
+                                }
+
                             }
                         }
                     }
+                    .exceptionally { throwable ->
+                        log.error(throwable) { "Joining incoming merge flows failed for veretex ${vx.name}." }
+                        return@exceptionally null
+                    }
 
-                }
-            }
-            })
-            .exceptionally(throwable -> {
-                log.error("Joining incoming merge flows failed.", throwable);
-                return null;
-            });
-
-        });//processingVertices
+        }
     }
-
-
 
 
     /**
