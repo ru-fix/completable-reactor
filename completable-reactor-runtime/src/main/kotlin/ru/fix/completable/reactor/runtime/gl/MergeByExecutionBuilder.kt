@@ -61,75 +61,75 @@ class MergeByExecutionBuilder<PayloadType>(
 
                         /**
                          * Handling result could be INVALID_HANDLE_PAYLOAD_CONTEXT in case of exception
-                         * Could be NULL in case of router
+                         * Could carry NULL result in case of router
                          */
-                        var handlePayloadContext: HandlePayloadContext = null
+                        var handlePayloadContext: HandlePayloadContext? = null
 
-                        if (vx.router == null) {
-                            /**
-                             * This is Handler or Subgraph
-                             */
-                            handlePayloadContext = Optional.of(pvx.handlingFeature)
-                                    .map { feature ->
-                                        try {
-                                            if (!feature.isDone) {
-                                                val resultException = RuntimeException(
-                                                        """
-                                                Illegal graph execution state.
-                                                Handling feature is not completed.
-                                                Vertex: ${vx.name}
-                                                """)
-                                                log.error(resultException) {}
-                                                executionResultFuture.completeExceptionally(resultException)
 
-                                                return@map INVALID_HANDLE_PAYLOAD_CONTEXT
-                                            } else {
-                                                return@map feature.get()
-                                            }
-                                        } catch (exc: Exception) {
+                        /**
+                         * This is Handler, Subgraph or Router
+                         */
+                        handlePayloadContext = Optional.of(pvx.handlingFeature)
+                                .map { feature ->
+                                    try {
+                                        if (!feature.isDone) {
                                             val resultException = RuntimeException(
                                                     """
-                                            Failed to get vertex handling feature result for vertex: ${vx.name}
-                                            """,
-                                                    exc)
-
+                                            Illegal graph execution state.
+                                            Handling feature is not completed.
+                                            Vertex: ${vx.name}
+                                            """)
                                             log.error(resultException) {}
                                             executionResultFuture.completeExceptionally(resultException)
 
-                                            return@map INVALID_HANDLE_PAYLOAD_CONTEXT;
+                                            return@map INVALID_HANDLE_PAYLOAD_CONTEXT
+                                        } else {
+                                            return@map feature.get()
                                         }
+                                    } catch (exc: Exception) {
+                                        val resultException = RuntimeException(
+                                                """
+                                        Failed to get vertex handling feature result for vertex: ${vx.name}
+                                        """,
+                                                exc)
+
+                                        log.error(resultException) {}
+                                        executionResultFuture.completeExceptionally(resultException)
+
+                                        return@map INVALID_HANDLE_PAYLOAD_CONTEXT;
                                     }
-                                    .orElse(ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT)
+                                }
+                                .orElse(ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT)
 
-                            if (handlePayloadContext === ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT) {
-                                /**
-                                 * Failed to get handler/subgraph result.
-                                 * Merging will not be applied to payload.
-                                 * All outgoing flows from merge point will be marked as terminal.
-                                 * executionResult completed by exception
-                                 */
-                                pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
-                                return@thenRunAsync
+                        if (handlePayloadContext === ExecutionBuilder.INVALID_HANDLE_PAYLOAD_CONTEXT) {
+                            /**
+                             * Failed to get handler/subgraph result.
+                             * Merging will not be applied to payload.
+                             * All outgoing flows from merge point will be marked as terminal.
+                             * executionResult completed by exception
+                             */
+                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                            return@thenRunAsync
 
-                            } else if (handlePayloadContext.isTerminal) {
-                                /**
-                                 * Handling context was marked as terminal during flow by terminal transition.
-                                 * Merging will not be applied to payload.
-                                 * All outgoing flows from merge point will be marked as terminal.
-                                 */
-                                pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
-                                return@thenRunAsync
+                        } else if (handlePayloadContext.isTerminal) {
+                            /**
+                             * Handling context was marked as terminal during flow by terminal transition.
+                             * Merging will not be applied to payload.
+                             * All outgoing flows from merge point will be marked as terminal.
+                             */
+                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                            return@thenRunAsync
 
-                            } else if (handlePayloadContext.isDeadTransition) {
-                                /**
-                                 * Vertex was disabled during flow by dead transition.
-                                 * Merging will not be applied to payload.
-                                 * All outgoing flows from merge point will be marked as dead.
-                                 */
-                                pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
-                                return@thenRunAsync
-                            }
+                        } else if (handlePayloadContext.isDeadTransition) {
+                            /**
+                             * Vertex was disabled during flow by dead transition.
+                             * Merging will not be applied to payload.
+                             * All outgoing flows from merge point will be marked as dead.
+                             */
+                            pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
+                            return@thenRunAsync
                         }
+
 
                         /**
                          * Incoming merge flows (mergeBy transitions), could be empty.
@@ -184,14 +184,16 @@ class MergeByExecutionBuilder<PayloadType>(
 
                             val activeIncomingMergingFlows = incomingMergingFlows
                                     .stream()
-                                    .filter{context ->!context.isDeadTransition}
+                                    .filter { context -> !context.isDeadTransition }
                                     .collect(Collectors.toList())
 
-                            if (vx.router != null ) {
+                            if (vx.router != null) {
                                 /**
                                  * Router
                                  */
-                                if (activeIncomingMergingFlows.isEmpty()) {
+                                if (incomingMergingFlows.isEmpty()) {
+
+
 
                                     /**
                                      * Check that there are at least one incoming transition that marked as dead
@@ -213,34 +215,21 @@ class MergeByExecutionBuilder<PayloadType>(
                                     }
 
                                 } else {
-                                    if (activeIncomingMergingFlows.size > 1) {
-                                        /**
-                                         * Illegal graph state. Too many active incoming flows.
-                                         * Mark as terminal all outgoing flows from merge point
-                                         * Complete graph with exception
-                                         */
-                                        Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
-                                                "There is more than one active incoming flow for routing point %s." +
-                                                        " Reactor can not determinate from which of transitions take" +
-                                                        " payload." +
-                                                        " Possible loss of computation results." +
-                                                        " Possible concurrent modifications of payload.",
-                                                vertex.getProcessingItem().getDebugName()));
 
-                                        executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                                        vertex.getmergingFeature().complete(
-                                                new MergePayloadContext ()
-                                                        .setTerminal(true));
+                                    /**
+                                     * Illegal graph state.
+                                     * Router should not have incoming merging features.
+                                     * Mark as terminal all outgoing flows from merge point
+                                     * Complete graph with exception
+                                     */
+                                    val incomingMergingFlowsIntoRouterExc = Exception(
+                                            """
+                                            There are incoming merging flows into router ${vx.name}
+                                            Router should not have any incoming merging features.
+                                            """)
 
-                                    } else {
-                                        /**
-                                         * Single active incoming merge flow
-                                         */
-                                        merge(vertex,
-                                                Optional.empty(),
-                                                activeIncomingMergingFlows.get(0).getPayload(),
-                                                executionResultFuture);
-                                    }
+                                    executionResultFuture.completeExceptionally(incomingMergingFlowsIntoRouterExc)
+                                    pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
                                 }
                             } else {
                                 /**
@@ -258,43 +247,40 @@ class MergeByExecutionBuilder<PayloadType>(
                                     /**
                                      * Incoming merge flows exists. But some of them can be marked as dead.
                                      */
-                                    if (activeIncomingMergingFlows.size() == 0) {
+                                    if (activeIncomingMergingFlows.isEmpty()) {
                                         /**
                                          * There is no active incoming merge flow for given merge point.
                                          * Mark merge point as dead.
                                          */
-                                        vertex.getmergingFeature().complete(new MergePayloadContext ()
-
-                                                .setDeadTransition(true));
+                                        pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
 
                                     } else {
 
-                                        if (activeIncomingMergingFlows.size() > 1) {
+                                        if (activeIncomingMergingFlows.size > 1) {
                                             /**
                                              * Illegal graph state. Too many active incoming flows.
                                              * Mark as terminal all outgoing flows from merge point
                                              * Complete graph with exception
                                              */
-                                            Exception tooManyActiveIncomingFlowsExc = new Exception(String.format(
-                                                    "There is more than one active incoming flow for merge point for" +
-                                                            " processor %s." +
-                                                            " Reactor can not determinate from which of transitions" +
-                                                            " take payload." +
-                                                            " Possible loss of computation results." +
-                                                            " Possible concurrent modifications of payload.",
-                                                    vertex.getProcessingItem().getDebugName()));
+                                            val tooManyActiveIncomingFlowsExc = Exception(
+                                                    """
+                                                    There is more than one active incoming flow for merge point
+                                                    for vertex ${vx.name}
+                                                    Reactor can not determinate from which of transitions
+                                                    take payload.
+                                                    Possible loss of computation results.
+                                                    Possible concurrent modifications of payload.
+                                                    """)
 
-                                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc);
-                                            vertex.getmergingFeature().complete(
-                                                    new MergePayloadContext ()
-                                                            .setTerminal(true));
+                                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc)
+                                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
 
                                         } else {
 
                                             merge(vertex,
                                                     handlePayloadContext.getProcessorResult(),
                                                     activeIncomingMergingFlows.get(0).getPayload(),
-                                                    executionResultFuture);
+                                                    executionResultFuture)
                                         }
                                     }
                                 }
