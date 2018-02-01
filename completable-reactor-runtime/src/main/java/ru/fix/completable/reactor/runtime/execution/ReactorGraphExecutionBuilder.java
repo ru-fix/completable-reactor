@@ -1001,7 +1001,7 @@ public class ReactorGraphExecutionBuilder {
 
         boolean isTraceablePayload = tracer.isTraceable(payload);
         Object handleTracingMarker = isTraceablePayload ?
-                tracer.beforeHandle(processingVertex.getProcessingItem().getIdentity(), payload) :
+                tracer.beforeHandle(processingVertex.getProcessingItem().getIdentity().toString(), payload) :
                 null;
         ReactorGraphModel.Identity handleTracingIdentity = isTraceablePayload ?
                 processingVertex.getProcessingItem().getIdentity() :
@@ -1068,7 +1068,7 @@ public class ReactorGraphExecutionBuilder {
             handleCall.stop();
 
             if (isTraceablePayload) {
-                tracer.afterHandle(handleTracingMarker, handleTracingIdentity, res, thr);
+                tracer.afterHandle(handleTracingMarker, handleTracingIdentity.toString(), res, thr);
             }
 
             if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
@@ -1193,7 +1193,8 @@ public class ReactorGraphExecutionBuilder {
                     .start();
             boolean isTraceablePayload = tracer.isTraceable(payload);
             Object mergeTracingMarker = isTraceablePayload ?
-                    tracer.beforeMerge(processingVertex.getProcessingItem().getIdentity(), payload, processorResult) :
+                    tracer.beforeMerge(processingVertex.getProcessingItem().getIdentity().toString(), payload,
+                            processorResult) :
                     null;
 
             Enum mergeStatus = mergerInvocation.get();
@@ -1201,7 +1202,7 @@ public class ReactorGraphExecutionBuilder {
             mergeCall.stop();
 
             if (isTraceablePayload) {
-                tracer.afterMerger(mergeTracingMarker, processingVertex.getProcessingItem().getIdentity(), payload);
+                tracer.afterMerger(mergeTracingMarker, processingVertex.getProcessingItem().getIdentity().toString(), payload);
             }
 
             /**

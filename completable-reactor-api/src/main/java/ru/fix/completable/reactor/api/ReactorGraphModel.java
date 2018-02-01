@@ -158,7 +158,7 @@ public class ReactorGraphModel {
                     return "mergePoint@" + name;
 
                 default:
-                    throw new IllegalArgumentException("Invalid type: " + type);
+                    return "Unknown@Identity" + Integer.toHexString(hashCode());
             }
         }
     }
