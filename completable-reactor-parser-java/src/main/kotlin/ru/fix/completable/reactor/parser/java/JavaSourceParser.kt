@@ -23,8 +23,16 @@ class JavaSourceParser(val listener: Listener) {
 
         val graphBlocks = parser.sourceFile().graphBlock()
 
-        fun checkComments(tokenIndex: Int): Comment? =
+        fun checkCommentsToRight(tokenIndex: Int): Comment? =
                 tokens.getHiddenTokensToRight(tokenIndex)
+                        ?.takeIf { it.size > 0 }
+                        ?.first()
+                        ?.run {
+                            parseComment(text)
+                        }
+
+        fun checkCommentsToLeft(tokenIndex: Int): Comment? =
+                tokens.getHiddenTokensToLeft(tokenIndex)
                         ?.takeIf { it.size > 0 }
                         ?.first()
                         ?.run {
@@ -38,6 +46,10 @@ class JavaSourceParser(val listener: Listener) {
             graphBlocks.asIterable()
                     .mapNotNull { it.graphConfigDeclarationBlock() }
                     .forEach {
+                        checkCommentsToLeft(it.start.tokenIndex)?.run {
+                            startPoint.title = title
+                            startPoint.doc = doc
+                        }
                         startPoint.payloadType = it.payloadType()?.Identifier()?.text
                     }
 
@@ -49,7 +61,7 @@ class JavaSourceParser(val listener: Listener) {
                     handlers[vertexName] = Handler(vertexName).also {
                         it.source = sourceFromToken(start)
 
-                        checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                        checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                             it.title = title
                             it.doc = doc
                         }
@@ -59,7 +71,7 @@ class JavaSourceParser(val listener: Listener) {
                         mergers[vertexName] = Merger(vertexName).also {
                             it.source = sourceFromToken(start)
 
-                            checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                            checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                                 it.title = title
                                 it.doc = doc
                             }
@@ -74,7 +86,7 @@ class JavaSourceParser(val listener: Listener) {
                     ).also {
                         it.source = sourceFromToken(start)
 
-                        checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                        checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                             it.title = title
                             it.doc = doc
                         }
@@ -85,7 +97,7 @@ class JavaSourceParser(val listener: Listener) {
                         mergers[vertexName] = Merger(vertexName).also {
                             it.source = sourceFromToken(start)
 
-                            checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                            checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                                 it.title = title
                                 it.doc = doc
                             }
@@ -97,7 +109,7 @@ class JavaSourceParser(val listener: Listener) {
                     routers[vertexName] = Router(vertexName).also {
                         it.source = sourceFromToken(start)
 
-                        checkComments(this.LPAREN().symbol.tokenIndex)?.run {
+                        checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                             it.title = title
                             it.doc = doc
                         }
@@ -256,39 +268,37 @@ class JavaSourceParser(val listener: Listener) {
     val lineCommentRegex = """^\s*//""".toRegex(RegexOption.MULTILINE)
 
     fun parseComment(commentText: String): Comment {
-        var text = commentText.trim()
-        var isMultiline = false
+        val lines = commentText.split('\n')
+                .asIterable()
+                .map { it.trim() }
+                .map {
+                    when {
+                        it.startsWith("//") -> it.substring("//".length).trim()
+                        it.startsWith("/**") -> it.substring("/**".length).trim()
+                        it.startsWith("/*") -> it.substring("/*".length).trim()
+                        it.endsWith("*/") -> it.substring(0, it.length - "*/".length).trim()
+                        it.startsWith("*") -> it.substring("*".length).trim()
+                        else -> it
+                    }
+                }
+                .dropWhile { it.isBlank() }
+                .dropLastWhile { it.isBlank() }
 
-        if (text.startsWith("/*")) {
-            text = text.substring("/*".length)
-            isMultiline = true
+        if (lines.isEmpty()) {
+            return Comment(null, null)
         }
-        if (text.endsWith("*/")) {
-            text = text.substring(0, text.length - "*/".length)
-            isMultiline = true
-        }
 
-        if (!isMultiline) {
-            text = lineCommentRegex.replace(text, "")
-        }
+        val title: String?
+        val doc: String
 
-        text = text.trimIndent()
-
-        var title: String? = null
-        var doc: String? = null
-
-        val separatorIndex = text.indexOf('\n')
-        if (separatorIndex > 0 && separatorIndex < text.length) {
-            title = text.substring(0, separatorIndex)
-            doc = text.substring(separatorIndex+1)
+        if (lines[0].startsWith('#')) {
+            title = lines[0].substring(1).trim()
+            doc = lines.drop(1).joinToString("\n")
         } else {
-            title = text
-        }
-
-        if(title == "-"){
             title = null
+            doc = lines.joinToString("\n")
         }
 
-        return Comment(title, doc)
+        return Comment(title, doc.takeIf { it.isNotBlank() })
     }
 }

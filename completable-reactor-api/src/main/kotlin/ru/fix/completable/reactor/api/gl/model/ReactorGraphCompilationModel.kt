@@ -59,6 +59,9 @@ class StartPoint : Figure() {
     var payloadType: String? = null
     val handleBy: MutableList<HandleableVertexFigure> = ArrayList()
 
+    var title: String? = null
+    var doc: String? = null
+
     override fun toString() = "StartPoint"
 }
 

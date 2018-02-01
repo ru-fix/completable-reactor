@@ -17,7 +17,7 @@ graphBlock
     ;
 
 graphConfigDeclarationBlock
-    :   'class' Identifier 'extends' 'GraphConfig' '<' payloadType '>'
+    :   ('public' | 'private' | 'static')? 'class' Identifier 'extends' 'GraphConfig' '<' payloadType '>'
     ;
 
 payloadType
