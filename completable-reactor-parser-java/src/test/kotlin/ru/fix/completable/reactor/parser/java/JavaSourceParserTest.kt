@@ -25,7 +25,7 @@ class JavaSourceParserTest {
     }
 
     @Test
-    fun `build visual model for example1`() {
+    fun `build compilation model for example1`() {
         val body = readResource("/example1.java.txt")
 
         val startTime = Instant.now()
@@ -56,6 +56,7 @@ class JavaSourceParserTest {
 
 
         assertEquals("PurchasePayload", model.startPoint.payloadType)
+        assertEquals("Define purchase process when user buys good in the shop.", model.startPoint.doc)
 
         assertEquals(
                 listOf("userProfile", "serviceInfo"),
@@ -221,7 +222,7 @@ class JavaSourceParserTest {
 
 
     @Test
-    fun parseComment() {
+    fun `parse various comments`() {
         val parser = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 fail(msg)
@@ -263,11 +264,11 @@ class JavaSourceParserTest {
                         """.trimIndent()))
 
         assertEquals(
-                JavaSourceParser.Comment(null, "Define purchase process when user buys good in the shop."),
+                JavaSourceParser.Comment(null, "Doc here."),
                 parser.parseComment(
                         """
                          /**
-                          * Define purchase process when user buys good in the shop.
+                          * Doc here.
                           */
                         """.trimIndent()))
     }
