@@ -15,15 +15,15 @@ public abstract class GraphConfig<Payload> {
         ConfigContext.get().setGraphConfig(this);
     }
 
-    public GlPayload<Payload> payload() {
+    protected GlPayload<Payload> payload() {
         return new GlPayloadImpl<>(graph);
     }
 
-    public GlCoordinates coordinates() {
+    protected GlCoordinates coordinates() {
         return new GlCoordinatesImpl();
     }
 
-    public ReactorGraph<Payload> buildGraph() {
+    protected ReactorGraph<Payload> buildGraph() {
         this.graph.getVertices().forEach(vertex -> {
             if (vertex.name == null) {
                 throw new IllegalArgumentException("Graph contains unnamed vertex");
@@ -38,7 +38,13 @@ public abstract class GraphConfig<Payload> {
         return result;
     }
 
-    public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
+    protected <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
+            NoArgHandler<HandlerResult> handler) {
+
+        return handler(payload -> handler.handle());
+    }
+
+    protected <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handler(
             Handler<Payload, HandlerResult> handler) {
 
         Vertex vertex = ConfigContext.Companion.get().extractVertexOrDefault(new Vertex());
@@ -51,7 +57,7 @@ public abstract class GraphConfig<Payload> {
         return new GlMergerBuilderImpl<>(vertex);
     }
 
-    public Vertex router(Router<Payload> router) {
+    protected Vertex router(Router<Payload> router) {
         Vertex vertex = ConfigContext.Companion.get().extractVertexOrDefault(new Vertex());
         requireNull(vertex.handler, "router method used after handler initialization for given vertex");
         requireNull(vertex.merger, "router method used after merger initialization for given vertex");
@@ -62,7 +68,7 @@ public abstract class GraphConfig<Payload> {
         return vertex;
     }
 
-    public <SubgraphPayload> GlMergerBuilder<Payload, SubgraphPayload> subgraph(
+    protected <SubgraphPayload> GlMergerBuilder<Payload, SubgraphPayload> subgraph(
             Class<SubgraphPayload> subgraphPayloadClass,
             SubgraphPayloadBuilder<Payload, SubgraphPayload> subgraphPayloadBuilder) {
 
@@ -77,9 +83,14 @@ public abstract class GraphConfig<Payload> {
         return new GlMergerBuilderImpl<>(vertex);
     }
 
-    public <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handlerSync(
+    protected <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handlerSync(
             SyncHandler<Payload, HandlerResult> handlerSync) {
         return handler(payload -> CompletableFuture.supplyAsync(() -> handlerSync.handle(payload)));
+    }
+
+    protected <HandlerResult> GlMergerBuilder<Payload, HandlerResult> handlerSync(
+            NoArgSyncHandler<HandlerResult> handlerSync) {
+        return handler(payload -> CompletableFuture.supplyAsync(handlerSync::handle));
     }
 
     public interface DependencyInjector {
@@ -96,5 +107,15 @@ public abstract class GraphConfig<Payload> {
         if (value != null) {
             throw new IllegalStateException(message);
         }
+    }
+
+    /**
+     * Test graph configuration.
+     * Check all execution paths.
+     * Validated that there is no conflicts between merging vertices and all required endpoints exist.
+     */
+    public static void test(ReactorGraph graph){
+        //TODO run validators here
+        return;
     }
 }
