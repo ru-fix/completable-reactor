@@ -251,7 +251,7 @@ class JavaSourceParser(val listener: Listener) {
         return text
     }
 
-    data class Comment(val title: String, val doc: String?)
+    data class Comment(val title: String?, val doc: String?)
 
     val lineCommentRegex = """^\s*//""".toRegex(RegexOption.MULTILINE)
 
@@ -274,13 +274,21 @@ class JavaSourceParser(val listener: Listener) {
 
         text = text.trimIndent()
 
+        var title: String? = null
+        var doc: String? = null
+
         val separatorIndex = text.indexOf('\n')
-        return if (separatorIndex > 0 && separatorIndex < text.length) {
-            Comment(
-                    text.substring(0, separatorIndex),
-                    text.substring(separatorIndex+1))
+        if (separatorIndex > 0 && separatorIndex < text.length) {
+            title = text.substring(0, separatorIndex)
+            doc = text.substring(separatorIndex+1)
         } else {
-            Comment(text, null)
+            title = text
         }
+
+        if(title == "-"){
+            title = null
+        }
+
+        return Comment(title, doc)
     }
 }
