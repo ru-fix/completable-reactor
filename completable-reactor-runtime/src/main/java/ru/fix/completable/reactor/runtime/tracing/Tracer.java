@@ -64,10 +64,30 @@ public interface Tracer {
 
     /**
      *
+     * @param vertexName Graph vertex name
+     * @param payload Payload instance
+     * @param handleResult handler result
+     * @return @return tracingMarker - any object that will be passed to
+     * {@link #afterMerger(Object, String, Object)} method
+     */
+    Object beforeMerge(String vertexName,
+                       Object payload,
+                       Object handleResult);
+
+    /**
+     *
      * @param tracingMarker object returned by {@link #beforeMerge(ReactorGraphModel.Identity, Object, Object)}
      * @param identity Graph processing item identity
      * @param payload Payload instance
      */
     void afterMerger(Object tracingMarker, ReactorGraphModel.Identity identity, Object payload);
+
+    /**
+     *
+     * @param tracingMarker object returned by {@link #beforeMerge(String, Object, Object)}
+     * @param vertexName Graph processing vertex name
+     * @param payload Payload instance
+     */
+    void afterMerger(Object tracingMarker, String vertexName, Object payload);
 
 }

@@ -1,14 +1,12 @@
 package ru.fix.completable.reactor.runtime.gl
 
 import mu.KotlinLogging
-import ru.fix.commons.profiler.ProfiledCall
 import ru.fix.completable.reactor.runtime.ProfilerNames
 import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.Companion.INVALID_HANDLE_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.Companion.INVALID_MERGE_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.HandlePayloadContext
 import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.ProcessingVertex
 import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.MergePayloadContext
-import ru.fix.completable.reactor.runtime.internal.CRReactorGraph
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
@@ -182,109 +180,36 @@ class MergeByExecutionBuilder<PayloadType>(
 
                         } else {
 
-                            val activeIncomingMergingFlows = incomingMergingFlows
-                                    .stream()
-                                    .filter { context -> !context.isDeadTransition }
-                                    .collect(Collectors.toList())
-
-                            if (vx.router != null) {
+                            /**
+                             * Handler, Router or Subgraph compteled handlingFeature successfully.
+                             */
+                            if (incomingMergingFlows.isEmpty()) {
                                 /**
-                                 * Router
+                                 * No incoming merge flows, only one flow from handling feature
                                  */
-                                if (incomingMergingFlows.isEmpty()) {
-
-
-
-                                    /**
-                                     * Check that there are at least one incoming transition that marked as dead
-                                     */
-                                    if (incomingMergingFlows.stream().anyMatch(ExecutionBuilder.MergePayloadContext::isDeadTransition)) {
-                                        /**
-                                         * Detached MergePoint marked as Dead, because there are no active incoming
-                                         * flows and there is at least one incoming dead transition
-                                         * Mark as dead all outgoing flows from merge point
-                                         */
-                                        vertex.getmergingFeature().complete(
-                                                new MergePayloadContext ()
-                                                        .setDeadTransition(true));
-                                    } else {
-                                        throw new IllegalStateException (String.format(
-                                                "There is no incoming merge flows for detached merge point %s." +
-                                                        " At least dead incoming transition expected.",
-                                                vertex.getProcessingItem().getDebugName()));
-                                    }
-
-                                } else {
-
-                                    /**
-                                     * Illegal graph state.
-                                     * Router should not have incoming merging features.
-                                     * Mark as terminal all outgoing flows from merge point
-                                     * Complete graph with exception
-                                     */
-                                    val incomingMergingFlowsIntoRouterExc = Exception(
-                                            """
-                                            There are incoming merging flows into router ${vx.name}
-                                            Router should not have any incoming merging features.
-                                            """)
-
-                                    executionResultFuture.completeExceptionally(incomingMergingFlowsIntoRouterExc)
-                                    pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
-                                }
+                                merge(
+                                        pvx,
+                                        handlePayloadContext.handlingResult,
+                                        handlePayloadContext.payload,
+                                        executionResultFuture)
                             } else {
                                 /**
-                                 * Handler or Subgraph
+                                 * Incoming merge flows exists. And all of them should be marked as dead.
                                  */
-                                if (incomingMergingFlows.isEmpty()) {
+                                if (incomingMergingFlows.any { it.isDeadTransition }) {
                                     /**
-                                     * No incoming merge flows, only one flow from handling feature
+                                     * There is exist at least one incoming merge flow for given
+                                     * merger that ьarked as dead.
                                      */
-                                    merge(vertex,
-                                            handlePayloadContext.getProcessorResult(),
-                                            handlePayloadContext.getPayload(),
-                                            executionResultFuture);
+                                    pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
+
                                 } else {
                                     /**
-                                     * Incoming merge flows exists. But some of them can be marked as dead.
+                                     * Illegal case, no such transitions should exist.
                                      */
-                                    if (activeIncomingMergingFlows.isEmpty()) {
-                                        /**
-                                         * There is no active incoming merge flow for given merge point.
-                                         * Mark merge point as dead.
-                                         */
-                                        pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
-
-                                    } else {
-
-                                        if (activeIncomingMergingFlows.size > 1) {
-                                            /**
-                                             * Illegal graph state. Too many active incoming flows.
-                                             * Mark as terminal all outgoing flows from merge point
-                                             * Complete graph with exception
-                                             */
-                                            val tooManyActiveIncomingFlowsExc = Exception(
-                                                    """
-                                                    There is more than one active incoming flow for merge point
-                                                    for vertex ${vx.name}
-                                                    Reactor can not determinate from which of transitions
-                                                    take payload.
-                                                    Possible loss of computation results.
-                                                    Possible concurrent modifications of payload.
-                                                    """)
-
-                                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc)
-                                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
-
-                                        } else {
-
-                                            merge(vertex,
-                                                    handlePayloadContext.getProcessorResult(),
-                                                    activeIncomingMergingFlows.get(0).getPayload(),
-                                                    executionResultFuture)
-                                        }
-                                    }
+                                    throw IllegalStateException(
+                                            "Incoming merging features with unknown states: ${incomingMergingFlows}")
                                 }
-
                             }
                         }
                     }
@@ -298,194 +223,149 @@ class MergeByExecutionBuilder<PayloadType>(
 
 
     /**
-     * @param processingVertex
-     * @param processorResult       empty in case of detached merge point
+     * @param pvx
+     * @param handlingResult       empty in case of detached merge point
      * @param payload
      * @param executionResultFuture
      * @param <PayloadType>
      */
-    private <PayloadType> void merge(ProcessingVertex processingVertex,
-    Object processorResult,
-    Object payload,
-    CompletableFuture<PayloadType> executionResultFuture)
-    {
+    private fun <PayloadType> merge(
+            pvx: ProcessingVertex,
+            handlingResult: Any?,
+            payload: Any?,
+            executionResultFuture: CompletableFuture<PayloadType>) {
 
 
-//-->
-        if (vx.router != null) {
-            /**
-             * Router does not participate in mergeBy transitions.
-             * All incomingHandlingFlows is processed with incomingMergingFlows in mergeres section.
-             */
-            continue
-        }
+        var mergerInvocation: () -> Enum<*>
 
-
-        /**
-         * In case of detached merge point processor should not have incoming handling transition.
-         */
-        if (processorInfo.getProcessingItemType() == CRReactorGraph.ProcessingItemType.MERGE_POINT) {
-            throw new IllegalStateException (String.format(
-                    "Processor %s is of type %s and should not have any incoming handling transition",
-                    processingVertex.getProcessingItem().getDebugName(),
-                    processorInfo.getProcessingItemType()));
-        }
-//<--
-
-
-        CRReactorGraph.ProcessingItemInfo processorInfo = processingVertex . getProcessingItemInfo ();
-
-        Supplier<Enum> mergerInvocation;
-
-        switch(processorInfo.getProcessingItemType()) {
-            case PROCESSOR :
-            if (processorInfo.getDescription().getMerger() == null) {
-                /**
-                 * This Processor does not have merger
-                 */
-                processingVertex.getmergingFeature().complete(new MergePayloadContext ().setDeadTransition(true));
-                return;
-            } else {
-                mergerInvocation = () -> (Enum) processorInfo.getDescription().getMerger().merge(
-                payload,
-                processorResult);
+        when {
+            pvx.vertex.merger != null -> mergerInvocation = { pvx.vertex.merger.merge(payload, handlingResult) }
+            pvx.vertex.router != null -> {
+                if (handlingResult != null) {
+                    throw IllegalStateException("""
+                        Invalid runtime behavior.
+                        Router received non null handling result.
+                        Vertex: ${pvx.vertex.name}
+                        """.trimIndent())
+                }
+                mergerInvocation = { pvx.vertex.router.route(payload) }
             }
-            break;
-            case SUBGRAPH :
-            if (processorInfo.getSubgraphDescription().getMerger() == null) {
-                /**
-                 * This Subgraph does not have merger
-                 */
-                processingVertex.getmergingFeature().complete(new MergePayloadContext ().setDeadTransition(true));
-                return;
-            } else {
-                mergerInvocation = () -> (Enum) processorInfo.getSubgraphDescription().getMerger().merge(
-                payload,
-                processorResult);
-            }
-            break;
-            case MERGE_POINT :
-            mergerInvocation = () -> (Enum) processorInfo.getDetachedMergePointDescription()
-            .getMerger()
-                .merge(payload);
-            break;
-
-            default:
-            throw new IllegalArgumentException (String.format("Unknown processor type: %s",
-                    processorInfo.getProcessingItemType()));
+            else -> throw IllegalArgumentException("""
+                Vertex does not have merger or router.
+                And tries to participate in merging invocation.
+                Vertex: ${pvx.vertex.name}
+                """)
         }
-
 
         try {
-            ProfiledCall mergeCall = profiler . profiledCall (
-                    ProfilerNames.PROCESSOR_MERGE + processingVertex.getProcessingItem().getProfilingName())
-                    .start();
-            boolean isTraceablePayload = tracer . isTraceable (payload);
-            Object mergeTracingMarker = isTraceablePayload ?
-            tracer.beforeMerge(processingVertex.getProcessingItem().getIdentity(), payload, processorResult) :
-            null;
 
-            Enum mergeStatus = mergerInvocation . get ();
+            val mergeCall = builder.profiler.profiledCall(
+                    ProfilerNames.PROCESSOR_MERGE + pvx.vertex.name)
+                    .start()
 
-            mergeCall.stop();
+            val isTraceablePayload = builder.tracer.isTraceable(payload)
+            val mergeTracingMarker =
+                    if (isTraceablePayload) {
+                        builder.tracer.beforeMerge(pvx.vertex.name, payload, handlingResult)
+                    } else {
+                        null
+                    }
+
+            val mergeStatus = mergerInvocation()
+
+            mergeCall.stop()
 
             if (isTraceablePayload) {
-                tracer.afterMerger(mergeTracingMarker, processingVertex.getProcessingItem().getIdentity(), payload);
+                builder.tracer.afterMerger(mergeTracingMarker, pvx.vertex.name, payload)
             }
 
             /**
              * Select outgoing transitions that matches mergeStatus
              */
-            List<CRReactorGraph.Transition> activeTransitions = processingVertex . getoutgoingTransitions ().stream()
-                    .filter(transition -> transition.isOnAny() || transition.getMergeStatuses().contains(mergeStatus))
-            .collect(Collectors.toList());
+            val activeTransitions = pvx.outgoingTransitions
+                    .stream()
+                    .filter { transition -> transition.isOnAny || transition.mergeStatuses.contains(mergeStatus) }
+                    .collect(Collectors.toList())
 
-            if (activeTransitions.size() <= 0) {
-                throw new IllegalStateException (String.format("Merger function returned %s.%s status." +
-                        " But merge point of processor %s does not have matching transition for this status." +
-                        " Expected status from merger function one of: %s",
-                        mergeStatus.getDeclaringClass(), mergeStatus,
-                        processingVertex.getProcessingItem().getDebugName(),
-                        processingVertex.getoutgoingTransitions().stream()
-                                .map(CRReactorGraph.Transition::getDebugDescription)
-                                .collect(Collectors.joining(",", "{", "}"))));
+            if (activeTransitions.isEmpty()) {
+                throw IllegalStateException("""
+                    Merging function returned status: $mergeStatus
+                    But outgoing transition of vertex ${pvx.vertex.name}
+                        does not have matching transition for this status.
+                    Expected status for merging function (merge or route) one of:
+                    ${pvx.outgoingTransitions.joinToString { it.toString() }}
+                    """.trimIndent())
             }
 
             /**
              * check if this merge point have terminal transitions that matches merge status
              */
-            if (activeTransitions.stream().anyMatch(CRReactorGraph.Transition::isComplete)) {
+            if (activeTransitions.any { it.isComplete }) {
 
                 /**
                  * Handle terminal transition by completing execution result
                  */
-                if (!executionResultFuture.complete((PayloadType) payload)) {
+                if (!executionResultFuture.complete(payload as PayloadType)) {
 
-                    Object previousResult = null;
+                    var previousResult: Any? = null
                     try {
-                        if (executionResultFuture.isDone()) {
-                            previousResult = executionResultFuture.get();
+                        if (executionResultFuture.isDone) {
+                            previousResult = executionResultFuture.get()
                         } else {
-                            log.error("Illegal graph execution state." +
-                                    " Completion failed for new result," +
-                                    " but execution result from previous terminal step is not complete.");
+                            log.error {
+                                """
+                                Illegal graph execution state.
+                                Completion failed for new result,
+                                    but execution result from previous terminal step is not complete.
+                                """.trimIndent()
+                            }
                         }
-                    } catch (Exception exc) {
-                        log.error("Failed to get completed execution result from previous terminal step.", exc);
+                    } catch (exc: Exception) {
+                        log.error(exc) { "Failed to get completed execution result from previous terminal step." }
                     }
 
-                    log.error("Processing chain was completed by at least two different terminal steps." +
-                            " Already completed with result {}." +
-                            " New completion result {} in merge point for processor {}",
-                            debugSerializer.dumpObject(previousResult),
-                            debugSerializer.dumpObject(payload),
-                            processingVertex.getProcessingItem().getDebugName());
+                    log.error {
+                        """
+                        Processing chain was completed by at least two different terminal steps.
+                        Already completed with result ${builder.debugSerializer.dumpObject(previousResult)}
+                        New completion result: ${builder.debugSerializer.dumpObject(payload)}
+                        in merger/router for vertex ${pvx.vertex.name}
+                        """
+                    }
                 }
 
                 /**
                  * Terminal state reached. Execution result completed.
                  * Throw poison pill - terminal context. All following merge points should be deactivated.
                  */
-                processingVertex.getmergingFeature().complete(new MergePayloadContext ()
-                        .setPayload(null)
-                        .setMergeResult(mergeStatus)
-                        .setTerminal(true));
+                pvx.mergingFeature.complete(MergePayloadContext(
+                        payload = null,
+                        mergeResult = mergeStatus,
+                        isTerminal = true))
+
             } else {
                 /**
                  * There is no terminal state reached after merging.
                  */
-                processingVertex.getmergingFeature().complete(new MergePayloadContext ()
-                        .setPayload(payload)
-                        .setMergeResult(mergeStatus));
+                pvx.mergingFeature.complete(MergePayloadContext(
+                        payload = payload,
+                        mergeResult = mergeStatus))
             }
 
-        } catch (Exception exc) {
-            log.error("Failed to merge payload {} {} by processing item {} for result {}",
-                    payload.getClass(),
-                    debugSerializer.dumpObject(payload),
-                    processingVertex.getProcessingItem().getDebugName(),
-                    debugSerializer.dumpObject(processorResult),
-                    exc);
-
-            executionResultFuture.completeExceptionally(exc);
-
-            processingVertex.getmergingFeature().complete(new MergePayloadContext ().setDeadTransition(true));
-        }
-    }
-
-    private fun invokeRouterHandlingMethod(pvx: ProcessingVertex, payload: Any?): CompletableFuture<Any?> {
-
-        return try {
-            CompletableFuture.supplyAsync { pvx.vertex.router.route(payload) }
         } catch (exc: Exception) {
-            val result = CompletableFuture<Any?>()
-            result.completeExceptionally(
-                    IllegalArgumentException("""
-                            Exception during router invocation for vertex ${pvx.vertex.name}.
-                            Payload: ${builder.debugSerializer.dumpObject(payload)}
-                            """,
-                            exc))
-            result
+            log.error(exc) {
+                """
+                Failed to merge payload ${builder.debugSerializer.dumpObject(payload)}
+                by vertex ${pvx.vertex.name}
+                with result ${builder.debugSerializer.dumpObject(handlingResult)}
+                """
+            }
+
+            executionResultFuture.completeExceptionally(exc)
+
+            pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
+
         }
     }
+
 }
