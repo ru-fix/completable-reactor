@@ -1,19 +1,11 @@
 package ru.fix.completable.reactor.runtime.execution;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.Accessors;
-import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder.ProcessingVertex;
-
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Kamil Asfandiyarov
  */
-@Data
-@Builder
-@Accessors(chain = true)
 public class ReactorGraphExecution<PayloadType > {
 
     /**
@@ -34,5 +26,33 @@ public class ReactorGraphExecution<PayloadType > {
     /**
      * Debug purpose field that allows to check internal execution graph state
      */
-    private final Collection<ProcessingVertex> debugProcessingVertexGraphState;
+    private final Collection debugProcessingVertexGraphState;
+
+
+    public ReactorGraphExecution(
+            CompletableFuture<PayloadType> submitFuture,
+            CompletableFuture<PayloadType> resultFuture,
+            CompletableFuture<Void> chainExecutionFuture,
+            Collection debugProcessingVertexGraphState) {
+        this.chainExecutionFuture = chainExecutionFuture;
+        this.submitFuture = submitFuture;
+        this.resultFuture = resultFuture;
+        this.debugProcessingVertexGraphState = debugProcessingVertexGraphState;
+    }
+
+    public CompletableFuture<Void> getChainExecutionFuture() {
+        return chainExecutionFuture;
+    }
+
+    public CompletableFuture<PayloadType> getSubmitFuture() {
+        return submitFuture;
+    }
+
+    public CompletableFuture<PayloadType> getResultFuture() {
+        return resultFuture;
+    }
+
+    public Collection getDebugProcessingVertexGraphState() {
+        return debugProcessingVertexGraphState;
+    }
 }

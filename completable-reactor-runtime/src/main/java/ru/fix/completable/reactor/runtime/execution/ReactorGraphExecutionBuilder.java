@@ -800,12 +800,12 @@ public class ReactorGraphExecutionBuilder {
                         .toArray(CompletableFuture[]::new)
         );
 
-        return ReactorGraphExecution.<PayloadType>builder()
-                .resultFuture(executionResultFuture)
-                .submitFuture(submitFuture)
-                .chainExecutionFuture(chainExecutionFuture)
-                .debugProcessingVertexGraphState(debugProcessingVertexGraphState ? processingVertices.values() : null)
-                .build();
+        return new ReactorGraphExecution<PayloadType>(
+                submitFuture,
+                executionResultFuture,
+                chainExecutionFuture,
+                debugProcessingVertexGraphState ? processingVertices.values() : null
+        );
     }
 
     private CompletableFuture<?> invokeHandlingMethod(

@@ -9,6 +9,7 @@ import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution
+import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
@@ -94,7 +95,7 @@ class ExecutionBuilder(
              * All transitions except copy-transition for detached processors is allowed.
              */
             var isTerminal: Boolean = false,
-            var processorResult: Any? = null
+            var handlingResult: Any? = null
     )
 
     companion object {
@@ -181,18 +182,6 @@ class ExecutionBuilder(
          */
         glReactorGraph.vertices.forEach { vx ->
             val pvx = ProcessingVertex(vertex = vx)
-
-            /**
-             * Populate Routers
-             */
-            if (vx.router != null) {
-                /**
-                 * Router does not uses {@code {@link ProcessingVertex#handlingFeature}
-                 * Insure that it never invoked during execution.
-                 */
-                pvx.handlingFeature.completeExceptionally(IllegalStateException(
-                        "Processing vertex of router ${vx.name} should not use handlingFeature."))
-            }
 
             /**
              * Populate MergePoints transitions
@@ -379,27 +368,31 @@ class ExecutionBuilder(
                 }
 
         /**
-         * Collect chain execution handling futures
-         * Processors futures holds handle invocation result or dead context.
-         * Exception is an detached merge point which handlingFeature is not used
-         * Then all processors futures completes chainExecutionFuture completes too.
+         * Collect chain execution handling futures.
+         * Handling futures holds handle invocation result or dead or terminated context.
+         * Handlers without mergers could complete much later than main flow.
+         * We have to keep chainExecutionFuture in pending state until all vertices are completed.
+         * Then all handling and merging futures completes, then chainExecutionFuture completes too.
+         * Joint executionResultFuture to list of pending features too.
          */
-        CompletableFuture<Void> chainExecutionFuture = CompletableFuture . allOf (
-                processingVertices.entrySet().stream()
-                        .map(Map.Entry::getValue)
-                        //detached merge point does not have processor future
-                        .filter(vertex -> vertex.getProcessingItemInfo().getProcessingItemType() !=
-        CRReactorGraph.ProcessingItemType.MERGE_POINT)
-        .map(ProcessingVertex::gethandlingFeature)
-                .toArray(CompletableFuture[]::new)
-        );
 
-        return ReactorGraphExecution.< PayloadType > builder ()
-                .resultFuture(executionResultFuture)
-                .submitFuture(submitFuture)
-                .chainExecutionFuture(chainExecutionFuture)
-                .debugProcessingVertexGraphState(debugProcessingVertexGraphState ? processingVertices . values () : null)
-        .build();
+        val chainExecutionFuture = CompletableFuture.allOf(
+                executionResultFuture,
+                * processingVertices.values
+                        .asIterable()
+                        .flatMap { listOf(it.handlingFeature, it.mergingFeature) }
+                        .toTypedArray()
+        )
+
+        return ReactorGraphExecution(
+                submitFuture,
+                executionResultFuture,
+                chainExecutionFuture,
+                if (debugProcessingVertexGraphState) {
+                    processingVertices.values
+                } else {
+                    null
+                })
     }
 
 

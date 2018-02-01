@@ -326,7 +326,7 @@ class HandleByExecutionBuilder<PayloadType>(
 
                 pvx.handlingFeature.complete(HandlePayloadContext(isTerminal = true))
             } else {
-                pvx.handlingFeature.complete(HandlePayloadContext(payload = payload, processorResult = result))
+                pvx.handlingFeature.complete(HandlePayloadContext(payload = payload, handlingResult = result))
             }
 
             null

@@ -24,6 +24,15 @@ public abstract class GraphConfig<Payload> {
     }
 
     public ReactorGraph<Payload> buildGraph() {
+        this.graph.getVertices().forEach(vertex -> {
+            if (vertex.name == null) {
+                throw new IllegalArgumentException("Graph contains unnamed vertex");
+            }
+        });
+
+        //TODO add Runtime Validation Steps
+        //TODO add Compilte time validation steps in tests
+
         GlReactorGraph<Payload> result = this.graph;
         this.graph = new GlReactorGraph<>();
         return result;
@@ -84,7 +93,7 @@ public abstract class GraphConfig<Payload> {
     }
 
     static void requireNull(Object value, String message) {
-        if(value != null){
+        if (value != null) {
             throw new IllegalStateException(message);
         }
     }
