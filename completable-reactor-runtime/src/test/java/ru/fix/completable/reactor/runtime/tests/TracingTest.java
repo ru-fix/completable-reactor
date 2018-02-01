@@ -6,7 +6,6 @@ import lombok.experimental.Accessors;
 import lombok.val;
 import org.junit.Test;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
-import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 import ru.fix.completable.reactor.runtime.LogTracer;
@@ -100,7 +99,7 @@ public class TracingTest {
             }
 
             @Override
-            public Object beforeHandle(ReactorGraphModel.Identity identity, Object payload) {
+            public Object beforeHandle(String identity, Object payload) {
                 if (((TracablePayload) payload).getNumber() == 42) {
                     beforeHandle.set(true);
                 }
@@ -108,7 +107,7 @@ public class TracingTest {
             }
 
             @Override
-            public Object beforeMerge(ReactorGraphModel.Identity identity, Object payload, Object handleResult) {
+            public Object beforeMerge(String identity, Object payload, Object handleResult) {
                 if (((TracablePayload) payload).getNumber() == 42) {
                     beforeMerge.set(true);
                 }

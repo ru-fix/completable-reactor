@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import ru.fix.commons.profiler.PrefixedProfiler;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
-import ru.fix.completable.reactor.api.ReactorGraphModel;
 import ru.fix.completable.reactor.runtime.cloning.CopierThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
@@ -88,9 +87,9 @@ public class CompletableReactor implements AutoCloseable {
         }
 
         @Override
-        public Object beforeHandle(ReactorGraphModel.Identity identity, Object payload) {
+        public Object beforeHandle(String vertexName, Object payload) {
             try {
-                return tracer.beforeHandle(identity, payload);
+                return tracer.beforeHandle(vertexName, payload);
             } catch (Exception exc) {
                 log.error("Failed to call beforeHandle method of tracer.", exc);
                 return null;
@@ -99,20 +98,20 @@ public class CompletableReactor implements AutoCloseable {
 
         @Override
         public void afterHandle(Object tracingMarker,
-                                ReactorGraphModel.Identity identity,
+                                String vertexName,
                                 Object handlerResult,
                                 Throwable throwable) {
             try {
-                tracer.afterHandle(tracingMarker, identity, handlerResult, throwable);
+                tracer.afterHandle(tracingMarker, vertexName, handlerResult, throwable);
             } catch (Exception exc) {
                 log.error("Failed to call afterHandle method of tracer.", exc);
             }
         }
 
         @Override
-        public Object beforeMerge(ReactorGraphModel.Identity identity, Object payload, Object handleResult) {
+        public Object beforeMerge(String vertexName, Object payload, Object handleResult) {
             try {
-                return tracer.beforeMerge(identity, payload, handleResult);
+                return tracer.beforeMerge(vertexName, payload, handleResult);
             } catch (Exception exc) {
                 log.error("Failed to call beforeMerge method of tracer.", exc);
                 return null;
@@ -120,13 +119,14 @@ public class CompletableReactor implements AutoCloseable {
         }
 
         @Override
-        public void afterMerger(Object tracingMarker, ReactorGraphModel.Identity identity, Object payload) {
+        public void afterMerger(Object tracingMarker, String vertexName, Object payload) {
             try {
-                tracer.afterMerger(tracingMarker, identity, payload);
+                tracer.afterMerger(tracingMarker, vertexName, payload);
             } catch (Exception exc) {
                 log.error("Failed to call afterMerger method of tracer.", exc);
             }
         }
+
     }
 
     private final ReactorTracer reactorTracer = new ReactorTracer();
