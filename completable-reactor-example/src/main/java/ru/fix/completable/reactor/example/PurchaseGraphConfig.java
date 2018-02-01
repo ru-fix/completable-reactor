@@ -119,7 +119,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
 
     Vertex isPartnerService =
             router(/*
-                       Is partner service?
+                       -
                        Check if given service is provided by a partner.
                        Update payload response.
                    */

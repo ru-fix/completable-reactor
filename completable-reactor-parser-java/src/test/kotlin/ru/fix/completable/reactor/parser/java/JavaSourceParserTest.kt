@@ -9,9 +9,7 @@ import ru.fix.completable.reactor.api.gl.model.VertexFigure
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.fail
+import kotlin.test.*
 
 private val log = KotlinLogging.logger {}
 
@@ -43,6 +41,19 @@ class JavaSourceParserTest {
 
 
         fun vertexTransitions(name: String) = model.transitionable[name]!!.transitions.asIterable()
+
+
+        assertTrue(model.handlers.containsKey("userProfile"))
+        assertTrue(model.handlers.containsKey("txLog"))
+        assertTrue(model.handlers.containsKey("userJournal"))
+        assertTrue(model.handlers.containsKey("webNotification"))
+        assertTrue(model.handlers.containsKey("smsNotification"))
+        assertTrue(model.handlers.containsKey("bank"))
+        assertTrue(model.handlers.containsKey("serviceInfo"))
+        assertTrue(model.handlers.containsKey("marketingCampaign"))
+        assertTrue(model.subgraphs.containsKey("bonusPurchaseSubgraph"))
+        assertTrue(model.routers.containsKey("isPartnerService"))
+
 
         assertEquals("PurchasePayload", model.startPoint.payloadType)
 
@@ -135,6 +146,18 @@ class JavaSourceParserTest {
                     })
                 }
 
+        vertexTransitions("isPartnerService")
+                .apply {
+                    assertEquals(1, count())
+
+                    assertNotNull(find {
+                        it.mergeStatuses == null
+                                && !it.isComplete
+                                && it.isOnAny
+                                && it.target.let { it is VertexFigure && it.name == "txLog" }
+                    })
+                }
+
         vertexTransitions("txLog")
                 .apply {
                     assertEquals(1, count())
@@ -159,9 +182,18 @@ class JavaSourceParserTest {
                     })
                 }
 
+
         assertEquals("CheckWithdraw", model.mergers["bank"]!!.title)
         assertEquals("check profile state", model.mergers["userProfile"]!!.title)
         assertEquals("load user profile", model.handlers["userProfile"]!!.title)
+
+        assertNull(model.routers["isPartnerService"]!!.title)
+        assertTrue {
+            model.routers["isPartnerService"]!!
+                    .doc!!
+                    .startsWith("Check if given service is provided by a partner.")
+        }
+
 
         assertEquals(Coordinates(680, 60), model.startPoint.coordinates)
         assertEquals(Coordinates(410, 440), model.handleable["bank"]!!.coordinates)
@@ -200,15 +232,15 @@ class JavaSourceParserTest {
                 JavaSourceParser.Comment("Title here", null),
                 parser.parseComment(
                         "/* \n" +
-                        "   Title here\n" +
-                        "*/"))
+                                "   Title here\n" +
+                                "*/"))
 
         assertEquals(
                 JavaSourceParser.Comment("Title here", "And documentation"),
                 parser.parseComment(
                         "/*   Title here\n" +
-                        "   And documentation" +
-                        "*/"))
+                                "   And documentation" +
+                                "*/"))
 
         assertEquals(
                 JavaSourceParser.Comment("Title here", null),
@@ -218,8 +250,18 @@ class JavaSourceParserTest {
                 JavaSourceParser.Comment("Title here", "And documentation\nmultiline"),
                 parser.parseComment(
                         "//     Title here\n" +
-                        "       //     And documentation\n" +
-                        "       //     multiline"))
+                                "       //     And documentation\n" +
+                                "       //     multiline"))
+
+
+        assertEquals(
+                JavaSourceParser.Comment(null, "Documentation line 1\nDocumentation line 2"),
+                parser.parseComment(
+                        """
+                        -
+                        Documentation line 1
+                        Documentation line 2
+                        """.trimIndent()))
     }
 
 }
