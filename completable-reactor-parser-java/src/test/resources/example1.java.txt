@@ -18,10 +18,10 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
 
         {
             handler(
-                    //load user profile
+                    //# load user profile
                     pld -> userProfile.loadUserProfileById(pld.request.getUserId())
             ).withMerger(
-                    //check profile state
+                    //# check profile state
                     (pld, result) -> {
                         if (pld.response.getStatus() != null) {
                             return Flow.STOP;
@@ -84,7 +84,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
 
         {
             handler(/*
-                        WithdrawMoneyMinus
+                        # WithdrawMoneyMinus
                         Withdraw money even if user does not have money on his account.
                         User will end up with negative balance after this operation.
                     */
@@ -93,7 +93,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                             pld.intermediateData.getServiceInfo())
             ).withMerger(
                     /*
-                        CheckWithdraw
+                        # CheckWithdraw
                         Checks result of withdraw operation
                         Sets new amount and withdrawal status in payload
                         Stops in case if operation is failed
@@ -119,7 +119,6 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
 
     Vertex isPartnerService =
             router(/*
-                       -
                        Check if given service is provided by a partner.
                        Update payload response.
                    */
@@ -138,7 +137,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
         {
             handler(pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
                     .withMerger(
-                            //checkServiceState
+                            //# checkServiceState
                             (pld, result) -> {
                                 if (pld.response.getStatus() != null) {
                                     return Flow.STOP;

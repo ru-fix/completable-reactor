@@ -211,8 +211,8 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
         assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
 
-        assertEquals(Source(null, 244, 15), model.buildGraphSource)
-        assertEquals(Source(null, 198, 8), model.startPoint.source)
+        assertEquals(Source(null, 243, 15), model.buildGraphSource)
+        assertEquals(Source(null, 197, 8), model.startPoint.source)
 
         assertEquals(Source(null, 86, 12), model.handlers["bank"]!!.source)
         assertEquals(Source(null, 94, 14), model.mergers["bank"]!!.source)
@@ -232,24 +232,24 @@ class JavaSourceParserTest {
                 JavaSourceParser.Comment("Title here", null),
                 parser.parseComment(
                         "/* \n" +
-                                "   Title here\n" +
+                                "   #Title here\n" +
                                 "*/"))
 
         assertEquals(
                 JavaSourceParser.Comment("Title here", "And documentation"),
                 parser.parseComment(
-                        "/*   Title here\n" +
+                        "/*  # Title here\n" +
                                 "   And documentation" +
                                 "*/"))
 
         assertEquals(
                 JavaSourceParser.Comment("Title here", null),
-                parser.parseComment("// Title here  \n"))
+                parser.parseComment("//# Title here  \n"))
 
         assertEquals(
                 JavaSourceParser.Comment("Title here", "And documentation\nmultiline"),
                 parser.parseComment(
-                        "//     Title here\n" +
+                        "// #    Title here\n" +
                                 "       //     And documentation\n" +
                                 "       //     multiline"))
 
@@ -258,9 +258,17 @@ class JavaSourceParserTest {
                 JavaSourceParser.Comment(null, "Documentation line 1\nDocumentation line 2"),
                 parser.parseComment(
                         """
-                        -
                         Documentation line 1
                         Documentation line 2
+                        """.trimIndent()))
+
+        assertEquals(
+                JavaSourceParser.Comment(null, "Define purchase process when user buys good in the shop."),
+                parser.parseComment(
+                        """
+                         /**
+                          * Define purchase process when user buys good in the shop.
+                          */
                         """.trimIndent()))
     }
 
