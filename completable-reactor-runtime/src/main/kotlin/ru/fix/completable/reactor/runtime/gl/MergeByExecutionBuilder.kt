@@ -2,11 +2,9 @@ package ru.fix.completable.reactor.runtime.gl
 
 import mu.KotlinLogging
 import ru.fix.completable.reactor.runtime.ProfilerNames
+import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.*
 import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.Companion.INVALID_HANDLE_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.Companion.INVALID_MERGE_PAYLOAD_CONTEXT
-import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.HandlePayloadContext
-import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.ProcessingVertex
-import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder.MergePayloadContext
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
@@ -152,8 +150,8 @@ class MergeByExecutionBuilder<PayloadType>(
                                     } catch (exc: Exception) {
                                         val resultException = RuntimeException(
                                                 """
-                            Failed to get incoming merge flow feature result for vertex: ${vx.name}
-                            """,
+                                                Failed to get incoming merge flow feature result for vertex: ${vx.name}
+                                                """,
                                                 exc)
 
                                         log.error(resultException) {}
@@ -162,6 +160,25 @@ class MergeByExecutionBuilder<PayloadType>(
                                     }
                                 }.collect(Collectors.toList())
 
+                        /**
+                         * Assert graph consistency
+                         */
+                        if (pvx.vertex.router == null && pvx.incomingMergingFlows.size > 1) {
+                            throw IllegalStateException(
+                                    """
+                                    More than 1 incoming merging flow exist for non router vertex ${pvx.vertex.name}.
+                                    Only single incoming merging flow is allowed.
+                                    Incoming merging flows: ${pvx.incomingMergingFlows}
+                                    """.trimIndent())
+                        }
+                        if (pvx.vertex.router != null && pvx.incomingMergingFlows.isNotEmpty()) {
+                            throw IllegalStateException(
+                                    """
+                                    Incoming merging flow exist for router vertex ${pvx.vertex.name}.
+                                    Router vertex could not have incoming merging flows.
+                                    Incoming merging flows: ${pvx.incomingMergingFlows}
+                                    """.trimIndent())
+                        }
 
                         if (incomingMergingFlows.stream()
                                         .anyMatch { context -> context === INVALID_MERGE_PAYLOAD_CONTEXT }) {
@@ -181,11 +198,12 @@ class MergeByExecutionBuilder<PayloadType>(
                         } else {
 
                             /**
-                             * Handler, Router or Subgraph compteled handlingFeature successfully.
+                             * Handler, Router or Subgraph completed handlingFeature successfully.
                              */
                             if (incomingMergingFlows.isEmpty()) {
                                 /**
                                  * No incoming merge flows, only one flow from handling feature
+                                 * Handler, Router and Subgraph behave in same way - apply merging operation
                                  */
                                 merge(
                                         pvx,
@@ -194,21 +212,62 @@ class MergeByExecutionBuilder<PayloadType>(
                                         executionResultFuture)
                             } else {
                                 /**
-                                 * Incoming merge flows exists. And all of them should be marked as dead.
+                                 * Incoming merge flows exists.
                                  */
-                                if (incomingMergingFlows.any { it.isDeadTransition }) {
+                                if (pvx.vertex.router != null) {
                                     /**
-                                     * There is exist at least one incoming merge flow for given
-                                     * merger that ьarked as dead.
+                                     * In case of Router there should be no such transitions.
                                      */
-                                    pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
+                                    throw IllegalStateException(
+                                            """
+                                            Incoming merging flows exist for Router vertex ${pvx.vertex.name}.
+                                            Incoming merging flows: ${incomingMergingFlows}
+                                            """.trimIndent())
 
                                 } else {
                                     /**
-                                     * Illegal case, no such transitions should exist.
+                                     * In case of Handler or Subgraph there could be single incoming merging flow.
+                                     * This merging flow can be marked as dead or as active.
                                      */
-                                    throw IllegalStateException(
-                                            "Incoming merging features with unknown states: ${incomingMergingFlows}")
+
+                                    if (incomingMergingFlows.any { it.isDeadTransition }) {
+                                        /**
+                                         * There is incoming transition in status
+                                         * Mark merge point as dead.
+                                         */
+                                        pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
+
+                                    } else {
+
+                                        if (incomingMergingFlows.size > 1) {
+                                            /**
+                                             * Illegal graph state. Too many active incoming flows.
+                                             * Mark as terminal all outgoing flows from merge point
+                                             * Complete graph with exception
+                                             */
+                                            val tooManyActiveIncomingFlowsExc = Exception(
+                                                    """
+                                                    There is more than one active incoming merging flow
+                                                     for vertex ${pvx.vertex.name}
+                                                    Reactor can not determinate from which of transitions take payload.
+                                                    Possible loss of computation results.
+                                                    Possible concurrent modifications of payload.
+                                                    """)
+
+                                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc)
+                                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+
+                                        } else {
+                                            /**
+                                             * Single active incoming merging flow
+                                             */
+                                            merge(
+                                                    pvx,
+                                                    handlePayloadContext.handlingResult,
+                                                    incomingMergingFlows[0].payload,
+                                                    executionResultFuture)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -251,10 +310,10 @@ class MergeByExecutionBuilder<PayloadType>(
                 mergerInvocation = { pvx.vertex.router.route(payload) }
             }
             else -> throw IllegalArgumentException("""
-                Vertex does not have merger or router.
-                And tries to participate in merging invocation.
-                Vertex: ${pvx.vertex.name}
-                """)
+                        Vertex does not have merger or router.
+                        And tries to participate in merging invocation.
+                        Vertex: ${pvx.vertex.name}
+                        """.trimIndent())
         }
 
         try {
@@ -291,7 +350,7 @@ class MergeByExecutionBuilder<PayloadType>(
                 throw IllegalStateException("""
                     Merging function returned status: $mergeStatus
                     But outgoing transition of vertex ${pvx.vertex.name}
-                        does not have matching transition for this status.
+                    does not have matching transition for this status.
                     Expected status for merging function (merge or route) one of:
                     ${pvx.outgoingTransitions.joinToString { it.toString() }}
                     """.trimIndent())
@@ -316,7 +375,7 @@ class MergeByExecutionBuilder<PayloadType>(
                                 """
                                 Illegal graph execution state.
                                 Completion failed for new result,
-                                    but execution result from previous terminal step is not complete.
+                                but execution result from previous terminal step is not complete.
                                 """.trimIndent()
                             }
                         }
@@ -367,5 +426,4 @@ class MergeByExecutionBuilder<PayloadType>(
 
         }
     }
-
 }

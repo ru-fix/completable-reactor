@@ -13,6 +13,8 @@ import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder;
+import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder;
+import ru.fix.completable.reactor.runtime.gl.GraphConfig;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
@@ -20,10 +22,11 @@ import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.function.Function;
@@ -43,6 +46,7 @@ public class CompletableReactor implements AutoCloseable {
     private final DebugSerializer debugSerializer = new ToStringDebugSerializer();
 
     private final ReactorGraphExecutionBuilder executionBuilder;
+    private final ExecutionBuilder glExecutionBuilder;
 
     private final Map<Class<?>, CRReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
 
@@ -70,6 +74,162 @@ public class CompletableReactor implements AutoCloseable {
     private final AtomicLong pendingRequestCount = new AtomicLong();
 
     private final AtomicLong closeTimeoutMs = new AtomicLong(120_000);
+
+    private final ConcurrentHashMap<Class<?>, GlReactorGraph> glPayloadGraphs = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<? extends GraphConfig>, Boolean> glGraphConfigs = new ConcurrentHashMap<>();
+
+    public <GraphConfigType extends GraphConfig<?>>
+    void registerIfAbsent(GraphConfigType graphConfig) {
+        Objects.requireNonNull(graphConfig, "graphConfig");
+
+        glGraphConfigs.computeIfAbsent(graphConfig.getClass(), type -> {
+
+            Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfig.getClass());
+            Object graph = buildGraphFromGraphConfig(graphConfig);
+
+            Object prevGraph = glPayloadGraphs.putIfAbsent(payloadType, (GlReactorGraph) graph);
+            if (prevGraph != null) {
+                throw new IllegalArgumentException(""
+                        + "New graph config: " + graphConfig
+                        + " of type " + graphConfig.getClass()
+                        + " is registering graph for payload " + payloadType + "."
+                        + " But this payload was already registered by another graph config.");
+            }
+            return true;
+        });
+    }
+
+    //TODO: execute validation during graph registration
+    /**
+     * Test graph configuration.
+     * Check all execution paths.
+     * Validated that there is no conflicts between merging vertices and all required endpoints exist.
+     */
+
+
+    public <PayloadType, GraphConfigType extends GraphConfig<PayloadType>>
+    void registerIfAbsent(Class<GraphConfigType> graphConfigClass) {
+        Objects.requireNonNull(graphConfigClass, "graphConfigClass");
+
+        glGraphConfigs.computeIfAbsent(graphConfigClass, type -> {
+            try {
+
+                Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfigClass);
+
+
+                GraphConfig config;
+                try {
+                    Constructor<GraphConfigType> ctor = graphConfigClass.getDeclaredConstructor();
+                    if (!ctor.isAccessible()) {
+                        ctor.setAccessible(true);
+                    }
+                    config = ctor.newInstance();
+                } catch (Exception exc) {
+                    throw new IllegalArgumentException(""
+                            + "Failed to instantiate graph config instance of class: " + graphConfigClass + "."
+                            + " Graph config class should have default no arg constructor."
+                            + " Graph config class should not be non static inner class.",
+                            exc);
+                }
+
+                Object graph = buildGraphFromGraphConfig(config);
+
+                glPayloadGraphs.putIfAbsent(payloadType, (GlReactorGraph) graph);
+
+            } catch (Exception exc) {
+                throw new RuntimeException(
+                        "Failed to register graph config in ReactorGraph: " + graphConfigClass,
+                        exc);
+            }
+            return true;
+        });
+    }
+
+    private Object buildGraphFromGraphConfig(Object graphConfig) {
+        Method buildMethod;
+        try {
+            buildMethod = GraphConfig.class.getDeclaredMethod("buildGraph");
+        } catch (Exception exc) {
+            throw new IllegalArgumentException(""
+                    + "Failed to build graph for graph config:" + graphConfig + "."
+                    + " Graph config class: " + graphConfig.getClass() + "."
+                    + " Graph config does not have private method buildGraph.",
+                    exc);
+        }
+        try {
+            buildMethod.setAccessible(true);
+            return buildMethod.invoke(graphConfig);
+        } catch (Exception exc) {
+            throw new IllegalArgumentException(""
+                    + "Failed to build graph for graph config:" + graphConfig + "."
+                    + " Graph config class: " + graphConfig.getClass() + "."
+                    + " Failed during invocation of buildGraph method.",
+                    exc);
+        }
+    }
+
+    private Class getPayloadTypeForGraphConfigBasedClass(Class graphConfigClass) {
+
+        if (graphConfigClass.getSuperclass() == null) {
+            throw new IllegalArgumentException(""
+                    + "Superclass of graph config class " + graphConfigClass + " is NULL."
+                    + " Graph config class should extend GraphConfig<PayloadType>."
+            );
+        }
+
+        if (!graphConfigClass.getSuperclass().equals(GraphConfig.class)) {
+            throw new IllegalArgumentException(""
+                    + "Superclass of graph config class " + graphConfigClass + " is not GraphConfig<PayloadType>."
+                    + " Superclass of graph config class should be GraphConfig<PayloadType>."
+                    + " Actual superclass of graph config is: " + graphConfigClass.getSuperclass());
+        }
+
+        if (graphConfigClass.getGenericSuperclass() == null) {
+            throw new IllegalArgumentException(""
+                    + "Generic Superclass of graph config class " + graphConfigClass + " is NULL."
+                    + " Superclass of graph config class should be generic GraphConfig<PayloadType>.");
+        }
+
+        if (!(graphConfigClass.getGenericSuperclass() instanceof ParameterizedType)) {
+            throw new IllegalArgumentException(""
+                    + "Superclass of graph config class " + graphConfigClass + " is not ParameterizedType"
+                    + " Superclass of graph config class should be GraphConfig<PayloadType>."
+                    + " Actual generic superclass of graph config is: " + graphConfigClass.getGenericSuperclass());
+        }
+
+        Type[] genericConfigParams = ((ParameterizedType) graphConfigClass.getGenericSuperclass())
+                .getActualTypeArguments();
+
+        if (genericConfigParams.length != 1) {
+            throw new IllegalArgumentException(""
+                    + "Superclass of graph config class " + graphConfigClass + " should have 1 generic type parameter."
+                    + " Superclass of graph config class should be GraphConfig<PayloadType>."
+                    + " Actual super class is : " + graphConfigClass.getGenericSuperclass()
+                    + " Actual parameter count of superclass is : " + genericConfigParams.length);
+        }
+
+        if (genericConfigParams[0] == null) {
+            throw new IllegalArgumentException(""
+                    + "Superclass of graph config class " + graphConfigClass
+                    + " should have 1 non null generic type parameter."
+                    + " Superclass of graph config class should be GraphConfig<PayloadType>."
+                    + " Actual super class is : " + graphConfigClass.getGenericSuperclass()
+                    + " Actual generic parameter of superclass is null.");
+        }
+
+        if (!(genericConfigParams[0] instanceof Class)) {
+            throw new IllegalArgumentException(""
+                    + "Superclass of graph config " + graphConfigClass
+                    + " should have generic type parameter of type Class."
+                    + " Superclass of graph config class should be GraphConfig<PayloadType>."
+                    + " Actual super class is : " + graphConfigClass.getGenericSuperclass()
+                    + " Actual generic parameter type is : " + genericConfigParams[0].getClass());
+        }
+
+        return (Class) genericConfigParams[0];
+
+    }
+
 
     private static class ReactorTracer implements Tracer {
         private static final Logger log = LoggerFactory.getLogger(ReactorTracer.class);
@@ -134,6 +294,22 @@ public class CompletableReactor implements AutoCloseable {
     public CompletableReactor(Profiler profiler) {
         this.profiler = new PrefixedProfiler(profiler, ProfilerNames.PROFILER_PREFIX);
         this.executionBuilder = new ReactorGraphExecutionBuilder(
+                profiler,
+                immutabilityChecker,
+                threadsafeCopyMaker,
+                payload -> {
+                    try {
+                        return this.internalSubmit(payload, executionTimeoutMs).getResultFuture();
+                    } catch (Exception exc) {
+                        CompletableFuture result = new CompletableFuture();
+                        result.completeExceptionally(exc);
+                        return result;
+                    }
+                },
+                debugSerializer,
+                reactorTracer);
+
+        this.glExecutionBuilder = new ExecutionBuilder(
                 profiler,
                 immutabilityChecker,
                 threadsafeCopyMaker,
@@ -221,7 +397,7 @@ public class CompletableReactor implements AutoCloseable {
      */
     public void registerReactorGraph(ReactorGraph reactorGraph) {
 
-        if(reactorGraph instanceof GlReactorGraph){
+        if (reactorGraph instanceof GlReactorGraph) {
             throw new UnsupportedOperationException("GlReactorGraph not supported yet");
         }
 
@@ -388,14 +564,21 @@ public class CompletableReactor implements AutoCloseable {
         /**
          * Standard graph execution scenario
          */
+        ReactorGraphExecution<PayloadType> execution;
 
         ReactorGraph<PayloadType> graph = payloadGraphs.get(payload.getClass());
-        if (graph == null) {
-            throw new IllegalArgumentException(String.format(
-                    "Rector graph not found for payload %s", payload.getClass()));
-        }
+        if (graph != null) {
+            execution = executionBuilder.build(graph);
+        } else {
+            GlReactorGraph<PayloadType> glGraph = glPayloadGraphs.get(payload.getClass());
+            if (glGraph != null) {
+                execution = glExecutionBuilder.build(glGraph);
 
-        ReactorGraphExecution<PayloadType> execution = executionBuilder.build(graph);
+            } else {
+                throw new IllegalArgumentException(String.format(
+                        "Rector graph not found for payload %s", payload.getClass()));
+            }
+        }
 
 
         /**

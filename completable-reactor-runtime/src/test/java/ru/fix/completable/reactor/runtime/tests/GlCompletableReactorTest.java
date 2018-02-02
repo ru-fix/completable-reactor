@@ -4,13 +4,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.gl.GraphConfig;
 import ru.fix.completable.reactor.runtime.gl.Vertex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,113 +39,94 @@ class GlCompletableReactorTest {
     }
 
 
-    static class SingleProcessorPayload extends IdListPayload { }
+    /**
+     * Payload contains list of integer ids.
+     * When payload goes through vertex chain each vertex adds their id.
+     * At the end we can verify by witch vertex and in what order this payload was modified.
+     * <p>
+     * Test will check that single handler id end up in payload.",
+     * Expected result: {1}
+     */
+    static class SingleProcessorConfig extends GraphConfig<IdListPayload> {
+
+        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        {
+
+            payload().handleBy(idProcessor1);
+
+            idProcessor1.onAny().complete();
+
+            coordinates()
+                    .payload(226, 98)
+                    .handler(idProcessor1, 261, 163)
+                    .merger(idProcessor1, 300, 251)
+                    .complete(idProcessor1, 308, 336);
+        }
+    }
 
     @Test
-    public void single_processor() throws Exception {
+    void single_processor() throws Exception {
 
-        /**
-         * Payload contains list of integer ids.
-         * When payload goes through vertex chain each vertex adds their id.
-         * At the end we can verify by witch vertex and in what order this payload was modified.
-         *
-         * Test will check that single handler id end up in payload.",
-         * Expected result: {1}
-         */
-        class Config extends GraphConfig<SingleProcessorPayload> {
+        reactor.registerIfAbsent(SingleProcessorConfig.class);
 
-            Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
-                    .withMerger((pld, id) -> {
-                        pld.idSequence.add(id);
-                        return Status.OK;
-                    });
-
-
-            ReactorGraph graph() {
-
-                payload().handleBy(idProcessor1);
-
-                idProcessor1.onAny().complete();
-
-                coordinates()
-                        .payload(226, 98)
-                        .handler(idProcessor1, 261, 163)
-                        .merger(idProcessor1, 300, 251)
-                        .complete(idProcessor1, 308, 336);
-
-                return buildGraph();
-            }
-        }
-
-
-        ReactorGraph graph = new Config().graph();
-
-        GraphConfig.test(graph);
-
-        reactor.registerReactorGraph(graph);
-
-        SingleProcessorPayload resultPayload = reactor.submit(new SingleProcessorPayload())
+        IdListPayload resultPayload = reactor.submit(new IdListPayload())
                 .getResultFuture()
                 .get(10, SECONDS);
 
         assertEquals(Arrays.asList(1), resultPayload.idSequence);
     }
 
-//
-//    @Reactored({
-//            "Test will check that two processor ids end up at payloads idList in correct order.",
-//            "Expected result: {1, 2}"
-//    })
-//    static class TwoProcessorSequentialMergePayload extends IdListPayload {
-//    }
-//
-//    @Test
-//    public void two_processors_sequential_merge() throws Exception {
-//
-//        class Config {
-//            final ReactorGraphBuilder builder = new ReactorGraphBuilder(this);
-//
-//            Processor<IdListPayload> idProcessor1 = buildProcessor(builder, new IdProcessor(1));
-//            Processor<IdListPayload> idProcessor2 = buildProcessor(builder, new IdProcessor(2));
-//
-//            ReactorGraph buildGraph() {
-//                return builder.payload(TwoProcessorSequentialMergePayload.class)
-//
-//
-//                        .handle(idProcessor1)
-//                        .handle(idProcessor2)
-//
-//                        .mergePoint(idProcessor1)
-//                        .on(Status.OK, Status.UNUSED).merge(idProcessor2)
-//
-//                        .mergePoint(idProcessor2)
-//                        .onAny().complete()
-//
-//                        .coordinates()
-//                        .start(366, 103)
-//                        .proc(idProcessor1, 358, 184)
-//                        .proc(idProcessor2, 549, 183)
-//                        .merge(idProcessor1, 427, 291)
-//                        .merge(idProcessor2, 571, 356)
-//                        .complete(idProcessor2, 610, 454)
-//
-//                        .buildGraph();
-//            }
-//
-//        }
-//        val graph = new Config().buildGraph();
-//
-//        printGraph(graph);
-//
-//        reactor.registerReactorGraph(graph);
-//
-//
-//        TwoProcessorSequentialMergePayload resultPayload = reactor.submit(new TwoProcessorSequentialMergePayload())
-//                .getResultFuture()
-//                .get(10, TimeUnit.SECONDS);
-//
-//        assertEquals(Arrays.asList(1, 2), resultPayload.getIdSequence());
-//    }
+    /**
+     * Test will check that two processor ids end up at payloads idList in correct order.
+     * Expected result: {1, 2}
+     */
+    static class TwoProcessorSequentialMergeConfig extends GraphConfig<IdListPayload> {
+
+        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+        Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        {
+            payload()
+                    .handleBy(idProcessor1)
+                    .handleBy(idProcessor2);
+
+            idProcessor1.on(Status.OK, Status.UNUSED).mergeBy(idProcessor2);
+
+            idProcessor2.onAny().complete();
+
+            coordinates()
+                    .payload(366, 103)
+                    .handler(idProcessor1, 358, 184)
+                    .handler(idProcessor2, 549, 183)
+                    .merger(idProcessor1, 427, 291)
+                    .merger(idProcessor2, 571, 356)
+                    .complete(idProcessor2, 610, 454);
+        }
+    }
+
+    @Test
+    public void two_processors_sequential_merge() throws Exception {
+
+        reactor.registerIfAbsent(TwoProcessorSequentialMergeConfig.class);
+        CompletableReactor.Execution<IdListPayload> execution = reactor.submit(new IdListPayload());
+        IdListPayload resultPayload = execution.getResultFuture().get(10, TimeUnit.SECONDS);
+
+        assertEquals(Arrays.asList(1, 2), resultPayload.idSequence);
+    }
+
 //
 //    @Reactored({
 //            "Detached processor is a processor without merger.",
