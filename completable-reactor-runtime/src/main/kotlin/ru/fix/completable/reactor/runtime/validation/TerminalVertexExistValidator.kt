@@ -18,4 +18,6 @@ class TerminalVertexExistValidator: Validator {
             throw ValidationException("Graph should contain at least one terminal vertex." + " Add complete step to at least one merge point.")
         }
     }
+
+    //TODO: fix injector
 }
