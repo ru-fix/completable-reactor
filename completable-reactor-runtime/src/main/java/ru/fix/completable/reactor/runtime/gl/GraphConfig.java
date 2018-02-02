@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.runtime.gl;
 
 
-import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.runtime.internal.gl.ConfigContext;
 import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 
@@ -23,7 +22,7 @@ public abstract class GraphConfig<Payload> {
         return new GlCoordinatesImpl();
     }
 
-    protected ReactorGraph<Payload> buildGraph() {
+    Object buildGraph() {
         this.graph.getVertices().forEach(vertex -> {
             if (vertex.name == null) {
                 throw new IllegalArgumentException("Graph contains unnamed vertex");
@@ -109,13 +108,4 @@ public abstract class GraphConfig<Payload> {
         }
     }
 
-    /**
-     * Test graph configuration.
-     * Check all execution paths.
-     * Validated that there is no conflicts between merging vertices and all required endpoints exist.
-     */
-    public static void test(ReactorGraph graph){
-        //TODO run validators here
-        return;
-    }
 }

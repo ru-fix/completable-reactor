@@ -2,25 +2,17 @@ package ru.fix.completable.reactor.runtime.gl
 
 
 import mu.KotlinLogging
-import ru.fix.commons.profiler.ProfiledCall;
-import ru.fix.commons.profiler.Profiler;
-import ru.fix.completable.reactor.runtime.ProfilerNames;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
-import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
-import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
+import ru.fix.commons.profiler.Profiler
+import ru.fix.completable.reactor.runtime.ReactorGraph
+import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker
+import ru.fix.completable.reactor.runtime.debug.DebugSerializer
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution
-import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
-import ru.fix.completable.reactor.runtime.internal.CRProcessingItem;
-import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
+import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker
+import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel
 import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph
-import ru.fix.completable.reactor.runtime.tracing.Tracer;
-
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import ru.fix.completable.reactor.runtime.tracing.Tracer
+import java.util.*
+import java.util.concurrent.CompletableFuture
 
 typealias SubgraphRunner = (Any?) -> CompletableFuture<Any?>
 
@@ -51,7 +43,7 @@ class ExecutionBuilder(
     var immutabilityControlLevel = ImmutabilityControlLevel.NO_CONTROL
 
 
-    class MergePayloadContext(
+    data class MergePayloadContext(
             var payload: Any? = null,
             /**
              * Transition marked as dead when merge status does not match transition condition
@@ -68,7 +60,7 @@ class ExecutionBuilder(
     )
 
 
-    class TransitionPayloadContext(
+    data class TransitionPayloadContext(
             var payload: Any? = null,
             /**
              * Transition marked as dead when merge status does not match transition condition
@@ -82,7 +74,7 @@ class ExecutionBuilder(
             var isTerminal: Boolean = false
     )
 
-    class HandlePayloadContext(
+    data class HandlePayloadContext(
 
             var payload: Any? = null,
             /**
