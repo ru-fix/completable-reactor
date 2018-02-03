@@ -51,12 +51,12 @@ class Main : Application() {
                 })
 
                 val timestamp = System.currentTimeMillis()
-                val model = parser.parse(fileContent)
+                val models = parser.parse(fileContent)
 
                 log.info{ "Parsing took ${System.currentTimeMillis() - timestamp}ms" }
 
                 val viewer2 = ru.fix.completable.reactor.graph.viewer.gl.GraphViewer()
-                viewer2.openGraph(model)
+                viewer2.openGraph(models)
                 stage.scene = viewer2.scene
             }
 

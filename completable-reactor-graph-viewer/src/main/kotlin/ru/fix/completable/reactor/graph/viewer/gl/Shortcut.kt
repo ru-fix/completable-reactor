@@ -28,5 +28,5 @@ class Shortcut(
 }
 
 enum class ShortcutType {
-    GOTO_BUILD_GRAPH
+    GOTO_GRAPH
 }

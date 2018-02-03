@@ -81,7 +81,7 @@ class GraphVisualizationManualTest : Application() {
         val viewer = GraphViewer()
         viewer.registerListener(LogActionListener(javaSourceContext))
 
-        viewer.setShortcut(ShortcutType.GOTO_BUILD_GRAPH, Shortcut(true, KeyCode.B))
+        viewer.setShortcut(ShortcutType.GOTO_GRAPH, Shortcut(true, KeyCode.B))
 
         viewer.openGraph(model)
         stage!!.scene = viewer.scene
