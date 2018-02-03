@@ -4,15 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import ru.fix.completable.reactor.example.services.*
 import ru.fix.completable.reactor.example.services.UserProfileManager.Status
 import ru.fix.completable.reactor.runtime.ReactorGraph
-import ru.fix.completable.reactor.runtime.gl.GraphConfig
-import ru.fix.completable.reactor.runtime.gl.Vertex
 
 /**
  * Created by Kamil Asfandiyarov
  */
-class SubscribeGraphConfig : GraphConfig<SubscribePayload>() {
+class SubscribeGraphConfig : ru.fix.completable.reactor.graph.GraphConfig<SubscribePayload>() {
 
-    val userProfile = object : Vertex() {
+    val userProfile = object : ru.fix.completable.reactor.graph.Vertex() {
         lateinit var userProfile: UserProfileManager
 
         init {
@@ -42,7 +40,7 @@ class SubscribeGraphConfig : GraphConfig<SubscribePayload>() {
         }
     }
 
-    val txLog = object : Vertex() {
+    val txLog = object : ru.fix.completable.reactor.graph.Vertex() {
         lateinit var txLog: TransactionLog
 
         init {
@@ -52,7 +50,7 @@ class SubscribeGraphConfig : GraphConfig<SubscribePayload>() {
         }
     }
 
-    val userJournal = object : Vertex() {
+    val userJournal = object : ru.fix.completable.reactor.graph.Vertex() {
         lateinit var userJournal: UserJournal
 
         init {
@@ -73,7 +71,7 @@ class SubscribeGraphConfig : GraphConfig<SubscribePayload>() {
             }.withoutMerger()
 
 
-    val bank = object : Vertex() {
+    val bank = object : ru.fix.completable.reactor.graph.Vertex() {
         lateinit var bank: Bank
 
         init {
@@ -102,7 +100,7 @@ class SubscribeGraphConfig : GraphConfig<SubscribePayload>() {
         }
     }
 
-    val serviceInfo = object : Vertex() {
+    val serviceInfo = object : ru.fix.completable.reactor.graph.Vertex() {
         lateinit var serviceInfo: ServiceRegistry
 
         init {

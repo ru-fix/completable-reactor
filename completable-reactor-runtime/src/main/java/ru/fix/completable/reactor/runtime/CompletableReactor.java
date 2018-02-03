@@ -1,25 +1,23 @@
 package ru.fix.completable.reactor.runtime;
 
-import lombok.*;
-import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.fix.commons.profiler.PrefixedProfiler;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
+import ru.fix.completable.reactor.graph.Graph;
+import ru.fix.completable.reactor.graph.internal.GlGraph;
 import ru.fix.completable.reactor.runtime.cloning.CopierThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
+import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder;
-import ru.fix.completable.reactor.runtime.gl.ExecutionBuilder;
-import ru.fix.completable.reactor.runtime.gl.GraphConfig;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
-import ru.fix.completable.reactor.runtime.internal.gl.GlReactorGraph;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
 import java.lang.reflect.Constructor;
@@ -75,10 +73,10 @@ public class CompletableReactor implements AutoCloseable {
 
     private final AtomicLong closeTimeoutMs = new AtomicLong(120_000);
 
-    private final ConcurrentHashMap<Class<?>, GlReactorGraph> glPayloadGraphs = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Class<? extends GraphConfig>, Boolean> glGraphConfigs = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<?>, GlGraph> glPayloadGraphs = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<? extends Graph>, Boolean> glGraphConfigs = new ConcurrentHashMap<>();
 
-    public <GraphConfigType extends GraphConfig<?>>
+    public <GraphConfigType extends Graph>
     void registerIfAbsent(GraphConfigType graphConfig) {
         Objects.requireNonNull(graphConfig, "graphConfig");
 
@@ -87,7 +85,7 @@ public class CompletableReactor implements AutoCloseable {
             Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfig.getClass());
             Object graph = buildGraphFromGraphConfig(graphConfig);
 
-            Object prevGraph = glPayloadGraphs.putIfAbsent(payloadType, (GlReactorGraph) graph);
+            Object prevGraph = glPayloadGraphs.putIfAbsent(payloadType, (GlGraph) graph);
             if (prevGraph != null) {
                 throw new IllegalArgumentException(""
                         + "New graph config: " + graphConfig
@@ -99,15 +97,16 @@ public class CompletableReactor implements AutoCloseable {
         });
     }
 
+    private final GraphBuilder graphBuilder = new GraphBuilder();
+
     //TODO: execute validation during graph registration
+
     /**
      * Test graph configuration.
      * Check all execution paths.
      * Validated that there is no conflicts between merging vertices and all required endpoints exist.
      */
-
-
-    public <PayloadType, GraphConfigType extends GraphConfig<PayloadType>>
+    public <PayloadType, GraphConfigType extends Graph>
     void registerIfAbsent(Class<GraphConfigType> graphConfigClass) {
         Objects.requireNonNull(graphConfigClass, "graphConfigClass");
 
@@ -117,13 +116,13 @@ public class CompletableReactor implements AutoCloseable {
                 Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfigClass);
 
 
-                GraphConfig config;
+                Graph graphConfig;
                 try {
                     Constructor<GraphConfigType> ctor = graphConfigClass.getDeclaredConstructor();
                     if (!ctor.isAccessible()) {
                         ctor.setAccessible(true);
                     }
-                    config = ctor.newInstance();
+                    graphConfig = ctor.newInstance();
                 } catch (Exception exc) {
                     throw new IllegalArgumentException(""
                             + "Failed to instantiate graph config instance of class: " + graphConfigClass + "."
@@ -132,9 +131,9 @@ public class CompletableReactor implements AutoCloseable {
                             exc);
                 }
 
-                Object graph = buildGraphFromGraphConfig(config);
+                Object graph = buildGraphFromGraphConfig(graphConfig);
 
-                glPayloadGraphs.putIfAbsent(payloadType, (GlReactorGraph) graph);
+                glPayloadGraphs.putIfAbsent(payloadType, (GlGraph) graph);
 
             } catch (Exception exc) {
                 throw new RuntimeException(
@@ -148,7 +147,7 @@ public class CompletableReactor implements AutoCloseable {
     private Object buildGraphFromGraphConfig(Object graphConfig) {
         Method buildMethod;
         try {
-            buildMethod = GraphConfig.class.getDeclaredMethod("buildGraph");
+            buildMethod = Graph.class.getDeclaredMethod("buildGraph");
         } catch (Exception exc) {
             throw new IllegalArgumentException(""
                     + "Failed to build graph for graph config:" + graphConfig + "."
@@ -177,7 +176,7 @@ public class CompletableReactor implements AutoCloseable {
             );
         }
 
-        if (!graphConfigClass.getSuperclass().equals(GraphConfig.class)) {
+        if (!graphConfigClass.getSuperclass().equals(Graph.class)) {
             throw new IllegalArgumentException(""
                     + "Superclass of graph config class " + graphConfigClass + " is not GraphConfig<PayloadType>."
                     + " Superclass of graph config class should be GraphConfig<PayloadType>."
@@ -228,6 +227,14 @@ public class CompletableReactor implements AutoCloseable {
 
         return (Class) genericConfigParams[0];
 
+    }
+
+
+    //TODO: fix injection
+    private DependencyInjector dependencyInjector;
+
+    public void registerDependecnyInjector(DependencyInjector dependencyInjector) {
+        this.dependencyInjector = dependencyInjector;
     }
 
 
@@ -396,12 +403,7 @@ public class CompletableReactor implements AutoCloseable {
      * @param reactorGraph
      */
     public void registerReactorGraph(ReactorGraph reactorGraph) {
-
-        if (reactorGraph instanceof GlReactorGraph) {
-            throw new UnsupportedOperationException("GlReactorGraph not supported yet");
-        }
-
-        val crReactorGraph = (CRReactorGraph) reactorGraph;
+        CRReactorGraph crReactorGraph = (CRReactorGraph) reactorGraph;
         payloadGraphs.put(crReactorGraph.getPayloadClass(), crReactorGraph);
         inlinePayloadGraphs.remove(crReactorGraph.getPayloadClass());
     }
@@ -424,24 +426,25 @@ public class CompletableReactor implements AutoCloseable {
         payloadGraphs.remove(payloadType);
     }
 
-    @Data
-    @Accessors(chain = true)
+    //TODO extract statistics
+
     static class PayloadStatCounters {
         final LongAdder runningTotal = new LongAdder();
         final LongAdder runningWithoutResult = new LongAdder();
 
     }
 
-
-    @Data
-    @Accessors(chain = true)
     public static class PayloadStatisticsReport {
         final long runningTotal;
         final long runningWithoutResult;
+
+        public PayloadStatisticsReport(long runningTotal, long runningWithoutResult) {
+            this.runningTotal = runningTotal;
+            this.runningWithoutResult = runningWithoutResult;
+        }
     }
 
-    @Data
-    @Accessors(chain = true)
+
     public static class StatisticsReport {
         final Map<Class<?>, PayloadStatisticsReport> payloadStatisticsReports = new HashMap<>();
     }
@@ -470,18 +473,16 @@ public class CompletableReactor implements AutoCloseable {
         StatisticsReport report = new StatisticsReport();
 
         payloadStatCounters.forEach((payloadType, counters) -> {
-            report.getPayloadStatisticsReports().put(
+            report.payloadStatisticsReports.put(
                     payloadType,
                     new PayloadStatisticsReport(
-                            counters.getRunningTotal().sum(),
-                            counters.getRunningWithoutResult().sum()));
+                            counters.runningTotal.sum(),
+                            counters.runningWithoutResult.sum()));
         });
 
         return report;
     }
 
-    @Data
-    @Builder
     public static class Execution<PayloadType> {
         /**
          * Completes when all processes within given execution of single request is complete
@@ -495,8 +496,24 @@ public class CompletableReactor implements AutoCloseable {
         /**
          * Debug purpose field that allows to check internal execution graph state
          */
-        @Getter(AccessLevel.NONE)
         private final Collection debugProcessingVertexGraphState;
+
+        public Execution(
+                CompletableFuture<PayloadType> resultFuture,
+                CompletableFuture<Void> chainExecutionFuture,
+                Collection debugProcessingVertexGraphState) {
+            this.chainExecutionFuture = chainExecutionFuture;
+            this.resultFuture = resultFuture;
+            this.debugProcessingVertexGraphState = debugProcessingVertexGraphState;
+        }
+
+        public CompletableFuture<Void> getChainExecutionFuture() {
+            return chainExecutionFuture;
+        }
+
+        public CompletableFuture<PayloadType> getResultFuture() {
+            return resultFuture;
+        }
     }
 
 
@@ -554,11 +571,11 @@ public class CompletableReactor implements AutoCloseable {
 
             inlineGraphResult.thenAcceptAsync(any -> payloadCall.stop());
 
-            return Execution.<PayloadType>builder()
-                    .chainExecutionFuture(inlineGraphResult.thenAccept(any -> {/* do nothing */}))
-                    .resultFuture(inlineGraphResult)
-                    .build();
-
+            return new Execution<>(
+                    inlineGraphResult,
+                    inlineGraphResult.thenAccept(any -> {/* do nothing */}),
+                    null
+            );
         }
 
         /**
@@ -570,7 +587,7 @@ public class CompletableReactor implements AutoCloseable {
         if (graph != null) {
             execution = executionBuilder.build(graph);
         } else {
-            GlReactorGraph<PayloadType> glGraph = glPayloadGraphs.get(payload.getClass());
+            GlGraph glGraph = glPayloadGraphs.get(payload.getClass());
             if (glGraph != null) {
                 execution = glExecutionBuilder.build(glGraph);
 
@@ -590,15 +607,15 @@ public class CompletableReactor implements AutoCloseable {
                 payload.getClass(),
                 key -> new PayloadStatCounters());
 
-        statistics.getRunningTotal().increment();
+        statistics.runningTotal.increment();
 
         execution.getChainExecutionFuture().handleAsync((result, thr) -> {
-            statistics.getRunningTotal().decrement();
+            statistics.runningTotal.decrement();
             return null;
         });
 
         execution.getResultFuture().handleAsync((result, thr) -> {
-            statistics.getRunningWithoutResult().decrement();
+            statistics.runningWithoutResult.decrement();
             return null;
         });
 
@@ -646,11 +663,11 @@ public class CompletableReactor implements AutoCloseable {
 
         execution.getResultFuture().thenRunAsync(payloadCall::stop);
 
-        return Execution.<PayloadType>builder()
-                .chainExecutionFuture(execution.getChainExecutionFuture())
-                .resultFuture(execution.getResultFuture())
-                .debugProcessingVertexGraphState(execution.getDebugProcessingVertexGraphState())
-                .build();
+        return new Execution<>(
+                execution.getResultFuture(),
+                execution.getChainExecutionFuture(),
+                execution.getDebugProcessingVertexGraphState()
+        );
     }
 
     /**
