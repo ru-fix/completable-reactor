@@ -30,7 +30,7 @@ class JavaSourceParserTest {
 
         val startTime = Instant.now()
 
-        val model = JavaSourceParser(object : JavaSourceParser.Listener {
+        val models = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 log.error { msg }
                 fail(msg)
@@ -39,6 +39,9 @@ class JavaSourceParserTest {
 
         println("Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms")
 
+        assertEquals(1, models.size)
+
+        val model = models[0]
 
         fun vertexTransitions(name: String) = model.transitionable[name]!!.transitions.asSequence()
 
@@ -212,12 +215,11 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
         assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
 
-        assertEquals(Source(null, 243, 15), model.buildGraphSource)
-        assertEquals(Source(null, 197, 8), model.startPoint.source)
+        assertEquals(Source(null, 196, 8), model.startPoint.source)
 
-        assertEquals(Source(null, 86, 12), model.handlers["bank"]!!.source)
-        assertEquals(Source(null, 94, 14), model.mergers["bank"]!!.source)
-        assertEquals(Source(null, 74, 12), model.handlers["webNotification"]!!.source)
+        assertEquals(Source(null, 85, 12), model.handlers["bank"]!!.source)
+        assertEquals(Source(null, 93, 14), model.mergers["bank"]!!.source)
+        assertEquals(Source(null, 73, 12), model.handlers["webNotification"]!!.source)
     }
 
 

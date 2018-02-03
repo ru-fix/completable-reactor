@@ -7,14 +7,16 @@ class HandleableVerticesHaveIncomingFlowsValidator : Validator {
 
     override fun validate(graph: GraphModel): ValidationResult {
 
-        val verticesWithIncomingTransitions = graph.transitionable
+        val verticesWithIncomingTransitions = (graph.transitionable
                 //collect all transitions targets
                 .values
                 .asSequence()
-                .flatMap { it.transitions }
+                .flatMap { it.transitions.asSequence() }
                 .mapNotNull { it.target as? HandleableVertexFigure }
+                +
                 //add start point transitions
-                .union(graph.startPoint.handleBy)
+                graph.startPoint.handleBy.asSequence()
+                )
                 .map { it.name }
                 .toHashSet()
 
