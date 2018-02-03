@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author Kamil Asfandiyarov
  */
+//TODO rename after removing old tests
 class GlCompletableReactorTest {
 
     private SimpleProfiler profiler;

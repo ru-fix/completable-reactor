@@ -30,7 +30,8 @@ public abstract class Graph<Payload> {
 
     protected <HandlerResult> MergerBuilder<Payload, HandlerResult> handler(Handler<Payload, HandlerResult> handler) {
 
-        GlVertex vx = BuilderContext.get().extractVertexOrDefault(new GlVertex(new Vertex()));
+
+        GlVertex vx = BuilderContext.get().extractVertexOrDefault(InternalGlAccessor.vx(new Vertex()));
         requireNull(vx.handler, "handler method used twice on same vertex");
         requireNull(vx.merger, "handler method used after merger initialization for given vertex");
         requireNull(vx.router, "handler method used after router initialization for given vertex");
@@ -41,7 +42,7 @@ public abstract class Graph<Payload> {
     }
 
     protected Vertex router(Router<Payload> router) {
-        GlVertex vx = BuilderContext.Companion.get().extractVertexOrDefault(new GlVertex(new Vertex()));
+        GlVertex vx = BuilderContext.Companion.get().extractVertexOrDefault(InternalGlAccessor.vx(new Vertex()));
         requireNull(vx.handler, "router method used after handler initialization for given vertex");
         requireNull(vx.merger, "router method used after merger initialization for given vertex");
         requireNull(vx.router, "router method used twice on same vertex");
@@ -55,7 +56,7 @@ public abstract class Graph<Payload> {
             Class<SubgraphPayload> subgraphPayloadType,
             Subgraph<Payload, SubgraphPayload> subgraph) {
 
-        GlVertex vx = BuilderContext.Companion.get().extractVertexOrDefault(new GlVertex(new Vertex()));
+        GlVertex vx = BuilderContext.Companion.get().extractVertexOrDefault(InternalGlAccessor.vx(new Vertex()));
         requireNull(vx.handler, "subgraph method used after handler initialization for given vertex");
         requireNull(vx.merger, "subgraph method used after merger initialization for given vertex");
         requireNull(vx.router, "subgraph method used after router initialization for given vertex");
