@@ -11,7 +11,7 @@ public abstract class Graph<Payload> {
     {
         // Deliberately leaking reference to ThreadLocal context.
         // Graph construction is happening in single thread
-        BuilderContext.get().setGraph(graph);
+        BuilderContext.get().setGraph(this, graph);
     }
 
     protected PayloadTransitionBuilder<Payload> payload() {

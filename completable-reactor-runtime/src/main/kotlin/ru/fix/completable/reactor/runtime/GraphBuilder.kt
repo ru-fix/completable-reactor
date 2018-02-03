@@ -1,6 +1,8 @@
 package ru.fix.completable.reactor.runtime
 
+import ru.fix.completable.reactor.graph.Graph
 import ru.fix.completable.reactor.graph.internal.GlGraph
+import ru.fix.completable.reactor.graph.internal.InternalGlAccessor
 import ru.fix.completable.reactor.graph.internal.ModelBuilder
 import ru.fix.completable.reactor.model.validation.AtLeastOneEndPointExistValidator
 import ru.fix.completable.reactor.model.validation.ValidationFailed
@@ -10,9 +12,11 @@ class GraphBuilder {
     private val validators = listOf(AtLeastOneEndPointExistValidator())
     private val modelBuilder = ModelBuilder()
 
-    fun buildGraph(graph: GlGraph) {
+    fun buildGraph(graph: Graph<Any?>): GlGraph {
 
-        val graphModel = modelBuilder.build(graph)
+        val glGraph = InternalGlAccessor.graph(graph)
+
+        val graphModel = modelBuilder.build(glGraph)
 
         validators.forEach {
             val result = it.validate(graphModel)
@@ -26,5 +30,7 @@ class GraphBuilder {
                 is ValidationSucceed -> Unit
             }
         }
+
+        return glGraph
     }
 }

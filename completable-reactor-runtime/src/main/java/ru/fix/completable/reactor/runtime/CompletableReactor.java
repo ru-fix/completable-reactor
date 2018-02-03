@@ -130,10 +130,9 @@ public class CompletableReactor implements AutoCloseable {
                             + " Graph config class should not be non static inner class.",
                             exc);
                 }
+                GlGraph graph = graphBuilder.buildGraph(graphConfig);
 
-                Object graph = buildGraphFromGraphConfig(graphConfig);
-
-                glPayloadGraphs.putIfAbsent(payloadType, (GlGraph) graph);
+                glPayloadGraphs.putIfAbsent(payloadType, graph);
 
             } catch (Exception exc) {
                 throw new RuntimeException(
