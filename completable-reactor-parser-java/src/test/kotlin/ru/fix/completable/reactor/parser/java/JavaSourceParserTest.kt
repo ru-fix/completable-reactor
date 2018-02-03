@@ -2,10 +2,10 @@ package ru.fix.completable.reactor.parser.java
 
 import mu.KotlinLogging
 import org.junit.Test
-import ru.fix.completable.reactor.api.gl.model.Coordinates
-import ru.fix.completable.reactor.api.gl.model.EndPoint
-import ru.fix.completable.reactor.api.gl.model.Source
-import ru.fix.completable.reactor.api.gl.model.VertexFigure
+import ru.fix.completable.reactor.model.Coordinates
+import ru.fix.completable.reactor.model.EndPoint
+import ru.fix.completable.reactor.model.Source
+import ru.fix.completable.reactor.model.VertexFigure
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant

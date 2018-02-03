@@ -1,7 +1,8 @@
 package ru.fix.completable.reactor.graph.viewer.gl
 
 import javafx.scene.Scene
-import ru.fix.completable.reactor.api.gl.model.*
+import ru.fix.completable.reactor.model.GraphModel
+import ru.fix.completable.reactor.model.Source
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -18,7 +19,7 @@ class GraphViewer {
     private val shortcuts: MutableMap<Shortcut, ShortcutType> = ConcurrentHashMap()
 
 
-    val graphModel: ReactorGraphCompilationModel?
+    val graphModel: GraphModel?
         get() = graphViewPane.graphModel
 
 
@@ -66,7 +67,7 @@ class GraphViewer {
         }
     }
 
-    fun openGraph(graph: ReactorGraphCompilationModel) {
+    fun openGraph(graph: GraphModel) {
         graphViewPane.openGraph(graph)
     }
 

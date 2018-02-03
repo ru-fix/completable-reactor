@@ -6,7 +6,7 @@ import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.Text
-import ru.fix.completable.reactor.api.gl.model.Subgraph
+import ru.fix.completable.reactor.model.Subgraph
 
 /**
  * Created by swarmshine on 29.01.2017.
