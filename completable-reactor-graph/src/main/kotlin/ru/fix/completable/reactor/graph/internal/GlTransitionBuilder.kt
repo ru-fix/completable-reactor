@@ -13,7 +13,7 @@ class GlTransitionBuilder(
     }
 
     override fun handleBy(vertex: Vertex): Vertex {
-        val targetGlVertex = VxAccessor.vx(vertex)
+        val targetGlVertex = InternalGlAccessor.vx(vertex)
 
         if (targetGlVertex.name == null) {
             targetGlVertex.name = BuilderContext.get().resolveVertexName(vertex)
@@ -25,7 +25,7 @@ class GlTransitionBuilder(
     }
 
     override fun mergeBy(vertex: Vertex): Vertex {
-        val targetGlVertex = VxAccessor.vx(vertex)
+        val targetGlVertex = InternalGlAccessor.vx(vertex)
 
         if (targetGlVertex.name == null) {
             targetGlVertex.name = BuilderContext.get().resolveVertexName(vertex)

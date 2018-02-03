@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.graph.internal
 
+import ru.fix.completable.reactor.graph.Graph
 import ru.fix.completable.reactor.graph.Vertex
 
 class BuilderContext {
@@ -8,15 +9,15 @@ class BuilderContext {
 
     private var fieldNameResolver: FieldNameResolver? = null
 
-    var graph: GlGraph? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                this.fieldNameResolver = FieldNameResolver(value, listOf(Vertex::class.java))
-            } else {
-                this.fieldNameResolver = null
-            }
-        }
+    private var graph: GlGraph? = null
+
+    fun setGraph(graph: Graph<*>, glGraph: GlGraph) {
+        this.graph = glGraph
+        this.fieldNameResolver = FieldNameResolver(graph, listOf(Vertex::class.java))
+    }
+
+    fun getGraph() = graph
+
 
     fun setVertex(vertex: GlVertex) {
         this.vertex = vertex

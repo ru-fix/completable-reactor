@@ -19,7 +19,7 @@ open class Vertex {
             BuilderContext.get().setVertex(vx)
         }
 
-        val currentGraph = BuilderContext.get().graph ?: throw IllegalStateException(
+        val currentGraph = BuilderContext.get().getGraph() ?: throw IllegalStateException(
                 """
                 Vertex created not inside class that extends Graph.
                 Or vertex created in different thread from Graph class.

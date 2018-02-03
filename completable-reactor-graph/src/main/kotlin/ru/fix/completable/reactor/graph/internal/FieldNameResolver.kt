@@ -7,7 +7,7 @@ import java.util.*
 private val log = KotlinLogging.logger {}
 
 class FieldNameResolver(
-        private val graphConfig: Any,
+        private val instance: Any,
         private val fieldTypes: List<Class<out Any>>) {
 
     private lateinit var graphConfigFields: IdentityHashMap<Any, String>
@@ -17,20 +17,19 @@ class FieldNameResolver(
         if (!this::graphConfigFields.isInitialized) {
             graphConfigFields = IdentityHashMap()
 
-            var clazz: Class<*>? = graphConfig.javaClass
+            var clazz: Class<*>? = instance.javaClass
             while (clazz != null) {
 
                 Arrays.stream<Field>(clazz.declaredFields)
                         .filter { field ->
-                            fieldTypes.stream().anyMatch(
-                                    { fieldType -> fieldType.isAssignableFrom(field.type) })
+                            fieldTypes.any { fieldType -> fieldType.isAssignableFrom(field.type) }
                         }
                         .forEach { field ->
                             try {
-                                if (!field.isAccessible()) {
+                                if (!field.isAccessible) {
                                     field.isAccessible = true
                                 }
-                                val value = field.get(graphConfig)
+                                val value = field.get(instance)
                                 graphConfigFields.put(value, field.name)
                             } catch (exc: Exception) {
                                 log.warn(exc) {
@@ -46,7 +45,7 @@ class FieldNameResolver(
         return graphConfigFields[configField] ?: throw IllegalArgumentException("""
             You are probably using local variable instead of class field in GraphConfig builder API.
             You should convert Vertex local variable to config field.
-            Failed to resolve field within class ${graphConfig.javaClass} that reference given object $configField.
+            Failed to resolve field within class ${instance.javaClass} that reference given object $configField.
             """.trimIndent())
     }
 }
