@@ -9,7 +9,7 @@ class AtLeastOneEndPointExistValidator : Validator {
 
         return if (graph.transitionable
                         .values
-                        .asIterable()
+                        .asSequence()
                         .flatMap { it.transitions }
                         .none { it.isComplete }) {
 

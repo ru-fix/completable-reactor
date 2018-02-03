@@ -40,7 +40,7 @@ class JavaSourceParserTest {
         println("Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms")
 
 
-        fun vertexTransitions(name: String) = model.transitionable[name]!!.transitions.asIterable()
+        fun vertexTransitions(name: String) = model.transitionable[name]!!.transitions.asSequence()
 
 
         assertTrue(model.handlers.containsKey("userProfile"))

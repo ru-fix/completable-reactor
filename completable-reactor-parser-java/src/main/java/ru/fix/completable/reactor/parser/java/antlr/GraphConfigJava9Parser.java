@@ -39,7 +39,7 @@ public class GraphConfigJava9Parser extends Parser {
 		RSHIFT_ASSIGN=130, URSHIFT_ASSIGN=131, Identifier=132, WS=133, COMMENT=134, 
 		LINE_COMMENT=135;
 	public static final int
-		RULE_sourceFile = 0, RULE_graphBlock = 1, RULE_graphConfigDeclarationBlock = 2, 
+		RULE_sourceFile = 0, RULE_graphBlock = 1, RULE_graphDeclarationBlock = 2, 
 		RULE_payloadType = 3, RULE_vertexAssignmentBlock = 4, RULE_vertexAssignmentName = 5, 
 		RULE_vertexInitializationBlock = 6, RULE_vertexInitializationStaticSection = 7, 
 		RULE_vertexBuilder = 8, RULE_builderSubgraph = 9, RULE_subgraphPayloadClass = 10, 
@@ -145,12 +145,11 @@ public class GraphConfigJava9Parser extends Parser {
 		RULE_postDecrementExpression = 284, RULE_postDecrementExpression_lf_postfixExpression = 285, 
 		RULE_castExpression = 286;
 	public static final String[] ruleNames = {
-		"sourceFile", "graphBlock", "graphConfigDeclarationBlock", "payloadType", 
-		"vertexAssignmentBlock", "vertexAssignmentName", "vertexInitializationBlock", 
-		"vertexInitializationStaticSection", "vertexBuilder", "builderSubgraph", 
-		"subgraphPayloadClass", "builderRouter", "builderHandler", "handler", 
-		"builderMerger", "builderWithMerger", "builderWithoutMerger", "anythingBeforeRParen", 
-		"anythingBeforeRBrace", "ignoreBracesBlock", "ignoreParenthesesBlock", 
+		"sourceFile", "graphBlock", "graphDeclarationBlock", "payloadType", "vertexAssignmentBlock", 
+		"vertexAssignmentName", "vertexInitializationBlock", "vertexInitializationStaticSection", 
+		"vertexBuilder", "builderSubgraph", "subgraphPayloadClass", "builderRouter", 
+		"builderHandler", "handler", "builderMerger", "builderWithMerger", "builderWithoutMerger", 
+		"anythingBeforeRParen", "anythingBeforeRBrace", "ignoreBracesBlock", "ignoreParenthesesBlock", 
 		"payloadTransitionBlock", "handleBy", "handleByVertex", "vertexTransitionBlock", 
 		"vertexTransition", "vertexTransitionOn", "vertexTransitionOnAny", "transitionAction", 
 		"transitionActionComplete", "transitionActionMergeBy", "transitionActionHandleBy", 
@@ -228,25 +227,24 @@ public class GraphConfigJava9Parser extends Parser {
 	};
 
 	private static final String[] _LITERAL_NAMES = {
-		null, "'GraphConfig'", "'Vertex'", "'withMerger'", "'withoutMerger'", 
-		"'handleBy'", "'on'", "'onAny'", "'mergeBy'", "'coordinates'", "'buildGraph'", 
-		"'open'", "'module'", "'requires'", "'exports'", "'to'", "'opens'", "'uses'", 
-		"'provides'", "'with'", "'transitive'", "'subgraph'", "'merger'", "'handler'", 
-		"'handlerSync'", "'payload'", "'complete'", "'router'", "'abstract'", 
-		"'assert'", "'boolean'", "'break'", "'byte'", "'case'", "'catch'", "'char'", 
-		"'class'", "'const'", "'continue'", "'default'", "'do'", "'double'", "'else'", 
-		"'enum'", "'extends'", "'final'", "'finally'", "'float'", "'for'", "'if'", 
-		"'goto'", "'implements'", "'import'", "'instanceof'", "'int'", "'interface'", 
-		"'long'", "'native'", "'new'", "'package'", "'private'", "'protected'", 
-		"'public'", "'return'", "'short'", "'static'", "'strictfp'", "'super'", 
-		"'switch'", "'synchronized'", "'this'", "'throw'", "'throws'", "'transient'", 
-		"'try'", "'void'", "'volatile'", "'while'", "'_'", null, null, null, null, 
-		null, "'null'", "'('", "')'", "'{'", "'}'", "'['", "']'", "';'", "','", 
-		"'.'", "'...'", "'@'", "'::'", "'='", "'>'", "'<'", "'!'", "'~'", "'?'", 
-		"':'", "'->'", "'=='", "'<='", "'>='", "'!='", "'&&'", "'||'", "'++'", 
-		"'--'", "'+'", "'-'", "'*'", "'/'", "'&'", "'|'", "'^'", "'%'", "'+='", 
-		"'-='", "'*='", "'/='", "'&='", "'|='", "'^='", "'%='", "'<<='", "'>>='", 
-		"'>>>='"
+		null, "'Graph'", "'Vertex'", "'withMerger'", "'withoutMerger'", "'handleBy'", 
+		"'on'", "'onAny'", "'mergeBy'", "'coordinates'", "'buildGraph'", "'open'", 
+		"'module'", "'requires'", "'exports'", "'to'", "'opens'", "'uses'", "'provides'", 
+		"'with'", "'transitive'", "'subgraph'", "'merger'", "'handler'", "'handlerSync'", 
+		"'payload'", "'complete'", "'router'", "'abstract'", "'assert'", "'boolean'", 
+		"'break'", "'byte'", "'case'", "'catch'", "'char'", "'class'", "'const'", 
+		"'continue'", "'default'", "'do'", "'double'", "'else'", "'enum'", "'extends'", 
+		"'final'", "'finally'", "'float'", "'for'", "'if'", "'goto'", "'implements'", 
+		"'import'", "'instanceof'", "'int'", "'interface'", "'long'", "'native'", 
+		"'new'", "'package'", "'private'", "'protected'", "'public'", "'return'", 
+		"'short'", "'static'", "'strictfp'", "'super'", "'switch'", "'synchronized'", 
+		"'this'", "'throw'", "'throws'", "'transient'", "'try'", "'void'", "'volatile'", 
+		"'while'", "'_'", null, null, null, null, null, "'null'", "'('", "')'", 
+		"'{'", "'}'", "'['", "']'", "';'", "','", "'.'", "'...'", "'@'", "'::'", 
+		"'='", "'>'", "'<'", "'!'", "'~'", "'?'", "':'", "'->'", "'=='", "'<='", 
+		"'>='", "'!='", "'&&'", "'||'", "'++'", "'--'", "'+'", "'-'", "'*'", "'/'", 
+		"'&'", "'|'", "'^'", "'%'", "'+='", "'-='", "'*='", "'/='", "'&='", "'|='", 
+		"'^='", "'%='", "'<<='", "'>>='", "'>>>='"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, null, null, null, null, null, null, null, null, null, null, null, 
@@ -404,8 +402,8 @@ public class GraphConfigJava9Parser extends Parser {
 		public CoordinatesBlockContext coordinatesBlock() {
 			return getRuleContext(CoordinatesBlockContext.class,0);
 		}
-		public GraphConfigDeclarationBlockContext graphConfigDeclarationBlock() {
-			return getRuleContext(GraphConfigDeclarationBlockContext.class,0);
+		public GraphDeclarationBlockContext graphDeclarationBlock() {
+			return getRuleContext(GraphDeclarationBlockContext.class,0);
 		}
 		public BuildGraphBlockContext buildGraphBlock() {
 			return getRuleContext(BuildGraphBlockContext.class,0);
@@ -462,7 +460,7 @@ public class GraphConfigJava9Parser extends Parser {
 				enterOuterAlt(_localctx, 6);
 				{
 				setState(585);
-				graphConfigDeclarationBlock();
+				graphDeclarationBlock();
 				}
 				break;
 			case 7:
@@ -485,20 +483,20 @@ public class GraphConfigJava9Parser extends Parser {
 		return _localctx;
 	}
 
-	public static class GraphConfigDeclarationBlockContext extends ParserRuleContext {
+	public static class GraphDeclarationBlockContext extends ParserRuleContext {
 		public TerminalNode Identifier() { return getToken(GraphConfigJava9Parser.Identifier, 0); }
 		public PayloadTypeContext payloadType() {
 			return getRuleContext(PayloadTypeContext.class,0);
 		}
-		public GraphConfigDeclarationBlockContext(ParserRuleContext parent, int invokingState) {
+		public GraphDeclarationBlockContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_graphConfigDeclarationBlock; }
+		@Override public int getRuleIndex() { return RULE_graphDeclarationBlock; }
 	}
 
-	public final GraphConfigDeclarationBlockContext graphConfigDeclarationBlock() throws RecognitionException {
-		GraphConfigDeclarationBlockContext _localctx = new GraphConfigDeclarationBlockContext(_ctx, getState());
-		enterRule(_localctx, 4, RULE_graphConfigDeclarationBlock);
+	public final GraphDeclarationBlockContext graphDeclarationBlock() throws RecognitionException {
+		GraphDeclarationBlockContext _localctx = new GraphDeclarationBlockContext(_ctx, getState());
+		enterRule(_localctx, 4, RULE_graphDeclarationBlock);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);

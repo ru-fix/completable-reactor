@@ -43,8 +43,8 @@ class JavaSourceParser(val listener: Listener) {
         with(model) {
 
             //startPoint
-            graphBlocks.asIterable()
-                    .mapNotNull { it.graphConfigDeclarationBlock() }
+            graphBlocks.asSequence()
+                    .mapNotNull { it.graphDeclarationBlock() }
                     .forEach {
                         checkCommentsToLeft(it.start.tokenIndex)?.run {
                             startPoint.title = title
@@ -118,7 +118,7 @@ class JavaSourceParser(val listener: Listener) {
             }
 
             //vertex
-            graphBlocks.asIterable()
+            graphBlocks.asSequence()
                     .mapNotNull { it.vertexInitializationBlock() }
                     .forEach {
                         val vertexName = it.Identifier().text!!
@@ -126,7 +126,7 @@ class JavaSourceParser(val listener: Listener) {
                         createVertexFromVertexBuilder(vertexName, it.vertexInitializationStaticSection().vertexBuilder())
                     }
 
-            graphBlocks.asIterable()
+            graphBlocks.asSequence()
                     .mapNotNull { it.vertexAssignmentBlock() }
                     .forEach {
                         val vertexName = it.vertexAssignmentName().text!!
@@ -135,10 +135,10 @@ class JavaSourceParser(val listener: Listener) {
                     }
 
             //start point handleBy transitions
-            graphBlocks.asIterable()
+            graphBlocks.asSequence()
                     .mapNotNull { it.payloadTransitionBlock() }
                     .also { startPoint.source = sourceFromToken(it.firstOrNull()?.start) }
-                    .flatMap { it.handleBy() }
+                    .flatMap { it.handleBy().asSequence() }
                     .map { it.handleByVertex().Identifier().symbol }
                     .forEach {
                         startPoint.handleBy.add(handleable[it.text] ?: return@forEach listener.error(
@@ -149,7 +149,7 @@ class JavaSourceParser(val listener: Listener) {
                     }
 
             //vertex handleBy and mergeBy transitions
-            graphBlocks.asIterable()
+            graphBlocks.asSequence()
                     .mapNotNull { it.vertexTransitionBlock() }
                     .forEach {
                         val transitionSourceVertex = it.Identifier().text
@@ -196,9 +196,9 @@ class JavaSourceParser(val listener: Listener) {
                     }
 
             //coordinates
-            graphBlocks.asIterable()
+            graphBlocks.asSequence()
                     .mapNotNull { it.coordinatesBlock() }
-                    .flatMap { it.coordinate() }
+                    .flatMap { it.coordinate().asSequence() }
                     .forEach {
                         it.coordinatePayload()?.run {
                             startPoint.coordinates = Coordinates(
@@ -228,7 +228,7 @@ class JavaSourceParser(val listener: Listener) {
                     }
 
             //buildGraph()
-            graphBlocks.asIterable()
+            graphBlocks.asSequence()
                     .mapNotNull { it.buildGraphBlock() }
                     .forEach {
                         if (buildGraphSource == null) {
@@ -269,7 +269,7 @@ class JavaSourceParser(val listener: Listener) {
 
     fun parseComment(commentText: String): Comment {
         val lines = commentText.split('\n')
-                .asIterable()
+                .asSequence()
                 .map { it.trim() }
                 .map {
                     when {
@@ -282,6 +282,7 @@ class JavaSourceParser(val listener: Listener) {
                     }
                 }
                 .dropWhile { it.isBlank() }
+                .toList()
                 .dropLastWhile { it.isBlank() }
 
         if (lines.isEmpty()) {

@@ -216,7 +216,7 @@ class ExecutionBuilder(
         /**
          * Populate outgoing flows
          */
-        processingVertices.values.asIterable().filter { it.isMergerable }.forEach { mergerablePvx ->
+        processingVertices.values.asSequence().filter { it.isMergerable }.forEach { mergerablePvx ->
 
             /**
              * Completion of Mergerable feature triggers completion of outgoing transitions.
@@ -336,16 +336,16 @@ class ExecutionBuilder(
          */
         executionResultFuture.thenRunAsync {
             processingVertices.values
-                    .asIterable()
-                    .flatMap { it.incomingHandlingFlows }
+                    .asSequence()
+                    .flatMap { it.incomingHandlingFlows.asSequence() }
                     .map { it.feature }
                     .forEach { future ->
                         future.complete(TransitionPayloadContext(isDeadTransition = true))
                     }
 
             processingVertices.values
-                    .asIterable()
-                    .flatMap { it.incomingHandlingFlows }
+                    .asSequence()
+                    .flatMap { it.incomingHandlingFlows.asSequence() }
                     .map { it.feature }
                     .forEach { future ->
                         future.complete(TransitionPayloadContext(isDeadTransition = true))
@@ -370,8 +370,9 @@ class ExecutionBuilder(
         val chainExecutionFuture = CompletableFuture.allOf(
                 executionResultFuture,
                 * processingVertices.values
-                        .asIterable()
-                        .flatMap { listOf(it.handlingFeature, it.mergingFeature) }
+                        .asSequence()
+                        .flatMap { listOf(it.handlingFeature, it.mergingFeature).asSequence() }
+                        .toList()
                         .toTypedArray()
         )
 
