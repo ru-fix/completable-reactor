@@ -42,7 +42,7 @@ class MergeByExecutionBuilder<PayloadType>(
              */
             val incomingFlows = ArrayList<CompletableFuture<*>>()
             pvx.incomingMergingFlows
-                    .asIterable()
+                    .asSequence()
                     .map { it.feature }
                     .forEach { incomingFlows.add(it) }
 

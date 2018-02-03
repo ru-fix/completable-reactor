@@ -12,12 +12,12 @@ graphBlock
     |   vertexInitializationBlock
     |   vertexAssignmentBlock
     |   coordinatesBlock
-    |   graphConfigDeclarationBlock
+    |   graphDeclarationBlock
     |   buildGraphBlock
     ;
 
-graphConfigDeclarationBlock
-    :   ('public' | 'private' | 'static')? 'class' Identifier 'extends' 'GraphConfig' '<' payloadType '>'
+graphDeclarationBlock
+    :   ('public' | 'private' | 'static')? 'class' Identifier 'extends' 'Graph' '<' payloadType '>'
     ;
 
 payloadType

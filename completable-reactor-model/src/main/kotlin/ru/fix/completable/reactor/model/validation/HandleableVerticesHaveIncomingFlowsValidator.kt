@@ -10,7 +10,7 @@ class HandleableVerticesHaveIncomingFlowsValidator : Validator {
         val verticesWithIncomingTransitions = graph.transitionable
                 //collect all transitions targets
                 .values
-                .asIterable()
+                .asSequence()
                 .flatMap { it.transitions }
                 .mapNotNull { it.target as? HandleableVertexFigure }
                 //add start point transitions
@@ -21,7 +21,7 @@ class HandleableVerticesHaveIncomingFlowsValidator : Validator {
 
         val verticesWithoutIncomingFlows = graph.handleable
                 .values
-                .asIterable()
+                .asSequence()
                 .map { it.name }
                 .filter { verticesWithIncomingTransitions.contains(it) }
                 .toList()

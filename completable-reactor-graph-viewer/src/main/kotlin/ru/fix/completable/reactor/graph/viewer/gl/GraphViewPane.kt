@@ -215,7 +215,7 @@ class GraphViewPane(
         /**
          * Transition line: handler -> merger
          */
-        graphModel.handlers.values.asIterable()
+        graphModel.handlers.values.asSequence()
                 .mapNotNull { handler ->
                     graphModel.mergers[handler.name]?.let { merger ->
                         Pair(handlers[handler]!!, mergers[merger]!!)
@@ -231,7 +231,7 @@ class GraphViewPane(
         /**
          * Transition line: subgraph -> merger
          */
-        graphModel.handlers.values.asIterable()
+        graphModel.handlers.values.asSequence()
                 .mapNotNull { handler ->
                     graphModel.mergers[handler.name]?.let { merger ->
                         Pair(handlers[handler]!!, mergers[merger]!!)
@@ -247,7 +247,7 @@ class GraphViewPane(
         /**
          * Transition line: merger, router -> any
          */
-        graphModel.transitionable.values.asIterable()
+        graphModel.transitionable.values.asSequence()
                 .filter { it.transitions.isNotEmpty() }
                 .map { Pair(it, transitionable(it)) }
                 .forEach { (transitionable, transitionableNode) ->

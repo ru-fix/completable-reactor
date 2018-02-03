@@ -1,6 +1,6 @@
 token literal names:
 null
-'GraphConfig'
+'Graph'
 'Vertex'
 'withMerger'
 'withoutMerger'
@@ -277,7 +277,7 @@ LINE_COMMENT
 rule names:
 sourceFile
 graphBlock
-graphConfigDeclarationBlock
+graphDeclarationBlock
 payloadType
 vertexAssignmentBlock
 vertexAssignmentName
