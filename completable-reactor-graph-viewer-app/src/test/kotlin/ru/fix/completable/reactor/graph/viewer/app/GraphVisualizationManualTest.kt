@@ -6,12 +6,12 @@ import javafx.stage.Stage
 import mu.KotlinLogging
 import org.junit.Ignore
 import org.junit.Test
-import ru.fix.completable.reactor.api.gl.model.Source
-import ru.fix.completable.reactor.graph.viewer.gl.code.CodeUpdater
 import ru.fix.completable.reactor.graph.viewer.gl.CoordinateItem
 import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
 import ru.fix.completable.reactor.graph.viewer.gl.Shortcut
 import ru.fix.completable.reactor.graph.viewer.gl.ShortcutType
+import ru.fix.completable.reactor.graph.viewer.gl.code.CodeUpdater
+import ru.fix.completable.reactor.model.Source
 import ru.fix.completable.reactor.parser.java.JavaSourceParser
 
 

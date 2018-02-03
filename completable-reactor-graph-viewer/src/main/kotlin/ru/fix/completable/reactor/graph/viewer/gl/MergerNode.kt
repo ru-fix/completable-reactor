@@ -6,7 +6,7 @@ import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
-import ru.fix.completable.reactor.api.gl.model.Merger
+import ru.fix.completable.reactor.model.Merger
 
 /**
  * Created by swarmshine on 29.01.2017.

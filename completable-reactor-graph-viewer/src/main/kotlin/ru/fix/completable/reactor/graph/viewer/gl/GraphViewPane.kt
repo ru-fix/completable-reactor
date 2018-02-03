@@ -6,10 +6,8 @@ import javafx.scene.control.MenuItem
 import javafx.scene.control.ScrollPane
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Pane
-import ru.fix.completable.reactor.api.gl.model.*
+import ru.fix.completable.reactor.model.*
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /**
  * Created by Kamil Asfandiyarov
@@ -31,7 +29,7 @@ class GraphViewPane(
 
     private val translator = CoordinateTranslator(WORLD_SIZE)
 
-    var graphModel: ReactorGraphCompilationModel? = null
+    var graphModel: GraphModel? = null
         private set
 
     init {
@@ -100,7 +98,7 @@ class GraphViewPane(
     }
 
 
-    fun openGraph(graphModel: ReactorGraphCompilationModel): GraphViewPane {
+    fun openGraph(graphModel: GraphModel): GraphViewPane {
         this.graphModel = graphModel
 
         pane.children.removeAll()

@@ -5,7 +5,7 @@ import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
-import ru.fix.completable.reactor.api.gl.model.*
+import ru.fix.completable.reactor.model.EndPoint
 
 /**
  * Created by swarmshine on 29.01.2017.

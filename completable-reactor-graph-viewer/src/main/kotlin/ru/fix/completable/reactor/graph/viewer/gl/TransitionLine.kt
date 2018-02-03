@@ -13,7 +13,7 @@ import javafx.scene.shape.Line
 import javafx.scene.shape.Polygon
 import javafx.scene.text.Text
 import javafx.scene.transform.Rotate
-import ru.fix.completable.reactor.api.gl.model.*
+import ru.fix.completable.reactor.model.Transition
 import java.util.*
 
 /**

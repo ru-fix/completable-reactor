@@ -4,7 +4,7 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
-import ru.fix.completable.reactor.api.gl.model.*
+import ru.fix.completable.reactor.model.*
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Lexer
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Parser
 
@@ -14,8 +14,8 @@ class JavaSourceParser(val listener: Listener) {
         fun error(msg: String)
     }
 
-    fun parse(body: String): ReactorGraphCompilationModel {
-        val model = ReactorGraphCompilationModel()
+    fun parse(body: String): GraphModel {
+        val model = GraphModel()
 
         val lexer = GraphConfigJava9Lexer(CharStreams.fromString(body))
         val tokens = CommonTokenStream(lexer)
