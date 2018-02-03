@@ -3,12 +3,12 @@ package ru.fix.completable.reactor.example
 import org.springframework.beans.factory.annotation.Autowired
 import ru.fix.completable.reactor.example.services.*
 import ru.fix.completable.reactor.example.services.UserProfileManager.Status
-import ru.fix.completable.reactor.runtime.ReactorGraph
+import ru.fix.completable.reactor.graph.Graph
 
 /**
  * Created by Kamil Asfandiyarov
  */
-class SubscribeGraphConfig : ru.fix.completable.reactor.graph.GraphConfig<SubscribePayload>() {
+class SubscribeGraph : Graph<SubscribePayload>() {
 
     val userProfile = object : ru.fix.completable.reactor.graph.Vertex() {
         lateinit var userProfile: UserProfileManager
@@ -58,7 +58,12 @@ class SubscribeGraphConfig : ru.fix.completable.reactor.graph.GraphConfig<Subscr
                 userJournal.logAction(
                         pld.request.userId,
                         String.format("Request type: %s", pld.javaClass.getSimpleName()))
-            }.withMerger { pld, result -> Flow.CONTINUE }
+            }.withMerger {
+                //ignore result of logging
+                pld, result ->
+
+                Flow.CONTINUE
+            }
         }
     }
 
@@ -145,7 +150,7 @@ class SubscribeGraphConfig : ru.fix.completable.reactor.graph.GraphConfig<Subscr
                 }
             })
 
-    fun subscribeGraph(): ReactorGraph<SubscribePayload> {
+    init {
         payload()
                 .handleBy(userProfile)
                 .handleBy(serviceInfo)
@@ -191,7 +196,5 @@ class SubscribeGraphConfig : ru.fix.completable.reactor.graph.GraphConfig<Subscr
                 .complete(serviceInfo, 480, 310)
                 .complete(userJournal, 740, 1020)
                 .complete(userProfile, 920, 300)
-
-        return buildGraph()
     }
 }

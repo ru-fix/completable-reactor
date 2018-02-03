@@ -20,7 +20,7 @@ class GlVertex(
     var router: Router<Any?>? = null
 
     @JvmField
-    var subgraphPayloadType: Class<Any?>? = null
+    var subgraphPayloadType: Class<*>? = null
 
     @JvmField
     var subgraphPayloadBuilder: Subgraph<Any?, Any?>? = null

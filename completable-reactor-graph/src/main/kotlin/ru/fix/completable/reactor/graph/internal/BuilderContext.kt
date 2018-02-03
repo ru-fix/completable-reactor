@@ -1,6 +1,5 @@
 package ru.fix.completable.reactor.graph.internal
 
-import ru.fix.completable.reactor.graph.Graph
 import ru.fix.completable.reactor.graph.Vertex
 
 class BuilderContext {
@@ -9,7 +8,7 @@ class BuilderContext {
 
     private var fieldNameResolver: FieldNameResolver? = null
 
-    var graph: Graph<*>? = null
+    var graph: GlGraph? = null
         set(value) {
             field = value
             if (value != null) {

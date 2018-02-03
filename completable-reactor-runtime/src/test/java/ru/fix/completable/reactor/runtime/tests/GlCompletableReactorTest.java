@@ -3,9 +3,9 @@ package ru.fix.completable.reactor.runtime.tests;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.completable.reactor.graph.Graph;
+import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
-import ru.fix.completable.reactor.runtime.gl.GraphConfig;
-import ru.fix.completable.reactor.runtime.gl.Vertex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +47,7 @@ class GlCompletableReactorTest {
      * Test will check that single handler id end up in payload.",
      * Expected result: {1}
      */
-    static class SingleProcessorConfig extends GraphConfig<IdListPayload> {
+    static class SingleProcessorGraph extends Graph<IdListPayload> {
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
                 .withMerger((pld, id) -> {
@@ -72,7 +72,7 @@ class GlCompletableReactorTest {
     @Test
     void single_processor() throws Exception {
 
-        reactor.registerIfAbsent(SingleProcessorConfig.class);
+        reactor.registerIfAbsent(SingleProcessorGraph.class);
 
         IdListPayload resultPayload = reactor.submit(new IdListPayload())
                 .getResultFuture()
@@ -85,7 +85,7 @@ class GlCompletableReactorTest {
      * Test will check that two processor ids end up at payloads idList in correct order.
      * Expected result: {1, 2}
      */
-    static class TwoProcessorSequentialMergeConfig extends GraphConfig<IdListPayload> {
+    static class TwoProcessorSequentialMergeGraph extends Graph<IdListPayload> {
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
                 .withMerger((pld, id) -> {
@@ -120,7 +120,7 @@ class GlCompletableReactorTest {
     @Test
     public void two_processors_sequential_merge() throws Exception {
 
-        reactor.registerIfAbsent(TwoProcessorSequentialMergeConfig.class);
+        reactor.registerIfAbsent(TwoProcessorSequentialMergeGraph.class);
         CompletableReactor.Execution<IdListPayload> execution = reactor.submit(new IdListPayload());
         IdListPayload resultPayload = execution.getResultFuture().get(10, TimeUnit.SECONDS);
 
