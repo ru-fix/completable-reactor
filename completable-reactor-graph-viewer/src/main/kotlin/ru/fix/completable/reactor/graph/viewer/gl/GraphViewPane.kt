@@ -82,8 +82,8 @@ class GraphViewPane(
     fun initializePopupMenu() {
         val contextMenu = ContextMenu()
 
-        val buildGraphMenuItem = MenuItem("Graph build location")
-        buildGraphMenuItem.setOnAction { graphModel?.buildGraphSource?.let { actionListener.goToSource(it) } }
+        val buildGraphMenuItem = MenuItem("Graph location")
+        buildGraphMenuItem.setOnAction { graphModel?.startPoint?.source?.let { actionListener.goToSource(it) } }
         contextMenu.items.add(buildGraphMenuItem)
 
 

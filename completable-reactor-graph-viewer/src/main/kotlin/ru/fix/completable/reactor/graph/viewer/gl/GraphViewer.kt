@@ -57,7 +57,7 @@ class GraphViewer {
             shortcuts.forEach { shortcut, shortcutType ->
                 if (shortcut.getPredicate().test(keyEvent)) {
                     when (shortcutType) {
-                        ShortcutType.GOTO_BUILD_GRAPH -> graphViewPane.graphModel?.buildGraphSource?.let {
+                        ShortcutType.GOTO_GRAPH -> graphViewPane.graphModel?.startPoint?.source?.let {
                             actionListener.goToSource(it)
                         }
                     }
@@ -67,7 +67,8 @@ class GraphViewer {
         }
     }
 
-    fun openGraph(graph: GraphModel) {
+    fun openGraph(graphs: List<GraphModel>) {
+        if()
         graphViewPane.openGraph(graph)
     }
 

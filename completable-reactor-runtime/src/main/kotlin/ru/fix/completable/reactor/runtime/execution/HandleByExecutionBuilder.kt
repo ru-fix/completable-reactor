@@ -44,7 +44,7 @@ class HandleByExecutionBuilder<PayloadType>(
              * First we should wait for all incoming handleBy transition to complete
              */
             CompletableFuture.allOf(
-                    *pvx.incomingHandlingFlows.asSequence().map { it.feature }.toTypedArray()
+                    *pvx.incomingHandlingFlows.asSequence().map { it.feature }.toList().toTypedArray()
 
             ).thenRunAsync {
 
