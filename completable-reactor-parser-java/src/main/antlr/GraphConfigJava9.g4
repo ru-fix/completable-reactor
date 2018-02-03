@@ -13,7 +13,6 @@ graphBlock
     |   vertexAssignmentBlock
     |   coordinatesBlock
     |   graphDeclarationBlock
-    |   buildGraphBlock
     ;
 
 graphDeclarationBlock
@@ -167,9 +166,6 @@ ignoredToken
     :   .
     ;
 
-buildGraphBlock
-    :   'buildGraph' LPAREN RPAREN SEMI
-    ;
 
 SUBGRAPH : 'subgraph';
 MERGER : 'merger';

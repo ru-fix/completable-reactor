@@ -94,11 +94,6 @@ class GraphModel {
     val mergers = HashMap<String, Merger>()
     val endpoints = HashMap<String, EndPoint>()
 
-    /**
-     * Location where buildGraph method of GraphConfig was invoked
-     */
-    var buildGraphSource: Source? = null
-
 
     inner class HandeableAccessor {
         operator fun get(name: String): HandleableVertexFigure? = handlers[name] ?: subgraphs[name] ?: routers[name]
