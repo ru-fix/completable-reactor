@@ -10,7 +10,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.example.services.*;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
 import ru.fix.completable.reactor.spring.CompletableReactorSpringSupportConfiguration;
 
 import java.util.concurrent.TimeUnit;
@@ -70,10 +69,9 @@ public class PurchaseGraphConfigTest {
     @Ignore
     @Test()
     public void purchase_invalid_user_and_service() throws Exception {
-        PurchaseGraphConfig configuration = new PurchaseGraphConfig();
 
         CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
-        reactor.registerReactorGraph(configuration.purchaseGraph());
+        reactor.registerIfAbsent(new PurchaseGraph());
 
         PurchasePayload payload = new PurchasePayload();
         payload.request.setUserId(UserProfileManager.USER_ID_INVALID).setServiceId(ServiceRegistry.SERVICE_ID_INVALID);
@@ -89,8 +87,7 @@ public class PurchaseGraphConfigTest {
     @Test
     public void purchase_car_wash() throws Exception {
         CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
-        ReactorGraph<PurchasePayload> purchaseGraph = new PurchaseGraphConfig().purchaseGraph();
-        reactor.registerReactorGraph(purchaseGraph);
+        reactor.registerIfAbsent(new PurchaseGraph());
 
         PurchasePayload payload = new PurchasePayload();
         payload.request.setUserId(UserProfileManager.USER_ID_JOHN).setServiceId(ServiceRegistry.SERVICE_ID_CAR_WASH);

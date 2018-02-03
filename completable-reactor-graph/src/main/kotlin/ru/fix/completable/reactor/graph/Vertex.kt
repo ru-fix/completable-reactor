@@ -9,7 +9,7 @@ import java.util.*
 /**
  * Graph node.
  */
-class Vertex {
+open class Vertex {
 
     private var vx = GlVertex(this)
 
@@ -25,7 +25,8 @@ class Vertex {
                 Or vertex created in different thread from Graph class.
                 Builder context is not set.
                 """.trimIndent())
-        currentGraph.graph.vertices.add(vx)
+
+        currentGraph.vertices.add(vx)
     }
 
     fun on(vararg mergeStatuses: Enum<*>): TransitionBuilder {

@@ -12,7 +12,7 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vx: GlVertex)
         if (vx.merger != null) {
             throw IllegalStateException("withMerger method used twice on same vertex")
         }
-        vx.merger = merger
+        vx.merger = merger as Merger<Any?, Any?>
         return vx.vertex
     }
 

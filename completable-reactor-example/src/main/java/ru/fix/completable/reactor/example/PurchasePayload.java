@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.example;
 
 
-import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.example.services.ServiceInfo;
 import ru.fix.completable.reactor.example.services.UserProfile;
 
@@ -10,9 +9,6 @@ import java.math.BigDecimal;
 /**
  * @author Kamil Asfandiyarov
  */
-@Reactored({
-        "Purchase procedure when user buys goods in a shop"
-})
 public class PurchasePayload {
 
     public static class Request {

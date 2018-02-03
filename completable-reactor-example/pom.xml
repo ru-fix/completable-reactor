@@ -20,7 +20,13 @@
   <dependencies>
     <dependency>
       <groupId>ru.fix</groupId>
-      <artifactId>completable-reactor-api</artifactId>
+      <artifactId>completable-reactor-model</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>ru.fix</groupId>
+      <artifactId>completable-reactor-graph</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
 

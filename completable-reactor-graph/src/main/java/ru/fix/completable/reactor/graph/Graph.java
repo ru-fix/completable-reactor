@@ -11,7 +11,7 @@ public abstract class Graph<Payload> {
     {
         // Deliberately leaking reference to ThreadLocal context.
         // Graph construction is happening in single thread
-        BuilderContext.get().setGraph(this);
+        BuilderContext.get().setGraph(graph);
     }
 
     protected PayloadTransitionBuilder<Payload> payload() {
@@ -34,9 +34,9 @@ public abstract class Graph<Payload> {
         requireNull(vx.handler, "handler method used twice on same vertex");
         requireNull(vx.merger, "handler method used after merger initialization for given vertex");
         requireNull(vx.router, "handler method used after router initialization for given vertex");
-        requireNull(vx.subgraph, "handler method used after subgraph initialization for given vertex");
+        requireNull(vx.subgraphPayloadBuilder, "handler method used after subgraph initialization for given vertex");
 
-        vx.handler = handler;
+        vx.handler = (Handler<Object, Object>) handler;
         return new GlMergerBuilder<>(vx);
     }
 
@@ -45,24 +45,24 @@ public abstract class Graph<Payload> {
         requireNull(vx.handler, "router method used after handler initialization for given vertex");
         requireNull(vx.merger, "router method used after merger initialization for given vertex");
         requireNull(vx.router, "router method used twice on same vertex");
-        requireNull(vx.subgraph, "router method used after subgraph initialization for given vertex");
+        requireNull(vx.subgraphPayloadBuilder, "router method used after subgraph initialization for given vertex");
 
-        vx.router = router;
+        vx.router = (Router<Object>) router;
         return vx.vertex;
     }
 
     protected <SubgraphPayload> MergerBuilder<Payload, SubgraphPayload> subgraph(
-            Class<SubgraphPayload> subgraphPayloadClass,
+            Class<SubgraphPayload> subgraphPayloadType,
             Subgraph<Payload, SubgraphPayload> subgraph) {
 
         GlVertex vx = BuilderContext.Companion.get().extractVertexOrDefault(new GlVertex(new Vertex()));
         requireNull(vx.handler, "subgraph method used after handler initialization for given vertex");
         requireNull(vx.merger, "subgraph method used after merger initialization for given vertex");
         requireNull(vx.router, "subgraph method used after router initialization for given vertex");
-        requireNull(vx.subgraph, "subgrah method used twice on same vertex");
+        requireNull(vx.subgraphPayloadBuilder, "subgrah method used twice on same vertex");
 
-        vx.subgraph = subgraphPayloadClass;
-        vx.subgraphPayloadBuilder = subgraph;
+        vx.subgraphPayloadType = subgraphPayloadType;
+        vx.subgraphPayloadBuilder = (Subgraph<Object, Object>) subgraph;
         return new GlMergerBuilder<>(vx);
     }
 

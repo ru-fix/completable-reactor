@@ -2,16 +2,15 @@ package ru.fix.completable.reactor.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.fix.completable.reactor.example.services.*;
-import ru.fix.completable.reactor.runtime.gl.GraphConfig;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
-import ru.fix.completable.reactor.runtime.gl.Vertex;
+import ru.fix.completable.reactor.graph.Graph;
+import ru.fix.completable.reactor.graph.Vertex;
 
 import java.math.BigDecimal;
 
 /**
  * Define purchase process when user buys good in the shop.
  */
-public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
+public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex userProfile = new Vertex() {
         UserProfileManager userProfile;
@@ -192,7 +191,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                     pld.response.bonusServiceStatus = subgraphResult.response.status
             );
 
-    public ReactorGraph<PurchasePayload> purchaseGraph() {
+    {
 
         payload()
                 .handleBy(userProfile)
@@ -239,7 +238,5 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                 .merger(userProfile, 806, 201)
                 .complete(serviceInfo, 480, 310)
                 .complete(userProfile, 963, 258);
-
-        return buildGraph();
     }
 }
