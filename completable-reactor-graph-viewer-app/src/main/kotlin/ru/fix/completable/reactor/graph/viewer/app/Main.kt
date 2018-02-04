@@ -56,7 +56,7 @@ class Main : Application() {
                 val viewer2 = ru.fix.completable.reactor.graph.viewer.gl.GraphViewer()
                 stage.scene = viewer2.scene
 
-                //TODO add file monitor, reparsing loop, errors in stdout, parsing time
+                //TODO: add drag&drop
                 FileWatcher(Paths.get(filePath)) {
 
                     val fileContent = String(Files.readAllBytes(
