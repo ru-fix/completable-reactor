@@ -6,6 +6,7 @@ import javafx.stage.Stage
 import mu.KotlinLogging
 import ru.fix.completable.reactor.graph.viewer.GraphViewer
 import ru.fix.completable.reactor.parser.java.JavaSourceParser
+import ru.fix.crudility.engine.FileWatcher
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -28,11 +29,14 @@ class Main : Application() {
         try {
 
             //TODO remove support of rg files after upgrade
+            val filePath = parameters.raw[0]
+
             val fileContent = String(Files.readAllBytes(
-                    Paths.get(parameters.raw[0])),
+                    Paths.get(filePath)),
                     StandardCharsets.UTF_8)
 
-            if (parameters.raw[0].endsWith(".rg")) {
+
+            if (filePath.endsWith(".rg")) {
 
                 val viewer = GraphViewer()
 
@@ -40,9 +44,10 @@ class Main : Application() {
                 stage.scene = viewer.scene
 
                 stage.show()
-            } else if (parameters.raw[0].endsWith(".java")){
 
-                //TODO add file monitor, reparsing loop, errors in stdout, parsing time
+            } else if (filePath.endsWith(".java")){
+
+                log.info { "Open CR2 graph: $filePath" }
 
                 val parser = JavaSourceParser(object: JavaSourceParser.Listener {
                     override fun error(msg: String) {
@@ -50,14 +55,19 @@ class Main : Application() {
                     }
                 })
 
-                val timestamp = System.currentTimeMillis()
-                val models = parser.parse(fileContent)
-
-                log.info{ "Parsing took ${System.currentTimeMillis() - timestamp}ms" }
-
                 val viewer2 = ru.fix.completable.reactor.graph.viewer.gl.GraphViewer()
-                viewer2.openGraph(models)
                 stage.scene = viewer2.scene
+
+                //TODO add file monitor, reparsing loop, errors in stdout, parsing time
+                FileWatcher(Paths.get(filePath)){
+                    val timestamp = System.currentTimeMillis()
+                    val models = parser.parse(fileContent)
+                    log.info{ "Parsing took ${System.currentTimeMillis() - timestamp}ms" }
+
+                    viewer2.openGraph(models)
+                }
+
+                stage.show()
             }
 
 
