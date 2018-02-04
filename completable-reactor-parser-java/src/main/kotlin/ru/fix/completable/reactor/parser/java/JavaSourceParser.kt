@@ -52,6 +52,7 @@ class JavaSourceParser(val listener: Listener) {
                             tokens.checkCommentsToLeft(it.start.tokenIndex)?.run {
                                 startPoint.title = title
                                 startPoint.doc = doc
+                                graphClass = it.graphClass().text
                             }
                             startPoint.payloadType = it.payloadType()?.Identifier()?.text
                         }

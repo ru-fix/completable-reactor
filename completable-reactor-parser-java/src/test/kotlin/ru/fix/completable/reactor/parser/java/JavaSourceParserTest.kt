@@ -60,6 +60,7 @@ class JavaSourceParserTest {
 
 
         assertEquals("PurchasePayload", model.startPoint.payloadType)
+        assertEquals("PurchaseGraph", model.graphClass)
         assertEquals("Define purchase process when user buys good in the shop.", model.startPoint.doc)
 
         assertEquals(
