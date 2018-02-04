@@ -28,20 +28,25 @@ class JavaSourceParser(val listener: Listener) {
             return emptyList()
         }
 
-        val graphBorders = sourceBlocks
+        val declarationBlockIndexes = sourceBlocks
                 .asSequence()
                 .mapIndexedNotNull { index, block -> block.graphDeclarationBlock()?.let { index } }
                 .toMutableList()
-                .apply { add(sourceBlocks.size - 1) }
 
-        if (graphBorders.size <= 1) {
+        if (declarationBlockIndexes.isEmpty()) {
             return emptyList()
         }
 
-        for (borderStart in 0 until graphBorders.size - 1) {
+        for (borderStart in 0 until declarationBlockIndexes.size) {
 
             val model = GraphModel()
-            val graphBlocks = sourceBlocks.slice(graphBorders[borderStart]..graphBorders[borderStart + 1])
+            val graphBlocks = sourceBlocks.slice(
+                    declarationBlockIndexes[borderStart]
+                            until
+                            if (borderStart + 1 < declarationBlockIndexes.size)
+                                declarationBlockIndexes[borderStart + 1]
+                            else
+                                sourceBlocks.size)
 
             with(model) {
 
@@ -52,8 +57,8 @@ class JavaSourceParser(val listener: Listener) {
                             tokens.checkCommentsToLeft(it.start.tokenIndex)?.run {
                                 startPoint.title = title
                                 startPoint.doc = doc
-                                graphClass = it.graphClass().text
                             }
+                            graphClass = it.graphClass().text
                             startPoint.payloadType = it.payloadType()?.Identifier()?.text
                         }
 
