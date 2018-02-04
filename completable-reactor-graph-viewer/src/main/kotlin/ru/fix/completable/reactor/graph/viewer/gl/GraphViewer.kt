@@ -71,15 +71,15 @@ class GraphViewer {
             for (graph in graphs) {
                 var graphViewPane = GraphViewPane(viewPaneActionListener, { this.getShortcut(it) })
 
-                graphViewPane.openGraph(graph)
-
-                addShortcutListener(graphViewPane)
-
                 val tab = Tab().apply {
                     text = graph.startPoint.payloadType
                     content = graphViewPane
                 }
                 tabPane.tabs.add(tab)
+
+                graphViewPane.openGraph(graph)
+
+                addShortcutListener(graphViewPane)
             }
 
             if(previouslySelectedTabIndex != null && previouslySelectedTabIndex < tabPane.tabs.size) {

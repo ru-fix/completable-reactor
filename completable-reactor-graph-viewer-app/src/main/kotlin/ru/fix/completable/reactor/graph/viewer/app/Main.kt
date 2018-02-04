@@ -27,29 +27,27 @@ class Main : Application() {
         }
 
         try {
-
             //TODO remove support of rg files after upgrade
             val filePath = parameters.raw[0]
-
-            val fileContent = String(Files.readAllBytes(
-                    Paths.get(filePath)),
-                    StandardCharsets.UTF_8)
-
 
             if (filePath.endsWith(".rg")) {
 
                 val viewer = GraphViewer()
+
+                val fileContent = String(Files.readAllBytes(
+                        Paths.get(filePath)),
+                        StandardCharsets.UTF_8)
 
                 viewer.openGraph(fileContent)
                 stage.scene = viewer.scene
 
                 stage.show()
 
-            } else if (filePath.endsWith(".java")){
+            } else if (filePath.endsWith(".java")) {
 
                 log.info { "Open CR2 graph: $filePath" }
 
-                val parser = JavaSourceParser(object: JavaSourceParser.Listener {
+                val parser = JavaSourceParser(object : JavaSourceParser.Listener {
                     override fun error(msg: String) {
                         log.error { msg }
                     }
@@ -59,13 +57,20 @@ class Main : Application() {
                 stage.scene = viewer2.scene
 
                 //TODO add file monitor, reparsing loop, errors in stdout, parsing time
-                FileWatcher(Paths.get(filePath)){
+                FileWatcher(Paths.get(filePath)) {
+
+                    val fileContent = String(Files.readAllBytes(
+                            Paths.get(filePath)),
+                            StandardCharsets.UTF_8)
+
                     val timestamp = System.currentTimeMillis()
                     val models = parser.parse(fileContent)
-                    log.info{ "Parsing took ${System.currentTimeMillis() - timestamp}ms" }
+                    log.info { "Parsing took ${System.currentTimeMillis() - timestamp}ms" }
 
-                    viewer2.openGraph(models)
-                }
+                    Platform.runLater {
+                        viewer2.openGraph(models)
+                    }
+                }.start()
 
                 stage.show()
             }
