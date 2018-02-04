@@ -59,6 +59,11 @@ class GraphViewer {
             addShortcutListener(graphViewPane)
 
         } else {
+            val previouslySelectedTabIndex = scene.root
+                    .let { it as? TabPane }
+                    ?.selectionModel?.selectedIndex
+
+
             val tabPane = TabPane()
             tabPane.setPrefSize(700.0, 600.0)
             scene.root = tabPane
@@ -75,6 +80,10 @@ class GraphViewer {
                     content = graphViewPane
                 }
                 tabPane.tabs.add(tab)
+            }
+
+            if(previouslySelectedTabIndex != null && previouslySelectedTabIndex < tabPane.tabs.size) {
+                tabPane.selectionModel.select(previouslySelectedTabIndex)
             }
         }
     }
