@@ -6,6 +6,8 @@ import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
+import ru.fix.completable.reactor.model.Coordinates
+import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.Merger
 
 /**
@@ -30,8 +32,9 @@ class MergerNode(
         this.radius = 14.0
 
 
-        this.layoutX = translator.translateX(merger.coordinates.x.toDouble())
-        this.layoutY = translator.translateY(merger.coordinates.y.toDouble())
+        val coordinates = merger.coordinates ?: DEFAULT_COORDINATES
+        this.layoutX = translator.translateX(coordinates.x.toDouble())
+        this.layoutY = translator.translateY(coordinates.y.toDouble())
 
 
         this.mergePointShape.prefWidth = radius * 2;
@@ -50,8 +53,10 @@ class MergerNode(
         val dragger = NodeDragger.attach(this)
 
         dragger.addOnPositionChangedListener {
-            merger.coordinates.x = translator.reverseTranslateX(layoutX)
-            merger.coordinates.y = translator.reverseTranslateY(layoutY)
+            merger.coordinates = Coordinates(
+                    translator.reverseTranslateX(layoutX),
+                    translator.reverseTranslateY(layoutY)
+            )
             positionListener.positionChanged()
         }
 

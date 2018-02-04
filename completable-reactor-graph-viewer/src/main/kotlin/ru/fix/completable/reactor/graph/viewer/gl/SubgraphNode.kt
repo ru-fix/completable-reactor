@@ -6,6 +6,8 @@ import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.Text
+import ru.fix.completable.reactor.model.Coordinates
+import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.Subgraph
 
 /**
@@ -21,11 +23,10 @@ class SubgraphNode(
     init {
         this.styleClass.add("subgraph")
 
-        val x = subgraph.coordinates.x
-        val y = subgraph.coordinates.y
+        val coordinate = subgraph.coordinates ?: DEFAULT_COORDINATES
 
-        this.layoutX = translator.translateX(x)
-        this.layoutY = translator.translateY(y)
+        this.layoutX = translator.translateX(coordinate.x)
+        this.layoutY = translator.translateY(coordinate.y)
 
 
         val nameLabel = Label(subgraph.name)
@@ -36,7 +37,7 @@ class SubgraphNode(
 
         this.children.add(nameLabel)
         this.children.add(payloadClassLabel)
-        subgraph.title?.let{this.children.add(Text(it))}
+        subgraph.title?.let { this.children.add(Text(it)) }
 
         this.setOnMouseClicked { event ->
             if (event.clickCount == 2) {
@@ -47,8 +48,10 @@ class SubgraphNode(
         val dragger = NodeDragger.attach(this)
 
         dragger.addOnPositionChangedListener {
-            subgraph.coordinates.x = translator.reverseTranslateX(layoutX)
-            subgraph.coordinates.y = translator.reverseTranslateY(layoutY)
+            subgraph.coordinates = Coordinates(
+                    translator.reverseTranslateX(layoutX),
+                    translator.reverseTranslateY(layoutY)
+            )
 
             positionListener.positionChanged()
         }
@@ -76,11 +79,11 @@ class SubgraphNode(
             setOnAction { event -> subgraph.source?.let { actionListener.goToSource(it) } }
         })
 
-        processorContent.children.apply{
+        processorContent.children.apply {
             add(Text(subgraph.name))
             add(Text(subgraph.payloadClass))
-            subgraph.title?.let{add(Text(it))}
-            subgraph.doc?.let{add(Text(it))}
+            subgraph.title?.let { add(Text(it)) }
+            subgraph.doc?.let { add(Text(it)) }
         }
 
         return contextMenu

@@ -291,8 +291,10 @@ class GraphViewPane(
         /**
          * Scroll pane so Payload Node would be in center position
          */
-        this.hvalue = (WORLD_SIZE / 2 + graphModel.startPoint.coordinates.x) / WORLD_SIZE
-        this.vvalue = (WORLD_SIZE / 2 + graphModel.startPoint.coordinates.y) / WORLD_SIZE
+        val startPointCoordinates = graphModel.startPoint.coordinates ?: DEFAULT_COORDINATES
+
+        this.hvalue = (WORLD_SIZE / 2 + startPointCoordinates.x) / WORLD_SIZE
+        this.vvalue = (WORLD_SIZE / 2 + startPointCoordinates.y) / WORLD_SIZE
 
         enableSingleScrollingPayloadToTopCenterOnFirstResize()
 
@@ -312,8 +314,10 @@ class GraphViewPane(
 
             val model = graphModel ?: return@addListener
 
+            val startPointCoordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
+
             if (payloadIsHeightCentralized.compareAndSet(false, true)) {
-                val startPointY = model.startPoint.coordinates.y
+                val startPointY = startPointCoordinates.y
                 val approximateMargin = 50.0
                 this.vvalue = ((WORLD_SIZE / 2 + startPointY + newValue.toDouble() / 2 - approximateMargin) /
                         WORLD_SIZE)
@@ -324,8 +328,10 @@ class GraphViewPane(
 
             val model = graphModel ?: return@addListener
 
+            val startPointCoordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
+
             if (payloadIsWidthCentralized.compareAndSet(false, true)) {
-                val startPointX = model.startPoint.coordinates.x
+                val startPointX = startPointCoordinates.x
                 val approximatePayloadNodeWidth = 100.0
                 this.hvalue = (WORLD_SIZE / 2 + startPointX + approximatePayloadNodeWidth / 2) / WORLD_SIZE
             }
@@ -335,49 +341,66 @@ class GraphViewPane(
 
     fun coordinateItemsFromModel(): List<CoordinateItem> {
         val result = ArrayList<CoordinateItem>()
+        val model = graphModel ?: return result
 
-        with(graphModel!!) {
+        with(model) {
 
-            result.add(CoordinateItem(
-                    CoordinateItem.Type.START_POINT,
-                    null,
-                    startPoint.coordinates.x,
-                    startPoint.coordinates.y))
+            startPoint.coordinates?.run {
+                result.add(CoordinateItem(
+                        CoordinateItem.Type.START_POINT,
+                        null,
+                        x,
+                        y))
+            }
 
             handlers.values.forEach {
-                result.add(CoordinateItem(
-                        CoordinateItem.Type.HANDLER,
-                        it.name,
-                        it.coordinates.x,
-                        it.coordinates.y))
+                it.coordinates?.run {
+                    result.add(CoordinateItem(
+                            CoordinateItem.Type.HANDLER,
+                            it.name,
+                            x,
+                            y))
+                }
             }
+
             subgraphs.values.forEach {
-                result.add(CoordinateItem(
-                        CoordinateItem.Type.SUBGRAPH,
-                        it.name,
-                        it.coordinates.x,
-                        it.coordinates.y))
+                it.coordinates?.run {
+                    result.add(CoordinateItem(
+                            CoordinateItem.Type.SUBGRAPH,
+                            it.name,
+                            x,
+                            y))
+                }
             }
+
             routers.values.forEach {
-                result.add(CoordinateItem(
-                        CoordinateItem.Type.ROUTER,
-                        it.name,
-                        it.coordinates.x,
-                        it.coordinates.y))
+                it.coordinates?.run {
+                    result.add(CoordinateItem(
+                            CoordinateItem.Type.ROUTER,
+                            it.name,
+                            x,
+                            y))
+                }
             }
+
             mergers.values.forEach {
-                result.add(CoordinateItem(
-                        CoordinateItem.Type.MERGER,
-                        it.name,
-                        it.coordinates.x,
-                        it.coordinates.y))
+                it.coordinates?.run {
+                    result.add(CoordinateItem(
+                            CoordinateItem.Type.MERGER,
+                            it.name,
+                            x,
+                            y))
+                }
             }
+
             endpoints.values.forEach {
-                result.add(CoordinateItem(
-                        CoordinateItem.Type.END_POINT,
-                        it.name,
-                        it.coordinates.x,
-                        it.coordinates.y))
+                it.coordinates?.run {
+                    result.add(CoordinateItem(
+                            CoordinateItem.Type.END_POINT,
+                            it.name,
+                            x,
+                            y))
+                }
             }
         }
         return result

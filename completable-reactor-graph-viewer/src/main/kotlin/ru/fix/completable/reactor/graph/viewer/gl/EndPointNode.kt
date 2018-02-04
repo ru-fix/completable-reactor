@@ -5,6 +5,8 @@ import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
+import ru.fix.completable.reactor.model.Coordinates
+import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.EndPoint
 
 /**
@@ -20,8 +22,10 @@ class EndPointNode(
 
         this.styleClass.add("endPoint")
 
-        this.layoutX = translator.translateX(endPoint.coordinates.x.toDouble())
-        this.layoutY = translator.translateY(endPoint.coordinates.y.toDouble())
+        val coordinates = endPoint.coordinates ?: DEFAULT_COORDINATES
+
+        this.layoutX = translator.translateX(coordinates.x.toDouble())
+        this.layoutY = translator.translateY(coordinates.y.toDouble())
 
         val nameLabel = Label("End")
         nameLabel.font = Font(16.0)
@@ -36,9 +40,11 @@ class EndPointNode(
 
         val dragger = NodeDragger.attach(this)
 
-        dragger.addOnPositionChangedListener{
-            endPoint.coordinates.x = translator.reverseTranslateX(layoutX)
-            endPoint.coordinates.y = translator.reverseTranslateX(layoutY)
+        dragger.addOnPositionChangedListener {
+            endPoint.coordinates = Coordinates(
+                    translator.reverseTranslateX(layoutX),
+                    translator.reverseTranslateX(layoutY)
+            )
             positionListener.positionChanged()
         }
 
@@ -57,7 +63,7 @@ class EndPointNode(
         val menuItem = MenuItem("EndPoint")
         contextMenu.items.add(menuItem)
 
-        menuItem.setOnAction { endPoint.source?.let{actionListener.goToSource(it)} }
+        menuItem.setOnAction { endPoint.source?.let { actionListener.goToSource(it) } }
 
         this.setOnContextMenuRequested { contextMenuEvent ->
             contextMenu.show(this, contextMenuEvent.screenX, contextMenuEvent.screenY)

@@ -6,6 +6,8 @@ import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.Text
+import ru.fix.completable.reactor.model.Coordinates
+import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.Handler
 
 /**
@@ -21,11 +23,10 @@ class HandlerNode(
 
         this.styleClass.add("handler")
 
-        val x = handler.coordinates.x
-        val y = handler.coordinates.y
+        val coordinates = handler.coordinates ?: DEFAULT_COORDINATES
 
-        layoutX = translator.translateX(x.toDouble())
-        layoutY = translator.translateY(y.toDouble())
+        layoutX = translator.translateX(coordinates.x.toDouble())
+        layoutY = translator.translateY(coordinates.y.toDouble())
 
         val nameLabel = Label(handler.name)
         nameLabel.font = Font(16.0)
@@ -45,8 +46,11 @@ class HandlerNode(
         val dragger = NodeDragger.attach(this)
 
         dragger.addOnPositionChangedListener {
-            handler.coordinates.x = translator.reverseTranslateX(getLayoutX())
-            handler.coordinates.y = translator.reverseTranslateY(getLayoutY())
+
+            handler.coordinates = Coordinates(
+                    translator.reverseTranslateX(getLayoutX()),
+                    translator.reverseTranslateY(getLayoutY())
+            )
 
             positionListener.positionChanged()
         }
