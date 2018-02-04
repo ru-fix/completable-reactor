@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.parser.java
 
 import mu.KotlinLogging
+import org.junit.Ignore
 import org.junit.Test
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.EndPoint
@@ -26,7 +27,7 @@ class JavaSourceParserTest {
 
     @Test
     fun `build compilation model for example1`() {
-        val body = readResource("/example1.java.txt")
+        val body = readResource("/single-purchase-graph.java.txt")
 
         val startTime = Instant.now()
 
@@ -37,7 +38,7 @@ class JavaSourceParserTest {
             }
         }).parse(body)
 
-        println("Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms")
+        log.info { "Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms" }
 
         assertEquals(1, models.size)
 
@@ -220,6 +221,37 @@ class JavaSourceParserTest {
         assertEquals(Source(null, 85, 12), model.handlers["bank"]!!.source)
         assertEquals(Source(null, 93, 14), model.mergers["bank"]!!.source)
         assertEquals(Source(null, 73, 12), model.handlers["webNotification"]!!.source)
+    }
+
+    @Test
+    fun `two test graphs in single source`() {
+        val body = readResource("/two-test-graphs-in-one-source.java.txt")
+
+        val startTime = Instant.now()
+
+        val models = JavaSourceParser(object : JavaSourceParser.Listener {
+            override fun error(msg: String) {
+                log.error { msg }
+                fail(msg)
+            }
+        }).parse(body)
+
+        log.info { "Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms" }
+
+        assertEquals(2, models.size)
+
+        val singleProcessorGraph = models
+                .find { it.handlers.size == 1 }
+                ?: fail()
+
+        assertNotNull(singleProcessorGraph.handlers["idProcessor1"])
+
+        val twoProcesssorSequenceGraph = models
+                .find { it.handlers.size == 2 }
+                ?: fail()
+
+        assertNotNull(twoProcesssorSequenceGraph.handlers["idProcessor1"])
+        assertNotNull(twoProcesssorSequenceGraph.handlers["idProcessor2"])
     }
 
 

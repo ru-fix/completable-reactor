@@ -1,6 +1,8 @@
 package ru.fix.completable.reactor.graph.viewer.gl
 
 import javafx.scene.Scene
+import javafx.scene.control.TabPane
+import javafx.scene.layout.Pane
 import ru.fix.completable.reactor.model.GraphModel
 import ru.fix.completable.reactor.model.Source
 import java.util.concurrent.ConcurrentHashMap
@@ -14,62 +16,74 @@ class GraphViewer {
         private set
 
     private var actionListeners = CopyOnWriteArrayList<ActionListener>()
-    private var graphViewPane: GraphViewPane
 
-    private val shortcuts: MutableMap<Shortcut, ShortcutType> = ConcurrentHashMap()
-
-
-    val graphModel: GraphModel?
-        get() = graphViewPane.graphModel
-
-
-    init {
-        val actionListener = object : ActionListener {
-            override fun goToSource(source: Source) {
-                for (listener in actionListeners) {
-                    listener.goToSource(source)
-                }
-            }
-
-            override fun goToSubgraph(subgraphPayloadClass: String) {
-                for (listener in actionListeners) {
-                    listener.goToSubgraph(subgraphPayloadClass)
-                }
-            }
-
-            override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
-                for (listener in actionListeners) {
-                    listener.coordinatesChanged(coordinateItems)
-                }
+    private val viewPaneActionListener = object : ActionListener {
+        override fun goToSource(source: Source) {
+            for (listener in actionListeners) {
+                listener.goToSource(source)
             }
         }
 
-        graphViewPane = GraphViewPane(actionListener, { this.getShortcut(it) })
+        override fun goToSubgraph(subgraphPayloadClass: String) {
+            for (listener in actionListeners) {
+                listener.goToSubgraph(subgraphPayloadClass)
+            }
+        }
 
-        graphViewPane.setPrefSize(700.0, 600.0)
+        override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
+            for (listener in actionListeners) {
+                listener.coordinatesChanged(coordinateItems)
+            }
+        }
+    }
 
-        scene = Scene(graphViewPane)
+    private val shortcuts: MutableMap<Shortcut, ShortcutType> = ConcurrentHashMap()
 
+    init {
+        scene = Scene(Pane())
         scene.stylesheets.add(javaClass.getResource("/css/styles.css").toExternalForm())
+    }
 
-        //Shortcuts
-        graphViewPane.setOnKeyReleased { keyEvent ->
+    fun openGraph(graphs: List<GraphModel>) {
+        if (graphs.size == 1) {
+
+            var graphViewPane = GraphViewPane(viewPaneActionListener, { this.getShortcut(it) })
+            graphViewPane.setPrefSize(700.0, 600.0)
+
+            scene.root = graphViewPane
+
+            graphViewPane.openGraph(graphs[0])
+
+            //Shortcuts
+            addShortcutListener(graphViewPane)
+
+        } else {
+            val tabPane = TabPane()
+            scene.root = tabPane
+
+            for (graph in graphs) {
+                var graphViewPane = GraphViewPane(viewPaneActionListener, { this.getShortcut(it) })
+                graphViewPane.setPrefSize(700.0, 600.0)
+                graphViewPane.openGraph(graph)
+
+                addShortcutListener(graphViewPane)
+            }
+        }
+    }
+
+    private fun addShortcutListener(pane: GraphViewPane) {
+        pane.setOnKeyReleased { keyEvent ->
             shortcuts.forEach { shortcut, shortcutType ->
                 if (shortcut.getPredicate().test(keyEvent)) {
                     when (shortcutType) {
-                        ShortcutType.GOTO_GRAPH -> graphViewPane.graphModel?.startPoint?.source?.let {
-                            actionListener.goToSource(it)
+                        ShortcutType.GOTO_GRAPH -> pane.graphModel?.startPoint?.source?.let {
+                            viewPaneActionListener.goToSource(it)
                         }
                     }
                 }
 
             }
         }
-    }
-
-    fun openGraph(graphs: List<GraphModel>) {
-        if()
-        graphViewPane.openGraph(graph)
     }
 
 
