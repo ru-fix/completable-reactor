@@ -14,12 +14,13 @@ private val log = KotlinLogging.logger {}
 
 class FileWatcher(private val filePath: Path,
                   private val callListenerAfterConstruction: Boolean = true,
-                  private val listener: (Path)->Any) : Closeable {
+                  private val listener: (Path) -> Any) : Closeable {
 
-    private val watchThread = Executors.newSingleThreadExecutor()
+    private val watchThread = Executors.newSingleThreadExecutor { Thread(it, javaClass.canonicalName) }
+
     private val shutdownFlag = AtomicBoolean(false)
 
-    fun start(): CompletableFuture<Boolean>{
+    fun start(): CompletableFuture<Boolean> {
 
         val feature = CompletableFuture<Boolean>()
 
@@ -31,21 +32,27 @@ class FileWatcher(private val filePath: Path,
 
                     filePath.parent.register(it, StandardWatchEventKinds.ENTRY_MODIFY)
 
+                    if (callListenerAfterConstruction) {
+                        listener(filePath)
+                    }
+
                     feature.complete(true)
 
                     while (!shutdownFlag.get() || Thread.currentThread().isInterrupted) {
 
-                        val watchKey = it.poll(250, TimeUnit.MILLISECONDS) ?: continue
+                        val watchKey = it.poll(5, TimeUnit.SECONDS) ?: continue
 
                         for (event in watchKey.pollEvents()) {
 
-                            val filename = event.context() as Path
+                            val entryFileNamePath = event.context() as Path
 
-                            log.info { "modify: " + filename }
+                            if (entryFileNamePath.fileName == filePath.fileName) {
 
+                                if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
 
-                            if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
-                                listener.invoke(filePath)
+                                    log.trace { "Detected file modification: $filePath" }
+                                    listener.invoke(filePath)
+                                }
                             }
 
                         }
@@ -62,10 +69,6 @@ class FileWatcher(private val filePath: Path,
             } finally {
                 feature.complete(false)
             }
-        }
-
-        if(callListenerAfterConstruction) {
-            listener(filePath)
         }
 
         return feature
