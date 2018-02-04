@@ -16,7 +16,11 @@ graphBlock
     ;
 
 graphDeclarationBlock
-    :   ('public' | 'private' | 'static')? 'class' Identifier 'extends' 'Graph' '<' payloadType '>'
+    :   ('public' | 'private' | 'static')? 'class' graphClass 'extends' 'Graph' '<' payloadType '>'
+    ;
+
+graphClass
+    :   Identifier
     ;
 
 payloadType
