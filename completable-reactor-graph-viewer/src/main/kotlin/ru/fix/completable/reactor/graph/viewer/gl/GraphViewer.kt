@@ -72,7 +72,7 @@ class GraphViewer {
                 var graphViewPane = GraphViewPane(viewPaneActionListener, { this.getShortcut(it) })
 
                 val tab = Tab().apply {
-                    text = graph.startPoint.payloadType
+                    text = "${graph.graphClass}<${graph.startPoint.payloadType}>"
                     content = graphViewPane
                 }
                 tabPane.tabs.add(tab)

@@ -26,7 +26,7 @@ class JavaSourceParserTest {
     }
 
     @Test
-    fun `build compilation model for example1`() {
+    fun `build compilation model for single purchase graph`() {
         val body = readResource("/single-purchase-graph.java.txt")
 
         val startTime = Instant.now()
@@ -75,10 +75,12 @@ class JavaSourceParserTest {
                         it.mergeStatuses == listOf("STOP")
                                 && it.isComplete
                                 && !it.isOnAny
-                                && it.target.let {
-                            it is EndPoint && it.coordinates == Coordinates(963, 258)
-                        }
+                                && it.target is EndPoint
                     })
+
+                    assertEquals(
+                            Coordinates(963, 258),
+                            find { it.mergeStatuses == listOf("STOP") }?.target?.coordinates)
 
                     assertNotNull(find {
                         it.mergeStatuses == listOf("CONTINUE")
@@ -134,10 +136,12 @@ class JavaSourceParserTest {
                         it.mergeStatuses == listOf("STOP")
                                 && it.isComplete
                                 && !it.isOnAny
-                                && it.target.let {
-                            it is EndPoint && it.coordinates == Coordinates(480, 310)
-                        }
+                                && it.target is EndPoint
                     })
+
+                    assertEquals(
+                            Coordinates(480, 310),
+                            find { it.mergeStatuses == listOf("STOP") }?.target?.coordinates)
                 }
 
         vertexTransitions("bank")
@@ -242,13 +246,13 @@ class JavaSourceParserTest {
         assertEquals(2, models.size)
 
         val singleProcessorGraph = models
-                .find { it.handlers.size == 1 }
+                .find { it.graphClass == "SingleProcessorGraph" }
                 ?: fail()
 
         assertNotNull(singleProcessorGraph.handlers["idProcessor1"])
 
         val twoProcesssorSequenceGraph = models
-                .find { it.handlers.size == 2 }
+                .find { it.graphClass == "TwoProcessorSequentialMergeGraph" }
                 ?: fail()
 
         assertNotNull(twoProcesssorSequenceGraph.handlers["idProcessor1"])
