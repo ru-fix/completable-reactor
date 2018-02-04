@@ -2,26 +2,25 @@ package ru.fix.completable.reactor.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.fix.completable.reactor.example.services.*;
-import ru.fix.completable.reactor.runtime.gl.GraphConfig;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
-import ru.fix.completable.reactor.runtime.gl.Vertex;
+import ru.fix.completable.reactor.graph.Graph;
+import ru.fix.completable.reactor.graph.Vertex;
 
 import java.math.BigDecimal;
 
 /**
  * Define purchase process when user buys good in the shop.
  */
-public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
+public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex userProfile = new Vertex() {
         UserProfileManager userProfile;
 
         {
             handler(
-                    //load user profile
+                    //# load user profile
                     pld -> userProfile.loadUserProfileById(pld.request.getUserId())
             ).withMerger(
-                    //check profile state
+                    //# check profile state
                     (pld, result) -> {
                         if (pld.response.getStatus() != null) {
                             return Flow.STOP;
@@ -84,7 +83,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
 
         {
             handler(/*
-                        WithdrawMoneyMinus
+                        # WithdrawMoneyMinus
                         Withdraw money even if user does not have money on his account.
                         User will end up with negative balance after this operation.
                     */
@@ -93,7 +92,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                             pld.intermediateData.getServiceInfo())
             ).withMerger(
                     /*
-                        CheckWithdraw
+                        # CheckWithdraw
                         Checks result of withdraw operation
                         Sets new amount and withdrawal status in payload
                         Stops in case if operation is failed
@@ -119,8 +118,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
 
     Vertex isPartnerService =
             router(/*
-                       Is partner service.
-                       Check if given service is provided by partner.
+                       Check if given service is provided by a partner.
                        Update payload response.
                    */
                     pld -> {
@@ -138,7 +136,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
         {
             handler(pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
                     .withMerger(
-                            //checkServiceState
+                            //# checkServiceState
                             (pld, result) -> {
                                 if (pld.response.getStatus() != null) {
                                     return Flow.STOP;
@@ -193,7 +191,7 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                     pld.response.bonusServiceStatus = subgraphResult.response.status
             );
 
-    public ReactorGraph<PurchasePayload> purchaseGraph() {
+    {
 
         payload()
                 .handleBy(userProfile)
@@ -240,7 +238,5 @@ public class PurchaseGraphConfig extends GraphConfig<PurchasePayload> {
                 .merger(userProfile, 806, 201)
                 .complete(serviceInfo, 480, 310)
                 .complete(userProfile, 963, 258);
-
-        return buildGraph();
     }
 }
