@@ -6,6 +6,8 @@ import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.Text
+import ru.fix.completable.reactor.model.Coordinates
+import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.StartPoint
 
 /**
@@ -21,11 +23,10 @@ class StartPointNode(
     init {
         this.styleClass.add("startPoint")
 
-        val x = startPoint.coordinates.x
-        val y = startPoint.coordinates.y
+        val coordinates = startPoint.coordinates ?: DEFAULT_COORDINATES
 
-        this.layoutX = translator.translateX(x)
-        this.layoutY = translator.translateY(y)
+        this.layoutX = translator.translateX(coordinates.x)
+        this.layoutY = translator.translateY(coordinates.y)
 
 
         val nameLabel = Label(startPoint.payloadType)
@@ -42,8 +43,11 @@ class StartPointNode(
         val dragger = NodeDragger.attach(this);
 
         dragger.addOnPositionChangedListener {
-            startPoint.coordinates.x = translator.reverseTranslateX(layoutX)
-            startPoint.coordinates.y = translator.reverseTranslateX(layoutY)
+            startPoint.coordinates = Coordinates(
+                    translator.reverseTranslateX(layoutX),
+                    translator.reverseTranslateX(layoutY)
+            )
+
             positionListener.positionChanged()
         }
 

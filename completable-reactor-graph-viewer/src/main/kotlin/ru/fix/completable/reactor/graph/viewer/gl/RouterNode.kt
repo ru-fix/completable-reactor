@@ -6,6 +6,8 @@ import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
+import ru.fix.completable.reactor.model.Coordinates
+import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.Router
 
 /**
@@ -31,8 +33,9 @@ class RouterNode(
         this.radius = 13.0
 
 
-        this.layoutX = translator.translateX(router.coordinates.x.toDouble())
-        this.layoutY = translator.translateY(router.coordinates.y.toDouble())
+        val coordinates = router.coordinates ?: DEFAULT_COORDINATES
+        this.layoutX = translator.translateX(coordinates.x.toDouble())
+        this.layoutY = translator.translateY(coordinates.y.toDouble())
 
 
         this.routerNodeShape.prefWidth = radius * 2;
@@ -50,8 +53,10 @@ class RouterNode(
         val dragger = NodeDragger.attach(this)
 
         dragger.addOnPositionChangedListener {
-            router.coordinates.x = translator.reverseTranslateX(layoutX)
-            router.coordinates.y = translator.reverseTranslateY(layoutY)
+            router.coordinates = Coordinates(
+                    translator.reverseTranslateX(layoutX),
+                    translator.reverseTranslateY(layoutY)
+            )
             positionListener.positionChanged()
         }
 

@@ -3,12 +3,11 @@ package ru.fix.completable.reactor.model
 import java.util.*
 
 data class Coordinates(
-        @Volatile
-        var x: Int = 0,
-
-        @Volatile
-        var y: Int = 0
+        var x: Int,
+        var y: Int
 )
+
+val DEFAULT_COORDINATES = Coordinates(0, 0)
 
 data class Source(
         var fileName: String? = null,
@@ -36,7 +35,12 @@ data class Transition(
 }
 
 sealed class Figure(
-        var coordinates: Coordinates = Coordinates(),
+        /**
+         * User defined coordinates stored in graph source
+         * Null if no coordinates defined in source
+         */
+        @Volatile
+        var coordinates: Coordinates? = null,
         var source: Source? = null
 )
 
@@ -65,7 +69,7 @@ class StartPoint : Figure() {
 }
 
 class EndPoint(var name: String? = null,
-               coordinates: Coordinates = Coordinates(),
+               coordinates: Coordinates? = null,
                source: Source? = null) : Figure(coordinates, source) {
     override fun toString() = "EndPoint"
 }
