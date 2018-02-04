@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.graph.viewer.gl
 
 import javafx.scene.Scene
+import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.layout.Pane
 import ru.fix.completable.reactor.model.GraphModel
@@ -59,14 +60,21 @@ class GraphViewer {
 
         } else {
             val tabPane = TabPane()
+            tabPane.setPrefSize(700.0, 600.0)
             scene.root = tabPane
 
             for (graph in graphs) {
                 var graphViewPane = GraphViewPane(viewPaneActionListener, { this.getShortcut(it) })
-                graphViewPane.setPrefSize(700.0, 600.0)
+
                 graphViewPane.openGraph(graph)
 
                 addShortcutListener(graphViewPane)
+
+                val tab = Tab().apply {
+                    text = graph.startPoint.payloadType
+                    content = graphViewPane
+                }
+                tabPane.tabs.add(tab)
             }
         }
     }

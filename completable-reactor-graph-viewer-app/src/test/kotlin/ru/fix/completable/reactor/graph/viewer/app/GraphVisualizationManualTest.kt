@@ -76,14 +76,14 @@ class GraphVisualizationManualTest : Application() {
             }
         })
 
-        val model = parser.parse(javaSourceContext)
+        val models = parser.parse(javaSourceContext)
 
         val viewer = GraphViewer()
         viewer.registerListener(LogActionListener(javaSourceContext))
 
         viewer.setShortcut(ShortcutType.GOTO_GRAPH, Shortcut(true, KeyCode.B))
 
-        viewer.openGraph(model)
+        viewer.openGraph(models)
         stage!!.scene = viewer.scene
 
         stage.show()
@@ -95,9 +95,20 @@ class GraphVisualizationManualTest : Application() {
      */
     @Ignore
     @Test
-    fun open_graph_for_purchase_payload() {
+    fun `open graph for purchase payload`() {
         Application.launch("/viewer-test-PurchaseGraphConfig.java.txt")
     }
+
+    /**
+     * Manual UI Test
+     * Opens given java source file and display graph
+     */
+    @Ignore
+    @Test
+    fun `open source with two graphs`() {
+        Application.launch("/viewer-test-two-test-graphs-in-one-source.java.txt")
+    }
+
     //TODO Fix documentation and titles on all nodes and popup menues
 
     //TODO add source file dump if there is parsing or visualization error
