@@ -3,8 +3,8 @@ package ru.fix.completable.reactor.model
 import java.util.*
 
 data class Coordinates(
-        var x: Int,
-        var y: Int
+        val x: Int,
+        val y: Int
 )
 
 val DEFAULT_COORDINATES = Coordinates(0, 0)
