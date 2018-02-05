@@ -367,3 +367,8 @@ You can jump to code using double click on graph item or context menu.
  
 ## Examples
 
+# How to build this project
+Intellij plugin located at `completable-reactor-plugin-idea` directory.  
+In order to include plugin module into Intellij Idea you have to manually add line   
+`<module fileurl="file://$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" filepath="$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" />`      
+into `.idea/modules.xml` configuration file.  
