@@ -11,6 +11,10 @@ class AutoLayout {
     }
 
     private tailrec fun layout(nodes: List<AutoLayoutable>) {
+        if (nodes.isEmpty()) {
+            return
+        }
+
         for (node in nodes) {
 
             if (!node.isUserDefinedPosition) {
