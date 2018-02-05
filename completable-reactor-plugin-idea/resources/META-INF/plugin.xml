@@ -16,6 +16,7 @@
 
   <change-notes>
     <![CDATA[
+      1.1.0 New graph configuration format. Visualize graph directly from java source.<br>
       1.0.21 New graph items API: remove explicit id.<br>
       1.0.20 Fix graph zoom in IDE on MacOS. Remove Merge Groups.<br>
       1.0.18 Navigate to subgraph by clicking on subgraph node.<br>
