@@ -20,4 +20,5 @@ open class GraphNode(override val figure: Figure) : VBox(), AutoLayoutable {
         }
     override val isUserDefinedPosition: Boolean
         get() = figure.coordinates != null
+
 }

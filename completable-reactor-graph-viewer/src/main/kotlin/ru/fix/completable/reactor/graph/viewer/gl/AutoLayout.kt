@@ -27,13 +27,15 @@ class AutoLayout {
 
                 val figure = node.figure
 
+                fun position(node: AutoLayoutable) = "pos: ${node.positionX}, ${node.positionY}"
+
                 when (figure) {
-                    is StartPoint -> log.info { "Layout startPoint: ${figure}" }
-                    is Handler -> log.info { "Layout handler: ${figure.name}" }
-                    is Merger -> log.info { "Layout merger: ${figure.name}" }
-                    is Router -> log.info { "Layout router: ${figure.name}" }
-                    is Subgraph -> log.info { "Layout subgraph: ${figure.name}" }
-                    is EndPoint -> log.info { "Layout endpoint: ${figure}" }
+                    is StartPoint -> log.info { "Layout startPoint: $figure, ${position(node)}" }
+                    is Handler -> log.info { "Layout handler: ${figure.name}, ${position(node)}" }
+                    is Merger -> log.info { "Layout merger: ${figure.name}, ${position(node)}" }
+                    is Router -> log.info { "Layout router: ${figure.name}, ${position(node)}" }
+                    is Subgraph -> log.info { "Layout subgraph: ${figure.name}, ${position(node)}" }
+                    is EndPoint -> log.info { "Layout endpoint: ${figure}, ${position(node)}" }
                 }
             }
 
