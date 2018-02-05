@@ -67,7 +67,7 @@ class StartPoint : Figure() {
 
     override fun toString() = "StartPoint"
 }
-
+//TODO check if EndPoint requires name
 class EndPoint(var name: String? = null,
                coordinates: Coordinates? = null,
                source: Source? = null) : Figure(coordinates, source) {

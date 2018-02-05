@@ -18,7 +18,7 @@ class StartPointNode(
         val startPoint: StartPoint,
         val actionListener: GraphViewer.ActionListener,
         val positionListener: PositionListener
-) : VBox() {
+) : GraphNode(startPoint) {
 
     init {
         this.styleClass.add("startPoint")

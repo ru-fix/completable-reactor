@@ -3,7 +3,6 @@ package ru.fix.completable.reactor.graph.viewer.gl
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
-import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
@@ -16,7 +15,8 @@ class EndPointNode(
         private val translator: CoordinateTranslator,
         private val endPoint: EndPoint,
         private val actionListener: GraphViewer.ActionListener,
-        private val positionListener: PositionListener) : VBox() {
+        private val positionListener: PositionListener) :
+        GraphNode(endPoint) {
 
     init {
 

@@ -5,7 +5,6 @@ import javafx.scene.control.ContextMenu
 import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.layout.Pane
-import javafx.scene.layout.VBox
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.Merger
@@ -18,7 +17,7 @@ class MergerNode(
         val merger: Merger,
         val actionListener: GraphViewer.ActionListener,
         val positionListener: PositionListener
-) : VBox(), CentrableNode, BorderableNode {
+) : GraphNode(merger), CentrableNode, BorderableNode {
 
     val mergePointShape = Pane()
 
