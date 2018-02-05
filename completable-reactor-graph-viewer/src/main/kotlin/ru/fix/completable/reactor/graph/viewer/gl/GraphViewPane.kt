@@ -1,6 +1,5 @@
 package ru.fix.completable.reactor.graph.viewer.gl;
 
-import javafx.scene.Node
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.ScrollPane
@@ -8,6 +7,7 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Pane
 import ru.fix.completable.reactor.model.*
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Created by Kamil Asfandiyarov
@@ -28,6 +28,8 @@ class GraphViewPane(
     private val pane = Pane()
 
     private val translator = CoordinateTranslator(WORLD_SIZE)
+
+    private val autoLayout = AutoLayout()
 
     var graphModel: GraphModel? = null
         private set
@@ -103,8 +105,20 @@ class GraphViewPane(
 
         pane.children.removeAll()
 
+        val graphNodeTreeForAutoLayout = AtomicReference<GraphNode>()
+
         val positionListener = object : PositionListener {
+
+            private lateinit var nodeTree: GraphNode
+
             override fun positionChanged() {
+
+                if (!::nodeTree.isInitialized) {
+                    nodeTree = graphNodeTreeForAutoLayout.get()
+                }
+
+                autoLayout.layout(nodeTree)
+
                 actionListener.coordinatesChanged(coordinateItemsFromModel())
             }
         }
@@ -151,6 +165,7 @@ class GraphViewPane(
                 positionListener)
         pane.children.add(startPointNode)
 
+        graphNodeTreeForAutoLayout.set(startPointNode)
 
         /**
          * EndPoint Node
@@ -194,14 +209,14 @@ class GraphViewPane(
             pane.children.add(routerNode)
         }
 
-        fun transitionable(figure: TransitionableFigure): Node =
+        fun transitionable(figure: TransitionableFigure): GraphNode =
                 when (figure) {
                     is Merger -> mergers[figure]!!
                     is Router -> routers[figure]!!
                     else -> throw IllegalArgumentException("figure: $figure")
                 }
 
-        fun figureNode(figure: Figure): Node {
+        fun figureNode(figure: Figure): GraphNode {
             return when (figure) {
                 is Subgraph -> subgraphs[figure]!!
                 is Handler -> handlers[figure]!!
@@ -226,6 +241,8 @@ class GraphViewPane(
                     val line = TransitionLine(pane, handlerNode, mergerNode, null, actionListener)
                     pane.children.add(line)
                     line.toBack()
+
+                    handlerNode.graphChildren.add(mergerNode)
                 }
 
         /**
@@ -242,6 +259,8 @@ class GraphViewPane(
                     val line = TransitionLine(pane, handlerNode, mergerNode, null, actionListener)
                     pane.children.add(line)
                     line.toBack()
+
+                    handlerNode.graphChildren.add(mergerNode)
                 }
 
         /**
@@ -262,6 +281,8 @@ class GraphViewPane(
 
                         pane.children.add(line)
                         line.toBack()
+
+                        transitionableNode.graphChildren.add(figureNode(transition.target))
                     }
                 }
 
@@ -279,6 +300,8 @@ class GraphViewPane(
             )
             pane.children.add(line)
             line.toBack()
+
+            startPointNode.graphChildren.add(figureNode(figure))
         }
 
 
@@ -297,6 +320,7 @@ class GraphViewPane(
         this.vvalue = (WORLD_SIZE / 2 + startPointCoordinates.y) / WORLD_SIZE
 
         enableSingleScrollingPayloadToTopCenterOnFirstResize()
+
 
         return this
     }

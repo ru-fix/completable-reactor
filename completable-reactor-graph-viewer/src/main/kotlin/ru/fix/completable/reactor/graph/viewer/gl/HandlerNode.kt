@@ -17,7 +17,8 @@ class HandlerNode(
         val translator: CoordinateTranslator,
         val handler: Handler,
         val actionListener: GraphViewer.ActionListener,
-        val positionListener: PositionListener) : VBox() {
+        val positionListener: PositionListener) :
+        GraphNode(handler) {
 
     init {
 
@@ -87,4 +88,7 @@ class HandlerNode(
 
         return contextMenu
     }
+
+    override val isUserDefinedPosition: Boolean
+        get() = handler.coordinates != null
 }

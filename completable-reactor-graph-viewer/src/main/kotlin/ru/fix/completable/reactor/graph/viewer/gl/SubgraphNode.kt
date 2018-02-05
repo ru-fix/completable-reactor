@@ -18,7 +18,7 @@ class SubgraphNode(
         val subgraph: Subgraph,
         val actionListener: GraphViewer.ActionListener,
         val positionListener: PositionListener
-) : VBox() {
+) : GraphNode(subgraph) {
 
     init {
         this.styleClass.add("subgraph")
