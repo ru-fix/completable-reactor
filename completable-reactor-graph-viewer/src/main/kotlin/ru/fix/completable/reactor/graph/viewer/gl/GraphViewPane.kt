@@ -321,6 +321,7 @@ class GraphViewPane(
 
         enableSingleScrollingPayloadToTopCenterOnFirstResize()
 
+        autoLayout.layout(startPointNode)
 
         return this
     }
