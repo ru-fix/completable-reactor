@@ -90,17 +90,29 @@ class ReactorGraphAction : AnAction() {
                 .setTitle("${model.graphClass}<${model.startPoint.payloadType}>")
                 .setShowBorder(true)
                 .setMinSize(Dimension(400, 300))
-                .setCancelButton(MinimizeButton("Close"))
+                .setCancelButton(MinimizeButton("Close (Esc)"))
                 .setMovable(true)
                 .setFocusable(true)
                 .setRequestFocus(true)
-                .setCancelOnClickOutside(true)
+                .setCancelOnClickOutside(false)
                 .setModalContext(false)
+//                .setKeyEventHandler {
+//                    //TODO replace with shortcut from shortcut config for reactor action
+//                    if(it.isControlDown && it.isAltDown && it.keyCode == KeyEvent.VK_R){
+//
+//                        notify("KEY PRESSED!", NotificationType.WARNING)
+//
+//                        true
+//                    } else {
+//                        false
+//                    }
+//                }
                 .createPopup()
 
         ScreenUtil.getMainScreenBounds().let {
-            popup.size = Dimension((it.width * 0.7).toInt(), (it.height * 0.7).toInt())
+            popup.size = Dimension((it.width * 0.9).toInt(), (it.height * 0.9).toInt())
         }
+
 
         viewer.graphViewer.registerListener(object : GraphViewer.ActionListener {
             override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
