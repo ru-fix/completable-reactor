@@ -15,6 +15,9 @@ import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.ScreenUtil
 import com.intellij.ui.awt.RelativePoint
@@ -32,6 +35,7 @@ import ru.fix.completable.reactor.parser.java.JavaSourceParser
 import java.awt.Dimension
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.nio.charset.StandardCharsets
 
 /**
  * @author Kamil Asfandiyarov
@@ -76,7 +80,7 @@ class ReactorGraphAction : AnAction() {
             val carretOffset = editor.caretModel.offset
 
             models.sortedBy { it.graphDeclarationLocation?.offset }
-                    .filter { it.graphDeclarationLocation?.offset ?:0 < carretOffset }
+                    .filter { it.graphDeclarationLocation?.offset ?: 0 < carretOffset }
                     .last()
         }
 
@@ -112,6 +116,30 @@ class ReactorGraphAction : AnAction() {
         ScreenUtil.getMainScreenBounds().let {
             popup.size = Dimension((it.width * 0.9).toInt(), (it.height * 0.9).toInt())
         }
+
+        val connection = ApplicationManager.getApplication().messageBus.connect()
+        connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
+            override fun after(events: MutableList<out VFileEvent>) {
+
+                val graphClass = model.graphClass
+
+                if(events.any { it.file == virtualFile }){
+
+                    val models = parser.parse(
+                            virtualFile.contentsToByteArray().toString(StandardCharsets.UTF_8),
+                            virtualFile.path)
+
+                    val model = models.find { it.graphClass == graphClass }
+                    if(model != null){
+                        viewer.graphViewer.openGraph(listOf(model))
+                    } else{
+                        popup.cancel()
+                    }
+
+                }
+                super.after(events)
+            }
+        })
 
 
         viewer.graphViewer.registerListener(object : GraphViewer.ActionListener {
