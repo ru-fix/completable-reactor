@@ -61,6 +61,8 @@ class JavaSourceParser(val listener: Listener) {
                             }
                             graphClass = it.graphClass().text
                             startPoint.payloadType = it.payloadType()?.Identifier()?.text
+
+                            graphDeclarationLocation = sourceFromToken(it.start, filePath)
                         }
 
 
@@ -273,14 +275,16 @@ class JavaSourceParser(val listener: Listener) {
 
     private fun tokenPosition(token: Token) = "${token.line}:${token.charPositionInLine}"
 
-    private fun sourceFromToken(token: Token?, fileName: String): Source? {
+    private fun sourceFromToken(token: Token?, filePath: String): Source? {
         if (token == null) {
             return null
         }
+
         return Source(
-                filePath = fileName,
+                filePath = filePath,
                 line = token.line,
-                lineOffset = token.charPositionInLine
+                lineOffset = token.charPositionInLine,
+                offset = token.startIndex
         )
     }
 

@@ -64,7 +64,7 @@ class Main : Application() {
                             StandardCharsets.UTF_8)
 
                     val timestamp = System.currentTimeMillis()
-                    val models = parser.parse(fileContent)
+                    val models = parser.parse(fileContent, filePath)
                     log.info { "Parsing took ${System.currentTimeMillis() - timestamp}ms" }
 
                     Platform.runLater {

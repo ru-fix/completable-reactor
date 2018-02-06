@@ -12,7 +12,8 @@ val DEFAULT_COORDINATES = Coordinates(0, 0)
 data class Source(
         var filePath: String? = null,
         var line: Int? = null,
-        var lineOffset: Int? = null
+        var lineOffset: Int? = null,
+        var offset: Int? = null
 )
 
 data class TransitionDocumentation(
@@ -99,6 +100,8 @@ class GraphModel {
     val endpoints = HashMap<String, EndPoint>()
 
     var graphClass: String? = null
+
+    var graphDeclarationLocation: Source? = null
 
     inner class HandeableAccessor {
         operator fun get(name: String): HandleableVertexFigure? = handlers[name] ?: subgraphs[name] ?: routers[name]

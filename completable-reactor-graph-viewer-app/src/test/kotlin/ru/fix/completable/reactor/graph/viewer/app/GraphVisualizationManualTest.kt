@@ -68,7 +68,8 @@ class GraphVisualizationManualTest : Application() {
     }
 
     override fun start(stage: Stage?) {
-        val javaSourceContext = javaClass.getResource(parameters.raw[0]).readText()
+        val filePath = parameters.raw[0]
+        val javaSourceContext = javaClass.getResource(filePath).readText()
 
         val parser = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
@@ -76,7 +77,7 @@ class GraphVisualizationManualTest : Application() {
             }
         })
 
-        val models = parser.parse(javaSourceContext)
+        val models = parser.parse(javaSourceContext, filePath)
 
         val viewer = GraphViewer()
         viewer.registerListener(LogActionListener(javaSourceContext))

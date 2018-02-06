@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.parser.java
 
 import mu.KotlinLogging
-import org.junit.Ignore
 import org.junit.Test
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.EndPoint
@@ -27,7 +26,9 @@ class JavaSourceParserTest {
 
     @Test
     fun `build compilation model for single purchase graph`() {
-        val body = readResource("/single-purchase-graph.java.txt")
+        val sourceFilePath = "/single-purchase-graph.java.txt"
+
+        val body = readResource(sourceFilePath)
 
         val startTime = Instant.now()
 
@@ -36,7 +37,7 @@ class JavaSourceParserTest {
                 log.error { msg }
                 fail(msg)
             }
-        }).parse(body)
+        }).parse(body, sourceFilePath)
 
         log.info { "Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms" }
 
@@ -221,16 +222,17 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
         assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
 
-        assertEquals(Source(null, 196, 8), model.startPoint.source)
+        assertEquals(Source(sourceFilePath, 196, 8, 7321), model.startPoint.source)
 
-        assertEquals(Source(null, 85, 12), model.handlers["bank"]!!.source)
-        assertEquals(Source(null, 93, 14), model.mergers["bank"]!!.source)
-        assertEquals(Source(null, 73, 12), model.handlers["webNotification"]!!.source)
+        assertEquals(Source(sourceFilePath, 85, 12, 2601), model.handlers["bank"]!!.source)
+        assertEquals(Source(sourceFilePath, 93, 14, 3054), model.mergers["bank"]!!.source)
+        assertEquals(Source(sourceFilePath, 73, 12, 2249), model.handlers["webNotification"]!!.source)
     }
 
     @Test
     fun `two test graphs in single source`() {
-        val body = readResource("/two-test-graphs-in-one-source.java.txt")
+        val sourceFilePath = "/two-test-graphs-in-one-source.java.txt"
+        val body = readResource(sourceFilePath)
 
         val startTime = Instant.now()
 
@@ -239,7 +241,7 @@ class JavaSourceParserTest {
                 log.error { msg }
                 fail(msg)
             }
-        }).parse(body)
+        }).parse(body, sourceFilePath)
 
         log.info { "Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms" }
 

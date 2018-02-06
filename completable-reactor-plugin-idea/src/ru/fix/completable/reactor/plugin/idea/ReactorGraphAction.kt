@@ -8,7 +8,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
@@ -39,7 +38,6 @@ import java.io.StringWriter
  */
 class ReactorGraphAction : AnAction() {
 
-    private var log = Logger.getInstance(ReactorGraphAction::class.java)
     private val NOTIFICATION_GROUP_ID = "ru.fix.completable.reactor"
 
 
@@ -72,7 +70,15 @@ class ReactorGraphAction : AnAction() {
                     NotificationType.WARNING)
         }
 
-        val model = models[0]
+        val model = if (models.size == 1) {
+            models[0]
+        } else {
+            val carretOffset = editor.caretModel.offset
+
+            models.sortedBy { it.graphDeclarationLocation?.offset }
+                    .filter { it.graphDeclarationLocation?.offset ?:0 < carretOffset }
+                    .last()
+        }
 
         val viewer = createViewer(model, project)
 
@@ -134,8 +140,6 @@ class ReactorGraphAction : AnAction() {
             }
         })
 
-
-        //TODO: show in center of the window
         //TODO: save user selected size
         popup.showCenteredInCurrentWindow(project)
 
