@@ -1,7 +1,7 @@
-<idea-plugin version="2">
+<idea-plugin>
   <id>ru.fix.completable.reactor.plugin.idea</id>
   <name>Completable Reactor</name>
-  <version>1.0.21</version>
+  <version>1.1.0</version>
   <vendor email="kasfandiyarov@gmail.com" url="https://github.com/ru-fix">FIX</vendor>
 
   <description>
