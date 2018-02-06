@@ -15,11 +15,8 @@ import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.psi.JavaPsiFacade
-import com.intellij.psi.PsiFile
-import com.intellij.psi.search.ProjectAndLibrariesScope
-import com.intellij.psi.search.PsiShortNamesCache
 import com.intellij.ui.ScreenUtil
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBList
@@ -36,7 +33,6 @@ import ru.fix.completable.reactor.parser.java.JavaSourceParser
 import java.awt.Dimension
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.util.*
 
 /**
  * @author Kamil Asfandiyarov
@@ -47,10 +43,10 @@ class ReactorGraphAction : AnAction() {
     private val NOTIFICATION_GROUP_ID = "ru.fix.completable.reactor"
 
 
-    private fun notify(title: String, msg: String, notificationType: NotificationType) {
+    private fun notify(msg: String, notificationType: NotificationType) {
         val notification = Notification(
                 NOTIFICATION_GROUP_ID,
-                title,
+                "Reactor graph",
                 msg,
                 notificationType)
         Notifications.Bus.notify(notification)
@@ -60,19 +56,20 @@ class ReactorGraphAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.getData(PlatformDataKeys.PROJECT) ?: return
         val editor = event.getData(CommonDataKeys.EDITOR) ?: return
-//        val caretModel = editor.caretModel
+        val virtualFile = event.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
 
 
         val parser = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
-                notify("Failed to parse source", msg, NotificationType.ERROR)
+                notify("Failed to parse source: $msg", NotificationType.ERROR)
             }
         })
 
-        val models = parser.parse(editor.document.text)
+        val models = parser.parse(editor.document.text, virtualFile.path)
 
         if (models.isEmpty()) {
-            notify("Can not open graph for give source.", "Source does not contain graph.", NotificationType.WARNING)
+            notify("Can not open graph for give source. Source does not contain graph classes.",
+                    NotificationType.WARNING)
         }
 
         val model = models[0]
@@ -81,7 +78,7 @@ class ReactorGraphAction : AnAction() {
 
 
         val popup = JBPopupFactory.getInstance()
-                .createComponentPopupBuilder(viewer, viewer)
+                .createComponentPopupBuilder(viewer.jfxPanel, viewer.jfxPanel)
                 .setProject(project)
                 .setResizable(true)
                 .setTitle("${model.graphClass}<${model.startPoint.payloadType}>")
@@ -91,13 +88,52 @@ class ReactorGraphAction : AnAction() {
                 .setMovable(true)
                 .setFocusable(true)
                 .setRequestFocus(true)
-                .setCancelOnClickOutside(false)
+                .setCancelOnClickOutside(true)
                 .setModalContext(false)
                 .createPopup()
 
         ScreenUtil.getMainScreenBounds().let {
             popup.size = Dimension((it.width * 0.7).toInt(), (it.height * 0.7).toInt())
         }
+
+        viewer.graphViewer.registerListener(object : GraphViewer.ActionListener {
+            override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
+//                TODO coordinatesChanged
+            }
+
+            override fun goToSource(source: Source) {
+                ApplicationManager.getApplication().invokeLater {
+                    ApplicationManager.getApplication().runReadAction {
+
+                        source.filePath
+                                ?.let { LocalFileSystem.getInstance().findFileByPath(it) }
+                                ?.let {
+                                    val descriptor = OpenFileDescriptor(
+                                            project,
+                                            it,
+                                            source.line?.let { it - 1 } ?: 0,
+                                            source.lineOffset ?: 0)
+
+                                    popup.cancel()
+
+                                    descriptor.navigate(true)
+
+                                }
+                                ?: notify(
+                                        "Can not open source location. File not found. " +
+                                                "Source: $source, path: ${source.filePath}",
+                                        NotificationType.ERROR)
+                    }
+                }
+            }
+
+            override fun goToSubgraph(subgraphPayloadType: String) {
+                //TODO goToSubgraph
+                notify("Go to subgraph not supported. Can not open subgraph $subgraphPayloadType, not supported yet",
+                        NotificationType.INFORMATION)
+            }
+        })
+
 
         //TODO: show in center of the window
         //TODO: save user selected size
@@ -107,60 +143,12 @@ class ReactorGraphAction : AnAction() {
         //TODO: react on go to source action
     }
 
+    class Viewer(val graphViewer: GraphViewer, val jfxPanel: JFXPanel)
 
-    private fun createViewer(graphModel: GraphModel, project: Project): JFXPanel {
+    private fun createViewer(graphModel: GraphModel, project: Project): Viewer {
         val swingFxPanel = JFXPanel()
         val graphViewer = GraphViewer()
         graphViewer.setShortcut(ShortcutType.GOTO_GRAPH, Shortcut(true, KeyCode.B))
-
-        graphViewer.registerListener(object : GraphViewer.ActionListener {
-            override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
-//                TODO coordinatesChanged
-            }
-
-            override fun goToSource(source: Source) {
-                ApplicationManager.getApplication().invokeLater {
-                    ApplicationManager.getApplication().runReadAction {
-
-                        var foundFile: PsiFile? = null
-
-                        val sourceFile = source.fileName
-                        val graphClass = graphModel.graphClass
-
-                        if (sourceFile != null) {//TODO: fix file name in source
-                            foundFile = Arrays.stream(PsiShortNamesCache.getInstance(project).getFilesByName(sourceFile))
-                                    .findAny()
-                                    .orElse(null)
-
-                        } else if (graphClass != null) {
-
-                            val searchScope = ProjectAndLibrariesScope(project)
-                            val payloadPsiClass = JavaPsiFacade.getInstance(project).findClass(graphClass, searchScope)
-                            if (payloadPsiClass != null) {
-                                foundFile = payloadPsiClass.containingFile
-                            }
-                        }
-
-                        if (foundFile == null) {
-                            notify("Can not go to source.", "Can not find file for source: $source", NotificationType.ERROR)
-                        } else {
-
-                            val descriptor = OpenFileDescriptor(
-                                    project,
-                                    foundFile!!.virtualFile,
-                                    source.line ?: 0,
-                                    source.lineOffset ?: 0)
-
-                            descriptor.navigate(true)
-                        }
-                    }
-                }
-            }
-
-            override fun goToSubgraph(subgraphPayloadType: String) {
-                //TODO goToSubgraph
-            }
-        })
 
         //Because of https://bugs.openjdk.java.net/browse/JDK-8090517, it is important to disable implicit exit.
         Platform.setImplicitExit(false)
@@ -170,18 +158,17 @@ class ReactorGraphAction : AnAction() {
                 graphViewer.openGraph(listOf(graphModel))
             } catch (exc: Exception) {
                 notify(
-                        "Failed to open model in graph viewer.",
                         exc.run {
                             StringWriter().let {
                                 printStackTrace(PrintWriter(it))
-                                it.toString()
+                                "Failed to open model in graph viewer.\n $it"
                             }
                         },
                         NotificationType.ERROR)
             }
         }
 
-        return swingFxPanel
+        return Viewer(graphViewer, swingFxPanel)
     }
 
 

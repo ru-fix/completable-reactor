@@ -15,7 +15,7 @@ class JavaSourceParser(val listener: Listener) {
         fun error(msg: String)
     }
 
-    fun parse(body: String): List<GraphModel> {
+    fun parse(body: String, filePath: String): List<GraphModel> {
         val result = ArrayList<GraphModel>()
 
         val lexer = GraphConfigJava9Lexer(CharStreams.fromString(body))
@@ -40,6 +40,7 @@ class JavaSourceParser(val listener: Listener) {
         for (borderStart in 0 until declarationBlockIndexes.size) {
 
             val model = GraphModel()
+
             val graphBlocks = sourceBlocks.slice(
                     declarationBlockIndexes[borderStart]
                             until
@@ -69,7 +70,12 @@ class JavaSourceParser(val listener: Listener) {
                         .forEach {
                             val vertexName = it.Identifier().text!!
 
-                            createVertexFromVertexBuilder(tokens, model, vertexName, it.vertexInitializationStaticSection().vertexBuilder())
+                            createVertexFromVertexBuilder(
+                                    tokens,
+                                    model,
+                                    vertexName,
+                                    it.vertexInitializationStaticSection().vertexBuilder(),
+                                    filePath)
                         }
 
                 graphBlocks.asSequence()
@@ -77,13 +83,13 @@ class JavaSourceParser(val listener: Listener) {
                         .forEach {
                             val vertexName = it.vertexAssignmentName().text!!
 
-                            createVertexFromVertexBuilder(tokens, model, vertexName, it.vertexBuilder())
+                            createVertexFromVertexBuilder(tokens, model, vertexName, it.vertexBuilder(), filePath)
                         }
 
                 //start point handleBy transitions
                 graphBlocks.asSequence()
                         .mapNotNull { it.payloadTransitionBlock() }
-                        .also { startPoint.source = sourceFromToken(it.firstOrNull()?.start) }
+                        .also { startPoint.source = sourceFromToken(it.firstOrNull()?.start, filePath) }
                         .flatMap { it.handleBy().asSequence() }
                         .map { it.handleByVertex().Identifier().symbol }
                         .forEach {
@@ -121,7 +127,7 @@ class JavaSourceParser(val listener: Listener) {
 
                                         val endpoint = EndPoint(
                                                 name = vertex.name,
-                                                source = sourceFromToken(start))
+                                                source = sourceFromToken(start, filePath))
                                         endpoints[vertex.name] = endpoint
                                         transition.target = endpoint
 
@@ -201,12 +207,13 @@ class JavaSourceParser(val listener: Listener) {
             tokens: CommonTokenStream,
             model: GraphModel,
             vertexName: String,
-            vertexBuilder: VertexBuilderContext) = with(model) {
+            vertexBuilder: VertexBuilderContext,
+            fileName: String) = with(model) {
 
         vertexBuilder.builderHandler()?.apply {
             //handler
             handlers[vertexName] = Handler(vertexName).also {
-                it.source = sourceFromToken(start)
+                it.source = sourceFromToken(start, fileName)
 
                 tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                     it.title = title
@@ -216,7 +223,7 @@ class JavaSourceParser(val listener: Listener) {
 
             builderMerger().builderWithMerger()?.apply {
                 mergers[vertexName] = Merger(vertexName).also {
-                    it.source = sourceFromToken(start)
+                    it.source = sourceFromToken(start, fileName)
 
                     tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                         it.title = title
@@ -231,7 +238,7 @@ class JavaSourceParser(val listener: Listener) {
                     name = vertexName,
                     payloadClass = subgraphPayloadClass().text
             ).also {
-                it.source = sourceFromToken(start)
+                it.source = sourceFromToken(start, fileName)
 
                 tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                     it.title = title
@@ -242,7 +249,7 @@ class JavaSourceParser(val listener: Listener) {
             builderMerger().builderWithMerger()?.apply {
                 //merger
                 mergers[vertexName] = Merger(vertexName).also {
-                    it.source = sourceFromToken(start)
+                    it.source = sourceFromToken(start, fileName)
 
                     tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                         it.title = title
@@ -254,7 +261,7 @@ class JavaSourceParser(val listener: Listener) {
         } ?: vertexBuilder.builderRouter()?.apply {
             //router
             routers[vertexName] = Router(vertexName).also {
-                it.source = sourceFromToken(start)
+                it.source = sourceFromToken(start, fileName)
 
                 tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
                     it.title = title
@@ -266,11 +273,12 @@ class JavaSourceParser(val listener: Listener) {
 
     private fun tokenPosition(token: Token) = "${token.line}:${token.charPositionInLine}"
 
-    private fun sourceFromToken(token: Token?): Source? {
+    private fun sourceFromToken(token: Token?, fileName: String): Source? {
         if (token == null) {
             return null
         }
         return Source(
+                filePath = fileName,
                 line = token.line,
                 lineOffset = token.charPositionInLine
         )
