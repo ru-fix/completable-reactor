@@ -102,6 +102,8 @@ class GraphModel {
     lateinit var graphClass: String
 
     var graphDeclarationLocation: Source? = null
+    var coordinatesStart: Source? = null
+    var coordinatesEnd: Source? = null
 
     inner class HandeableAccessor {
         operator fun get(name: String): HandleableVertexFigure? = handlers[name] ?: subgraphs[name] ?: routers[name]

@@ -156,6 +156,12 @@ class JavaSourceParser(val listener: Listener) {
                 //coordinates
                 graphBlocks.asSequence()
                         .mapNotNull { it.coordinatesBlock() }
+                        .map {
+                            coordinatesStart = sourceFromToken(it.start, filePath)
+                            coordinatesEnd = sourceFromToken(it.stop, filePath)
+
+                            it
+                        }
                         .flatMap { it.coordinate().asSequence() }
                         .forEach {
                             it.coordinatePayload()?.run {
