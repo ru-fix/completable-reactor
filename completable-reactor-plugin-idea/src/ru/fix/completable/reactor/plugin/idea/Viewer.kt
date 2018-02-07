@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.plugin.idea
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -33,6 +34,8 @@ class Viewer(
         val project: Project,
         val editor: Editor) {
 
+    private val GRAPH_SOURCE_REPARSING_DELAY_MS = 2_000L
+
     private val notificator = Notificator()
 
     val swingFxPanel = JFXPanel()
@@ -63,7 +66,7 @@ class Viewer(
 
 
     private var lastUpdateTimestamp = AtomicLong()
-    private val updateRequired = AtomicBoolean()
+    private val commandScheduled = AtomicBoolean()
     private val scheduler = Executors.newSingleThreadScheduledExecutor()
 
     /**
@@ -95,7 +98,10 @@ class Viewer(
                     displayedModel = model
                     graphViewer.openGraph(listOf(displayedModel))
 
-                    openPopup()
+                    ApplicationManager.getApplication().invokeLater {
+                        openPopup()
+                    }
+
 
                 } catch (exc: Exception) {
                     notificator.error("Failed to visualize graph model in viewer.", exc)
@@ -205,42 +211,56 @@ class Viewer(
         }
     }
 
+
     private fun scheduleCommand(command: () -> Unit) {
 
-        if (updateRequired.get()) {
+        if (commandScheduled.get()) {
             return
         }
 
+        val needToTryToScheduleCommand: Boolean
+
         //do not update more often than each 5 seconds
         val timestamp = lastUpdateTimestamp.get()
-        if (System.currentTimeMillis() - timestamp > 5_000) {
+        if (System.currentTimeMillis() - timestamp > GRAPH_SOURCE_REPARSING_DELAY_MS) {
 
             if (lastUpdateTimestamp.compareAndSet(timestamp, System.currentTimeMillis())) {
+                needToTryToScheduleCommand = false
+                executeCommand(command)
 
-                executeUpdate(command)
             } else {
-                updateRequired.set(true)
+                needToTryToScheduleCommand = true
             }
         } else {
-            updateRequired.set(true)
+            needToTryToScheduleCommand = true
+        }
+
+        if (needToTryToScheduleCommand) {
+
+            if (commandScheduled.compareAndSet(false, true)) {
+
+                scheduler.schedule(
+                        {
+                            commandScheduled.set(false)
+                            executeCommand(command)
+                        },
+                        GRAPH_SOURCE_REPARSING_DELAY_MS,
+                        TimeUnit.MILLISECONDS)
+            }
         }
     }
 
-    private fun executeUpdate(command: () -> Unit) {
-        CommandProcessor.getInstance().executeCommand(
-                project,
-                {
-                    updateRequired.set(false)
-                    command()
-                    if (updateRequired.get()) {
+    private fun executeCommand(command: () -> Unit) {
+        ApplicationManager.getApplication().invokeLater {
+            CommandProcessor.getInstance().executeCommand(
+                    project,
+                    {
+                        command()
 
-                        scheduler.schedule({
-                            executeUpdate(command)
-                        }, 5_000, TimeUnit.MILLISECONDS)
-                    }
-                },
-                "Parsing graph",
-                null)
+                    },
+                    "Parsing graph",
+                    null)
+        }
     }
 
     private fun setDefaultPopupSize(popup: JBPopup) {
