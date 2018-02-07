@@ -19,6 +19,10 @@ class JavaSourceParser(val listener: Listener) {
         val result = ArrayList<GraphModel>()
 
         val lexer = GraphConfigJava9Lexer(CharStreams.fromString(body))
+
+        //Do not log into stderr in case of invalid tokens
+        lexer.removeErrorListeners()
+
         val tokens = CommonTokenStream(lexer)
         val parser = GraphConfigJava9Parser(tokens)
 
