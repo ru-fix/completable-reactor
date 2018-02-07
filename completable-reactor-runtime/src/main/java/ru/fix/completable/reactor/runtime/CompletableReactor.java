@@ -21,7 +21,6 @@ import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -83,9 +82,9 @@ public class CompletableReactor implements AutoCloseable {
         glGraphConfigs.computeIfAbsent(graphConfig.getClass(), type -> {
 
             Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfig.getClass());
-            Object graph = buildGraphFromGraphConfig(graphConfig);
+            GlGraph graph = graphBuilder.buildGraph(graphConfig);
 
-            Object prevGraph = glPayloadGraphs.putIfAbsent(payloadType, (GlGraph) graph);
+            Object prevGraph = glPayloadGraphs.putIfAbsent(payloadType, graph);
             if (prevGraph != null) {
                 throw new IllegalArgumentException(""
                         + "New graph config: " + graphConfig
@@ -143,28 +142,6 @@ public class CompletableReactor implements AutoCloseable {
         });
     }
 
-    private Object buildGraphFromGraphConfig(Object graphConfig) {
-        Method buildMethod;
-        try {
-            buildMethod = Graph.class.getDeclaredMethod("buildGraph");
-        } catch (Exception exc) {
-            throw new IllegalArgumentException(""
-                    + "Failed to build graph for graph config:" + graphConfig + "."
-                    + " Graph config class: " + graphConfig.getClass() + "."
-                    + " Graph config does not have private method buildGraph.",
-                    exc);
-        }
-        try {
-            buildMethod.setAccessible(true);
-            return buildMethod.invoke(graphConfig);
-        } catch (Exception exc) {
-            throw new IllegalArgumentException(""
-                    + "Failed to build graph for graph config:" + graphConfig + "."
-                    + " Graph config class: " + graphConfig.getClass() + "."
-                    + " Failed during invocation of buildGraph method.",
-                    exc);
-        }
-    }
 
     private Class getPayloadTypeForGraphConfigBasedClass(Class graphConfigClass) {
 
@@ -342,6 +319,7 @@ public class CompletableReactor implements AutoCloseable {
      */
     public CompletableReactor setDebugProcessingVertexGraphState(boolean debugProcessingVertexGraphState) {
         executionBuilder.setDebugProcessingVertexGraphState(debugProcessingVertexGraphState);
+        glExecutionBuilder.setDebugProcessingVertexGraphState(debugProcessingVertexGraphState);
         return this;
     }
 
