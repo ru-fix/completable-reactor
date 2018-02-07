@@ -26,13 +26,26 @@ class MergeByExecutionBuilder<PayloadType>(
 
             if ((vx.handler != null || vx.subgraphPayloadBuilder != null) && vx.merger == null) {
                 /**
-                 * Skip handler/subgraph without merger
+                 * Handler/subgraph without merger simply link handling and merging feature.
+                 * They should not have outgoing transitions
                  */
-                if (pvx.outgoingTransitions.isEmpty()) {
+                if (pvx.outgoingTransitions.isNotEmpty()) {
                     throw IllegalStateException("""
                         Invalid graph configuration:
                         Vertex ${vx.name} does not have merger, but has outgoing transitions
                         """)
+                }
+
+                pvx.handlingFeature.handleAsync { context, thr ->
+                    if (thr != null) {
+                        log.error(thr) { "Hanlding feature for vertex ${pvx.vertex.name} without merger failed." }
+                        pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                    } else {
+                        /**
+                         * This feature should be ignored in case of vertex without merger
+                         */
+                        pvx.mergingFeature.complete(null)
+                    }
                 }
                 continue
             }
@@ -60,7 +73,7 @@ class MergeByExecutionBuilder<PayloadType>(
                          * Handling result could be INVALID_HANDLE_PAYLOAD_CONTEXT in case of exception
                          * Could carry NULL result in case of router
                          */
-                        var handlePayloadContext: HandlePayloadContext? = null
+                        var handlePayloadContext: HandlePayloadContext?
 
 
                         /**
@@ -181,15 +194,14 @@ class MergeByExecutionBuilder<PayloadType>(
                                     """.trimIndent())
                         }
 
-                        if (incomingMergingFlows.stream()
-                                        .anyMatch { context -> context === INVALID_MERGE_PAYLOAD_CONTEXT }) {
+                        if (incomingMergingFlows.any { context -> context === INVALID_MERGE_PAYLOAD_CONTEXT }) {
                             /**
                              * Exception during merging
                              * Mark as terminal all outgoing flows from merge point
                              */
                             pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
 
-                        } else if (incomingMergingFlows.stream().anyMatch(MergePayloadContext::isTerminal)) {
+                        } else if (incomingMergingFlows.any(MergePayloadContext::isTerminal)) {
                             /**
                              * Terminal state reached.
                              * Mark as terminal all outgoing flows from merge point
@@ -222,7 +234,7 @@ class MergeByExecutionBuilder<PayloadType>(
                                     throw IllegalStateException(
                                             """
                                             Incoming merging flows exist for Router vertex ${pvx.vertex.name}.
-                                            Incoming merging flows: ${incomingMergingFlows}
+                                            Incoming merging flows: $incomingMergingFlows
                                             """.trimIndent())
 
                                 } else {
