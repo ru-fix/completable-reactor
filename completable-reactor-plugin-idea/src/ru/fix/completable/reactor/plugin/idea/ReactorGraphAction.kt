@@ -7,8 +7,8 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.vfs.LocalFileSystem
-import ru.fix.completable.reactor.graph.viewer.gl.CoordinateItem
 import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
+import ru.fix.completable.reactor.model.GraphModel
 import ru.fix.completable.reactor.model.Source
 
 /**
@@ -32,7 +32,7 @@ class ReactorGraphAction : AnAction() {
         )
 
         viewer.graphViewer.registerListener(object : GraphViewer.ActionListener {
-            override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
+            override fun coordinatesChanged(graphModel: GraphModel) {
 //                TODO coordinatesChanged
             }
 

@@ -6,11 +6,11 @@ import javafx.stage.Stage
 import mu.KotlinLogging
 import org.junit.Ignore
 import org.junit.Test
-import ru.fix.completable.reactor.graph.viewer.gl.CoordinateItem
 import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
 import ru.fix.completable.reactor.graph.viewer.gl.Shortcut
 import ru.fix.completable.reactor.graph.viewer.gl.ShortcutType
 import ru.fix.completable.reactor.graph.viewer.gl.code.CodeUpdater
+import ru.fix.completable.reactor.model.GraphModel
 import ru.fix.completable.reactor.model.Source
 import ru.fix.completable.reactor.parser.java.JavaSourceParser
 
@@ -48,12 +48,12 @@ class GraphVisualizationManualTest : Application() {
             println("goToSubgraph: " + subgraphPayloadType)
         }
 
-        override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
+        override fun coordinatesChanged(graphModel: GraphModel) {
             try {
 
                 val codeUpdater = CodeUpdater()
 
-                val updatedCoordinates = coordinateItems
+                val updatedCoordinates = codeUpdater.coordinateCodePhraseFromModel(graphModel)
                         .map { codeUpdater.generateCoordinateBuilderCode(it) }
                         .joinToString("\n")
 
