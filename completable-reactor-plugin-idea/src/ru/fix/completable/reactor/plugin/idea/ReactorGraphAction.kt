@@ -22,6 +22,8 @@ class ReactorGraphAction : AnAction() {
         val editor = event.getData(CommonDataKeys.EDITOR) ?: return
         val virtualFile = event.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
 
+        //TODO: release links when poopup closes
+
         val viewer = Viewer(
                 editor.document,
                 virtualFile,
