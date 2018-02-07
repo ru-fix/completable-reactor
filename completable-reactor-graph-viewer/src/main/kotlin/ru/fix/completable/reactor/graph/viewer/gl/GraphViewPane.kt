@@ -9,6 +9,10 @@ import ru.fix.completable.reactor.model.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
+interface PositionListener {
+    fun positionChanged()
+}
+
 /**
  * Created by Kamil Asfandiyarov
  */
@@ -115,7 +119,7 @@ class GraphViewPane(
 
                 autoLayout.layout(nodeTree)
 
-                actionListener.coordinatesChanged(coordinateItemsFromModel())
+                actionListener.coordinatesChanged(graphModel)
             }
         }
 
@@ -359,71 +363,4 @@ class GraphViewPane(
         }
     }
 
-
-    fun coordinateItemsFromModel(): List<CoordinateItem> {
-        val result = ArrayList<CoordinateItem>()
-        val model = graphModel ?: return result
-
-        with(model) {
-
-            startPoint.coordinates?.run {
-                result.add(CoordinateItem(
-                        CoordinateItem.Type.START_POINT,
-                        null,
-                        x,
-                        y))
-            }
-
-            handlers.values.forEach {
-                it.coordinates?.run {
-                    result.add(CoordinateItem(
-                            CoordinateItem.Type.HANDLER,
-                            it.name,
-                            x,
-                            y))
-                }
-            }
-
-            subgraphs.values.forEach {
-                it.coordinates?.run {
-                    result.add(CoordinateItem(
-                            CoordinateItem.Type.SUBGRAPH,
-                            it.name,
-                            x,
-                            y))
-                }
-            }
-
-            routers.values.forEach {
-                it.coordinates?.run {
-                    result.add(CoordinateItem(
-                            CoordinateItem.Type.ROUTER,
-                            it.name,
-                            x,
-                            y))
-                }
-            }
-
-            mergers.values.forEach {
-                it.coordinates?.run {
-                    result.add(CoordinateItem(
-                            CoordinateItem.Type.MERGER,
-                            it.name,
-                            x,
-                            y))
-                }
-            }
-
-            endpoints.values.forEach {
-                it.coordinates?.run {
-                    result.add(CoordinateItem(
-                            CoordinateItem.Type.END_POINT,
-                            it.name,
-                            x,
-                            y))
-                }
-            }
-        }
-        return result
-    }
 }

@@ -3,8 +3,7 @@ package ru.fix.completable.reactor.graph.viewer.gl.code
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import ru.fix.completable.reactor.graph.viewer.gl.CoordinateItem
-import ru.fix.completable.reactor.graph.viewer.gl.CoordinateItem.Type
+import ru.fix.completable.reactor.graph.viewer.gl.code.CoordinateCodePhrase.*
 import java.util.*
 
 /**
@@ -14,7 +13,7 @@ class CodeUpdaterTest {
 
     val updater = CodeUpdater()
 
-    val coordinateItems: MutableList<CoordinateItem> = ArrayList()
+    lateinit var codeCoordinates: List<CoordinateCodePhrase>
 
     fun normalize(value: String): String {
         return value
@@ -25,41 +24,14 @@ class CodeUpdaterTest {
 
     @Before
     fun create_test_coordiate_items() {
-        coordinateItems.add(CoordinateItem(
-                CoordinateItem.Type.START_POINT,
-                null,
-                500,
-                -200))
 
-        coordinateItems.add(CoordinateItem(
-                Type.HANDLER,
-                "smsRequestConstructProcessor4",
-                910,
-                901))
-
-        coordinateItems.add(CoordinateItem(
-                Type.HANDLER,
-                "smsRequestConstructProcessor5",
-                1170,
-                1270))
-
-        coordinateItems.add(CoordinateItem(
-                Type.SUBGRAPH,
-                "userProfileSubgraph",
-                320,
-                1141))
-
-        coordinateItems.add(CoordinateItem(
-                Type.MERGER,
-                "serviceFetchProcessor5",
-                1210,
-                401))
-
-        coordinateItems.add(CoordinateItem(
-                Type.END_POINT,
-                "smsRequestConstructProcessor6",
-                1500,
-                511))
+        codeCoordinates = listOf(
+                StartPoint(500, -200),
+                Handler("smsRequestConstructProcessor4", 910, 901),
+                Handler("smsRequestConstructProcessor5", 1170, 1270),
+                Subgraph("userProfileSubgraph", 320, 1141),
+                Merger("serviceFetchProcessor5", 1210, 401),
+                EndPoint("smsRequestConstructProcessor6", 1500, 511))
     }
 
     private fun resourceAsText(resource: String): String {
@@ -71,7 +43,7 @@ class CodeUpdaterTest {
         val input = resourceAsText("/gl-code-block/code-block-1.txt")
         val expectedOutput = resourceAsText("/gl-code-block/code-block-1-result.txt")
 
-        val output = updater.updateCoordinates(input, coordinateItems)
+        val output = updater.updateCoordinates(input, codeCoordinates)
         Assert.assertEquals(normalize(expectedOutput), normalize(output))
     }
 
@@ -80,7 +52,7 @@ class CodeUpdaterTest {
         val input = resourceAsText("/gl-code-block/code-block-2.txt")
         val expectedOutput = resourceAsText("/gl-code-block/code-block-2-result.txt")
 
-        val output = updater.updateCoordinates(input, coordinateItems)
+        val output = updater.updateCoordinates(input, codeCoordinates)
         Assert.assertEquals(normalize(expectedOutput), normalize(output))
     }
 
@@ -89,7 +61,7 @@ class CodeUpdaterTest {
         val input = resourceAsText("/gl-code-block/code-block-3.txt")
         val expectedOutput = resourceAsText("/gl-code-block/code-block-3-result.txt")
 
-        val output = updater.updateCoordinates(input, coordinateItems)
+        val output = updater.updateCoordinates(input, codeCoordinates)
         Assert.assertEquals(normalize(expectedOutput), normalize(output))
     }
 

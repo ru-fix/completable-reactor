@@ -31,9 +31,9 @@ class GraphViewer {
             }
         }
 
-        override fun coordinatesChanged(coordinateItems: List<CoordinateItem>) {
+        override fun coordinatesChanged(graphModel: GraphModel) {
             for (listener in actionListeners) {
-                listener.coordinatesChanged(coordinateItems)
+                listener.coordinatesChanged(graphModel)
             }
         }
     }
@@ -145,6 +145,6 @@ class GraphViewer {
          *
          * @param coordinateItems new coordinates
          */
-        fun coordinatesChanged(coordinateItems: List<CoordinateItem>)
+        fun coordinatesChanged(graphModel: GraphModel)
     }
 }
