@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -128,78 +130,75 @@ class GlCompletableReactorTest {
         assertEquals(Arrays.asList(1, 2), resultPayload.idSequence);
     }
 
-//
-//    @Reactored({
-//            "Detached processor is a processor without merger.",
-//            "Main flow dow not wait for detached processor to complete.",
-//            "In test Detached processor will run and complete deferred in time.",
-//            "When result of chain is ready detached processor will be activated.",
-//            "Test will check that chain execution will complete on detached processor finish.",
-//            "Expected result: {1, 2}"
-//    })
-//    static class DetachedProcessorPayload extends IdListPayload {
-//    }
-//
-//    @Test
-//    public void detached_processor() throws Exception {
-//
-//        IdProcessor detachedProcessor = new IdProcessor(3).withLaunchingLatch();
-//
-//        class Config {
-//            final ReactorGraphBuilder builder = new ReactorGraphBuilder(this);
-//
-//            Processor<IdListPayload> idProcessor1 = buildProcessor(builder, new IdProcessor(1));
-//            Processor<IdListPayload> idProcessor2 = buildProcessor(builder, new IdProcessor(2));
-//
-//            Processor<DetachedProcessorPayload> idProcessor3 = builder.processor()
-//                    .forPayload(DetachedProcessorPayload.class)
-//                    .withHandler(detachedProcessor::handle)
-//                    .withoutMerger()
-//                    .buildProcessor();
-//
-//            ReactorGraph buildGraph() {
-//                return builder.payload(DetachedProcessorPayload.class)
-//                        .handle(idProcessor1)
-//                        .handle(idProcessor2)
-//                        .handle(idProcessor3)
-//
-//                        .mergePoint(idProcessor1)
-//                        .on(Status.OK).merge(idProcessor2)
-//
-//                        .mergePoint(idProcessor2)
-//                        .onAny().complete()
-//
-//                        .coordinates()
-//                        .start(489, 96)
-//                        .proc(idProcessor1, 364, 178)
-//                        .proc(idProcessor2, 530, 180)
-//                        .proc(idProcessor3, 701, 172)
-//                        .merge(idProcessor1, 414, 268)
-//                        .merge(idProcessor2, 589, 341)
-//                        .complete(idProcessor2, 701, 378)
-//
-//                        .buildGraph();
-//            }
-//        }
-//
-//        val graph = new Config().buildGraph();
-//        printGraph(graph);
-//
-//        reactor.registerReactorGraph(graph);
-//
-//        CompletableReactor.Execution<DetachedProcessorPayload> result = reactor.submit(new DetachedProcessorPayload());
-//
-//        assertEquals(Arrays.asList(1, 2), result.getResultFuture().get(5, TimeUnit.SECONDS).getIdSequence());
-//
-//        assertTrue("result future is complete", result.getResultFuture().isDone());
-//        assertFalse("execution chain is not complete since detached processor still working", result.getChainExecutionFuture().isDone());
-//
-//        detachedProcessor.launch();
-//
-//        result.getChainExecutionFuture().get(5, TimeUnit.SECONDS);
-//        assertTrue("execution chain is complete when detached processor is finished", result.getChainExecutionFuture().isDone());
-//    }
-//
+
+    /**
+     * Detached processor is a handler without merger.
+     * Main flow does not wait for detached processor to complete.",
+     * "In test Detached processor will run and complete deferred in time.",
+     * "When result of chain is ready detached processor will be activated.",
+     * "Test will check that chain execution will complete on detached processor finish.",
+     * "Expected result: {1, 2}"
+     */
+    static class DetachedProcessorGraph extends Graph<IdListPayload> {
+
+        IdProcessor detachedProcessor = new IdProcessor(3).withLaunchingLatch();
+
+        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        Vertex idProcessor3 = handler(detachedProcessor::handle)
+                .withoutMerger();
+
+        {
+            payload()
+                    .handleBy(idProcessor1)
+                    .handleBy(idProcessor2)
+                    .handleBy(idProcessor3);
+
+            idProcessor1.on(Status.OK).mergeBy(idProcessor2);
+
+            idProcessor2.onAny().complete();
+
+            coordinates()
+                    .payload(489, 96)
+                    .handler(idProcessor1, 364, 178)
+                    .handler(idProcessor2, 530, 180)
+                    .handler(idProcessor3, 701, 172)
+                    .handler(idProcessor1, 414, 268)
+                    .merger(idProcessor2, 589, 341)
+                    .complete(idProcessor2, 701, 378);
+        }
+    }
+
+
+    @Test
+    public void detached_processor() throws Exception {
+
+        DetachedProcessorGraph graph = new DetachedProcessorGraph();
+        reactor.registerIfAbsent(graph);
+
+        CompletableReactor.Execution<IdListPayload> result = reactor.submit(new IdListPayload());
+
+        assertEquals(Arrays.asList(1, 2), result.getResultFuture().get(5, TimeUnit.SECONDS).idSequence);
+
+        assertTrue("result future is complete", result.getResultFuture().isDone());
+        assertFalse("execution chain is not complete since detached processor still working", result.getChainExecutionFuture().isDone());
+
+        graph.detachedProcessor.launch();
+
+        result.getChainExecutionFuture().get(5, TimeUnit.SECONDS);
+        assertTrue("execution chain is complete when detached processor is finished", result.getChainExecutionFuture().isDone());
+    }
+
 //
 //    @Reactored({
 //            "Subgraph behave the same way as plain processor.",
