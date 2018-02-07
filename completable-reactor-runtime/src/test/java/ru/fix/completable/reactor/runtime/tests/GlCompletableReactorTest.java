@@ -199,6 +199,9 @@ class GlCompletableReactorTest {
         assertTrue("execution chain is complete when detached processor is finished", result.getChainExecutionFuture().isDone());
     }
 
+    //TODO add case when we have to wait for returning from handling method of detached processor before continue
+    // with mergers, so detached handlers could have time to read payload before merger modifies it.
+
 //
 //    @Reactored({
 //            "Subgraph behave the same way as plain processor.",
