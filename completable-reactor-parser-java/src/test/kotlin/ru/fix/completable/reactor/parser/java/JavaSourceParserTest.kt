@@ -227,6 +227,9 @@ class JavaSourceParserTest {
         assertEquals(Source(sourceFilePath, 85, 12, 2601), model.handlers["bank"]!!.source)
         assertEquals(Source(sourceFilePath, 93, 14, 3054), model.mergers["bank"]!!.source)
         assertEquals(Source(sourceFilePath, 73, 12, 2249), model.handlers["webNotification"]!!.source)
+
+        assertEquals(Source(sourceFilePath, 225, 8, 8249), model.coordinatesStart)
+        assertEquals(Source(sourceFilePath, 240, 48, 8947), model.coordinatesEnd)
     }
 
     @Test
