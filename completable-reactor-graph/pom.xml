@@ -20,6 +20,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>io.github.microutils</groupId>
       <artifactId>kotlin-logging</artifactId>
       <version>1.4.9</version>
