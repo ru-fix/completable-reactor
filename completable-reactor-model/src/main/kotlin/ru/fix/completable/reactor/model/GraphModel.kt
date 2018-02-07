@@ -99,7 +99,7 @@ class GraphModel {
     val mergers = HashMap<String, Merger>()
     val endpoints = HashMap<String, EndPoint>()
 
-    var graphClass: String? = null
+    lateinit var graphClass: String
 
     var graphDeclarationLocation: Source? = null
 

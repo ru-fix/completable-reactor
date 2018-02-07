@@ -46,6 +46,10 @@ class GraphViewer {
     }
 
     fun openGraph(graphs: List<GraphModel>) {
+        if (graphs.isEmpty()) {
+            return
+        }
+
         if (graphs.size == 1) {
 
             var graphViewPane = GraphViewPane(viewPaneActionListener, { this.getShortcut(it) })
@@ -82,7 +86,7 @@ class GraphViewer {
                 addShortcutListener(graphViewPane)
             }
 
-            if(previouslySelectedTabIndex != null && previouslySelectedTabIndex < tabPane.tabs.size) {
+            if (previouslySelectedTabIndex != null && previouslySelectedTabIndex < tabPane.tabs.size) {
                 tabPane.selectionModel.select(previouslySelectedTabIndex)
             }
         }

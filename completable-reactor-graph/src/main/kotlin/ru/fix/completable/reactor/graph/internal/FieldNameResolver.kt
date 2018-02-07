@@ -10,37 +10,37 @@ class FieldNameResolver(
         private val instance: Any,
         private val fieldTypes: List<Class<out Any>>) {
 
-    private lateinit var graphConfigFields: IdentityHashMap<Any, String>
+    private val graphConfigFields: IdentityHashMap<Any, String> by lazy {
 
-    fun resolveFieldName(configField: Any): String {
+        val configFields = IdentityHashMap<Any, String>()
 
-        if (!this::graphConfigFields.isInitialized) {
-            graphConfigFields = IdentityHashMap()
+        var clazz: Class<*>? = instance.javaClass
+        while (clazz != null) {
 
-            var clazz: Class<*>? = instance.javaClass
-            while (clazz != null) {
-
-                Arrays.stream<Field>(clazz.declaredFields)
-                        .filter { field ->
-                            fieldTypes.any { fieldType -> fieldType.isAssignableFrom(field.type) }
-                        }
-                        .forEach { field ->
-                            try {
-                                if (!field.isAccessible) {
-                                    field.isAccessible = true
-                                }
-                                val value = field.get(instance)
-                                graphConfigFields.put(value, field.name)
-                            } catch (exc: Exception) {
-                                log.warn(exc) {
-                                    "Failed to access field $field of class ${configField.javaClass.name}" +
-                                            " in object $configField"
-                                }
+            Arrays.stream<Field>(clazz.declaredFields)
+                    .filter { field ->
+                        fieldTypes.any { fieldType -> fieldType.isAssignableFrom(field.type) }
+                    }
+                    .forEach { field ->
+                        try {
+                            if (!field.isAccessible) {
+                                field.isAccessible = true
+                            }
+                            val value = field.get(instance)
+                            configFields.put(value, field.name)
+                        } catch (exc: Exception) {
+                            log.warn(exc) {
+                                "Failed to access field $field of class $clazz in object $instance"
                             }
                         }
-                clazz = clazz.superclass
-            }
+                    }
+            clazz = clazz.superclass
         }
+
+        configFields
+    }
+
+    fun resolveFieldName(configField: Any): String {
 
         return graphConfigFields[configField] ?: throw IllegalArgumentException("""
             You are probably using local variable instead of class field in GraphConfig builder API.

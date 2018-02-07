@@ -109,13 +109,9 @@ class GraphViewPane(
 
         val positionListener = object : PositionListener {
 
-            private lateinit var nodeTree: GraphNode
+            private val nodeTree: GraphNode by lazy(LazyThreadSafetyMode.NONE) { graphNodeTreeForAutoLayout.get() }
 
             override fun positionChanged() {
-
-                if (!::nodeTree.isInitialized) {
-                    nodeTree = graphNodeTreeForAutoLayout.get()
-                }
 
                 autoLayout.layout(nodeTree)
 
