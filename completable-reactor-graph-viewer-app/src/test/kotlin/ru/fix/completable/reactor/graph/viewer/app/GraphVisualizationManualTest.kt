@@ -33,7 +33,7 @@ class GraphVisualizationManualTest : Application() {
                 (it - 5..it + 5)
                         .map {
                             if (it >= 0 && it < sourceLines.size) {
-                                if (it == source.line!!-1) ">>${sourceLines[it]}" else sourceLines[it]
+                                if (it == source.line!! - 1) ">>${sourceLines[it]}" else sourceLines[it]
                             } else {
                                 ""
                             }
@@ -49,21 +49,7 @@ class GraphVisualizationManualTest : Application() {
         }
 
         override fun coordinatesChanged(graphModel: GraphModel) {
-            try {
-
-                val codeUpdater = CodeUpdater()
-
-                val updatedCoordinates = codeUpdater.coordinateCodePhraseFromModel(graphModel)
-                        .map { codeUpdater.generateCoordinateBuilderCode(it) }
-                        .joinToString("\n")
-
-
-                println("UpdatedCoordinates:\n$updatedCoordinates")
-
-            } catch (exc: Exception) {
-                exc.printStackTrace()
-            }
-
+            println("coordinatesChanged")
         }
     }
 
