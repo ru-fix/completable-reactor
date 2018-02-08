@@ -157,10 +157,12 @@ coordinate
     |   coordinateComplete
     ;
 
-coordinatePayload : DOT PAYLOAD LPAREN IntegerLiteral COMMA IntegerLiteral RPAREN;
-coordinateHandler : DOT HANDLER LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
-coordinateMerger : DOT MERGER LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
-coordinateComplete : DOT COMPLETE LPAREN Identifier COMMA IntegerLiteral COMMA IntegerLiteral RPAREN;
+coordinatePayload : DOT PAYLOAD LPAREN Coordinate COMMA Coordinate RPAREN;
+coordinateHandler : DOT HANDLER LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
+coordinateMerger : DOT MERGER LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
+coordinateComplete : DOT COMPLETE LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
+
+Coordinate: '-'? DecimalIntegerLiteral;
 
 transitionCondition
     :   Identifier (DOT Identifier)*
