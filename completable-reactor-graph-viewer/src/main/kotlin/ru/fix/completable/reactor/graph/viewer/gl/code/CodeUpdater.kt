@@ -150,10 +150,22 @@ class CodeUpdater {
 
         } else {
             val endOfBlock = graphModel.endOfLastCodeBlocksWithinGraph
+
             if (endOfBlock != null) {
-                editor.insert(endOfBlock, printCoordinates(coordinates, ""))
+
+                val startOfLine = Source(
+                        filePath = endOfBlock.filePath,
+                        line = endOfBlock.line,
+                        column = 1,
+                        offset = endOfBlock.offset - endOfBlock.column + 1
+                )
+
+                val padding = editor.getCodeBlock(startOfLine, endOfBlock).let {
+                    it.substring(0, it.indexOfFirst { !it.isWhitespace() })
+                }
+
+                editor.insert(endOfBlock, "\n\n$padding${printCoordinates(coordinates, padding + "    ")}")
             }
         }
     }
-
 }
