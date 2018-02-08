@@ -11,8 +11,14 @@ val DEFAULT_COORDINATES = Coordinates(0, 0)
 
 data class Source(
         var filePath: String,
+        /**
+         * 1..n
+         */
         var line: Int,
-        var lineOffset: Int,
+        /**
+         * 1..n
+         */
+        var column: Int,
         var offset: Int
 )
 

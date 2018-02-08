@@ -158,7 +158,7 @@ class JavaSourceParser(val listener: Listener) {
                         .mapNotNull { it.coordinatesBlock() }
                         .map {
                             coordinatesStart = sourceFromToken(it.start, filePath)
-                            coordinatesEnd = sourceFromToken(it.stop, filePath)
+                            coordinatesEnd = sourceFromEndOfToken(it.stop, filePath)
 
                             it
                         }
@@ -197,7 +197,7 @@ class JavaSourceParser(val listener: Listener) {
                         .sortedBy { it.stop.line }
                         .last()
                         ?.let {
-                            sourceFromToken(it.stop, filePath)
+                            sourceFromEndOfToken(it.stop, filePath)
                         }
             }
 
@@ -301,8 +301,21 @@ class JavaSourceParser(val listener: Listener) {
         return Source(
                 filePath = filePath,
                 line = token.line,
-                lineOffset = token.charPositionInLine,
+                column = 1 + token.charPositionInLine,
                 offset = token.startIndex
+        )
+    }
+
+    private fun sourceFromEndOfToken(token: Token?, filePath: String): Source? {
+        if (token == null) {
+            return null
+        }
+
+        return Source(
+                filePath = filePath,
+                line = token.line,
+                column = 1 + token.charPositionInLine + token.text.length,
+                offset = token.stopIndex + token.text.length
         )
     }
 

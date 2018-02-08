@@ -9,8 +9,6 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.search.PsiShortNamesCache
 import ru.fix.completable.reactor.graph.viewer.gl.code.CodeUpdater
 import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
 import ru.fix.completable.reactor.model.GraphModel
@@ -76,8 +74,8 @@ class ReactorGraphAction : AnAction() {
                                     val descriptor = OpenFileDescriptor(
                                             project,
                                             it,
-                                            source.line?.let { it - 1 } ?: 0,
-                                            source.lineOffset ?: 0)
+                                            source.line.let { it - 1 },
+                                            source.column)
 
                                     viewer.close()
 

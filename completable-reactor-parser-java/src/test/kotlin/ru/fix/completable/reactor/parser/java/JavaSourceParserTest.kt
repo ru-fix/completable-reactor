@@ -222,14 +222,14 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
         assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
 
-        assertEquals(Source(sourceFilePath, 196, 8, 7321), model.startPoint.source)
+        assertEquals(Source(sourceFilePath, 196, 9, 7321), model.startPoint.source)
 
-        assertEquals(Source(sourceFilePath, 85, 12, 2601), model.handlers["bank"]!!.source)
-        assertEquals(Source(sourceFilePath, 93, 14, 3054), model.mergers["bank"]!!.source)
-        assertEquals(Source(sourceFilePath, 73, 12, 2249), model.handlers["webNotification"]!!.source)
+        assertEquals(Source(sourceFilePath, 85, 13, 2601), model.handlers["bank"]!!.source)
+        assertEquals(Source(sourceFilePath, 93, 15, 3054), model.mergers["bank"]!!.source)
+        assertEquals(Source(sourceFilePath, 73, 13, 2249), model.handlers["webNotification"]!!.source)
 
-        assertEquals(Source(sourceFilePath, 225, 8, 8249), model.coordinatesStart)
-        assertEquals(Source(sourceFilePath, 240, 48, 8947), model.coordinatesEnd)
+        assertEquals(Source(sourceFilePath, 225, 9, 8249), model.coordinatesStart)
+        assertEquals(Source(sourceFilePath, 240, 50, 8948), model.coordinatesEnd)
     }
 
     @Test
@@ -255,7 +255,10 @@ class JavaSourceParserTest {
                 ?: fail()
 
         assertNotNull(singleProcessorGraph.handlers["idProcessor1"])
-        assertEquals(Source(sourceFilePath, 48, 53, 1380), singleProcessorGraph.endOfLastCodeBlocksWithinGraph)
+
+        assertEquals(Source(sourceFilePath, 43, 13, 1169), singleProcessorGraph.coordinatesStart)
+        assertEquals(Source(sourceFilePath, 47, 55, 1380), singleProcessorGraph.coordinatesEnd)
+        assertEquals(Source(sourceFilePath, 47, 55, 1380), singleProcessorGraph.endOfLastCodeBlocksWithinGraph)
 
         val twoProcesssorSequenceGraph = models
                 .find { it.graphClass == "TwoProcessorSequentialMergeGraph" }
@@ -266,7 +269,7 @@ class JavaSourceParserTest {
 
         assertNull(twoProcesssorSequenceGraph.coordinatesStart)
         assertNull(twoProcesssorSequenceGraph.coordinatesEnd)
-        assertEquals(Source(sourceFilePath, 88, 43, 2623), twoProcesssorSequenceGraph.endOfLastCodeBlocksWithinGraph)
+        assertEquals(Source(sourceFilePath, 87, 45, 2623), twoProcesssorSequenceGraph.endOfLastCodeBlocksWithinGraph)
     }
 
 
