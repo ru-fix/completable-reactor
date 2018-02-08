@@ -103,8 +103,21 @@ class GraphModel {
     lateinit var graphClass: String
 
     var graphDeclarationLocation: Source? = null
+
+
+    /**
+     * If coordinates block exists, points to beginging of 'coordinates()' method invocation
+     */
     var coordinatesStart: Source? = null
+    /**
+     * If coordinates block exists, points to end of coordinates building section
+     */
     var coordinatesEnd: Source? = null
+    /**
+     * Point to end of last code block within graph.
+     * Coordinates could be injected at that point if they does not exist
+     */
+    var endOfLastCodeBlocksWithinGraph: Source? = null
 
     inner class HandeableAccessor {
         operator fun get(name: String): HandleableVertexFigure? = handlers[name] ?: subgraphs[name] ?: routers[name]
