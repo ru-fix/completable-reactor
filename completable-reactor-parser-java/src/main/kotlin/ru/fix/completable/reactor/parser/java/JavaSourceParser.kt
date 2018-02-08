@@ -191,6 +191,14 @@ class JavaSourceParser(val listener: Listener) {
                             }
                         }
 
+                //end of last declaration block
+                endOfLastCodeBlocksWithinGraph = graphBlocks
+                        .asSequence()
+                        .sortedBy { it.stop.line }
+                        .last()
+                        ?.let {
+                            sourceFromToken(it.stop, filePath)
+                        }
             }
 
             result.add(model)

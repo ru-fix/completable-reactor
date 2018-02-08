@@ -87,13 +87,6 @@ class GlCompletableReactorTest {
 
             idProcessor2.onAny().complete();
 
-            coordinates()
-                    .payload(366, 103)
-                    .handler(idProcessor1, 358, 184)
-                    .handler(idProcessor2, 549, 183)
-                    .merger(idProcessor1, 427, 291)
-                    .merger(idProcessor2, 571, 356)
-                    .complete(idProcessor2, 610, 454);
         }
     }
 

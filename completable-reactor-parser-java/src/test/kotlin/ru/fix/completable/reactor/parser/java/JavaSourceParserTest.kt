@@ -255,6 +255,7 @@ class JavaSourceParserTest {
                 ?: fail()
 
         assertNotNull(singleProcessorGraph.handlers["idProcessor1"])
+        assertEquals(Source(sourceFilePath, 48, 53, 1380), singleProcessorGraph.endOfLastCodeBlocksWithinGraph)
 
         val twoProcesssorSequenceGraph = models
                 .find { it.graphClass == "TwoProcessorSequentialMergeGraph" }
@@ -262,6 +263,10 @@ class JavaSourceParserTest {
 
         assertNotNull(twoProcesssorSequenceGraph.handlers["idProcessor1"])
         assertNotNull(twoProcesssorSequenceGraph.handlers["idProcessor2"])
+
+        assertNull(twoProcesssorSequenceGraph.coordinatesStart)
+        assertNull(twoProcesssorSequenceGraph.coordinatesEnd)
+        assertEquals(Source(sourceFilePath, 88, 43, 2623), twoProcesssorSequenceGraph.endOfLastCodeBlocksWithinGraph)
     }
 
 
