@@ -5,8 +5,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.search.PsiShortNamesCache
+import ru.fix.completable.reactor.graph.viewer.gl.code.CodeUpdater
 import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
 import ru.fix.completable.reactor.model.GraphModel
 import ru.fix.completable.reactor.model.Source
@@ -16,6 +21,7 @@ import ru.fix.completable.reactor.model.Source
  */
 class ReactorGraphAction : AnAction() {
     val notificator = Notificator()
+    val codeUpdater = CodeUpdater()
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.getData(PlatformDataKeys.PROJECT) ?: return
@@ -33,7 +39,31 @@ class ReactorGraphAction : AnAction() {
 
         viewer.graphViewer.registerListener(object : GraphViewer.ActionListener {
             override fun coordinatesChanged(graphModel: GraphModel) {
-//                TODO coordinatesChanged
+
+                ApplicationManager.getApplication().invokeLater {
+                    ApplicationManager.getApplication().runReadAction {
+
+                        codeUpdater.updateCoordinates(graphModel, object : CodeUpdater.Editor {
+                            override fun getCodeBlock(coordinatesStart: Source, coordinatesEnd: Source): String {
+                                val textRange = TextRange(coordinatesStart.offset, coordinatesEnd.offset)
+                                return viewer.document.getText(textRange)
+                            }
+
+                            override fun replaceCodeBlock(start: Source, end: Source, newCodeBlock: String) {
+                                WriteCommandAction.runWriteCommandAction(project) {
+                                    viewer.document.replaceString(start.offset, end.offset, newCodeBlock)
+                                }
+                            }
+
+                            override fun insert(position: Source, newCodeBlock: String) {
+                                WriteCommandAction.runWriteCommandAction(project) {
+                                    viewer.document.insertString(position.offset, newCodeBlock)
+                                }
+                            }
+                        })
+
+                    }
+                }
             }
 
             override fun goToSource(source: Source) {
@@ -41,7 +71,7 @@ class ReactorGraphAction : AnAction() {
                     ApplicationManager.getApplication().runReadAction {
 
                         source.filePath
-                                ?.let { LocalFileSystem.getInstance().findFileByPath(it) }
+                                .let { LocalFileSystem.getInstance().findFileByPath(it) }
                                 ?.let {
                                     val descriptor = OpenFileDescriptor(
                                             project,

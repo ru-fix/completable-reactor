@@ -10,10 +10,10 @@ data class Coordinates(
 val DEFAULT_COORDINATES = Coordinates(0, 0)
 
 data class Source(
-        var filePath: String? = null,
-        var line: Int? = null,
-        var lineOffset: Int? = null,
-        var offset: Int? = null
+        var filePath: String,
+        var line: Int,
+        var lineOffset: Int,
+        var offset: Int
 )
 
 data class TransitionDocumentation(

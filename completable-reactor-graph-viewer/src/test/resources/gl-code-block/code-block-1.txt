@@ -1,4 +1,4 @@
-                .coordinates()
+                coordinates()
                 .proc("MessageBodyAnalyzeProcessor@0", -30, 890)
                 .proc("MessageBodyAnalyzeProcessor@1", 1030, 780)
                 .proc("RestrictSmsFetchProcessor@0", 190, 320)
@@ -60,6 +60,6 @@
                 .complete("SmsRequestConstructProcessor@5", 1120, 1370)
                 .complete("SmsRequestConstructProcessor@3", 1680, 1370)
                 .complete("UserInfoPayload@0", 380, 840)
-                .complete("UserInfoPayload@1", 540, 430)
+                .complete("UserInfoPayload@1", 540, 430);
 
-                .buildGraph();
+                someMethod();
