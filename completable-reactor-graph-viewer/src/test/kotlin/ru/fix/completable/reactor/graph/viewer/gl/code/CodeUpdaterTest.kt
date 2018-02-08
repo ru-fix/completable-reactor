@@ -4,7 +4,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import ru.fix.completable.reactor.graph.viewer.gl.code.CoordinateCodePhrase.*
-import java.util.*
 
 /**
  * @author Kamil Asfandiyarov
@@ -42,24 +41,6 @@ class CodeUpdaterTest {
     fun update_code_block() {
         val input = resourceAsText("/gl-code-block/code-block-1.txt")
         val expectedOutput = resourceAsText("/gl-code-block/code-block-1-result.txt")
-
-        val output = updater.updateCoordinates(input, codeCoordinates)
-        Assert.assertEquals(normalize(expectedOutput), normalize(output))
-    }
-
-    @Test
-    fun code_after_code_Block_should_not_be_changed() {
-        val input = resourceAsText("/gl-code-block/code-block-2.txt")
-        val expectedOutput = resourceAsText("/gl-code-block/code-block-2-result.txt")
-
-        val output = updater.updateCoordinates(input, codeCoordinates)
-        Assert.assertEquals(normalize(expectedOutput), normalize(output))
-    }
-
-    @Test
-    fun update_existing_code_bloc_what_it_smaller_that_new_one() {
-        val input = resourceAsText("/gl-code-block/code-block-3.txt")
-        val expectedOutput = resourceAsText("/gl-code-block/code-block-3-result.txt")
 
         val output = updater.updateCoordinates(input, codeCoordinates)
         Assert.assertEquals(normalize(expectedOutput), normalize(output))
