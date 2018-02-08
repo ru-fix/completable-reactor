@@ -166,8 +166,8 @@ class JavaSourceParser(val listener: Listener) {
                         .forEach {
                             it.coordinatePayload()?.run {
                                 startPoint.coordinates = Coordinates(
-                                        IntegerLiteral()!!.first().text.toInt(),
-                                        IntegerLiteral()!!.last().text.toInt())
+                                        Coordinate()!!.first().text.toInt(),
+                                        Coordinate()!!.last().text.toInt())
 
                             } ?: it.coordinateComplete()?.run {
                                 val vertexName = Identifier().text
@@ -176,18 +176,18 @@ class JavaSourceParser(val listener: Listener) {
                                                 ", but vertex $vertexName does not have complete transition.")
 
                                 endpoint.coordinates = Coordinates(
-                                        IntegerLiteral().first().text.toInt(),
-                                        IntegerLiteral().last().text.toInt())
+                                        Coordinate().first().text.toInt(),
+                                        Coordinate().last().text.toInt())
 
 
                             } ?: it.coordinateHandler()?.run {
                                 handlers[Identifier().text]!!.coordinates = Coordinates(
-                                        IntegerLiteral().first().text.toInt(),
-                                        IntegerLiteral().last().text.toInt())
+                                        Coordinate().first().text.toInt(),
+                                        Coordinate().last().text.toInt())
                             } ?: it.coordinateMerger().run {
                                 mergers[Identifier().text]!!.coordinates = Coordinates(
-                                        IntegerLiteral().first().text.toInt(),
-                                        IntegerLiteral().last().text.toInt())
+                                        Coordinate().first().text.toInt(),
+                                        Coordinate().last().text.toInt())
                             }
                         }
 
