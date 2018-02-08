@@ -40,7 +40,6 @@ class GlCompletableReactorTest {
             payload().handleBy(idProcessor1);
 
             idProcessor1.onAny().complete();
-
             coordinates()
                     .payload(226, 98)
                     .handler(idProcessor1, 261, 163)
