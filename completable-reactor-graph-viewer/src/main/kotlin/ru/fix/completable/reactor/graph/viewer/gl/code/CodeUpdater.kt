@@ -68,76 +68,56 @@ class CodeUpdater {
 
     private fun printCoordinates(coordinates: List<CoordinateCodePhrase>, padding: String): String {
         return coordinates.asSequence()
-                .sortedWith(object : Comparator<CoordinateCodePhrase> {
+                .sortedWith(Comparator { item1, item2 ->
+                    if (item1 == null || item2 == null) {
+                        0
+                    } else {
 
-                    override fun compare(item1: CoordinateCodePhrase?, item2: CoordinateCodePhrase?): Int {
-                        return if (item1 == null || item2 == null) {
-                            0
-                        } else {
+                        //compare Type
+                        if (item1::class == item2::class
+                                && item1 is NamedCoordinateCodePhrase
+                                && item2 is NamedCoordinateCodePhrase) {
 
-                            //compare Type
-                            if (item1::class == item2::class
-                                    && item1 is NamedCoordinateCodePhrase
-                                    && item2 is NamedCoordinateCodePhrase) {
+                            //type are equals, compare processor
+                            val cmpProc = item1.name.compareTo(item2.name)
 
-                                //type are equals, compare processor
-                                val cmpProc = item1.name.compareTo(item2.name)
-
-                                if (cmpProc == 0) {
-                                    //processors are equals
-                                    val cmpx = Integer.compare(item1.x, item2.x)
-                                    if (cmpx == 0) {
-                                        Integer.compare(item1.y, item2.y)
-                                    } else {
-                                        cmpx
-                                    }
+                            if (cmpProc == 0) {
+                                //processors are equals
+                                val cmpx = Integer.compare(item1.x, item2.x)
+                                if (cmpx == 0) {
+                                    Integer.compare(item1.y, item2.y)
                                 } else {
-                                    cmpProc
+                                    cmpx
                                 }
                             } else {
-                                Integer.compare(coordinateTypeOrder[item1::class]!!, coordinateTypeOrder[item2::class]!!)
+                                cmpProc
                             }
+                        } else {
+                            Integer.compare(coordinateTypeOrder[item1::class]!!, coordinateTypeOrder[item2::class]!!)
                         }
                     }
                 })
-                .joinToString(separator = "\n$padding", prefix = padding, postfix = ";") { item ->
-                    generateCoordinateBuilderCode(item)
+                .joinToString(separator = "\n$padding", prefix = "coordinates()\n$padding", postfix = ";") { item ->
+                    generateCoordinateBuilderMemberCode(item)
                 }
     }
 
 
     /**
-     * @param codeBlock block of code, first line of which contains .coordinates() method
+     * @param codeBlock block of code, that starts with coordinates() method end ends with ;
      */
     internal fun updateCoordinates(codeBlock: String, coordinates: List<CoordinateCodePhrase>): String {
 
-        val out = StringBuilder()
+        val padding = codeBlock.lineSequence().last()
+                .let {
+                    it.substring(0, it.indexOfFirst { !it.isWhitespace() })
+                }
 
-        val coordinatesRange = coordinatesRegex.find(codeBlock)?.range ?: return codeBlock
-
-        val padding = StringBuilder()
-        for (i in 0 until coordinatesRange.start) {
-            padding.append(' ')
-        }
-
-        val codeBlockEditPartStart = coordinatesRange.endInclusive + 1
-
-        val replacementCodeRange = replacementCodeRegex.find(codeBlock, codeBlockEditPartStart)?.range
-                ?: return codeBlock
-
-        val codeBlockEditPartEnd = replacementCodeRange.endInclusive
-
-        out.append(codeBlock.substring(0, codeBlockEditPartStart + 1))
-
-        out.append(printCoordinates(coordinates, padding.toString()))
-        out.append(padding.toString())
-        out.append(codeBlock.substring(codeBlockEditPartEnd + 1, codeBlock.length))
-
-        return out.toString()
+        return printCoordinates(coordinates, padding)
     }
 
 
-    private fun generateCoordinateBuilderCode(phrase: CoordinateCodePhrase): String {
+    private fun generateCoordinateBuilderMemberCode(phrase: CoordinateCodePhrase): String {
         return when (phrase) {
             is StartPoint -> ".payload(${phrase.x}, ${phrase.y})"
             is Handler -> ".handler(${phrase.name}, ${phrase.x}, ${phrase.y})"
