@@ -27,7 +27,8 @@ class AutoLayout {
 
                 val figure = node.figure
 
-                fun position(node: AutoLayoutable) = "pos: ${node.positionX}, ${node.positionY}"
+                fun position(node: AutoLayoutable) =
+                        "x: ${node.nodeX}, y: ${node.nodeY}, w: ${node.nodeWidth}, h: ${node.nodeHeight}"
 
                 when (figure) {
                     is StartPoint -> log.info { "Layout startPoint: $figure, ${position(node)}" }

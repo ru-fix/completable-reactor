@@ -5,6 +5,7 @@ import javafx.scene.control.MenuItem
 import javafx.scene.control.ScrollPane
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Pane
+import mu.KotlinLogging
 import ru.fix.completable.reactor.model.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -12,6 +13,8 @@ import java.util.concurrent.atomic.AtomicReference
 interface PositionListener {
     fun positionChanged()
 }
+
+private val log = KotlinLogging.logger {}
 
 /**
  * Created by Kamil Asfandiyarov
@@ -24,14 +27,11 @@ class GraphViewPane(
     val MIN_SCALE = 0.3
     val MAX_SCALE = 2.0
 
-    val WORLD_SIZE = 10000.0
     val ZOOM_CHANGE_FACTOR = 1.15
 
-    val worldSize = WORLD_SIZE
+    private val pane = GraphPane()
 
-    private val pane = Pane()
-
-    private val translator = CoordinateTranslator(WORLD_SIZE)
+    private val translator = CoordinateTranslator(pane)
 
     private val autoLayout = AutoLayout()
 
@@ -46,7 +46,7 @@ class GraphViewPane(
 
         this.setContent(pane)
 
-        pane.setPrefSize(this.worldSize, this.worldSize)
+
         this.setVvalue(0.5)
         this.setHvalue(0.5)
 
@@ -82,7 +82,7 @@ class GraphViewPane(
 
         initializePopupMenu()
 
-        subscribeScrollingPayloadListenerOnResizeEvent();
+//        subscribeScrollingPayloadListenerOnResizeEvent();
     }
 
     fun initializePopupMenu() {
@@ -316,51 +316,50 @@ class GraphViewPane(
          */
         val startPointCoordinates = graphModel.startPoint.coordinates ?: DEFAULT_COORDINATES
 
-        this.hvalue = (WORLD_SIZE / 2 + startPointCoordinates.x) / WORLD_SIZE
-        this.vvalue = (WORLD_SIZE / 2 + startPointCoordinates.y) / WORLD_SIZE
+//        this.hvalue = (WORLD_SIZE / 2 + startPointCoordinates.x) / WORLD_SIZE
+//        this.vvalue = (WORLD_SIZE / 2 + startPointCoordinates.y) / WORLD_SIZE
 
-        enableSingleScrollingPayloadToTopCenterOnFirstResize()
-
-        autoLayout.layout(startPointNode)
+//        enableSingleScrollingPayloadToTopCenterOnFirstResize()
+//        autoLayout.layout(startPointNode)
 
         return this
     }
-
-    private val payloadIsWidthCentralized = AtomicBoolean()
-    private val payloadIsHeightCentralized = AtomicBoolean()
-
-    private fun enableSingleScrollingPayloadToTopCenterOnFirstResize() {
-        payloadIsWidthCentralized.set(false)
-        payloadIsHeightCentralized.set(false)
-    }
-
-    private fun subscribeScrollingPayloadListenerOnResizeEvent() {
-        this.heightProperty().addListener { observable, oldValue, newValue ->
-
-            val model = graphModel ?: return@addListener
-
-            val startPointCoordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
-
-            if (payloadIsHeightCentralized.compareAndSet(false, true)) {
-                val startPointY = startPointCoordinates.y
-                val approximateMargin = 50.0
-                this.vvalue = ((WORLD_SIZE / 2 + startPointY + newValue.toDouble() / 2 - approximateMargin) /
-                        WORLD_SIZE)
-            }
-        }
-
-        this.widthProperty().addListener { observable, oldValue, newValue ->
-
-            val model = graphModel ?: return@addListener
-
-            val startPointCoordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
-
-            if (payloadIsWidthCentralized.compareAndSet(false, true)) {
-                val startPointX = startPointCoordinates.x
-                val approximatePayloadNodeWidth = 100.0
-                this.hvalue = (WORLD_SIZE / 2 + startPointX + approximatePayloadNodeWidth / 2) / WORLD_SIZE
-            }
-        }
-    }
+//
+//    private val payloadIsWidthCentralized = AtomicBoolean()
+//    private val payloadIsHeightCentralized = AtomicBoolean()
+//
+//    private fun enableSingleScrollingPayloadToTopCenterOnFirstResize() {
+//        payloadIsWidthCentralized.set(false)
+//        payloadIsHeightCentralized.set(false)
+//    }
+//
+//    private fun subscribeScrollingPayloadListenerOnResizeEvent() {
+//        this.heightProperty().addListener { observable, oldValue, newValue ->
+//
+//            val model = graphModel ?: return@addListener
+//
+//            val startPointCoordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
+//
+//            if (payloadIsHeightCentralized.compareAndSet(false, true)) {
+//                val startPointY = startPointCoordinates.y
+//                val approximateMargin = 50.0
+//                this.vvalue = ((WORLD_SIZE / 2 + startPointY + newValue.toDouble() / 2 - approximateMargin) /
+//                        WORLD_SIZE)
+//            }
+//        }
+//
+//        this.widthProperty().addListener { observable, oldValue, newValue ->
+//
+//            val model = graphModel ?: return@addListener
+//
+//            val startPointCoordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
+//
+//            if (payloadIsWidthCentralized.compareAndSet(false, true)) {
+//                val startPointX = startPointCoordinates.x
+//                val approximatePayloadNodeWidth = 100.0
+//                this.hvalue = (WORLD_SIZE / 2 + startPointX + approximatePayloadNodeWidth / 2) / WORLD_SIZE
+//            }
+//        }
+//    }
 
 }

@@ -4,29 +4,29 @@ package ru.fix.completable.reactor.graph.viewer.gl
  * Created by Kamil Asfandiyarov
  */
 
-class CoordinateTranslator (var worldSize: Double) {
+class CoordinateTranslator (val graphPane: GraphPane) {
 
     fun translateX(x: Int): Double {
-        return worldSize / 2 + x.toDouble()
+        return graphPane.width / 2 + x.toDouble()
     }
 
     fun translateX(x: Double): Double {
-        return worldSize / 2 + x
+        return graphPane.width / 2 + x
     }
 
     fun translateY(y: Int): Double {
-        return worldSize / 2 + y.toDouble()
+        return graphPane.height / 2 + y.toDouble()
     }
 
     fun translateY(y: Double): Double {
-        return worldSize / 2 + y
+        return graphPane.height / 2 + y
     }
 
     fun reverseTranslateX(x: Double): Int {
-        return (x - worldSize / 2).toInt()
+        return (x - graphPane.width / 2).toInt()
     }
 
     fun reverseTranslateY(y: Double): Int {
-        return (y - worldSize / 2).toInt()
+        return (y - graphPane.height / 2).toInt()
     }
 }

@@ -21,8 +21,11 @@ interface AutoLayoutable {
      * Position of the node (javafx layoutX).
      * Position of the node (javafx layoutY).
      */
-    var positionX: Double
-    var positionY: Double
+    var nodeX: Double
+    var nodeY: Double
+
+    val nodeHeight: Double
+    val nodeWidth: Double
 
     val figure: Figure
 }
