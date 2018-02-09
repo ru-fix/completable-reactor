@@ -90,6 +90,8 @@ class GraphViewer {
                 tabPane.selectionModel.select(previouslySelectedTabIndex)
             }
         }
+
+        дфн
     }
 
     private fun addShortcutListener(pane: GraphViewPane) {

@@ -7,13 +7,13 @@ open class GraphNode(override val figure: Figure) : VBox(), AutoLayoutable {
 
     override val graphChildren = ArrayList<GraphNode>()
 
-    override var positionX: Double
+    override var nodeX: Double
         get() = layoutX
         set(value) {
             layoutY = value
         }
 
-    override var positionY: Double
+    override var nodeY: Double
         get() = layoutY
         set(value) {
             layoutY = value
@@ -21,4 +21,9 @@ open class GraphNode(override val figure: Figure) : VBox(), AutoLayoutable {
     override val isUserDefinedPosition: Boolean
         get() = figure.coordinates != null
 
+    override val nodeHeight: Double
+        get() = super.getHeight()
+
+    override val nodeWidth: Double
+        get() = super.getWidth()
 }
