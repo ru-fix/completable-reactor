@@ -32,11 +32,6 @@ class RouterNode(
         this.radius = 13.0
 
 
-        val coordinates = router.coordinates ?: DEFAULT_COORDINATES
-        this.layoutX = translator.translateX(coordinates.x.toDouble())
-        this.layoutY = translator.translateY(coordinates.y.toDouble())
-
-
         this.routerNodeShape.prefWidth = radius * 2;
         this.routerNodeShape.maxWidth = radius * 2;
         this.routerNodeShape.prefHeight = radius * 2;

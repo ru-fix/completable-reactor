@@ -24,11 +24,6 @@ class HandlerNode(
 
         this.styleClass.add("handler")
 
-        val coordinates = handler.coordinates ?: DEFAULT_COORDINATES
-
-        layoutX = translator.translateX(coordinates.x.toDouble())
-        layoutY = translator.translateY(coordinates.y.toDouble())
-
         val nameLabel = Label(handler.name)
         nameLabel.font = Font(16.0)
 

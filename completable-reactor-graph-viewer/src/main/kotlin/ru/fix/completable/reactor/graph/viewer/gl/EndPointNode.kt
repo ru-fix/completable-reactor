@@ -22,11 +22,6 @@ class EndPointNode(
 
         this.styleClass.add("endPoint")
 
-        val coordinates = endPoint.coordinates ?: DEFAULT_COORDINATES
-
-        this.layoutX = translator.translateX(coordinates.x.toDouble())
-        this.layoutY = translator.translateY(coordinates.y.toDouble())
-
         val nameLabel = Label("End")
         nameLabel.font = Font(16.0)
 

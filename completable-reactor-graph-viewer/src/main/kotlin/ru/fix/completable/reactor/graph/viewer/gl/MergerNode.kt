@@ -31,11 +31,6 @@ class MergerNode(
         this.radius = 14.0
 
 
-        val coordinates = merger.coordinates ?: DEFAULT_COORDINATES
-        this.layoutX = translator.translateX(coordinates.x.toDouble())
-        this.layoutY = translator.translateY(coordinates.y.toDouble())
-
-
         this.mergePointShape.prefWidth = radius * 2;
         this.mergePointShape.maxWidth = radius * 2;
         this.mergePointShape.prefHeight = radius * 2;

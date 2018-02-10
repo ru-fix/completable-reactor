@@ -10,9 +10,10 @@ class GraphPane : Pane() {
 
     private val autoLayout = AutoLayout()
 
+    var graphBordersInModelCoordinates: Rect = Rect(0, 0, 0, 0)
+
     init {
     }
-
 
 
     override fun layoutChildren() {
@@ -20,9 +21,9 @@ class GraphPane : Pane() {
 
         log.info { "layout children" }
 
-        fun calcX(x: Int) = width / 2 + x
+        fun calcX(x: Int) = width / 2 + x - graphBordersInModelCoordinates.width / 2
 
-        fun calcY(y: Int) = height / 2 + y
+        fun calcY(y: Int) = height / 2 + y - graphBordersInModelCoordinates.height / 2
 
 
         nodes().forEach { node ->
@@ -33,19 +34,12 @@ class GraphPane : Pane() {
         }
 
 
-
-
-
-
-
-
         children.asSequence()
                 .mapNotNull { it as? StartPointNode }
                 .first()
                 .let {
                     autoLayout.layout(it)
                 }
-
 
 
     }
