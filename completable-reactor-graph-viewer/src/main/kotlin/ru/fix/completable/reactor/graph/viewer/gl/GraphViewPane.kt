@@ -125,7 +125,7 @@ class GraphViewPane(
 
             override fun positionChanged() {
 
-                autoLayout.layout(nodeTree)
+//                autoLayout.layout(nodeTree)
 
                 actionListener.coordinatesChanged(graphModel)
             }
@@ -138,10 +138,8 @@ class GraphViewPane(
 
         for (handler in graphModel.handlers.values) {
             val handlerNode = HandlerNode(
-                    translator,
                     handler,
-                    actionListener,
-                    positionListener)
+                    actionListener)
 
             handlers[handler] = handlerNode
             pane.children.add(handlerNode)
@@ -154,10 +152,8 @@ class GraphViewPane(
 
         for (subgraph in graphModel.subgraphs.values) {
             val subgraphNode = SubgraphNode(
-                    translator,
                     subgraph,
-                    actionListener,
-                    positionListener
+                    actionListener
             )
             subgraphs[subgraph] = subgraphNode
             pane.children.add(subgraphNode)
@@ -167,10 +163,8 @@ class GraphViewPane(
          * StartPoint Node
          */
         val startPointNode = StartPointNode(
-                translator,
                 graphModel.startPoint,
-                actionListener,
-                positionListener)
+                actionListener)
         pane.children.add(startPointNode)
 
         graphNodeTreeForAutoLayout.set(startPointNode)
@@ -181,10 +175,8 @@ class GraphViewPane(
         val endpoints = HashMap<EndPoint, EndPointNode>()
         for (endPoint in graphModel.endpoints.values) {
             val endPointNode = EndPointNode(
-                    translator,
                     endPoint,
-                    actionListener,
-                    positionListener)
+                    actionListener)
             endpoints[endPoint] = endPointNode
             pane.children.addAll(endPointNode)
         }
@@ -195,10 +187,8 @@ class GraphViewPane(
         val mergers = HashMap<Merger, MergerNode>()
         for (merger in graphModel.mergers.values) {
             val mergerNode = MergerNode(
-                    translator,
                     merger,
-                    actionListener,
-                    positionListener)
+                    actionListener)
             mergers[merger] = mergerNode
             pane.children.add(mergerNode)
         }
@@ -209,10 +199,8 @@ class GraphViewPane(
         val routers = HashMap<Router, RouterNode>()
         for (router in graphModel.routers.values) {
             val routerNode = RouterNode(
-                    translator,
                     router,
-                    actionListener,
-                    positionListener)
+                    actionListener)
             routers[router] = routerNode
             pane.children.add(routerNode)
         }
@@ -325,16 +313,35 @@ class GraphViewPane(
          */
         val startPointCoordinates = graphModel.startPoint.coordinates ?: DEFAULT_COORDINATES
 
+        enableNodeDragging()
 
-        modelLayoutChanged()
+        updatePaneSizeIfRequired()
 
         return this
     }
 
-    fun modelLayoutChanged() {
+    fun enableNodeDragging() {
+        pane.children.asSequence()
+                .mapNotNull { it as? GraphNode }
+                .forEach {
+                    NodeDragger.attach(it, object : NodeDraggerListener {
+                        override fun modelChanging() {
+                            pane.requestLayout()
+
+                        }
+
+                        override fun modelChanged() {
+                            updatePaneSizeIfRequired()
+                            pane.requestLayout()
+                            graphModel?.let { actionListener.coordinatesChanged(it) }
+                        }
+                    })
+                }
+    }
+
+    fun updatePaneSizeIfRequired() {
 
         val model = graphModel ?: return
-
 
         val graphBorders = ((
                 sequenceOf(model.startPoint)

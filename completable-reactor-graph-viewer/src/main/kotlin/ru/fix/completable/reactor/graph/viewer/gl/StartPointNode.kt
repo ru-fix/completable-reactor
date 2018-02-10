@@ -6,18 +6,14 @@ import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.Text
-import ru.fix.completable.reactor.model.Coordinates
-import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.StartPoint
 
 /**
  * Created by swarmshine on 29.01.2017.
  */
 class StartPointNode(
-        val translator: CoordinateTranslator,
         val startPoint: StartPoint,
-        val actionListener: GraphViewer.ActionListener,
-        val positionListener: PositionListener
+        val actionListener: GraphViewer.ActionListener
 ) : GraphNode(startPoint) {
 
     init {

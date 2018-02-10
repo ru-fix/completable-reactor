@@ -6,18 +6,14 @@ import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.Text
-import ru.fix.completable.reactor.model.Coordinates
-import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.Subgraph
 
 /**
  * Created by swarmshine on 29.01.2017.
  */
 class SubgraphNode(
-        val translator: CoordinateTranslator,
         val subgraph: Subgraph,
-        val actionListener: GraphViewer.ActionListener,
-        val positionListener: PositionListener
+        val actionListener: GraphViewer.ActionListener
 ) : GraphNode(subgraph) {
 
     init {
@@ -38,17 +34,6 @@ class SubgraphNode(
             if (event.clickCount == 2) {
                 actionListener.goToSubgraph(subgraph.payloadClass)
             }
-        }
-
-        val dragger = NodeDragger.attach(this)
-
-        dragger.addOnPositionChangedListener {
-            subgraph.coordinates = Coordinates(
-                    translator.reverseTranslateX(layoutX),
-                    translator.reverseTranslateY(layoutY)
-            )
-
-            positionListener.positionChanged()
         }
 
         initializePopupMenu()

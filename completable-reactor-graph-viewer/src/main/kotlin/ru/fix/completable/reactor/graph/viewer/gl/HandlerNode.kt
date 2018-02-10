@@ -6,18 +6,14 @@ import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.Text
-import ru.fix.completable.reactor.model.Coordinates
-import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.Handler
 
 /**
  * Created by swarmshine on 29.01.2017.
  */
 class HandlerNode(
-        val translator: CoordinateTranslator,
         val handler: Handler,
-        val actionListener: GraphViewer.ActionListener,
-        val positionListener: PositionListener) :
+        val actionListener: GraphViewer.ActionListener) :
         GraphNode(handler) {
 
     init {
@@ -37,18 +33,6 @@ class HandlerNode(
             if (event.clickCount == 2) {
                 handler.source?.let { actionListener.goToSource(it) }
             }
-        }
-
-        val dragger = NodeDragger.attach(this)
-
-        dragger.addOnPositionChangedListener {
-
-            handler.coordinates = Coordinates(
-                    translator.reverseTranslateX(getLayoutX()),
-                    translator.reverseTranslateY(getLayoutY())
-            )
-
-            positionListener.positionChanged()
         }
 
         initializePopupMenu()

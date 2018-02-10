@@ -4,18 +4,14 @@ import javafx.scene.control.ContextMenu
 import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.text.Font
-import ru.fix.completable.reactor.model.Coordinates
-import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.EndPoint
 
 /**
  * Created by swarmshine on 29.01.2017.
  */
 class EndPointNode(
-        private val translator: CoordinateTranslator,
         private val endPoint: EndPoint,
-        private val actionListener: GraphViewer.ActionListener,
-        private val positionListener: PositionListener) :
+        private val actionListener: GraphViewer.ActionListener) :
         GraphNode(endPoint) {
 
     init {
@@ -33,15 +29,6 @@ class EndPointNode(
             }
         }
 
-        val dragger = NodeDragger.attach(this)
-
-        dragger.addOnPositionChangedListener {
-            endPoint.coordinates = Coordinates(
-                    translator.reverseTranslateX(layoutX),
-                    translator.reverseTranslateX(layoutY)
-            )
-            positionListener.positionChanged()
-        }
 
         initializePopupMenu()
 
