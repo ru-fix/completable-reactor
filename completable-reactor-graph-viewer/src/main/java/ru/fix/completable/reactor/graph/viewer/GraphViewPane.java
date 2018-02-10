@@ -8,6 +8,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import lombok.val;
 import ru.fix.completable.reactor.api.ReactorGraphModel;
+import ru.fix.completable.reactor.graph.viewer.gl.NodeDragger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
