@@ -90,7 +90,6 @@ class GraphViewPane(
 
         initializePopupMenu()
 
-//        subscribeScrollingPayloadListenerOnResizeEvent();
     }
 
     fun initializePopupMenu() {
@@ -124,8 +123,6 @@ class GraphViewPane(
             private val nodeTree: GraphNode by lazy(LazyThreadSafetyMode.NONE) { graphNodeTreeForAutoLayout.get() }
 
             override fun positionChanged() {
-
-//                autoLayout.layout(nodeTree)
 
                 actionListener.coordinatesChanged(graphModel)
             }
@@ -381,9 +378,15 @@ class GraphViewPane(
 
             }
 
+            val oldWidth = pane.prefWidth
+            val oldHValue = hvalue
+            //TODO: fix scroll during resizing of the content
+
             pane.graphBordersInModelCoordinates = graphBorders
             pane.prefWidth = targetWidth
             pane.prefHeight = targetHeight
+
+
         }
     }
 }
