@@ -4,10 +4,8 @@ import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.ScrollPane
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.Pane
 import mu.KotlinLogging
 import ru.fix.completable.reactor.model.*
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 interface PositionListener {
@@ -318,12 +316,69 @@ class GraphViewPane(
 
 //        this.hvalue = (WORLD_SIZE / 2 + startPointCoordinates.x) / WORLD_SIZE
 //        this.vvalue = (WORLD_SIZE / 2 + startPointCoordinates.y) / WORLD_SIZE
-
 //        enableSingleScrollingPayloadToTopCenterOnFirstResize()
 //        autoLayout.layout(startPointNode)
 
+        modelChanged()
+
         return this
     }
+
+    fun modelChanged() {
+
+        val model = graphModel ?: return
+
+        data class Rect(
+                val minX: Int,
+                val minY: Int,
+                val maxX: Int,
+                val maxY: Int) {
+            val width: Int get() = maxX - minX
+            val height: Int get() = maxY - minY
+
+        }
+
+        val graphBorders = ((
+                sequenceOf(model.startPoint)
+                        + model.handlers.values.asSequence()
+                        + model.mergers.values.asSequence()
+                        + model.routers.values.asSequence()
+                        + model.subgraphs.values.asSequence()
+                        + model.endpoints.values.asSequence())
+                .mapNotNull { it.coordinates }
+                + sequenceOf(DEFAULT_COORDINATES))
+                .map {
+                    Rect(
+                            it.x,
+                            it.y,
+                            it.x,
+                            it.y)
+                }
+                .reduce { acc, rect ->
+                    Rect(
+                            Math.min(acc.minX, rect.minX),
+                            Math.min(acc.minY, rect.minY),
+                            Math.max(acc.maxX, rect.maxX),
+                            Math.max(acc.maxY, rect.maxY)
+                    )
+                }
+
+        val targetWidth = graphBorders.width * 2.0
+        val targetHeight = graphBorders.height * 2.0
+
+        if (pane.prefWidth != targetWidth || pane.prefHeight != targetHeight) {
+
+            log.info {
+                "update prefHeight ${pane.prefHeight} to $targetHeight" +
+                        ", prefWidth ${pane.prefWidth} to $targetWidth"
+
+            }
+
+            pane.prefWidth = targetWidth
+            pane.prefHeight = targetHeight
+        }
+    }
+
 //
 //    private val payloadIsWidthCentralized = AtomicBoolean()
 //    private val payloadIsHeightCentralized = AtomicBoolean()
