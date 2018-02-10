@@ -4,20 +4,24 @@ import javafx.geometry.Point2D
 import javafx.scene.Cursor
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+
+
+interface NodeDraggerListener{
+    fun modelChanging()
+    fun modelChanged()
+}
 
 /**
  * @author Kamil Asfandiyarov
  */
-class NodeDragger private constructor(val node: GraphNode) {
-
-    private val dragDoneHandlers = CopyOnWriteArrayList<()->Unit>()
+class NodeDragger private constructor(val node: GraphNode, val draggerListener: NodeDraggerListener) {
 
     companion object {
-        fun attach(node: GraphNode): NodeDragger {
-            return NodeDragger(node)
+        @JvmStatic
+        fun attach(node: GraphNode, draggerListener: NodeDraggerListener){
+            NodeDragger(node, draggerListener)
         }
     }
 
@@ -46,7 +50,7 @@ class NodeDragger private constructor(val node: GraphNode) {
             } else {
                 node.cursor = Cursor.DEFAULT
                 if (draggingState.compareAndSet(true, false)) {
-                    firePositionChangedEvent()
+                    fireModelChanged()
                 }
             }
         }
@@ -54,12 +58,12 @@ class NodeDragger private constructor(val node: GraphNode) {
         node.setOnMouseReleased { event ->
             if (event.isControlDown) {
                 if (draggingState.compareAndSet(true, false)) {
-                    firePositionChangedEvent()
+                    fireModelChanged()
                 }
                 node.cursor = Cursor.OPEN_HAND
             } else {
                 if (draggingState.compareAndSet(true, false)) {
-                    firePositionChangedEvent()
+                    fireModelChanged()
                 }
                 node.cursor = Cursor.DEFAULT
             }
@@ -89,7 +93,7 @@ class NodeDragger private constructor(val node: GraphNode) {
                             - mousePosition.y
 
                     node.figure.coordinates = Coordinates(newCoordinateX, newCoordinateY)
-                    node.parent.layout()
+                    fireModelChanging()
 
                 } else {
                     draggingState.set(true)
@@ -97,7 +101,7 @@ class NodeDragger private constructor(val node: GraphNode) {
                 }
             } else {
                 if (draggingState.compareAndSet(true, false)) {
-                    firePositionChangedEvent()
+                    fireModelChanged()
                 }
                 node.cursor = Cursor.DEFAULT
             }
@@ -112,13 +116,13 @@ class NodeDragger private constructor(val node: GraphNode) {
         }
     }
 
-    private fun firePositionChangedEvent() {
-        dragDoneHandlers.forEach { it() }
+    private fun fireModelChanged() {
+        draggerListener.modelChanged()
+    }
+
+    private fun fireModelChanging(){
+        draggerListener.modelChanging()
     }
 
 
-
-    fun addOnPositionChangedListener(positionChangedListener: ()-> Unit) {
-        dragDoneHandlers.add(positionChangedListener)
-    }
 }

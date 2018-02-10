@@ -34,17 +34,6 @@ class StartPointNode(
             }
         }
 
-        val dragger = NodeDragger.attach(this);
-
-        dragger.addOnPositionChangedListener {
-            startPoint.coordinates = Coordinates(
-                    translator.reverseTranslateX(layoutX),
-                    translator.reverseTranslateX(layoutY)
-            )
-
-            positionListener.positionChanged()
-        }
-
         initializePopupMenu()
     }
 
