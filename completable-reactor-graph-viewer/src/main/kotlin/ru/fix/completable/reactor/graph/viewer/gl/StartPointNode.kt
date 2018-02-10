@@ -23,12 +23,6 @@ class StartPointNode(
     init {
         this.styleClass.add("startPoint")
 
-        val coordinates = startPoint.coordinates ?: DEFAULT_COORDINATES
-
-        this.layoutX = translator.translateX(coordinates.x)
-        this.layoutY = translator.translateY(coordinates.y)
-
-
         val nameLabel = Label(startPoint.payloadType)
         nameLabel.font = Font(16.0)
 

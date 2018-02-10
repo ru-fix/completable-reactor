@@ -12,6 +12,16 @@ interface PositionListener {
     fun positionChanged()
 }
 
+data class Rect(
+        val minX: Int,
+        val minY: Int,
+        val maxX: Int,
+        val maxY: Int) {
+    val width: Int get() = maxX - minX
+    val height: Int get() = maxY - minY
+
+}
+
 private val log = KotlinLogging.logger {}
 
 /**
@@ -309,34 +319,22 @@ class GraphViewPane(
         mergers.values.forEach { it.toFront() }
         routers.values.forEach { it.toFront() }
 
+        //TODO during first opening scroll pane so payload will be displayed in top middle position
         /**
          * Scroll pane so Payload Node would be in center position
          */
         val startPointCoordinates = graphModel.startPoint.coordinates ?: DEFAULT_COORDINATES
 
-//        this.hvalue = (WORLD_SIZE / 2 + startPointCoordinates.x) / WORLD_SIZE
-//        this.vvalue = (WORLD_SIZE / 2 + startPointCoordinates.y) / WORLD_SIZE
-//        enableSingleScrollingPayloadToTopCenterOnFirstResize()
-//        autoLayout.layout(startPointNode)
 
-        modelChanged()
+        modelLayoutChanged()
 
         return this
     }
 
-    fun modelChanged() {
+    fun modelLayoutChanged() {
 
         val model = graphModel ?: return
 
-        data class Rect(
-                val minX: Int,
-                val minY: Int,
-                val maxX: Int,
-                val maxY: Int) {
-            val width: Int get() = maxX - minX
-            val height: Int get() = maxY - minY
-
-        }
 
         val graphBorders = ((
                 sequenceOf(model.startPoint)
@@ -363,8 +361,10 @@ class GraphViewPane(
                     )
                 }
 
-        val targetWidth = graphBorders.width * 2.0
-        val targetHeight = graphBorders.height * 2.0
+        val GRAPH_PANE_MIN_BORDER_SIZE = 600.0
+
+        val targetWidth = Math.max(graphBorders.width * 2.0, GRAPH_PANE_MIN_BORDER_SIZE)
+        val targetHeight = Math.max(graphBorders.height * 2.0, GRAPH_PANE_MIN_BORDER_SIZE)
 
         if (pane.prefWidth != targetWidth || pane.prefHeight != targetHeight) {
 
@@ -374,47 +374,9 @@ class GraphViewPane(
 
             }
 
+            pane.graphBordersInModelCoordinates = graphBorders
             pane.prefWidth = targetWidth
             pane.prefHeight = targetHeight
         }
     }
-
-//
-//    private val payloadIsWidthCentralized = AtomicBoolean()
-//    private val payloadIsHeightCentralized = AtomicBoolean()
-//
-//    private fun enableSingleScrollingPayloadToTopCenterOnFirstResize() {
-//        payloadIsWidthCentralized.set(false)
-//        payloadIsHeightCentralized.set(false)
-//    }
-//
-//    private fun subscribeScrollingPayloadListenerOnResizeEvent() {
-//        this.heightProperty().addListener { observable, oldValue, newValue ->
-//
-//            val model = graphModel ?: return@addListener
-//
-//            val startPointCoordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
-//
-//            if (payloadIsHeightCentralized.compareAndSet(false, true)) {
-//                val startPointY = startPointCoordinates.y
-//                val approximateMargin = 50.0
-//                this.vvalue = ((WORLD_SIZE / 2 + startPointY + newValue.toDouble() / 2 - approximateMargin) /
-//                        WORLD_SIZE)
-//            }
-//        }
-//
-//        this.widthProperty().addListener { observable, oldValue, newValue ->
-//
-//            val model = graphModel ?: return@addListener
-//
-//            val startPointCoordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
-//
-//            if (payloadIsWidthCentralized.compareAndSet(false, true)) {
-//                val startPointX = startPointCoordinates.x
-//                val approximatePayloadNodeWidth = 100.0
-//                this.hvalue = (WORLD_SIZE / 2 + startPointX + approximatePayloadNodeWidth / 2) / WORLD_SIZE
-//            }
-//        }
-//    }
-
 }

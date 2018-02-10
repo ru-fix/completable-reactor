@@ -23,11 +23,6 @@ class SubgraphNode(
     init {
         this.styleClass.add("subgraph")
 
-        val coordinate = subgraph.coordinates ?: DEFAULT_COORDINATES
-
-        this.layoutX = translator.translateX(coordinate.x)
-        this.layoutY = translator.translateY(coordinate.y)
-
 
         val nameLabel = Label(subgraph.name)
         nameLabel.font = Font(16.0)
