@@ -19,8 +19,6 @@ class GraphPane : Pane() {
     override fun layoutChildren() {
         super.layoutChildren()
 
-        log.info { "layout children" }
-
         fun calcX(x: Int) = width / 2 + x - graphBordersInModelCoordinates.width / 2
 
         fun calcY(y: Int) = height / 2 + y - graphBordersInModelCoordinates.height / 2

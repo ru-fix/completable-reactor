@@ -5,18 +5,14 @@ import javafx.scene.control.ContextMenu
 import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.layout.Pane
-import ru.fix.completable.reactor.model.Coordinates
-import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.Merger
 
 /**
  * Created by swarmshine on 29.01.2017.
  */
 class MergerNode(
-        val translator: CoordinateTranslator,
         val merger: Merger,
-        val actionListener: GraphViewer.ActionListener,
-        val positionListener: PositionListener
+        val actionListener: GraphViewer.ActionListener
 ) : GraphNode(merger), CentrableNode, BorderableNode {
 
     val mergePointShape = Pane()
@@ -43,16 +39,6 @@ class MergerNode(
             }
         }
 
-
-        val dragger = NodeDragger.attach(this)
-
-        dragger.addOnPositionChangedListener {
-            merger.coordinates = Coordinates(
-                    translator.reverseTranslateX(layoutX),
-                    translator.reverseTranslateY(layoutY)
-            )
-            positionListener.positionChanged()
-        }
 
         initializePopupMenu()
 
