@@ -2,7 +2,8 @@ package ru.fix.completable.reactor.graph.viewer.gl;
 
 import javafx.geometry.Point2D
 import javafx.scene.Cursor
-import javafx.scene.Node
+import ru.fix.completable.reactor.model.Coordinates
+import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -10,12 +11,12 @@ import java.util.concurrent.atomic.AtomicReference
 /**
  * @author Kamil Asfandiyarov
  */
-class NodeDragger private constructor(val node: Node) {
+class NodeDragger private constructor(val node: GraphNode) {
 
     private val dragDoneHandlers = CopyOnWriteArrayList<()->Unit>()
 
     companion object {
-        fun attach(node: Node): NodeDragger {
+        fun attach(node: GraphNode): NodeDragger {
             return NodeDragger(node)
         }
     }
@@ -76,13 +77,19 @@ class NodeDragger private constructor(val node: Node) {
                         return@setOnMouseDragged
                     }
 
-                    node.layoutX = (nodePosition.x
-                            + event.sceneX
-                            - mousePosition.x)
 
-                    node.layoutY = (nodePosition.y
+                    val oldCoordinate = node.figure.coordinates ?: DEFAULT_COORDINATES
+
+                    val newCoordinateX = oldCoordinate.x
+                            + event.sceneX
+                            - mousePosition.x
+
+                    val newCoordinateY = oldCoordinate.y
                             + event.sceneY
-                            - mousePosition.y)
+                            - mousePosition.y
+
+                    node.figure.coordinates = Coordinates(newCoordinateX, newCoordinateY)
+                    node.parent.layout()
 
                 } else {
                     draggingState.set(true)
@@ -108,6 +115,7 @@ class NodeDragger private constructor(val node: Node) {
     private fun firePositionChangedEvent() {
         dragDoneHandlers.forEach { it() }
     }
+
 
 
     fun addOnPositionChangedListener(positionChangedListener: ()-> Unit) {
