@@ -19,16 +19,16 @@ class GraphPane : Pane() {
     override fun layoutChildren() {
         super.layoutChildren()
 
-        fun calcX(x: Int) = width / 2 + x - graphBordersInModelCoordinates.width / 2
+        fun calcX(x: Int) = x - graphBordersInModelCoordinates.minX
 
-        fun calcY(y: Int) = height / 2 + y - graphBordersInModelCoordinates.height / 2
+        fun calcY(y: Int) = y - graphBordersInModelCoordinates.minY
 
 
         nodes().forEach { node ->
             val coordinate = node.figure.coordinates ?: DEFAULT_COORDINATES
 
-            node.layoutX = calcX(coordinate.x)
-            node.layoutY = calcY(coordinate.y)
+            node.layoutX = calcX(coordinate.x).toDouble()
+            node.layoutY = calcY(coordinate.y).toDouble()
         }
 
 
