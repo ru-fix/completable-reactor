@@ -34,7 +34,7 @@ class NodeDragger private constructor(val node: GraphNode, val draggerListener: 
 
         val draggingState = AtomicBoolean()
         val startDragMousePoint = AtomicReference<Point2D>()
-        val startDragNodePosition = AtomicReference<Coordinates>()
+        val startDragNodePosition = AtomicReference<Point2D>()
 
         node.setOnMouseMoved { event ->
             if (event.isControlDown()) {
@@ -48,8 +48,8 @@ class NodeDragger private constructor(val node: GraphNode, val draggerListener: 
             if (event.isControlDown()) {
                 node.cursor = Cursor.CLOSED_HAND
                 draggingState.set(true)
-                startDragMousePoint.set(Point2D(event.getSceneX(), event.getSceneY()))
-                startDragNodePosition.set(node.figure.coordinates)
+                startDragMousePoint.set(Point2D(event.sceneX, event.sceneY))
+                startDragNodePosition.set(Point2D(node.layoutX, node.layoutY))
             } else {
                 node.cursor = Cursor.DEFAULT
                 if (draggingState.compareAndSet(true, false)) {
@@ -80,14 +80,14 @@ class NodeDragger private constructor(val node: GraphNode, val draggerListener: 
                     val nodePosition = startDragNodePosition.get()
                     val mousePosition = startDragMousePoint.get()
 
-                    if (nodePosition == null || mousePosition == null || event == null) {
+                    if (nodePosition == null || mousePosition == null) {
                         return@setOnMouseDragged
                     }
 
 
                     val newCoordinateX = (nodePosition.x + event.sceneX - mousePosition.x)
 
-//                    log.info { "${nodePosition.x} + ${event.sceneX} - ${mousePosition.x} = $newCoordinateX" }
+                    log.info { "${nodePosition.x} + ${event.sceneX} - ${mousePosition.x} = $newCoordinateX" }
 
                     val newCoordinateY = (nodePosition.y + event.sceneY - mousePosition.y)
 

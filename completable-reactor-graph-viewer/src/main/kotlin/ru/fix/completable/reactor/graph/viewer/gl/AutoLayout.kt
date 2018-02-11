@@ -6,9 +6,20 @@ import ru.fix.completable.reactor.model.*
 private val log = KotlinLogging.logger {}
 
 class AutoLayout {
+
+    val deltaX = 200.0
+    val deltaY = 100.0
+
     fun layout(node: AutoLayoutable) {
-        layout(listOf(node), HashSet())
+
+        log.info { "auto layout" }
+
+        recursiveFixCoordinates(node, node.nodeX, node.nodeY, 200, 100)
+
     }
+
+
+
 
 
     private tailrec fun layout(nodes: List<AutoLayoutable>, visitedNodes: MutableSet<AutoLayoutable>) {
@@ -23,7 +34,7 @@ class AutoLayout {
 
             visitedNodes.add(node)
 
-            if (!node.isUserDefinedPosition) {
+            if (!node.isUserDefinedCoordinates) {
 
                 val figure = node.figure
 
@@ -48,5 +59,35 @@ class AutoLayout {
         }
 
         layout(children, visitedNodes)
+    }
+
+
+    private fun recursiveFixCoordinates(
+            parentNode: AutoLayoutable,
+            parentX: Int,
+            parentY: Int,
+            deltaX: Int,
+            deltaY: Int) {
+
+        var index = -1 * (parentNode.graphChildren.size / 2)
+
+        for (node in parentNode.graphChildren) {
+
+            when (node.figure) {
+                is EndPoint -> {
+                    if(!node.isUserDefinedCoordinates) {
+                        node.nodeX = parentX
+                        node.nodeY = (deltaY * 2 + parentY)
+                    }
+                }
+                else -> {
+                    if (!node.isUserDefinedCoordinates) {
+                        node.nodeX = (deltaX * index++ + parentX)
+                        node.nodeY = (deltaY + parentY)
+                    }
+                    recursiveFixCoordinates(node, node.nodeX, node.nodeY, deltaX, deltaY)
+                }
+            }
+        }
     }
 }

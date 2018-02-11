@@ -10,22 +10,25 @@ interface AutoLayoutable {
      * This coordinates is stored in GraphModel.
      * This Coordinates are logical. They being translated to JavaFx position (layoutX and layoutY property of
      * javaFx Nodes) during graph visualization.
-     * If user coordinates is defined for particular node, AutoLayout should skip it and not change it's position
-     * (javafx layoutX and layoutY).
-     * Otherwise if user coordinate is not defined in graph source, AutoLayout could take place and change node
-     * position.
+     * If user coordinates is defined for particular node, AutoLayout should skip this node and not change
+     * it's coordinates
+     * Otherwise if user coordinate is not defined in graph source, AutoLayout could take place and initialize
+     * coordinates.
      */
-    val isUserDefinedPosition: Boolean
+    val isUserDefinedCoordinates: Boolean
 
     /**
-     * Position of the node (javafx layoutX).
-     * Position of the node (javafx layoutY).
+     * x position of the node.
      */
-    var nodeX: Double
-    var nodeY: Double
+    var nodeX: Int
+    /**
+     * y position of the node.
+     */
 
-    val nodeHeight: Double
-    val nodeWidth: Double
+    var nodeY: Int
+
+    val nodeHeight: Int
+    val nodeWidth: Int
 
     val figure: Figure
 }
