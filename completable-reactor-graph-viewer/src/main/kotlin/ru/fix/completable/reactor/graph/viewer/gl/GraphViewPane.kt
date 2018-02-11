@@ -1,11 +1,9 @@
 package ru.fix.completable.reactor.graph.viewer.gl;
 
-import javafx.geometry.Point2D
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.ScrollPane
 import javafx.scene.input.MouseEvent
-import javafx.stage.Screen
 import mu.KotlinLogging
 import ru.fix.completable.reactor.model.*
 import java.util.concurrent.atomic.AtomicReference
