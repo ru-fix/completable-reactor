@@ -1,29 +1,52 @@
 package ru.fix.completable.reactor.graph.viewer.gl
 
 import javafx.scene.layout.VBox
+import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import ru.fix.completable.reactor.model.Figure
 
 open class GraphNode(override val figure: Figure) : VBox(), AutoLayoutable {
 
     override val graphChildren = ArrayList<GraphNode>()
 
-    override var nodeX: Double
-        get() = layoutX
+    var autoLayoutX: Int? = null
+    var autoLayoutY: Int? = null
+
+    override var nodeX: Int
+        get() =
+            if (isUserDefinedCoordinates) {
+                (figure.coordinates ?: DEFAULT_COORDINATES).x
+            } else {
+                autoLayoutX ?: DEFAULT_COORDINATES.x
+            }
         set(value) {
-            layoutY = value
+            if(!isUserDefinedCoordinates) {
+                autoLayoutX = value
+            } else{
+                throw IllegalStateException("Auto layout tries to override user defined coordinates")
+            }
         }
 
-    override var nodeY: Double
-        get() = layoutY
+    override var nodeY: Int
+        get() =
+            if (isUserDefinedCoordinates) {
+                (figure.coordinates ?: DEFAULT_COORDINATES).y
+            } else {
+                autoLayoutY ?: DEFAULT_COORDINATES.y
+            }
         set(value) {
-            layoutY = value
+            if(!isUserDefinedCoordinates) {
+                autoLayoutY = value
+            } else{
+                throw IllegalStateException("Auto layout tries to override user defined coordinates")
+            }
         }
-    override val isUserDefinedPosition: Boolean
+
+    override val isUserDefinedCoordinates: Boolean
         get() = figure.coordinates != null
 
-    override val nodeHeight: Double
-        get() = super.getHeight()
+    override val nodeHeight: Int
+        get() = super.getHeight().toInt()
 
-    override val nodeWidth: Double
-        get() = super.getWidth()
+    override val nodeWidth: Int
+        get() = super.getWidth().toInt()
 }

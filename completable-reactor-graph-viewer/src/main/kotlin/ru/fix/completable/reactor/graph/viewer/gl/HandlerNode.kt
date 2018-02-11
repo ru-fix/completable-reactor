@@ -67,7 +67,4 @@ class HandlerNode(
 
         return contextMenu
     }
-
-    override val isUserDefinedPosition: Boolean
-        get() = handler.coordinates != null
 }

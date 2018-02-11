@@ -307,46 +307,9 @@ class GraphViewPane(
 
         enableNodeDragging()
 
-        updatePaneSizeIfRequired()
+        //TODO during first opening scroll pane so payload will be displayed in top middle position
 
         return this
-    }
-
-
-    fun scrollToStartPoint() {
-
-        val node = pane.children.find { it is StartPointNode } ?: return
-
-//        val model = graphModel ?: return
-//
-//        val coordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
-//
-//        val minViewportCenterX = this.viewportBounds.width / 2
-//        val minViewportCenterY = this.viewportBounds.height / 2
-//
-//        val maxViewportCenterX = pane.prefWidth - this.viewportBounds.width / 2
-//        val maxViewportCenterY = pane.prefHeight - this.viewportBounds.height / 2
-//
-//        val paneCoordinateToDisplayX = (coordinates.x - pane.graphBordersInModelCoordinates.minX)
-//        val paneCoordinateToDisplayY = (coordinates.y - pane.graphBordersInModelCoordinates.minY)
-//
-//        val normalizedPaneCoordinateToDisplayX =
-//                when {
-//                    paneCoordinateToDisplayX < minViewportCenterX -> minViewportCenterX
-//                    paneCoordinateToDisplayX > maxViewportCenterX -> maxViewportCenterX
-//                    else -> paneCoordinateToDisplayX.toDouble()
-//                }
-//        val normalizedPaneCoordinateToDisplayY =
-//                when {
-//                    paneCoordinateToDisplayY < minViewportCenterY -> minViewportCenterY
-//                    paneCoordinateToDisplayY > maxViewportCenterY -> maxViewportCenterY
-//                    else -> paneCoordinateToDisplayY.toDouble()
-//                }
-//
-//        hvalue = normalizedPaneCoordinateToDisplayX / (maxViewportCenterX - minViewportCenterX)
-//        vvalue = normalizedPaneCoordinateToDisplayY / (maxViewportCenterY - minViewportCenterY)
-
-        //TODO during first opening scroll pane so payload will be displayed in top middle position
     }
 
     fun enableNodeDragging() {
@@ -355,12 +318,11 @@ class GraphViewPane(
                 .forEach {
                     NodeDragger.attach(it, object : NodeDraggerListener {
                         override fun modelChanging() {
+                            log.info { "modelChanging, requestLayout" }
                             pane.requestLayout()
-
                         }
 
                         override fun modelChanged() {
-                            updatePaneSizeIfRequired()
                             pane.requestLayout()
                             graphModel?.let { actionListener.coordinatesChanged(it) }
                         }
@@ -368,67 +330,5 @@ class GraphViewPane(
                 }
     }
 
-    fun updatePaneSizeIfRequired() {
-        val GRAPH_PANE_MIN_BORDER_SIZE = 2048
 
-        val model = graphModel ?: return
-
-        val graphBorders = (
-                sequenceOf(model.startPoint)
-                        + model.handlers.values.asSequence()
-                        + model.mergers.values.asSequence()
-                        + model.routers.values.asSequence()
-                        + model.subgraphs.values.asSequence()
-                        + model.endpoints.values.asSequence())
-                .map { it.coordinates ?: DEFAULT_COORDINATES }
-                .map {
-                    Rect(
-                            it.x,
-                            it.y,
-                            it.x,
-                            it.y)
-                }
-                .reduce { acc, rect ->
-                    Rect(
-                            Math.min(acc.minX, rect.minX),
-                            Math.min(acc.minY, rect.minY),
-                            Math.max(acc.maxX, rect.maxX),
-                            Math.max(acc.maxY, rect.maxY)
-                    )
-                }
-                .let {
-
-                    val resizeWidth =
-                            if (it.width * 2 < GRAPH_PANE_MIN_BORDER_SIZE) {
-                                GRAPH_PANE_MIN_BORDER_SIZE - it.width
-                            } else {
-                                it.width
-                            }
-                    val resizeHeight =
-                            if (it.height * 2 < GRAPH_PANE_MIN_BORDER_SIZE) {
-                                GRAPH_PANE_MIN_BORDER_SIZE - it.height
-                            } else {
-                                it.height
-                            }
-
-                    Rect(
-                            it.minX - resizeWidth / 2,
-                            it.minY - resizeHeight / 2,
-                            it.maxX + resizeWidth / 2,
-                            it.maxY + resizeHeight / 2
-                    )
-                }
-
-        val targetWidth = graphBorders.width.toDouble()
-        val targetHeight = graphBorders.height.toDouble()
-
-        if (pane.prefWidth != targetWidth || pane.prefHeight != targetHeight) {
-
-            //TODO: fix scroll during resizing of the content
-
-            pane.graphBordersInModelCoordinates = graphBorders
-            pane.prefWidth = targetWidth
-            pane.prefHeight = targetHeight
-        }
-    }
 }
