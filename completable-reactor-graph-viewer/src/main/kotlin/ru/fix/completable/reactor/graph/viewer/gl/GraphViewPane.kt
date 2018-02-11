@@ -305,17 +305,49 @@ class GraphViewPane(
         mergers.values.forEach { it.toFront() }
         routers.values.forEach { it.toFront() }
 
-        //TODO during first opening scroll pane so payload will be displayed in top middle position
-        /**
-         * Scroll pane so Payload Node would be in center position
-         */
-        val startPointCoordinates = graphModel.startPoint.coordinates ?: DEFAULT_COORDINATES
 
         enableNodeDragging()
 
         updatePaneSizeIfRequired()
 
         return this
+    }
+
+
+    fun scrollToStartPoint() {
+
+        val node = pane.children.find { it is StartPointNode } ?: return
+
+//        val model = graphModel ?: return
+//
+//        val coordinates = model.startPoint.coordinates ?: DEFAULT_COORDINATES
+//
+//        val minViewportCenterX = this.viewportBounds.width / 2
+//        val minViewportCenterY = this.viewportBounds.height / 2
+//
+//        val maxViewportCenterX = pane.prefWidth - this.viewportBounds.width / 2
+//        val maxViewportCenterY = pane.prefHeight - this.viewportBounds.height / 2
+//
+//        val paneCoordinateToDisplayX = (coordinates.x - pane.graphBordersInModelCoordinates.minX)
+//        val paneCoordinateToDisplayY = (coordinates.y - pane.graphBordersInModelCoordinates.minY)
+//
+//        val normalizedPaneCoordinateToDisplayX =
+//                when {
+//                    paneCoordinateToDisplayX < minViewportCenterX -> minViewportCenterX
+//                    paneCoordinateToDisplayX > maxViewportCenterX -> maxViewportCenterX
+//                    else -> paneCoordinateToDisplayX.toDouble()
+//                }
+//        val normalizedPaneCoordinateToDisplayY =
+//                when {
+//                    paneCoordinateToDisplayY < minViewportCenterY -> minViewportCenterY
+//                    paneCoordinateToDisplayY > maxViewportCenterY -> maxViewportCenterY
+//                    else -> paneCoordinateToDisplayY.toDouble()
+//                }
+//
+//        hvalue = normalizedPaneCoordinateToDisplayX / (maxViewportCenterX - minViewportCenterX)
+//        vvalue = normalizedPaneCoordinateToDisplayY / (maxViewportCenterY - minViewportCenterY)
+
+        //TODO during first opening scroll pane so payload will be displayed in top middle position
     }
 
     fun enableNodeDragging() {
@@ -373,36 +405,11 @@ class GraphViewPane(
 
         if (pane.prefWidth != targetWidth || pane.prefHeight != targetHeight) {
 
-            log.info {
-                "update prefHeight ${pane.prefHeight} to $targetHeight" +
-                        ", prefWidth ${pane.prefWidth} to $targetWidth"
-
-            }
-
-            val oldWidth = pane.prefWidth
-            val oldHValue = hvalue
             //TODO: fix scroll during resizing of the content
 
             pane.graphBordersInModelCoordinates = graphBorders
             pane.prefWidth = targetWidth
             pane.prefHeight = targetHeight
-
-            if(oldWidth > 0) {
-                hvalue = hvalue * targetWidth / oldWidth
-
-                log.info { "cur hvalue: $hvalue" }
-            }
         }
     }
-
-    private fun figureScrollOffset(scrollContent: GraphPane, scroller: ScrollPane): Point2D {
-        val extraWidth = scrollContent.getLayoutBounds().getWidth() - scroller.viewportBounds.width
-        val hScrollProportion = (scroller.hvalue - scroller.hmin) / (scroller.hmax - scroller.hmin)
-        val scrollXOffset = hScrollProportion * Math.max(0.0, extraWidth)
-        val extraHeight = scrollContent.getLayoutBounds().getHeight() - scroller.viewportBounds.height
-        val vScrollProportion = (scroller.vvalue - scroller.vmin) / (scroller.vmax - scroller.vmin)
-        val scrollYOffset = vScrollProportion * Math.max(0.0, extraHeight)
-        return Point2D(scrollXOffset, scrollYOffset)
-    }
-
 }
