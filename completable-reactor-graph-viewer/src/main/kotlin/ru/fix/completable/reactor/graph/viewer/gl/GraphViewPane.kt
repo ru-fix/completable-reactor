@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.graph.viewer.gl;
 
+import javafx.geometry.Point2D
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.ScrollPane
@@ -386,7 +387,22 @@ class GraphViewPane(
             pane.prefWidth = targetWidth
             pane.prefHeight = targetHeight
 
+            if(oldWidth > 0) {
+                hvalue = hvalue * targetWidth / oldWidth
 
+                log.info { "cur hvalue: $hvalue" }
+            }
         }
     }
+
+    private fun figureScrollOffset(scrollContent: GraphPane, scroller: ScrollPane): Point2D {
+        val extraWidth = scrollContent.getLayoutBounds().getWidth() - scroller.viewportBounds.width
+        val hScrollProportion = (scroller.hvalue - scroller.hmin) / (scroller.hmax - scroller.hmin)
+        val scrollXOffset = hScrollProportion * Math.max(0.0, extraWidth)
+        val extraHeight = scrollContent.getLayoutBounds().getHeight() - scroller.viewportBounds.height
+        val vScrollProportion = (scroller.vvalue - scroller.vmin) / (scroller.vmax - scroller.vmin)
+        val scrollYOffset = vScrollProportion * Math.max(0.0, extraHeight)
+        return Point2D(scrollXOffset, scrollYOffset)
+    }
+
 }
