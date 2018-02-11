@@ -5,6 +5,7 @@ import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.ScrollPane
 import javafx.scene.input.MouseEvent
+import javafx.stage.Screen
 import mu.KotlinLogging
 import ru.fix.completable.reactor.model.*
 import java.util.concurrent.atomic.AtomicReference
@@ -370,18 +371,18 @@ class GraphViewPane(
     }
 
     fun updatePaneSizeIfRequired() {
+        val GRAPH_PANE_MIN_BORDER_SIZE = 2048
 
         val model = graphModel ?: return
 
-        val graphBorders = ((
+        val graphBorders = (
                 sequenceOf(model.startPoint)
                         + model.handlers.values.asSequence()
                         + model.mergers.values.asSequence()
                         + model.routers.values.asSequence()
                         + model.subgraphs.values.asSequence()
                         + model.endpoints.values.asSequence())
-                .mapNotNull { it.coordinates }
-                + sequenceOf(DEFAULT_COORDINATES))
+                .map { it.coordinates ?: DEFAULT_COORDINATES }
                 .map {
                     Rect(
                             it.x,
@@ -397,11 +398,31 @@ class GraphViewPane(
                             Math.max(acc.maxY, rect.maxY)
                     )
                 }
+                .let {
 
-        val GRAPH_PANE_MIN_BORDER_SIZE = 600.0
+                    val resizeWidth =
+                            if (it.width * 2 < GRAPH_PANE_MIN_BORDER_SIZE) {
+                                GRAPH_PANE_MIN_BORDER_SIZE - it.width
+                            } else {
+                                it.width
+                            }
+                    val resizeHeight =
+                            if (it.height * 2 < GRAPH_PANE_MIN_BORDER_SIZE) {
+                                GRAPH_PANE_MIN_BORDER_SIZE - it.height
+                            } else {
+                                it.height
+                            }
 
-        val targetWidth = Math.max(graphBorders.width * 2.0, GRAPH_PANE_MIN_BORDER_SIZE)
-        val targetHeight = Math.max(graphBorders.height * 2.0, GRAPH_PANE_MIN_BORDER_SIZE)
+                    Rect(
+                            it.minX - resizeWidth / 2,
+                            it.minY - resizeHeight / 2,
+                            it.maxX + resizeWidth / 2,
+                            it.maxY + resizeHeight / 2
+                    )
+                }
+
+        val targetWidth = graphBorders.width.toDouble()
+        val targetHeight = graphBorders.height.toDouble()
 
         if (pane.prefWidth != targetWidth || pane.prefHeight != targetHeight) {
 
