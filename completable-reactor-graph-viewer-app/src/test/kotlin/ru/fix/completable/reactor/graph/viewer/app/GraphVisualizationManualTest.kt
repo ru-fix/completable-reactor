@@ -92,6 +92,16 @@ class GraphVisualizationManualTest : Application() {
      */
     @Ignore
     @Test
+    fun `open graph for purchase payload without coordinates`() {
+        Application.launch("/viewer-test-PurchaseGraph-no-coordinates.java.txt")
+    }
+
+    /**
+     * Manual UI Test
+     * Opens given java source file and display graph
+     */
+    @Ignore
+    @Test
     fun `open source with two graphs`() {
         Application.launch("/viewer-test-two-test-graphs-in-one-source.java.txt")
     }
