@@ -10,7 +10,7 @@ class GraphPane : Pane() {
 
     private val autoLayout = AutoLayout()
 
-    private var graphBordersInModelCoordinates: Rect = Rect(0, 0, 0, 0)
+    var graphBordersInModelCoordinates: Rect = Rect(0, 0, 0, 0)
 
 
     override fun layoutChildren() {
@@ -45,14 +45,12 @@ class GraphPane : Pane() {
 
 
         val graphBorders = nodes()
-                .map { it.figure }
-                .map { it.coordinates ?: DEFAULT_COORDINATES }
                 .map {
                     Rect(
-                            it.x,
-                            it.y,
-                            it.x,
-                            it.y)
+                            it.nodeX,
+                            it.nodeY,
+                            it.nodeX + it.nodeWidth,
+                            it.nodeY + it.nodeHeight)
                 }
                 .reduce { acc, rect ->
                     Rect(
