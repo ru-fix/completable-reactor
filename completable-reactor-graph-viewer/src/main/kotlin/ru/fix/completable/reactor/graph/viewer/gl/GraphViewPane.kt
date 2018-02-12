@@ -316,17 +316,20 @@ class GraphViewPane(
         pane.children.asSequence()
                 .mapNotNull { it as? GraphNode }
                 .forEach {
-                    NodeDragger.attach(it, object : NodeDraggerListener {
-                        override fun modelChanging() {
-                            log.info { "modelChanging, requestLayout" }
-                            pane.requestLayout()
-                        }
+                    NodeDragger.attach(
+                            it,
+                            object : NodeDraggerListener {
+                                override fun modelChanging() {
+                                    log.info { "modelChanging, requestLayout" }
+                                    pane.requestLayout()
+                                }
 
-                        override fun modelChanged() {
-                            pane.requestLayout()
-                            graphModel?.let { actionListener.coordinatesChanged(it) }
-                        }
-                    })
+                                override fun modelChanged() {
+                                    pane.requestLayout()
+                                    graphModel?.let { actionListener.coordinatesChanged(it) }
+                                }
+                            },
+                            CoordinateTranslator(pane))
                 }
     }
 

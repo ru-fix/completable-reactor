@@ -4,7 +4,6 @@ import javafx.geometry.Point2D
 import javafx.scene.Cursor
 import mu.KotlinLogging
 import ru.fix.completable.reactor.model.Coordinates
-import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -19,12 +18,15 @@ private val log = KotlinLogging.logger { }
 /**
  * @author Kamil Asfandiyarov
  */
-class NodeDragger private constructor(val node: GraphNode, val draggerListener: NodeDraggerListener) {
+class NodeDragger private constructor(
+        val node: GraphNode,
+        val draggerListener: NodeDraggerListener,
+        val translator: CoordinateTranslator) {
 
     companion object {
         @JvmStatic
-        fun attach(node: GraphNode, draggerListener: NodeDraggerListener) {
-            NodeDragger(node, draggerListener)
+        fun attach(node: GraphNode, draggerListener: NodeDraggerListener, translator: CoordinateTranslator) {
+            NodeDragger(node, draggerListener, translator)
         }
     }
 
@@ -85,14 +87,10 @@ class NodeDragger private constructor(val node: GraphNode, val draggerListener: 
                     }
 
 
-                    val newCoordinateX = (nodePosition.x + event.sceneX - mousePosition.x)
+                    val newCoordinateX = translator.paneLayoutToModelX(nodePosition.x + event.sceneX - mousePosition.x)
+                    val newCoordinateY = translator.paneLayoutToModelY(nodePosition.y + event.sceneY - mousePosition.y)
 
-                    log.info { "${nodePosition.x} + ${event.sceneX} - ${mousePosition.x} = $newCoordinateX" }
-
-                    val newCoordinateY = (nodePosition.y + event.sceneY - mousePosition.y)
-
-
-                    node.figure.coordinates = Coordinates(newCoordinateX.toInt(), newCoordinateY.toInt())
+                    node.figure.coordinates = Coordinates(newCoordinateX, newCoordinateY)
                     fireModelChanging()
 
                 } else {
