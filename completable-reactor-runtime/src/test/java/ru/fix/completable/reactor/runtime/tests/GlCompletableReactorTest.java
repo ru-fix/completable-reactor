@@ -377,100 +377,74 @@ class GlCompletableReactorTest {
         assertEquals(Arrays.asList(78), resultPayload.idSequence);
     }
 
-//
-//    @Reactored({
-//            "Test will check that parallel processors work fine when only one of transitions are activated.",
-//            "Expected result: {0, 1}"
-//    })
-//    @Data
-//    @EqualsAndHashCode(callSuper = true)
-//    static class DeadBranchPayload extends IdListPayload {
-//        ThreeStateStatus threeStateStatus;
-//    }
-//
-//    enum ThreeStateStatus {A, B, AB}
-//
-//    @Test
-//    public void parallel_processors_with_one_dead_branch_way() throws Exception {
-//        class Config {
-//            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
-//
-//            Processor<DeadBranchPayload> idProcessor0 = graphBuilder.processor()
-//                    .forPayload(DeadBranchPayload.class)
-//                    .withHandler(new IdProcessor(0)::handle)
-//                    .withMerger((pld, id) -> {
-//                        pld.idSequence.add(id);
-//                        pld.setThreeStateStatus(ThreeStateStatus.A);
-//                        return ThreeStateStatus.A;
-//                    })
-//                    .buildProcessor();
-//
-//
-//            Processor<DeadBranchPayload> idProcessor1 = graphBuilder.processor()
-//                    .forPayload(DeadBranchPayload.class)
-//                    .withHandler(new IdProcessor(1)::handle)
-//                    .withMerger((pld, id) -> {
-//                        pld.idSequence.add(id);
-//                        return pld.getThreeStateStatus();
-//                    })
-//                    .buildProcessor();
-//
-//            Processor<DeadBranchPayload> idProcessor2 = graphBuilder.processor()
-//                    .forPayload(DeadBranchPayload.class)
-//                    .withHandler(new IdProcessor(2)::handle)
-//                    .withMerger((pld, id) -> {
-//                        pld.idSequence.add(id);
-//                        return Status.OK;
-//                    })
-//                    .buildProcessor();
-//
-//            ReactorGraph<DeadBranchPayload> graph() {
-//                return graphBuilder.payload(DeadBranchPayload.class)
-//
-//                        .handle(idProcessor0)
-//
-//                        .mergePoint(idProcessor0)
-//                        .on(ThreeStateStatus.A).handle(idProcessor1)
-//                        .on(ThreeStateStatus.B).handle(idProcessor2)
-//                        .on(ThreeStateStatus.AB).handle(idProcessor1)
-//                        .on(ThreeStateStatus.AB).handle(idProcessor2)
-//
-//                        .mergePoint(idProcessor1)
-//                        .on(ThreeStateStatus.A).complete()
-//                        .on(ThreeStateStatus.AB, ThreeStateStatus.B).merge(idProcessor2)
-//
-//                        .mergePoint(idProcessor2)
-//                        .onAny().complete()
-//
-//                        .coordinates()
-//                        .start(500, 100)
-//                        .proc(idProcessor0, 420, 210)
-//                        .proc(idProcessor1, 600, 420)
-//                        .proc(idProcessor2, 260, 420)
-//                        .merge(idProcessor0, 500, 320)
-//                        .merge(idProcessor1, 560, 510)
-//                        .merge(idProcessor2, 450, 540)
-//                        .complete(idProcessor1, 651, 595)
-//                        .complete(idProcessor2, 520, 660)
-//                        .buildGraph();
-//            }
-//        }
-//
-//        val graph = new Config().graph();
-//
-//        printGraph(graph);
-//
-//        reactor.registerReactorGraph(graph);
-//
-//        CompletableReactor.Execution<DeadBranchPayload> result = reactor.submit(new DeadBranchPayload());
-//
-//        DeadBranchPayload resultPayload = result
-//                .getResultFuture()
-//                .get(10, TimeUnit.SECONDS);
-//
-//        assertEquals(Arrays.asList(0, 1), resultPayload.idSequence);
-//    }
-//
+
+    /**
+     *  Test will check that parallel processors work fine when only one of transitions are activated.
+     *  Expected result: {0, 1}
+     */
+    static class DeadBranchPayload extends IdListPayload {
+        ThreeStateStatus threeStateStatus;
+    }
+
+    enum ThreeStateStatus {A, B, AB}
+    
+    static class DeadBranchGraph extends Graph<DeadBranchPayload>{
+
+        Vertex idProcessor0 = handler(new IdProcessor(0)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    pld.threeStateStatus = ThreeStateStatus.A;
+                    return ThreeStateStatus.A;
+                });
+
+
+        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return pld.threeStateStatus;
+                });
+
+        Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        {
+            payload()
+                    .handleBy(idProcessor0);
+
+            idProcessor0
+                    .on(ThreeStateStatus.A).handleBy(idProcessor1)
+                    .on(ThreeStateStatus.B).handleBy(idProcessor2)
+                    .on(ThreeStateStatus.AB).handleBy(idProcessor1)
+                    .on(ThreeStateStatus.AB).handleBy(idProcessor2);
+
+            idProcessor1
+                    .on(ThreeStateStatus.A).complete()
+                    .on(ThreeStateStatus.AB, ThreeStateStatus.B).mergeBy(idProcessor2);
+
+            idProcessor2
+                    .onAny().complete();
+
+
+        }
+    }
+
+    @Test
+    public void parallel_processors_with_one_dead_branch_way() throws Exception {
+
+        reactor.registerIfAbsent(DeadBranchGraph.class);
+
+        CompletableReactor.Execution<DeadBranchPayload> result = reactor.submit(new DeadBranchPayload());
+
+        DeadBranchPayload resultPayload = result
+                .getResultFuture()
+                .get(10, TimeUnit.SECONDS);
+
+        assertEquals(Arrays.asList(0, 1), resultPayload.idSequence);
+    }
+
 //
 //    @Reactored({
 //            "Detached merge point works as an regular merge point ",
@@ -510,8 +484,8 @@ class GlCompletableReactorTest {
 //            ReactorGraph<DetachedMergePointFromStartPointPayload> graph() {
 //                return graphBuilder.payload(DetachedMergePointFromStartPointPayload.class)
 //
-//                        .handle(idProcessor0)
-//                        .handle(idProcessor1)
+//                        .handleBy(idProcessor0)
+//                        .handleBy(idProcessor1)
 //                        .merge(mergePoint)
 //
 //                        .mergePoint(mergePoint)
@@ -589,8 +563,8 @@ class GlCompletableReactorTest {
 //            ReactorGraph<DetachedMergePointFromProcessorsMergePointPayload> graph() {
 //                return graphBuilder.payload(DetachedMergePointFromProcessorsMergePointPayload.class)
 //
-//                        .handle(idProcessor0)
-//                        .handle(idProcessor1)
+//                        .handleBy(idProcessor0)
+//                        .handleBy(idProcessor1)
 //
 //                        .mergePoint(idProcessor0)
 //                        .onAny().merge(idProcessor1)
@@ -677,14 +651,14 @@ class GlCompletableReactorTest {
 //                        .merge(mergePoint)
 //
 //                        .mergePoint(mergePoint)
-//                        .on(OPTIONAL_DECISION.LEFT).handle(idProcessor2)
-//                        .on(OPTIONAL_DECISION.RIGHT).handle(idProcessor1)
+//                        .on(OPTIONAL_DECISION.LEFT).handleBy(idProcessor2)
+//                        .on(OPTIONAL_DECISION.RIGHT).handleBy(idProcessor1)
 //
 //                        .mergePoint(idProcessor1)
-//                        .onAny().handle(idProcessor2)
+//                        .onAny().handleBy(idProcessor2)
 //
 //                        .mergePoint(idProcessor2)
-//                        .onAny().handle(idProcessor3)
+//                        .onAny().handleBy(idProcessor3)
 //
 //                        .mergePoint(idProcessor3)
 //                        .onAny().complete()
@@ -777,11 +751,11 @@ class GlCompletableReactorTest {
 //                        .merge(decisionMergePoint)
 //
 //                        .mergePoint(decisionMergePoint)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handle(idProcessor1)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handle(idProcessor2)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handle(idProcessor3)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handle(idProcessor1)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handle(idProcessor3)
+//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handleBy(idProcessor1)
+//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handleBy(idProcessor2)
+//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handleBy(idProcessor3)
+//                        .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handleBy(idProcessor1)
+//                        .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handleBy(idProcessor3)
 //
 //                        .mergePoint(idProcessor1)
 //                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).merge(idProcessor2)
@@ -791,7 +765,7 @@ class GlCompletableReactorTest {
 //                        .onAny().merge(idProcessor3)
 //
 //                        .mergePoint(idProcessor3)
-//                        .onAny().handle(idProcessor4)
+//                        .onAny().handleBy(idProcessor4)
 //
 //                        .mergePoint(idProcessor4)
 //                        .onAny().complete()
@@ -879,8 +853,8 @@ class GlCompletableReactorTest {
 //                return builder.payload(GlCompletableReactorTest
 //                        .StartPointMergeGroupPayload.class)
 //
-//                        .handle(idProcessor0)
-//                        .handle(idProcessor1)
+//                        .handleBy(idProcessor0)
+//                        .handleBy(idProcessor1)
 //                        .merge(mergePoint2)
 //
 //                        .mergePoint(idProcessor0)
@@ -890,7 +864,7 @@ class GlCompletableReactorTest {
 //                        .onAny().merge(idProcessor3)
 //
 //                        .mergePoint(mergePoint2)
-//                        .onAny().handle(idProcessor3)
+//                        .onAny().handleBy(idProcessor3)
 //                        .onAny().merge(idProcessor0)
 //
 //                        .mergePoint(idProcessor3)
@@ -986,19 +960,19 @@ class GlCompletableReactorTest {
 //
 //            ReactorGraph<DeadTransitionPayload> buildGraph() {
 //                return builder.payload(DeadTransitionPayload.class)
-//                        .handle(idProcessor0)
-//                        .handle(idProcessor1)
-//                        .handle(idProcessor2)
+//                        .handleBy(idProcessor0)
+//                        .handleBy(idProcessor1)
+//                        .handleBy(idProcessor2)
 //
 //                        .mergePoint(idProcessor0)
-//                        .on(DeadTransitionPayload.Status.FIRST).handle(idProcessor4)
+//                        .on(DeadTransitionPayload.Status.FIRST).handleBy(idProcessor4)
 //                        .on(DeadTransitionPayload.Status.SECOND).merge(idProcessor1)
 //
 //                        .mergePoint(idProcessor1)
 //                        .onAny().merge(idProcessor2)
 //
 //                        .mergePoint(idProcessor2)
-//                        .onAny().handle(idProcessor3)
+//                        .onAny().handleBy(idProcessor3)
 //
 //                        .mergePoint(idProcessor3)
 //                        .onAny().complete()
