@@ -54,6 +54,13 @@ class GraphViewPane(
         this.vbarPolicy = ScrollBarPolicy.ALWAYS
         this.hbarPolicy = ScrollBarPolicy.ALWAYS
 
+        // when scroll pane detects that conten size changes
+        // scroll pane skin tries to save scroll positions
+        // and reset to 0 all scrolls if initially prefWidth and prefHeight not set
+        // for content
+        pane.prefWidth = 2000.0
+        pane.prefHeight = 2000.0
+
         this.setContent(pane)
 
 
@@ -298,35 +305,12 @@ class GraphViewPane(
 
         enableNodeDragging()
 
-        pane.requestResize({
+        pane.requestResize({})
 
-            val targetScrollPosition =
-                    if (resetViewer) {
-                        Point2D(0.5, 0.5)
-                    } else {
-                        oldScrollPosition
-                    }
-
-            fun update(attemptsLeft: Int) {
-                if(attemptsLeft <= 0){
-                    return
-                }
-                if (hvalue != targetScrollPosition.x || vvalue != targetScrollPosition.y) {
-
-                    hvalue = targetScrollPosition.x
-                    vvalue = targetScrollPosition.y
-
-                    Platform.runLater {
-                        update(attemptsLeft - 1)
-                    }
-                }
-            }
-
-            update(150)
-        })
+        vvalue = 0.5
+        hvalue = 0.5
 
         //TODO during first opening scroll pane so payload will be displayed in top middle position
-        //TODO remove platform-run-later callback hack
         return this
     }
 
