@@ -307,20 +307,23 @@ class GraphViewPane(
                         oldScrollPosition
                     }
 
-            fun update() {
+            fun update(attemptsLeft: Int) {
+                if(attemptsLeft <= 0){
+                    return
+                }
                 if (hvalue != targetScrollPosition.x || vvalue != targetScrollPosition.y) {
 
                     hvalue = targetScrollPosition.x
                     vvalue = targetScrollPosition.y
 
                     Platform.runLater {
-                        update()
+                        update(attemptsLeft - 1)
                     }
                 }
             }
 
             log.info { "Update to: $targetScrollPosition" }
-            update()
+            update(15)
         })
 
         //TODO during first opening scroll pane so payload will be displayed in top middle position
