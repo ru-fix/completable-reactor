@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.graph.Graph;
+import ru.fix.completable.reactor.graph.Subgraph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 
@@ -109,14 +110,6 @@ class GlCompletableReactorTest {
             idProcessor1.on(Status.OK, Status.UNUSED).mergeBy(idProcessor2);
 
             idProcessor2.onAny().complete();
-
-            coordinates()
-                    .payload(366, 103)
-                    .handler(idProcessor1, 358, 184)
-                    .handler(idProcessor2, 549, 183)
-                    .merger(idProcessor1, 427, 291)
-                    .merger(idProcessor2, 571, 356)
-                    .complete(idProcessor2, 610, 454);
         }
     }
 
@@ -133,11 +126,12 @@ class GlCompletableReactorTest {
 
     /**
      * Detached processor is a handler without merger.
-     * Main flow does not wait for detached processor to complete.",
-     * "In test Detached processor will run and complete deferred in time.",
-     * "When result of chain is ready detached processor will be activated.",
-     * "Test will check that chain execution will complete on detached processor finish.",
-     * "Expected result: {1, 2}"
+     * Main flow does not wait for detached processor to complete.
+     * In test Detached processor will run and complete deferred in time.
+     * When result of chain is ready detached processor will be activated.
+     * Test will check that chain execution will complete on detached processor finish.
+     * <p>
+     * Expected result: {1, 2}
      */
     static class DetachedProcessorGraph extends Graph<IdListPayload> {
 
@@ -167,15 +161,6 @@ class GlCompletableReactorTest {
             idProcessor1.on(Status.OK).mergeBy(idProcessor2);
 
             idProcessor2.onAny().complete();
-
-            coordinates()
-                    .payload(489, 96)
-                    .handler(idProcessor1, 364, 178)
-                    .handler(idProcessor2, 530, 180)
-                    .handler(idProcessor3, 701, 172)
-                    .handler(idProcessor1, 414, 268)
-                    .merger(idProcessor2, 589, 341)
-                    .complete(idProcessor2, 701, 378);
         }
     }
 
@@ -197,117 +182,113 @@ class GlCompletableReactorTest {
 
         result.getChainExecutionFuture().get(5, TimeUnit.SECONDS);
         assertTrue("execution chain is complete when detached processor is finished", result.getChainExecutionFuture().isDone());
+
+        //TODO add case when we have to wait for returning from handling method of detached processor before continue
+        // with mergers, so detached handlers could have time to read payload before merger modifies it.
     }
 
-    //TODO add case when we have to wait for returning from handling method of detached processor before continue
-    // with mergers, so detached handlers could have time to read payload before merger modifies it.
 
-//
-//    @Reactored({
-//            "Subgraph behave the same way as plain processor.",
-//            "The only difference is that instead of simple async operation CompletableReactor launches subgraph execution"
-//    })
-//    static class SubgraphPayload extends IdListPayload {
-//    }
-//
-//    @Reactored({
-//            "Parent graph is a simple graph that calls subgraph during its flow."
-//    })
-//    static class ParentGraphPayload extends IdListPayload {
-//    }
-//
-//    @Test
-//    public void run_subgraph() throws Exception {
-//
-//        class Config {
-//            ReactorGraphBuilder builder = new ReactorGraphBuilder(this);
-//
-//
-//            Processor<IdListPayload> idProcessor11 = buildProcessor(builder, new IdProcessor(11));
-//            Processor<IdListPayload> idProcessor12 = buildProcessor(builder, new IdProcessor(12));
-//            Processor<IdListPayload> idProcessor13 = buildProcessor(builder, new IdProcessor(13));
-//
-//
-//            ReactorGraph<SubgraphPayload> childGraph() {
-//                return builder
-//                        .payload(SubgraphPayload.class)
-//                        .handle(idProcessor11)
-//                        .handle(idProcessor12)
-//
-//                        .mergePoint(idProcessor11).onAny().merge(idProcessor12)
-//                        .mergePoint(idProcessor12).onAny().handle(idProcessor13)
-//
-//                        .mergePoint(idProcessor13).onAny().complete()
-//                        .coordinates()
-//                        .proc(idProcessor11, 306, 216)
-//                        .proc(idProcessor12, 612, 218)
-//                        .proc(idProcessor13, 539, 596)
-//                        .merge(idProcessor11, 430, 365)
-//                        .merge(idProcessor12, 620, 421)
-//                        .merge(idProcessor13, 613, 693)
-//                        .start(500, 100)
-//                        .complete(idProcessor13, 587, 776)
-//
-//                        .buildGraph();
-//            }
-//
-//
-//            Processor<IdListPayload> idProcessor1 = buildProcessor(builder, new IdProcessor(1));
-//            Processor<IdListPayload> idProcessor2 = buildProcessor(builder, new IdProcessor(2));
-//            Processor<IdListPayload> idProcessor3 = buildProcessor(builder, new IdProcessor(3));
-//
-//            Subgraph<ParentGraphPayload> subgraphProcessor = builder.subgraph(SubgraphPayload.class)
-//                    .forPayload(ParentGraphPayload.class)
-//                    .passArg(payload -> new SubgraphPayload())
-//                    .withMerger((payload, result) -> {
-//                        payload.getIdSequence().addAll(result.getIdSequence());
-//                        return Status.OK;
-//                    })
-//                    .buildSubgraph();
-//
-//            ReactorGraph<ParentGraphPayload> parentGraph() {
-//                return builder.payload(ParentGraphPayload.class)
-//
-//                        .handle(idProcessor1)
-//
-//                        .mergePoint(idProcessor1)
-//                        .onAny().handle(idProcessor2)
-//                        .onAny().handle(subgraphProcessor)
-//
-//                        .mergePoint(subgraphProcessor).onAny().merge(idProcessor2)
-//                        .mergePoint(idProcessor2).onAny().handle(idProcessor3)
-//
-//                        .mergePoint(idProcessor3).onAny().complete()
-//                        .coordinates()
-//
-//                        .proc(idProcessor1, 406, 228)
-//                        .proc(idProcessor2, 626, 408)
-//                        .proc(idProcessor3, 415, 730)
-//                        .proc(subgraphProcessor, 195, 418)
-//                        .merge(idProcessor1, 475, 342)
-//                        .merge(subgraphProcessor, 341, 565)
-//                        .merge(idProcessor2, 488, 620)
-//                        .merge(idProcessor3, 490, 840)
-//                        .start(460, 120)
-//                        .complete(idProcessor3, 460, 930)
-//
-//                        .buildGraph();
-//            }
-//        }
-//
-//        Config config = new Config();
-//        val childGraph = config.childGraph();
-//        val parentGraph = config.parentGraph();
-//
-//        reactor.registerReactorGraph(childGraph);
-//
-//        printGraph(childGraph, parentGraph);
-//
-//        reactor.registerReactorGraph(parentGraph);
-//
-//        ParentGraphPayload resultPaylaod = reactor.submit(new ParentGraphPayload()).getResultFuture().get(5, TimeUnit.SECONDS);
-//        assertEquals(Arrays.asList(1, 11, 12, 13, 2, 3), resultPaylaod.getIdSequence());
-//    }
+    static class SubgraphPaylaod extends IdListPayload {
+    }
+
+    /**
+     * # Subgraph
+     * Subgraph behave the same way as plain processor.
+     * The only difference is that instead of simple async operation CompletableReactor launches subgraph execution.
+     */
+    static class SubgraphPayloadGraph extends Graph<SubgraphPaylaod> {
+
+        Vertex idProcessor11 = handler(new IdProcessor(11)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        Vertex idProcessor12 = handler(new IdProcessor(12)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        Vertex idProcessor13 = handler(new IdProcessor(13)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        {
+            payload()
+                    .handleBy(idProcessor11)
+                    .handleBy(idProcessor12);
+
+            idProcessor11.onAny().mergeBy(idProcessor12);
+
+            idProcessor12.onAny().handleBy(idProcessor13);
+
+            idProcessor13.onAny().complete();
+
+        }
+    }
+
+    /**
+     * # Parent Graph (IdListPayload)
+     * Parent graph is a simple graph that calls subgraph during its flow.
+     * Expected result: 1, 11, 12, 13, 2, 3
+     */
+    static class ParentGraphPayloadGraph extends Graph<IdListPayload> {
+        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        Vertex idProcessor3 = handler(new IdProcessor(3)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        Vertex subgraphProcessor = subgraph(SubgraphPaylaod.class, payload -> new SubgraphPaylaod())
+                .withMerger((payload, result) -> {
+                    payload.idSequence.addAll(result.idSequence);
+                    return Status.OK;
+                });
+
+        {
+            payload()
+                    .handleBy(idProcessor1);
+
+            idProcessor1
+                    .onAny().handleBy(idProcessor2)
+                    .onAny().handleBy(subgraphProcessor);
+
+            subgraphProcessor
+                    .onAny().mergeBy(idProcessor2);
+
+            idProcessor2
+                    .onAny().handleBy(idProcessor3);
+
+            idProcessor3
+                    .onAny().complete();
+
+        }
+    }
+
+    @Test
+    public void run_subgraph() throws Exception {
+
+        reactor.registerIfAbsent(ParentGraphPayloadGraph.class);
+        reactor.registerIfAbsent(SubgraphPayloadGraph.class);
+
+        IdListPayload resultPaylaod = reactor.submit(new IdListPayload()).getResultFuture().get(5, TimeUnit.SECONDS);
+        assertEquals(Arrays.asList(1, 11, 12, 13, 2, 3), resultPaylaod.idSequence);
+    }
 //
 //    @Reactored({
 //            "Test demonstrates usage of mocked processor instead of real one.",
