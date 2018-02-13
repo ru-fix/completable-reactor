@@ -339,56 +339,44 @@ class GlCompletableReactorTest {
         assertEquals(Arrays.asList(42), resultPayload.idSequence);
     }
 
+    static class SingleClassProcessorMockGraph extends Graph<IdListPayload> {
 
-//    @Test
-//    public void use_class_mock_as_processor_with_mockito() throws Exception {
-//
-//        IdProcessor processor = Mockito.mock(IdProcessor.class);
-//        Mockito.when(processor.handle()).thenReturn(CompletableFuture.completedFuture(78));
-//
-//
-//        class Config {
-//            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
-//
-//            Processor<SingleInterfaceProcessorPayload> idProcessor1 = graphBuilder.processor()
-//                    .forPayload(SingleInterfaceProcessorPayload.class)
-//                    .withHandler(processor::handle)
-//                    .withMerger((pld, id) -> {
-//                        pld.getIdSequence().add(id);
-//                        return Status.OK;
-//                    })
-//                    .buildProcessor();
-//
-//            ReactorGraph<SingleInterfaceProcessorPayload> graph() {
-//                return graphBuilder.payload(SingleInterfaceProcessorPayload.class)
-//
-//                        .handle(idProcessor1)
-//
-//                        .mergePoint(idProcessor1)
-//                        .onAny().complete()
-//
-//                        .coordinates()
-//                        .proc(idProcessor1, 450, 184)
-//                        .merge(idProcessor1, 522, 299)
-//                        .start(500, 100)
-//                        .complete(idProcessor1, 498, 398)
-//
-//                        .buildGraph();
-//            }
-//        }
-//        val graph = new Config().graph();
-//
-//        printGraph(graph);
-//
-//        reactor.registerReactorGraph(graph);
-//
-//        SingleInterfaceProcessorPayload resultPayload = reactor.submit(new SingleInterfaceProcessorPayload())
-//                .getResultFuture()
-//                .get(10, TimeUnit.SECONDS);
-//
-//        assertEquals(Arrays.asList(78), resultPayload.getIdSequence());
-//    }
-//
+        IdProcessor processor;
+
+        Vertex idProcessor1 = handler(() -> processor.handle())
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        {
+            payload()
+                    .handleBy(idProcessor1);
+
+            idProcessor1
+                    .onAny().complete();
+
+        }
+    }
+
+    @Test
+    public void use_class_mock_as_processor_with_mockito() throws Exception {
+
+        IdProcessor processor = Mockito.mock(IdProcessor.class);
+        Mockito.when(processor.handle()).thenReturn(CompletableFuture.completedFuture(78));
+
+        SingleClassProcessorMockGraph graph = new SingleClassProcessorMockGraph();
+        graph.processor = processor;
+
+        reactor.registerIfAbsent(graph);
+
+        IdListPayload resultPayload = reactor.submit(new IdListPayload())
+                .getResultFuture()
+                .get(10, TimeUnit.SECONDS);
+
+        assertEquals(Arrays.asList(78), resultPayload.idSequence);
+    }
+
 //
 //    @Reactored({
 //            "Test will check that parallel processors work fine when only one of transitions are activated.",
@@ -411,7 +399,7 @@ class GlCompletableReactorTest {
 //                    .forPayload(DeadBranchPayload.class)
 //                    .withHandler(new IdProcessor(0)::handle)
 //                    .withMerger((pld, id) -> {
-//                        pld.getIdSequence().add(id);
+//                        pld.idSequence.add(id);
 //                        pld.setThreeStateStatus(ThreeStateStatus.A);
 //                        return ThreeStateStatus.A;
 //                    })
@@ -422,7 +410,7 @@ class GlCompletableReactorTest {
 //                    .forPayload(DeadBranchPayload.class)
 //                    .withHandler(new IdProcessor(1)::handle)
 //                    .withMerger((pld, id) -> {
-//                        pld.getIdSequence().add(id);
+//                        pld.idSequence.add(id);
 //                        return pld.getThreeStateStatus();
 //                    })
 //                    .buildProcessor();
@@ -431,7 +419,7 @@ class GlCompletableReactorTest {
 //                    .forPayload(DeadBranchPayload.class)
 //                    .withHandler(new IdProcessor(2)::handle)
 //                    .withMerger((pld, id) -> {
-//                        pld.getIdSequence().add(id);
+//                        pld.idSequence.add(id);
 //                        return Status.OK;
 //                    })
 //                    .buildProcessor();
@@ -480,7 +468,7 @@ class GlCompletableReactorTest {
 //                .getResultFuture()
 //                .get(10, TimeUnit.SECONDS);
 //
-//        assertEquals(Arrays.asList(0, 1), resultPayload.getIdSequence());
+//        assertEquals(Arrays.asList(0, 1), resultPayload.idSequence);
 //    }
 //
 //
@@ -513,7 +501,7 @@ class GlCompletableReactorTest {
 //                                    "merge point documentation",
 //                                    "here"},
 //                            pld -> {
-//                                pld.getIdSequence().add(MERGE_POINT_ID);
+//                                pld.idSequence.add(MERGE_POINT_ID);
 //                                return Status.OK;
 //                            })
 //                    .buildMergePoint();
@@ -559,7 +547,7 @@ class GlCompletableReactorTest {
 //                .getResultFuture()
 //                .get(10, TimeUnit.SECONDS);
 //
-//        assertEquals(Arrays.asList(42, 1, 0), resultPayload.getIdSequence());
+//        assertEquals(Arrays.asList(42, 1, 0), resultPayload.idSequence);
 //    }
 //
 //    @Reactored({
@@ -592,7 +580,7 @@ class GlCompletableReactorTest {
 //                                    "Adds merge point id",
 //                                    "to payload sequence"},
 //                            pld -> {
-//                                pld.getIdSequence().add(MERGE_POINT_ID);
+//                                pld.idSequence.add(MERGE_POINT_ID);
 //                                return Status.OK;
 //                            })
 //
@@ -638,7 +626,7 @@ class GlCompletableReactorTest {
 //                .getResultFuture()
 //                .get(10, TimeUnit.SECONDS);
 //
-//        assertEquals(Arrays.asList(0, 1, 42), resultPayload.getIdSequence());
+//        assertEquals(Arrays.asList(0, 1, 42), resultPayload.idSequence);
 //
 //    }
 //
@@ -729,7 +717,7 @@ class GlCompletableReactorTest {
 //                .getResultFuture()
 //                .get(10, TimeUnit.SECONDS);
 //
-//        assertEquals(Arrays.asList(1, 2, 3), resultPayload.getIdSequence());
+//        assertEquals(Arrays.asList(1, 2, 3), resultPayload.idSequence);
 //
 //
 //        result = reactor.submit(new OptionalProcessorExecutionPayload()
@@ -740,7 +728,7 @@ class GlCompletableReactorTest {
 //                .getResultFuture()
 //                .get(10, TimeUnit.SECONDS);
 //
-//        assertEquals(Arrays.asList(2, 3), resultPayload.getIdSequence());
+//        assertEquals(Arrays.asList(2, 3), resultPayload.idSequence);
 //    }
 //
 //
@@ -770,7 +758,7 @@ class GlCompletableReactorTest {
 //                    .forPayload(DeadTransitionBreaksFlow.class)
 //                    .withHandler(new IdProcessor(1)::handle)
 //                    .withMerger((pld, id) -> {
-//                        pld.getIdSequence().add(id);
+//                        pld.idSequence.add(id);
 //                        return pld.getFlowDecision();
 //                    })
 //                    .buildProcessor();
@@ -837,7 +825,7 @@ class GlCompletableReactorTest {
 //                .getResultFuture()
 //                .get(5, TimeUnit.MINUTES);
 //
-//        assertEquals(Arrays.asList(1, 2, 3, 4), result.getIdSequence());
+//        assertEquals(Arrays.asList(1, 2, 3, 4), result.idSequence);
 //
 //        result = reactor.submit(
 //                new DeadTransitionBreaksFlow()
@@ -845,7 +833,7 @@ class GlCompletableReactorTest {
 //                .getResultFuture()
 //                .get(5, TimeUnit.MINUTES);
 //
-//        assertEquals(Arrays.asList(1, 3, 4), result.getIdSequence());
+//        assertEquals(Arrays.asList(1, 3, 4), result.idSequence);
 //    }
 //
 //    @Reactored({
@@ -880,7 +868,7 @@ class GlCompletableReactorTest {
 //                                    log.error("Failed to acquire semaphore", exc);
 //                                }
 //
-//                                pld.getIdSequence().add(2);
+//                                pld.idSequence.add(2);
 //                                return GlCompletableReactorTest.Status.OK;
 //                            })
 //                    .buildMergePoint();
@@ -942,7 +930,7 @@ class GlCompletableReactorTest {
 //
 //        val result = resultFuture.get(5, TimeUnit.MINUTES);
 //
-//        assertEquals(Arrays.asList(2, 0, 1, 3), result.getIdSequence());
+//        assertEquals(Arrays.asList(2, 0, 1, 3), result.idSequence);
 //
 //    }
 //
@@ -971,7 +959,7 @@ class GlCompletableReactorTest {
 //                    .forPayload(IdListPayload.class)
 //                    .withHandler(new IdProcessor(0)::handle)
 //                    .withMerger((pld, id) -> {
-//                        pld.getIdSequence().add(id);
+//                        pld.idSequence.add(id);
 //                        return DeadTransitionPayload.Status.FIRST;
 //                    })
 //                    .buildProcessor();
@@ -986,7 +974,7 @@ class GlCompletableReactorTest {
 //                    .withHandler(new IdProcessor(4)::handle)
 //                    .withMerger((pld, id) -> {
 //                        try {
-//                            pld.getIdSequence().add(id);
+//                            pld.idSequence.add(id);
 //                            processor4mergerSemaphore.acquire();
 //                            return Status.OK;
 //                        } catch (Exception exc) {
@@ -1058,7 +1046,7 @@ class GlCompletableReactorTest {
 //
 //        val result = resultFuture.get(5, TimeUnit.MINUTES);
 //
-//        assertEquals(Arrays.asList(0, 4), result.getIdSequence());
+//        assertEquals(Arrays.asList(0, 4), result.idSequence);
 //    }
 //
 //    @Reactored({
@@ -1107,6 +1095,6 @@ class GlCompletableReactorTest {
 //                .getResultFuture()
 //                .get(10, TimeUnit.SECONDS);
 //
-//        assertEquals(Arrays.asList(1), resultPayload.getIdSequence());
+//        assertEquals(Arrays.asList(1), resultPayload.idSequence);
 //    }
 }
