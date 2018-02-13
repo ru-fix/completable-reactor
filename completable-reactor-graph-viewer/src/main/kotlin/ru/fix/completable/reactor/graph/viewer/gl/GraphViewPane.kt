@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.graph.viewer.gl;
 
+import javafx.application.Platform
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.ScrollPane
@@ -53,10 +54,6 @@ class GraphViewPane(
         this.setPannable(true)
 
         this.setContent(pane)
-
-
-        this.setVvalue(0.5)
-        this.setHvalue(0.5)
 
 
         pane.setOnScroll { scrollEvent ->
@@ -307,8 +304,16 @@ class GraphViewPane(
 
         enableNodeDragging()
 
-        //TODO during first opening scroll pane so payload will be displayed in top middle position
+        pane.requestResize({
+            Platform.runLater {
 
+                hvalue = 0.5
+                vvalue = 0.5
+            }
+        })
+
+        //TODO during first opening scroll pane so payload will be displayed in top middle position
+        //TODO remove platform-run-later callback hack
         return this
     }
 
@@ -320,11 +325,11 @@ class GraphViewPane(
                             it,
                             object : NodeDraggerListener {
                                 override fun modelChanging() {
-                                    log.info { "modelChanging, requestLayout" }
                                     pane.requestLayout()
                                 }
 
                                 override fun modelChanged() {
+                                    pane.requestResize({})
                                     pane.requestLayout()
                                     graphModel?.let { actionListener.coordinatesChanged(it) }
                                 }
