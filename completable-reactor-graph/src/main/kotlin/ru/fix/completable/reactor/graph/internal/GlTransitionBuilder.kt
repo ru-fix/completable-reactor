@@ -21,7 +21,7 @@ class GlTransitionBuilder(
             transition.handleBy = targetGlVertex
         }
 
-        return vertex
+        return vx.vertex
     }
 
     override fun mergeBy(vertex: Vertex): Vertex {
@@ -45,6 +45,6 @@ class GlTransitionBuilder(
 
         transition.mergeBy = targetGlVertex
 
-        return vertex
+        return vx.vertex
     }
 }
