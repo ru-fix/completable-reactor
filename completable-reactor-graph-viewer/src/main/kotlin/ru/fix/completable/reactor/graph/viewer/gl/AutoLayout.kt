@@ -8,7 +8,7 @@ private val log = KotlinLogging.logger {}
 class AutoLayout {
 
     private val deltaX = 200
-    private val deltaY = 60
+    private val deltaY = 55
 
     fun layout(node: AutoLayoutable) {
 
