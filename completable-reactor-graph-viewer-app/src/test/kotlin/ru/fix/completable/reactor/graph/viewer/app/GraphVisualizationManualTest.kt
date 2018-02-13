@@ -41,7 +41,7 @@ class GraphVisualizationManualTest : Application() {
                         .joinToString("\n>", ">")
             }
 
-            println("goToSource: $source\n>${sourceContext ?: "unknown context"}")
+            println("goToSource: $source\n>$sourceContext")
         }
 
         override fun goToSubgraph(subgraphPayloadType: String) {
