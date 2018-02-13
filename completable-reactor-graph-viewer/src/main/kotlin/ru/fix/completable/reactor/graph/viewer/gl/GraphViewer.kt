@@ -16,6 +16,8 @@ class GraphViewer {
     var scene: Scene
         private set
 
+    private var graphViewPanes =  emptyList<GraphViewPane>()
+
     private var actionListeners = CopyOnWriteArrayList<ActionListener>()
 
     private val viewPaneActionListener = object : ActionListener {
@@ -45,22 +47,27 @@ class GraphViewer {
         scene.stylesheets.add(javaClass.getResource("/css/styles.css").toExternalForm())
     }
 
-    fun openGraph(graphs: List<GraphModel>) {
+    fun openGraph(graphs: List<GraphModel>, resetViewer: Boolean = true) {
         if (graphs.isEmpty()) {
             return
         }
 
         if (graphs.size == 1) {
 
-            var graphViewPane = GraphViewPane(viewPaneActionListener, { this.getShortcut(it) })
-            graphViewPane.setPrefSize(700.0, 600.0)
+            if (resetViewer || graphViewPanes.isEmpty()) {
+                val viewer = GraphViewPane(viewPaneActionListener, { this.getShortcut(it) })
+                        .apply {
+                            setPrefSize(700.0, 600.0)
 
-            scene.root = graphViewPane
+                            //Shortcuts
+                            addShortcutListener(this)
+                        }
+                graphViewPanes = listOf(viewer)
 
-            graphViewPane.openGraph(graphs[0])
+                scene.root = viewer
+            }
 
-            //Shortcuts
-            addShortcutListener(graphViewPane)
+            graphViewPanes.first().openGraph(graphs[0], resetViewer)
 
         } else {
             val previouslySelectedTabIndex = scene.root
@@ -72,6 +79,8 @@ class GraphViewer {
             tabPane.setPrefSize(700.0, 600.0)
             scene.root = tabPane
 
+            //TODO refresh (resetViewer==true) for tab graph not supported yet
+
             for (graph in graphs) {
                 var graphViewPane = GraphViewPane(viewPaneActionListener, { this.getShortcut(it) })
 
@@ -81,7 +90,7 @@ class GraphViewer {
                 }
                 tabPane.tabs.add(tab)
 
-                graphViewPane.openGraph(graph)
+                graphViewPane.openGraph(graph, resetViewer)
 
                 addShortcutListener(graphViewPane)
             }

@@ -7,12 +7,12 @@ private val log = KotlinLogging.logger {}
 
 class AutoLayout {
 
-    val deltaX = 200.0
-    val deltaY = 100.0
+    val deltaX = 200
+    val deltaY = 60
 
     fun layout(node: AutoLayoutable) {
 
-        recursiveFixCoordinates(node, node.nodeCenterX(), node.nodeCenterY(), 200, 100)
+        recursiveFixCoordinates(node, node.nodeCenterX(), node.nodeCenterY(), deltaX, deltaY)
 
     }
 

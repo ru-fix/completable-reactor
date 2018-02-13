@@ -83,6 +83,8 @@ class Viewer(
      */
     private fun openGraph() {
         try {
+
+            notificator.info("Load graph")
             val models = parser.parse(document.text, virtualFile.path)
 
             if (models.isEmpty()) {
@@ -105,7 +107,7 @@ class Viewer(
             Platform.runLater {
                 try {
                     displayedModel = model
-                    graphViewer.openGraph(listOf(displayedModel))
+                    graphViewer.openGraph(listOf(displayedModel), resetViewer = true)
 
                     ApplicationManager.getApplication().invokeLater {
                         openPopup()
@@ -188,7 +190,7 @@ class Viewer(
     private fun refreshGraph() {
         try {
 
-            notificator.info("Graph update")
+            notificator.info("Reload graph.")
 
             val models = parser.parse(document.text, virtualFile.path)
 
@@ -209,7 +211,7 @@ class Viewer(
 
                 Platform.runLater {
                     try {
-                        graphViewer.openGraph(listOf(model))
+                        graphViewer.openGraph(listOf(model), resetViewer = false)
                     } catch (exc: Exception) {
                         notificator.error("Failed to visualize refreshed graph model in viewer.", exc)
                     }
