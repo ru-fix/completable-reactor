@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.graph.viewer.gl;
 
 import javafx.application.Platform
+import javafx.geometry.Point2D
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.ScrollPane
@@ -40,9 +41,7 @@ class GraphViewPane(
 
     private val pane = GraphPane()
 
-    private val translator = CoordinateTranslator(pane)
-
-    private val autoLayout = AutoLayout()
+    private var oldScrollPosition = Point2D(0.5, 0.5)
 
     var graphModel: GraphModel? = null
         private set
@@ -52,6 +51,8 @@ class GraphViewPane(
         pane.getStyleClass().add("graphViewer")
 
         this.setPannable(true)
+        this.vbarPolicy = ScrollBarPolicy.ALWAYS
+        this.hbarPolicy = ScrollBarPolicy.ALWAYS
 
         this.setContent(pane)
 
@@ -107,23 +108,16 @@ class GraphViewPane(
         })
     }
 
-
-    fun openGraph(graphModel: GraphModel): GraphViewPane {
+    fun openGraph(graphModel: GraphModel, resetViewer: Boolean = true): GraphViewPane {
         this.graphModel = graphModel
+        if (!resetViewer) {
+            this.oldScrollPosition = Point2D(hvalue, vvalue)
+        }
 
-        pane.children.removeAll()
+        pane.children.clear()
 
         val graphNodeTreeForAutoLayout = AtomicReference<GraphNode>()
 
-        val positionListener = object : PositionListener {
-
-            private val nodeTree: GraphNode by lazy(LazyThreadSafetyMode.NONE) { graphNodeTreeForAutoLayout.get() }
-
-            override fun positionChanged() {
-
-                actionListener.coordinatesChanged(graphModel)
-            }
-        }
 
         /**
          * Handler Nodes
@@ -238,19 +232,19 @@ class GraphViewPane(
         /**
          * Transition line: subgraph -> merger
          */
-        graphModel.handlers.values.asSequence()
-                .mapNotNull { handler ->
-                    graphModel.mergers[handler.name]?.let { merger ->
-                        Pair(handlers[handler]!!, mergers[merger]!!)
+        graphModel.subgraphs.values.asSequence()
+                .mapNotNull { subgraph ->
+                    graphModel.mergers[subgraph.name]?.let { merger ->
+                        Pair(subgraphs[subgraph]!!, mergers[merger]!!)
                     }
                 }
-                .forEach { (handlerNode, mergerNode) ->
+                .forEach { (subgraphNode, mergerNode) ->
 
-                    val line = TransitionLine(pane, handlerNode, mergerNode, null, actionListener)
+                    val line = TransitionLine(pane, subgraphNode, mergerNode, null, actionListener)
                     pane.children.add(line)
                     line.toBack()
 
-                    handlerNode.graphChildren.add(mergerNode)
+                    subgraphNode.graphChildren.add(mergerNode)
                 }
 
         /**
@@ -305,12 +299,28 @@ class GraphViewPane(
         enableNodeDragging()
 
         pane.requestResize({
-            Platform.runLater {
-                Platform.runLater {
-                    hvalue = 0.5
-                    vvalue = 0.5
+
+            val targetScrollPosition =
+                    if (resetViewer) {
+                        Point2D(0.5, 0.5)
+                    } else {
+                        oldScrollPosition
+                    }
+
+            fun update() {
+                if (hvalue != targetScrollPosition.x || vvalue != targetScrollPosition.y) {
+
+                    hvalue = targetScrollPosition.x
+                    vvalue = targetScrollPosition.y
+
+                    Platform.runLater {
+                        update()
+                    }
                 }
             }
+
+            log.info { "Update to: $targetScrollPosition" }
+            update()
         })
 
         //TODO during first opening scroll pane so payload will be displayed in top middle position

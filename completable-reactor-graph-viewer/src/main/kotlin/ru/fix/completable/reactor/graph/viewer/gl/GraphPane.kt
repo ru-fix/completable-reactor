@@ -20,10 +20,8 @@ class GraphPane : Pane() {
     override fun layoutChildren() {
         super.layoutChildren()
 
-        children.asSequence()
-                .mapNotNull { it as? StartPointNode }
-                .first()
-                .let {
+        startPoint()
+                ?.let {
                     autoLayout.layout(it)
                 }
 
@@ -42,6 +40,10 @@ class GraphPane : Pane() {
     }
 
     fun nodes() = children.asSequence().mapNotNull { it as? GraphNode }
+
+    fun startPoint() = children.asSequence()
+            .mapNotNull { it as? StartPointNode }
+            .firstOrNull()
 
     private val GRAPH_PANE_MIN_BORDER_SIZE = 2048
 
@@ -113,11 +115,10 @@ class GraphPane : Pane() {
     }
 
 
-
     /**
      * Request pane to resize on next children layout
      */
-    fun requestResize(afterResize: ()->Unit) {
+    fun requestResize(afterResize: () -> Unit) {
         resizeRequested = true
         this.afterResizeCallback = afterResize
         this.requestLayout()

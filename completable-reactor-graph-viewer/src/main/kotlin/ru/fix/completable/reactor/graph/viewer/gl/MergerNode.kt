@@ -63,7 +63,7 @@ class MergerNode(
         }
 
         val menuItem = MenuItem(
-                if (textBuilder.isNotEmpty()) textBuilder.toString() else "Merger"
+                if (textBuilder.isNotEmpty()) textBuilder.toString() else merger.name
         )
 
         contextMenu.items.add(menuItem)
