@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.graph.viewer.gl
 
+import javafx.application.Platform
 import javafx.scene.layout.Pane
 import mu.KotlinLogging
 import ru.fix.completable.reactor.model.DEFAULT_COORDINATES
@@ -11,6 +12,9 @@ class GraphPane : Pane() {
     private val autoLayout = AutoLayout()
 
     var graphBordersInModelCoordinates: Rect = Rect(0, 0, 0, 0)
+
+    private var resizeRequested = false
+    private lateinit var afterResizeCallback: () -> Unit
 
 
     override fun layoutChildren() {
@@ -39,10 +43,15 @@ class GraphPane : Pane() {
 
     fun nodes() = children.asSequence().mapNotNull { it as? GraphNode }
 
+    private val GRAPH_PANE_MIN_BORDER_SIZE = 2048
+
     fun updatePaneSizeIfRequired() {
 
-        val GRAPH_PANE_MIN_BORDER_SIZE = 2048
-
+        if (!resizeRequested) {
+            return
+        } else {
+            resizeRequested = false
+        }
 
         val graphBorders = nodes()
                 .map {
@@ -90,11 +99,26 @@ class GraphPane : Pane() {
 
             //TODO: fix scroll during resizing of the content
 
-            log.info { "Update width and height" }
 
             this.graphBordersInModelCoordinates = graphBorders
             this.prefWidth = targetWidth
             this.prefHeight = targetHeight
+
+            //to refresh parent scroll pane sliders and ask parent to redraw itself and content
+            Platform.runLater {
+                this.requestParentLayout()
+                this.afterResizeCallback()
+            }
         }
+    }
+
+
+
+    /**
+     * Request pane to resize on next children layout
+     */
+    fun requestResize(afterResize: ()->Unit) {
+        resizeRequested = true
+        this.afterResizeCallback = afterResize
     }
 }

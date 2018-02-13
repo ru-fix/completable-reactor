@@ -27,6 +27,10 @@ interface AutoLayoutable {
 
     var nodeY: Int
 
+    fun nodeCenterX() = nodeX + nodeWidth / 2
+
+    fun nodeCenterY() = nodeY + nodeHeight / 2
+
     val nodeHeight: Int
     val nodeWidth: Int
 

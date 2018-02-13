@@ -12,13 +12,9 @@ class AutoLayout {
 
     fun layout(node: AutoLayoutable) {
 
-        log.info { "auto layout" }
-
-        recursiveFixCoordinates(node, node.nodeX, node.nodeY, 200, 100)
+        recursiveFixCoordinates(node, node.nodeCenterX(), node.nodeCenterY(), 200, 100)
 
     }
-
-
 
 
 
@@ -85,7 +81,7 @@ class AutoLayout {
                         node.nodeX = (deltaX * index++ + parentX)
                         node.nodeY = (deltaY + parentY)
                     }
-                    recursiveFixCoordinates(node, node.nodeX, node.nodeY, deltaX, deltaY)
+                    recursiveFixCoordinates(node, node.nodeCenterX(), node.nodeCenterY(), deltaX, deltaY)
                 }
             }
         }
