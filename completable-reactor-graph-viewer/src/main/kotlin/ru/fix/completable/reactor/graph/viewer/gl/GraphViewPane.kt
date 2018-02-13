@@ -322,8 +322,7 @@ class GraphViewPane(
                 }
             }
 
-            log.info { "Update to: $targetScrollPosition" }
-            update(15)
+            update(150)
         })
 
         //TODO during first opening scroll pane so payload will be displayed in top middle position
