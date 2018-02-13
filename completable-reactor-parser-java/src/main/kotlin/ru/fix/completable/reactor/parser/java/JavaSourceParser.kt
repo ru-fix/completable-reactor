@@ -184,6 +184,12 @@ class JavaSourceParser(val listener: Listener) {
                                 handlers[Identifier().text]!!.coordinates = Coordinates(
                                         Coordinate().first().text.toInt(),
                                         Coordinate().last().text.toInt())
+
+                            } ?: it.coordinateSubgraph()?.run {
+                                subgraphs[Identifier().text]!!.coordinates = Coordinates(
+                                        Coordinate().first().text.toInt(),
+                                        Coordinate().last().text.toInt())
+
                             } ?: it.coordinateMerger().run {
                                 mergers[Identifier().text]!!.coordinates = Coordinates(
                                         Coordinate().first().text.toInt(),
