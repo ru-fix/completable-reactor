@@ -286,9 +286,16 @@ class GlCompletableReactorTest {
         reactor.registerIfAbsent(ParentGraphPayloadGraph.class);
         reactor.registerIfAbsent(SubgraphPayloadGraph.class);
 
-        IdListPayload resultPaylaod = reactor.submit(new IdListPayload()).getResultFuture().get(5, TimeUnit.SECONDS);
+        SubgraphPaylaod subgraphResult = reactor.submit(new SubgraphPaylaod()).getResultFuture().get(5, SECONDS);
+        assertEquals(Arrays.asList(11, 12, 13), subgraphResult.idSequence);
+
+
+        CompletableReactor.Execution<IdListPayload> executionResult = reactor.submit(new IdListPayload());
+        IdListPayload resultPaylaod = executionResult.getResultFuture().get(5, TimeUnit.SECONDS);
         assertEquals(Arrays.asList(1, 11, 12, 13, 2, 3), resultPaylaod.idSequence);
     }
+
+
 //
 //    @Reactored({
 //            "Test demonstrates usage of mocked processor instead of real one.",
