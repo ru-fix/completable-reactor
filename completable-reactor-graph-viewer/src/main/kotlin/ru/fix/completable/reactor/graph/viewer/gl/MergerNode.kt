@@ -50,8 +50,7 @@ class MergerNode(
         }
 
         merger.title?.let {
-            val title = Label(it)
-            this.children.add(title)
+            this.children.add(Label(it))
         }
     }
 

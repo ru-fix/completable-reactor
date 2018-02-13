@@ -306,9 +306,10 @@ class GraphViewPane(
 
         pane.requestResize({
             Platform.runLater {
-
-                hvalue = 0.5
-                vvalue = 0.5
+                Platform.runLater {
+                    hvalue = 0.5
+                    vvalue = 0.5
+                }
             }
         })
 
@@ -330,7 +331,6 @@ class GraphViewPane(
 
                                 override fun modelChanged() {
                                     pane.requestResize({})
-                                    pane.requestLayout()
                                     graphModel?.let { actionListener.coordinatesChanged(it) }
                                 }
                             },

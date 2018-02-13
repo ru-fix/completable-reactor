@@ -73,7 +73,7 @@ class AutoLayout {
                 is EndPoint -> {
                     if(!node.isUserDefinedCoordinates) {
                         node.nodeX = parentX
-                        node.nodeY = (deltaY * 2 + parentY)
+                        node.nodeY = (deltaY + parentY)
                     }
                 }
                 else -> {

@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.ScreenUtil
 import com.intellij.util.BooleanFunction
@@ -35,6 +36,8 @@ class Viewer(
         val editor: Editor) {
 
     private val GRAPH_SOURCE_REPARSING_DELAY_MS = 2_000L
+
+    private val isDisposed = AtomicBoolean(false)
 
     private val notificator = Notificator()
 
@@ -65,9 +68,15 @@ class Viewer(
     }
 
 
-    private var lastUpdateTimestamp = AtomicLong()
-    private val commandScheduled = AtomicBoolean()
+    private var lastUpdateTimestamp = AtomicLong(0L)
+    private val commandScheduled = AtomicBoolean(false)
     private val scheduler = Executors.newSingleThreadScheduledExecutor()
+
+    val documentListener = object : DocumentListener {
+        override fun documentChanged(event: DocumentEvent?) {
+            scheduleCommand { refreshGraph() }
+        }
+    }
 
     /**
      * invoke within command processor
@@ -121,6 +130,10 @@ class Viewer(
                 .setShowBorder(true)
                 .setMinSize(Dimension(400, 300))
                 .setCancelButton(MinimizeButton("Close (Esc)"))
+                .setCancelCallback {
+                    dispose()
+                    true
+                }
                 .setMovable(true)
                 .setFocusable(true)
                 .setRequestFocus(true)
@@ -159,18 +172,14 @@ class Viewer(
 
         setDefaultPopupSize(popup)
 
+
         //TODO: save user selected size
         popup.showCenteredInCurrentWindow(project)
 
         //TODO: reload content when file is changed
 
 
-        editor.document.addDocumentListener(object : DocumentListener {
-
-            override fun documentChanged(event: DocumentEvent?) {
-                scheduleCommand { refreshGraph() }
-            }
-        })
+        editor.document.addDocumentListener(documentListener)
     }
 
     /**
@@ -178,6 +187,9 @@ class Viewer(
      */
     private fun refreshGraph() {
         try {
+
+            notificator.info("Graph update")
+
             val models = parser.parse(document.text, virtualFile.path)
 
             if (models.isEmpty()) {
@@ -275,7 +287,14 @@ class Viewer(
         }
     }
 
+    private fun dispose() {
+        if (isDisposed.compareAndSet(false, true)) {
+            editor.document.removeDocumentListener(documentListener)
+        }
+    }
+
     fun close() {
         popup.cancel()
+        dispose()
     }
 }
