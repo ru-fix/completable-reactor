@@ -7,83 +7,49 @@ private val log = KotlinLogging.logger {}
 
 class AutoLayout {
 
-    val deltaX = 200
-    val deltaY = 60
+    private val deltaX = 200
+    private val deltaY = 60
 
     fun layout(node: AutoLayoutable) {
 
-        recursiveFixCoordinates(node, node.nodeCenterX(), node.nodeCenterY(), deltaX, deltaY)
+        recursiveFixCoordinates(listOf(node))
 
     }
 
+    private tailrec fun recursiveFixCoordinates(nodes: List<AutoLayoutable>) {
+
+        val nodesToProcess = ArrayList<AutoLayoutable>()
+
+        for (parentNode in nodes) {
+
+            val parentX = parentNode.nodeCenterX()
+            val parentY = parentNode.nodeCenterY()
+
+            var index = -1 * (parentNode.graphChildren.size / 2)
 
 
-    private tailrec fun layout(nodes: List<AutoLayoutable>, visitedNodes: MutableSet<AutoLayoutable>) {
+            for (node in parentNode.graphChildren) {
 
-        val children = ArrayList<AutoLayoutable>()
-
-        for (node in nodes) {
-
-            if (visitedNodes.contains(node)) {
-                continue
-            }
-
-            visitedNodes.add(node)
-
-            if (!node.isUserDefinedCoordinates) {
-
-                val figure = node.figure
-
-                fun position(node: AutoLayoutable) =
-                        "x: ${node.nodeX}, y: ${node.nodeY}, w: ${node.nodeWidth}, h: ${node.nodeHeight}"
-
-                when (figure) {
-                    is StartPoint -> log.trace { "Layout startPoint: $figure, ${position(node)}" }
-                    is Handler -> log.trace { "Layout handler: ${figure.name}, ${position(node)}" }
-                    is Merger -> log.trace { "Layout merger: ${figure.name}, ${position(node)}" }
-                    is Router -> log.trace { "Layout router: ${figure.name}, ${position(node)}" }
-                    is Subgraph -> log.trace { "Layout subgraph: ${figure.name}, ${position(node)}" }
-                    is EndPoint -> log.trace { "Layout endpoint: ${figure}, ${position(node)}" }
-                }
-            }
-
-            children.addAll(node.graphChildren)
-        }
-
-        if (children.isEmpty()) {
-            return
-        }
-
-        layout(children, visitedNodes)
-    }
-
-
-    private fun recursiveFixCoordinates(
-            parentNode: AutoLayoutable,
-            parentX: Int,
-            parentY: Int,
-            deltaX: Int,
-            deltaY: Int) {
-
-        var index = -1 * (parentNode.graphChildren.size / 2)
-
-        for (node in parentNode.graphChildren) {
-
-            when (node.figure) {
-                is EndPoint -> {
-                    if(!node.isUserDefinedCoordinates) {
-                        node.nodeX = parentX
-                        node.nodeY = (deltaY + parentY)
+                when (node.figure) {
+                    is EndPoint -> {
+                        if (!node.isUserDefinedCoordinates) {
+                            node.nodeX = parentX
+                            node.nodeY = (deltaY + parentY)
+                        }
+                    }
+                    else -> {
+                        if (!node.isUserDefinedCoordinates) {
+                            node.nodeX = (deltaX * index++ + parentX)
+                            node.nodeY = (deltaY + parentY)
+                        }
+                        nodesToProcess.add(node)
                     }
                 }
-                else -> {
-                    if (!node.isUserDefinedCoordinates) {
-                        node.nodeX = (deltaX * index++ + parentX)
-                        node.nodeY = (deltaY + parentY)
-                    }
-                    recursiveFixCoordinates(node, node.nodeCenterX(), node.nodeCenterY(), deltaX, deltaY)
-                }
             }
+        }
+
+        if(!nodesToProcess.isEmpty()) {
+            recursiveFixCoordinates(nodesToProcess)
         }
     }
 }
