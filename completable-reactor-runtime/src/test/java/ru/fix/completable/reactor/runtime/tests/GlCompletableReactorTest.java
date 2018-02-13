@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime.tests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Subgraph;
@@ -11,6 +12,7 @@ import ru.fix.completable.reactor.runtime.CompletableReactor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -290,65 +292,54 @@ class GlCompletableReactorTest {
     }
 
 
-//
-//    @Reactored({
-//            "Test demonstrates usage of mocked processor instead of real one.",
-//            "Test will check that single processor id end up at payloads idList.",
-//            "Expected result: {42}"
-//    })
-//    static class SingleInterfaceProcessorPayload extends IdListPayload {
-//    }
-//
-//    @Test
-//    public void use_interface_mock_as_processor_with_mockito() throws Exception {
-//
-//        IdProcessorInterface processorInterface = Mockito.mock(IdProcessorInterface.class);
-//        Mockito.when(processorInterface.handle()).thenReturn(CompletableFuture.completedFuture(42));
-//
-//        class Config {
-//            ReactorGraphBuilder builder = new ReactorGraphBuilder(this);
-//
-//            Processor<SingleInterfaceProcessorPayload> idProcessor1 = builder.processor()
-//                    .forPayload(SingleInterfaceProcessorPayload.class)
-//                    .withHandler(processorInterface::handle)
-//                    .withMerger((pld, id) -> {
-//                        pld.getIdSequence().add(id);
-//                        return Status.OK;
-//                    })
-//                    .buildProcessor();
-//
-//            ReactorGraph<SingleInterfaceProcessorPayload> graph() {
-//                return builder.payload(SingleInterfaceProcessorPayload.class)
-//
-//                        .handle(idProcessor1)
-//
-//                        .mergePoint(idProcessor1)
-//                        .onAny().complete()
-//
-//                        .coordinates()
-//                        .proc(idProcessor1, 450, 184)
-//                        .merge(idProcessor1, 522, 299)
-//                        .start(500, 100)
-//                        .complete(idProcessor1, 498, 398)
-//
-//                        .buildGraph();
-//            }
-//        }
-//
-//        val graph = new Config().graph();
-//
-//        printGraph(graph);
-//
-//        reactor.registerReactorGraph(graph);
-//
-//        SingleInterfaceProcessorPayload resultPayload = reactor.submit(new SingleInterfaceProcessorPayload())
-//                .getResultFuture()
-//                .get(10, TimeUnit.SECONDS);
-//
-//        assertEquals(Arrays.asList(42), resultPayload.getIdSequence());
-//    }
-//
-//
+    /**
+     * Test demonstrates usage of mocked processor instead of real one.
+     * Test will check that single processor id end up at payloads idList.
+     * <p>
+     * Expected result: {42}
+     */
+    static class SingleInterfaceProcessorGraph extends Graph<IdListPayload> {
+
+        //injected by mockito
+        IdProcessorInterface processorInterface;
+
+        Vertex idProcessor1 = handler(processorInterface::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        {
+            payload()
+                    .handleBy(idProcessor1);
+
+            idProcessor1
+                    .onAny().complete();
+
+        }
+
+    }
+
+    @Test
+    public void use_interface_mock_as_processor_with_mockito() throws Exception {
+
+        IdProcessorInterface processorInterface = Mockito.mock(IdProcessorInterface.class);
+        Mockito.when(processorInterface.handle()).thenReturn(CompletableFuture.completedFuture(42));
+
+        SingleInterfaceProcessorGraph graph = new SingleInterfaceProcessorGraph();
+        graph.processorInterface = processorInterface;
+
+        reactor.registerIfAbsent(graph);
+
+
+        IdListPayload resultPayload = reactor.submit(new IdListPayload())
+                .getResultFuture()
+                .get(10, TimeUnit.SECONDS);
+
+        assertEquals(Arrays.asList(42), resultPayload.idSequence);
+    }
+
+
 //    @Test
 //    public void use_class_mock_as_processor_with_mockito() throws Exception {
 //
