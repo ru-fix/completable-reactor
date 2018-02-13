@@ -303,7 +303,7 @@ class GlCompletableReactorTest {
         //injected by mockito
         IdProcessorInterface processorInterface;
 
-        Vertex idProcessor1 = handler(processorInterface::handle)
+        Vertex idProcessor1 = handler(() -> processorInterface.handle())
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
