@@ -120,5 +120,6 @@ class GraphPane : Pane() {
     fun requestResize(afterResize: ()->Unit) {
         resizeRequested = true
         this.afterResizeCallback = afterResize
+        this.requestLayout()
     }
 }

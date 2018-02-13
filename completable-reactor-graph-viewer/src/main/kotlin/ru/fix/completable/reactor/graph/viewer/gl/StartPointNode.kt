@@ -19,7 +19,7 @@ class StartPointNode(
     init {
         this.styleClass.add("startPoint")
 
-        val nameLabel = Label(startPoint.payloadType)
+        val nameLabel = Label(startPoint.title ?: startPoint.payloadType)
         nameLabel.font = Font(16.0)
 
         this.children.add(nameLabel)
@@ -58,6 +58,7 @@ class StartPointNode(
     fun buildTooltipContent(): VBox {
         return VBox().apply {
             children.add(Text(startPoint.payloadType))
+            children.add(Text(startPoint.doc))
         }
     }
 }
