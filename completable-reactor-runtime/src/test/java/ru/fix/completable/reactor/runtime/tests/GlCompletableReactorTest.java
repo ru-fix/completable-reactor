@@ -102,7 +102,8 @@ class GlCompletableReactorTest {
                     .handleBy(idProcessor1)
                     .handleBy(idProcessor2);
 
-            idProcessor1.on(Status.OK, Status.UNUSED).mergeBy(idProcessor2);
+            idProcessor1.on(Status.OK).mergeBy(idProcessor2);
+            idProcessor1.on(Status.UNUSED).mergeBy(idProcessor2);
 
             idProcessor2.onAny().complete();
         }
