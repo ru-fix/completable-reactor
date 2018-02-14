@@ -73,7 +73,7 @@ class JavaSourceParserTest {
                     assertEquals(2, count())
 
                     assertNotNull(find {
-                        it.mergeStatuses == listOf("STOP")
+                        it.mergeStatuses == setOf("STOP")
                                 && it.isComplete
                                 && !it.isOnAny
                                 && it.target is EndPoint
@@ -81,10 +81,10 @@ class JavaSourceParserTest {
 
                     assertEquals(
                             Coordinates(963, 258),
-                            find { it.mergeStatuses == listOf("STOP") }?.target?.coordinates)
+                            find { it.mergeStatuses == setOf("STOP") }?.target?.coordinates)
 
                     assertNotNull(find {
-                        it.mergeStatuses == listOf("CONTINUE")
+                        it.mergeStatuses == setOf("CONTINUE")
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
@@ -98,7 +98,7 @@ class JavaSourceParserTest {
                     assertEquals(5, count())
 
                     assertNotNull(find {
-                        it.mergeStatuses == listOf("WITHDRAWAL")
+                        it.mergeStatuses == setOf("WITHDRAWAL")
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
@@ -107,7 +107,7 @@ class JavaSourceParserTest {
                     })
 
                     assertNotNull(find {
-                        it.mergeStatuses == listOf("NO_WITHDRAWAL")
+                        it.mergeStatuses == setOf("NO_WITHDRAWAL")
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
@@ -116,7 +116,7 @@ class JavaSourceParserTest {
                     })
 
                     assertNotNull(find {
-                        it.mergeStatuses == listOf("NO_WITHDRAWAL")
+                        it.mergeStatuses == setOf("NO_WITHDRAWAL")
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
@@ -125,7 +125,7 @@ class JavaSourceParserTest {
                     })
 
                     assertNotNull(find {
-                        it.mergeStatuses == listOf("NO_WITHDRAWAL")
+                        it.mergeStatuses == setOf("NO_WITHDRAWAL")
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
@@ -134,7 +134,7 @@ class JavaSourceParserTest {
                     })
 
                     assertNotNull(find {
-                        it.mergeStatuses == listOf("STOP")
+                        it.mergeStatuses == setOf("STOP")
                                 && it.isComplete
                                 && !it.isOnAny
                                 && it.target is EndPoint
@@ -142,7 +142,7 @@ class JavaSourceParserTest {
 
                     assertEquals(
                             Coordinates(480, 310),
-                            find { it.mergeStatuses == listOf("STOP") }?.target?.coordinates)
+                            find { it.mergeStatuses == setOf("STOP") }?.target?.coordinates)
                 }
 
         vertexTransitions("bank")
@@ -150,7 +150,7 @@ class JavaSourceParserTest {
                     assertEquals(1, count())
 
                     assertNotNull(find {
-                        it.mergeStatuses == null
+                        it.mergeStatuses.isEmpty()
                                 && !it.isComplete
                                 && it.isOnAny
                                 && it.target.let { it is VertexFigure && it.name == "isPartnerService" }
@@ -162,7 +162,7 @@ class JavaSourceParserTest {
                     assertEquals(1, count())
 
                     assertNotNull(find {
-                        it.mergeStatuses == null
+                        it.mergeStatuses.isEmpty()
                                 && !it.isComplete
                                 && it.isOnAny
                                 && it.target.let { it is VertexFigure && it.name == "txLog" }
@@ -174,7 +174,7 @@ class JavaSourceParserTest {
                     assertEquals(1, count())
 
                     assertNotNull(find {
-                        it.mergeStatuses == null
+                        it.mergeStatuses.isEmpty()
                                 && !it.isComplete
                                 && it.isOnAny
                                 && it.target.let { it is VertexFigure && it.name == "userJournal" }
@@ -186,7 +186,7 @@ class JavaSourceParserTest {
                     assertEquals(1, count())
 
                     assertNotNull(find {
-                        it.mergeStatuses == null
+                        it.mergeStatuses.isEmpty()
                                 && !it.isComplete
                                 && it.isOnAny
                                 && it.target.let { it is VertexFigure && it.name == "marketingCampaign" }
