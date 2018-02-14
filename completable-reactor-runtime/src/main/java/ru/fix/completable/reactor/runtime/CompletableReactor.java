@@ -126,7 +126,7 @@ public class CompletableReactor implements AutoCloseable {
                     throw new IllegalArgumentException(""
                             + "Failed to instantiate graph config instance of class: " + graphConfigClass + "."
                             + " Graph config class should have default no arg constructor."
-                            + " Graph config class should not be non static inner class.",
+                            + " If it is inner class then it sould be static.",
                             exc);
                 }
                 GlGraph graph = graphBuilder.buildGraph(graphConfig);
