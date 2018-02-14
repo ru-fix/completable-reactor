@@ -11,6 +11,7 @@ import java.util.*
  */
 open class Vertex {
 
+    //field name is used via reflection
     private var vx = GlVertex(this)
 
     init {
@@ -32,22 +33,24 @@ open class Vertex {
     fun on(vararg mergeStatuses: Enum<*>): TransitionBuilder {
         val transition = GlTransition()
         transition.mergeStatuses = HashSet(Arrays.asList(*mergeStatuses))
-        vx.transitions.add(transition)
+
 
         return GlTransitionBuilder(
                 this.vx,
-                transition
+                transition,
+                vx.transitions
         )
     }
 
     fun onAny(): TransitionBuilder {
         val transition = GlTransition()
         transition.isOnAny = true
-        vx.transitions.add(transition)
+
 
         return GlTransitionBuilder(
                 this.vx,
-                transition
+                transition,
+                vx.transitions
         )
     }
 }

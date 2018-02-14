@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class Graph<Payload> {
 
+    // Field name used via reflection
     private GlGraph graph = new GlGraph();
 
     {
