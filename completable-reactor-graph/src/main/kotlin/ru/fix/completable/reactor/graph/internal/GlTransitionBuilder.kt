@@ -10,6 +10,7 @@ class GlTransitionBuilder(
 
     override fun complete(): Vertex {
         transition.isComplete = true
+        mergeTransition(vx, transition, transitionReceiver)
         return vx.vertex
     }
 
@@ -57,54 +58,71 @@ class GlTransitionBuilder(
      * Try to merge new transition into existing one.
      * If transition does not exist add new transition to mergePoint.
      */
-    fun mergeTransition(sourceVertex: GlVertex, newTransition: GlTransition, sourceVertexTransitions:
-    MutableList<GlTransition>) {
+    fun mergeTransition(
+            sourceVertex: GlVertex,
+            newTransition: GlTransition,
+            sourceVertexTransitions: MutableList<GlTransition>) {
 
-        val targetAccessor: (GlTransition) -> GlVertex
+        if (transition.isComplete) {
+            val existingCompleteTransitions = sourceVertexTransitions.filter { it.isComplete }
+            if (existingCompleteTransitions.isNotEmpty()) {
+                existingCompleteTransitions.first().let {
+                    it.mergeStatuses = it.mergeStatuses + transition.mergeStatuses
+                }
 
-        when {
-            newTransition.handleBy != null -> targetAccessor = { transition: GlTransition -> transition.handleBy!! }
-
-            newTransition.mergeBy != null -> targetAccessor = { transition: GlTransition -> transition.mergeBy!! }
-
-            else -> throw IllegalArgumentException("Transition does not have neither handleBy neither mergeBy target")
-        }
-
-        val newTransitionTarget = targetAccessor(newTransition)
-
-        val existingTransitionToSameTarget = sourceVertexTransitions
-                .filter { targetAccessor(it) == newTransitionTarget }
-
-
-        if (existingTransitionToSameTarget.isNotEmpty()) {
-            if (existingTransitionToSameTarget.size > 1) {
-                throw IllegalArgumentException("" +
-                        "More that one transition exit" +
-                        " from ${sourceVertex.name} to ${newTransitionTarget.name}." +
-                        " Transition is redundant."
-                )
+            } else {
+                sourceVertexTransitions.add(newTransition)
             }
-
-            val existingTransition = existingTransitionToSameTarget.first()
-            if (existingTransition.isOnAny) {
-                throw IllegalArgumentException("" +
-                        "Unconditional transition from ${sourceVertex.name}" +
-                        " to ${newTransitionTarget.name} already exist." +
-                        " Transition is redundant.")
-            }
-
-            if (existingTransition.mergeStatuses.containsAll(newTransition.mergeStatuses)) {
-                throw IllegalArgumentException("" +
-                        "Transition that suite given condition already exist" +
-                        " between ${sourceVertex.name} and ${newTransitionTarget.name}." +
-                        " Transition is redundant.")
-            }
-
-            existingTransition.mergeStatuses = existingTransition.mergeStatuses.union(newTransition.mergeStatuses)
-
 
         } else {
-            sourceVertexTransitions.add(newTransition)
+            // not complete transition
+
+            val targetAccessor: (GlTransition) -> GlVertex
+
+            when {
+                newTransition.handleBy != null -> targetAccessor = { transition: GlTransition -> transition.handleBy!! }
+
+                newTransition.mergeBy != null -> targetAccessor = { transition: GlTransition -> transition.mergeBy!! }
+
+                else -> throw IllegalArgumentException("Transition does not have neither handleBy neither mergeBy target")
+            }
+
+            val newTransitionTarget = targetAccessor(newTransition)
+
+            val existingTransitionToSameTarget = sourceVertexTransitions
+                    .filter { targetAccessor(it) == newTransitionTarget }
+
+
+            if (existingTransitionToSameTarget.isNotEmpty()) {
+                if (existingTransitionToSameTarget.size > 1) {
+                    throw IllegalArgumentException("" +
+                            "More that one transition exit" +
+                            " from ${sourceVertex.name} to ${newTransitionTarget.name}." +
+                            " Transition is redundant."
+                    )
+                }
+
+                val existingTransition = existingTransitionToSameTarget.first()
+                if (existingTransition.isOnAny) {
+                    throw IllegalArgumentException("" +
+                            "Unconditional transition from ${sourceVertex.name}" +
+                            " to ${newTransitionTarget.name} already exist." +
+                            " Transition is redundant.")
+                }
+
+                if (existingTransition.mergeStatuses.containsAll(newTransition.mergeStatuses)) {
+                    throw IllegalArgumentException("" +
+                            "Transition that suite given condition already exist" +
+                            " between ${sourceVertex.name} and ${newTransitionTarget.name}." +
+                            " Transition is redundant.")
+                }
+
+                existingTransition.mergeStatuses = existingTransition.mergeStatuses.union(newTransition.mergeStatuses)
+
+
+            } else {
+                sourceVertexTransitions.add(newTransition)
+            }
         }
     }
 }

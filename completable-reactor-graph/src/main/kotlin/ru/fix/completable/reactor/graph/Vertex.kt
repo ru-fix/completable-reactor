@@ -4,7 +4,6 @@ import ru.fix.completable.reactor.graph.internal.BuilderContext
 import ru.fix.completable.reactor.graph.internal.GlTransition
 import ru.fix.completable.reactor.graph.internal.GlTransitionBuilder
 import ru.fix.completable.reactor.graph.internal.GlVertex
-import java.util.*
 
 /**
  * Graph node.
@@ -30,9 +29,9 @@ open class Vertex {
         currentGraph.vertices.add(vx)
     }
 
-    fun on(vararg mergeStatuses: Enum<*>): TransitionBuilder {
+    fun on(mergeStatus: Enum<*>): TransitionBuilder {
         val transition = GlTransition()
-        transition.mergeStatuses = HashSet(Arrays.asList(*mergeStatuses))
+        transition.mergeStatuses = hashSetOf(mergeStatus)
 
 
         return GlTransitionBuilder(
