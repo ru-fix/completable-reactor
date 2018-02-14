@@ -620,109 +620,118 @@ class GlCompletableReactorTest {
     }
 
 
-//    @Reactored({
-//            "It possible for MergePoint to have several outgoing transitions.",
-//            "This transitions could be executed conditionally.",
-//            "If condition evaluated to false than this outgoing transitions marked as dead.",
-//            "If all incoming transitions to processor marked as dead, then this processor and it's merge point marked as dead.",
-//    })
-//    @Accessors(chain = true)
-//    @Data
-//    static class DeadTransitionBreaksFlow extends IdListPayload {
-//        public enum FlowDecision {
-//            THREE, TWO
-//        }
-//
-//        FlowDecision flowDecision;
-//    }
-//
-//    @Test
-//    public void dead_transition_breaks_flow() throws Exception {
-//
-//        class Config {
-//            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
-//
-//            Processor<DeadTransitionBreaksFlow> idProcessor1 = graphBuilder.processor()
-//                    .forPayload(DeadTransitionBreaksFlow.class)
-//                    .withHandler(new IdProcessor(1)::handle)
-//                    .withMerger((pld, id) -> {
-//                        pld.idSequence.add(id);
-//                        return pld.getFlowDecision();
-//                    })
-//                    .buildProcessor();
-//
-//            Processor<IdListPayload> idProcessor2 = buildProcessor(graphBuilder, new IdProcessor(2));
-//            Processor<IdListPayload> idProcessor3 = buildProcessor(graphBuilder, new IdProcessor(3));
-//            Processor<IdListPayload> idProcessor4 = buildProcessor(graphBuilder, new IdProcessor(4));
-//
-//            MergePoint<DeadTransitionBreaksFlow> decisionMergePoint = graphBuilder.mergePoint()
-//                    .forPayload(DeadTransitionBreaksFlow.class)
-//                    .withMerger(DeadTransitionBreaksFlow::getFlowDecision)
-//                    .buildMergePoint();
-//
-//            ReactorGraph<DeadTransitionBreaksFlow> graph() {
-//                return graphBuilder.payload(DeadTransitionBreaksFlow.class)
-//                        .merge(decisionMergePoint)
-//
-//                        .mergePoint(decisionMergePoint)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handleBy(idProcessor1)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handleBy(idProcessor2)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).handleBy(idProcessor3)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handleBy(idProcessor1)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.TWO).handleBy(idProcessor3)
-//
-//                        .mergePoint(idProcessor1)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.THREE).merge(idProcessor2)
-//                        .on(DeadTransitionBreaksFlow.FlowDecision.TWO).merge(idProcessor3)
-//
-//                        .mergePoint(idProcessor2)
-//                        .onAny().merge(idProcessor3)
-//
-//                        .mergePoint(idProcessor3)
-//                        .onAny().handleBy(idProcessor4)
-//
-//                        .mergePoint(idProcessor4)
-//                        .onAny().complete()
-//
-//                        .coordinates()
-//                        .start(500, 100)
-//                        .proc(idProcessor1, 399, 309)
-//                        .proc(idProcessor2, 551, 319)
-//                        .proc(idProcessor3, 725, 302)
-//                        .proc(idProcessor4, 713, 609)
-//                        .merge(idProcessor1, 422, 473)
-//                        .merge(idProcessor2, 584, 410)
-//                        .merge(idProcessor3, 704, 526)
-//                        .merge(idProcessor4, 754, 706)
-//                        .merge(decisionMergePoint, 551, 173)
-//                        .complete(idProcessor4, 765, 773)
-//
-//                        .buildGraph();
-//
-//            }
-//        }
-//
-//        val graph = new Config().graph();
-//        printGraph(graph);
-//
-//        reactor.registerReactorGraph(graph);
-//
-//        var result = reactor.submit(
-//                new DeadTransitionBreaksFlow()
-//                        .setFlowDecision(DeadTransitionBreaksFlow.FlowDecision.THREE))
-//                .getResultFuture()
-//                .get(5, TimeUnit.MINUTES);
-//
-//        assertEquals(Arrays.asList(1, 2, 3, 4), result.idSequence);
-//
-//        result = reactor.submit(
-//                new DeadTransitionBreaksFlow()
-//                        .setFlowDecision(DeadTransitionBreaksFlow.FlowDecision.TWO))
-//                .getResultFuture()
-//                .get(5, TimeUnit.MINUTES);
-//
-//        assertEquals(Arrays.asList(1, 3, 4), result.idSequence);
-//    }
+    /*
+        It possible for Router to have several outgoing transitions.
+        This transitions could be executed conditionally.
+        If condition evaluated to false then this outgoing transitions marked as dead.
+        If all incoming transitions to handler or subgraph marked as dead, then this handler or subgraph and it's merge point marked as dead.",
+    */
+    static class DeadTransitionBreaksFlowPayload extends IdListPayload {
+        public enum FlowDecision {
+            THREE, TWO
+        }
+
+        FlowDecision flowDecision;
+
+        public DeadTransitionBreaksFlowPayload(FlowDecision flowDecision) {
+            this.flowDecision = flowDecision;
+        }
+    }
+
+    static class DeadTransitionBreaksFlowGraph extends Graph<DeadTransitionBreaksFlowPayload> {
+
+        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return pld.flowDecision;
+                });
+
+        Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        Vertex idProcessor3 = handler(new IdProcessor(3)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+
+        Vertex idProcessor1b = idProcessor1.clone();
+
+        Vertex idProcessor3b = idProcessor3.clone();
+
+
+        Vertex idProcessor4 = handler(new IdProcessor(4)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+
+        Vertex decisionMergePoint = router(pld -> pld.flowDecision);
+
+        {
+            payload()
+                    .handleBy(decisionMergePoint);
+
+            decisionMergePoint
+                    .on(DeadTransitionBreaksFlowPayload.FlowDecision.THREE).handleBy(idProcessor1)
+                    .on(DeadTransitionBreaksFlowPayload.FlowDecision.THREE).handleBy(idProcessor2)
+                    .on(DeadTransitionBreaksFlowPayload.FlowDecision.THREE).handleBy(idProcessor3)
+                    .on(DeadTransitionBreaksFlowPayload.FlowDecision.TWO).handleBy(idProcessor1)
+                    .on(DeadTransitionBreaksFlowPayload.FlowDecision.TWO).handleBy(idProcessor3);
+
+            idProcessor1
+                    .on(DeadTransitionBreaksFlowPayload.FlowDecision.THREE).mergeBy(idProcessor2)
+                    .on(DeadTransitionBreaksFlowPayload.FlowDecision.TWO).mergeBy(idProcessor3);
+
+            idProcessor2
+                    .onAny().mergeBy(idProcessor3);
+
+            idProcessor3
+                    .onAny().handleBy(idProcessor4);
+
+            idProcessor4
+                    .onAny().complete();
+
+            coordinates()
+                    .payload(500, 100)
+                    .handler(idProcessor1, 399, 309)
+                    .handler(idProcessor2, 551, 319)
+                    .handler(idProcessor3, 725, 302)
+                    .handler(idProcessor4, 713, 609)
+                    .merger(idProcessor1, 422, 473)
+                    .merger(idProcessor2, 584, 410)
+                    .merger(idProcessor3, 704, 526)
+                    .merger(idProcessor4, 754, 706)
+                    .router(decisionMergePoint, 551, 173)
+                    .complete(idProcessor4, 765, 773);
+
+        }
+    }
+
+    @Test
+    public void dead_transition_breaks_flow() throws Exception {
+
+        reactor.registerIfAbsent(DeadTransitionBreaksFlowGraph.class);
+
+        DeadTransitionBreaksFlowPayload result = reactor.submit(
+                new DeadTransitionBreaksFlowPayload(DeadTransitionBreaksFlowPayload.FlowDecision.THREE))
+                .getResultFuture()
+                .get(5, TimeUnit.MINUTES);
+
+        assertEquals(Arrays.asList(1, 2, 3, 4), result.idSequence);
+
+        result = reactor.submit(
+                new DeadTransitionBreaksFlowPayload(DeadTransitionBreaksFlowPayload.FlowDecision.TWO))
+                .getResultFuture()
+                .get(5, TimeUnit.MINUTES);
+
+        assertEquals(Arrays.asList(1, 3, 4), result.idSequence);
+    }
 //
 //    @Reactored({
 //            "Implicit merge group generated for start point if it linked with detached merge point",
