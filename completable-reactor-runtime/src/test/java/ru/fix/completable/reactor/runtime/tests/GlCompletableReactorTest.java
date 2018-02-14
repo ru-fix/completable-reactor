@@ -379,16 +379,16 @@ class GlCompletableReactorTest {
 
 
     /**
-     *  Test will check that parallel processors work fine when only one of transitions are activated.
-     *  Expected result: {0, 1}
+     * Test will check that parallel processors work fine when only one of transitions are activated.
+     * Expected result: {0, 1}
      */
     static class DeadBranchPayload extends IdListPayload {
         ThreeStateStatus threeStateStatus;
     }
 
     enum ThreeStateStatus {A, B, AB}
-    
-    static class DeadBranchGraph extends Graph<DeadBranchPayload>{
+
+    static class DeadBranchGraph extends Graph<DeadBranchPayload> {
 
         Vertex idProcessor0 = handler(new IdProcessor(0)::handle)
                 .withMerger((pld, id) -> {
@@ -426,7 +426,6 @@ class GlCompletableReactorTest {
 
             idProcessor2
                     .onAny().complete();
-
 
         }
     }
