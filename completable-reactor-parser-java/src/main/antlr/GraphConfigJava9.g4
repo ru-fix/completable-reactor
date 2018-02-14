@@ -154,6 +154,7 @@ coordinate
     :   coordinatePayload
     |   coordinateHandler
     |   coordinateSubgraph
+    |   coordinateRouter
     |   coordinateMerger
     |   coordinateComplete
     ;
@@ -161,6 +162,7 @@ coordinate
 coordinatePayload : DOT PAYLOAD LPAREN Coordinate COMMA Coordinate RPAREN;
 coordinateHandler : DOT HANDLER LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
 coordinateSubgraph : DOT SUBGRAPH LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
+coordinateRouter : DOT ROUTER LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
 coordinateMerger : DOT MERGER LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
 coordinateComplete : DOT COMPLETE LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
 
