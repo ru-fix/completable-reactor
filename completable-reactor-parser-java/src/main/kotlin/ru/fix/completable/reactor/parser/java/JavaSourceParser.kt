@@ -172,9 +172,11 @@ class JavaSourceParser(val listener: Listener) {
 
                             } ?: it.coordinateComplete()?.run {
                                 val vertexName = Identifier().text
-                                val endpoint = endpoints[vertexName] ?: return@run listener.error(
-                                        "Coordinate of endpoint for $vertexName exist at ${tokenPosition(this.start)}" +
-                                                ", but vertex $vertexName does not have complete transition.")
+                                val endpoint = endpoints[vertexName] ?: return@run listener.error("" +
+                                        "Failed to set coordinates." +
+                                        " Coordinate of endpoint for $vertexName exist" +
+                                        " at ${tokenPosition(this.start)}" +
+                                        ", but vertex $vertexName does not have complete transition.")
 
                                 endpoint.coordinates = Coordinates(
                                         Coordinate().first().text.toInt(),
@@ -182,24 +184,49 @@ class JavaSourceParser(val listener: Listener) {
 
 
                             } ?: it.coordinateHandler()?.run {
-                                handlers[Identifier().text]!!.coordinates = Coordinates(
+
+                                val vertexName = Identifier().text
+                                val handler = handlers[vertexName] ?: return@run listener.error("" +
+                                        "Failed to set coordinates." +
+                                        " Handler $vertexName not found.")
+
+                                handler.coordinates = Coordinates(
                                         Coordinate().first().text.toInt(),
                                         Coordinate().last().text.toInt())
+
 
                             } ?: it.coordinateSubgraph()?.run {
-                                subgraphs[Identifier().text]!!.coordinates = Coordinates(
+                                val vertexName = Identifier().text
+                                val subgraph = subgraphs[vertexName] ?: return@run listener.error("" +
+                                        "Failed to set coordinates." +
+                                        " Subgraph $vertexName not found.")
+
+                                subgraph.coordinates = Coordinates(
                                         Coordinate().first().text.toInt(),
                                         Coordinate().last().text.toInt())
+
 
                             } ?: it.coordinateRouter()?.run {
-                                routers[Identifier().text]!!.coordinates = Coordinates(
+                                val vertexName = Identifier().text
+                                val router = routers[vertexName] ?: return@run listener.error("" +
+                                        "Failed to set coordinates." +
+                                        " Router $vertexName not found.")
+
+                                router.coordinates = Coordinates(
                                         Coordinate().first().text.toInt(),
                                         Coordinate().last().text.toInt())
 
+
                             } ?: it.coordinateMerger().run {
-                                mergers[Identifier().text]!!.coordinates = Coordinates(
+                                val vertexName = Identifier().text
+                                val merger = mergers[vertexName] ?: return@run listener.error("" +
+                                        "Failed to set coordinates." +
+                                        " Merger $vertexName not found.")
+
+                                merger.coordinates = Coordinates(
                                         Coordinate().first().text.toInt(),
                                         Coordinate().last().text.toInt())
+
                             }
                         }
 
