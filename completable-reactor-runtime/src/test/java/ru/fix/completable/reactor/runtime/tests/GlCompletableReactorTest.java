@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.graph.Graph;
-import ru.fix.completable.reactor.graph.Subgraph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 
@@ -379,149 +378,76 @@ class GlCompletableReactorTest {
 
 
     /**
-     * Test will check that parallel processors work fine when only one of transitions are activated.
-     * Expected result: {0, 1}
+     * Router works as an regular merge point
+     * but there is no processor or subgraph or theirs result to merge.
+     * Merge point simply modify payload and send it through outgoing transitions.
+     * Expected result: {42, 1, 0}
      */
-    static class DeadBranchPayload extends IdListPayload {
-        ThreeStateStatus threeStateStatus;
-    }
 
-    enum ThreeStateStatus {A, B, AB}
-
-    static class DeadBranchGraph extends Graph<DeadBranchPayload> {
+    static class RouterFromStartPointGraph extends Graph<IdListPayload> {
 
         Vertex idProcessor0 = handler(new IdProcessor(0)::handle)
-                .withMerger((pld, id) -> {
-                    pld.idSequence.add(id);
-                    pld.threeStateStatus = ThreeStateStatus.A;
-                    return ThreeStateStatus.A;
-                });
-
-
-        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
-                .withMerger((pld, id) -> {
-                    pld.idSequence.add(id);
-                    return pld.threeStateStatus;
-                });
-
-        Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
 
+        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return Status.OK;
+                });
+
+        Vertex mergePoint = router(
+                /*
+                    # add 42
+                    Simple router example,
+                    that adds 42 to payload sequience
+                */
+                pld -> {
+                    pld.idSequence.add(42);
+                    return Status.OK;
+                });
+
         {
             payload()
-                    .handleBy(idProcessor0);
+                    .handleBy(idProcessor0)
+                    .handleBy(idProcessor1)
+                    .handleBy(mergePoint);
 
-            idProcessor0
-                    .on(ThreeStateStatus.A).handleBy(idProcessor1)
-                    .on(ThreeStateStatus.B).handleBy(idProcessor2)
-                    .on(ThreeStateStatus.AB).handleBy(idProcessor1)
-                    .on(ThreeStateStatus.AB).handleBy(idProcessor2);
+            mergePoint
+                    .onAny().mergeBy(idProcessor1);
 
             idProcessor1
-                    .on(ThreeStateStatus.A).complete()
-                    .on(ThreeStateStatus.AB, ThreeStateStatus.B).mergeBy(idProcessor2);
+                    .onAny().mergeBy(idProcessor0);
 
-            idProcessor2
+            idProcessor0
                     .onAny().complete();
+
+            coordinates()
+                    .payload(107, 9)
+                    .handler(idProcessor0, 22, 78)
+                    .handler(idProcessor1, 211, 79)
+                    .merger(idProcessor0, 126, 215)
+                    .merger(idProcessor1, 267, 187)
+                    .router(mergePoint, 424, 160)
+                    .complete(idProcessor0, 57, 274);
 
         }
     }
 
     @Test
-    public void parallel_processors_with_one_dead_branch_way() throws Exception {
+    public void router_from_start_point() throws Exception {
+        reactor.registerIfAbsent(RouterFromStartPointGraph.class);
 
-        reactor.registerIfAbsent(DeadBranchGraph.class);
+        CompletableReactor.Execution<IdListPayload> result = reactor.submit(new IdListPayload());
 
-        CompletableReactor.Execution<DeadBranchPayload> result = reactor.submit(new DeadBranchPayload());
-
-        DeadBranchPayload resultPayload = result
+        IdListPayload resultPayload = result
                 .getResultFuture()
                 .get(10, TimeUnit.SECONDS);
 
-        assertEquals(Arrays.asList(0, 1), resultPayload.idSequence);
+        assertEquals(Arrays.asList(42, 1, 0), resultPayload.idSequence);
     }
-
-//
-//    @Reactored({
-//            "Detached merge point works as an regular merge point ",
-//            "but there is no processor or subgraph or theirs result to merge.",
-//            "Merge point simply modify payload and send it through outgoing transitions.",
-//            "Expected result: {42, 1, 0}"
-//    })
-//    @Data
-//    @EqualsAndHashCode(callSuper = true)
-//    static class DetachedMergePointFromStartPointPayload extends IdListPayload {
-//    }
-//
-//    @Test
-//    public void detached_merge_point_from_start_point() throws Exception {
-//        final int MERGE_POINT_ID = 42;
-//
-//        class Config {
-//            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
-//
-//            Processor<IdListPayload> idProcessor0 = buildProcessor(graphBuilder, new IdProcessor(0));
-//            Processor<IdListPayload> idProcessor1 = buildProcessor(graphBuilder, new IdProcessor(1));
-//
-//            MergePoint<DetachedMergePointFromStartPointPayload> mergePoint = graphBuilder.mergePoint()
-//                    .forPayload(DetachedMergePointFromStartPointPayload.class)
-//                    .withMerger(
-//                            "mergePointTitle",
-//                            new String[]{
-//                                    "merge point documentation",
-//                                    "here"},
-//                            pld -> {
-//                                pld.idSequence.add(MERGE_POINT_ID);
-//                                return Status.OK;
-//                            })
-//                    .buildMergePoint();
-//
-//
-//            ReactorGraph<DetachedMergePointFromStartPointPayload> graph() {
-//                return graphBuilder.payload(DetachedMergePointFromStartPointPayload.class)
-//
-//                        .handleBy(idProcessor0)
-//                        .handleBy(idProcessor1)
-//                        .merge(mergePoint)
-//
-//                        .mergePoint(mergePoint)
-//                        .onAny().merge(idProcessor1)
-//
-//                        .mergePoint(idProcessor1)
-//                        .onAny().merge(idProcessor0)
-//
-//                        .mergePoint(idProcessor0)
-//                        .onAny().complete()
-//
-//                        .coordinates()
-//                        .start(107, 9)
-//                        .proc(idProcessor0, 22, 78)
-//                        .proc(idProcessor1, 211, 79)
-//                        .merge(idProcessor0, 126, 215)
-//                        .merge(idProcessor1, 267, 187)
-//                        .merge(mergePoint, 424, 160)
-//                        .complete(idProcessor0, 57, 274)
-//
-//                        .buildGraph();
-//            }
-//        }
-//
-//        val graph = new Config().graph();
-//        printGraph(graph);
-//
-//        reactor.registerReactorGraph(graph);
-//
-//        CompletableReactor.Execution<DetachedMergePointFromStartPointPayload> result = reactor.submit(new DetachedMergePointFromStartPointPayload());
-//
-//        DetachedMergePointFromStartPointPayload resultPayload = result
-//                .getResultFuture()
-//                .get(10, TimeUnit.SECONDS);
-//
-//        assertEquals(Arrays.asList(42, 1, 0), resultPayload.idSequence);
-//    }
 //
 //    @Reactored({
 //            "Detached merge point works as an regular merge point ",
