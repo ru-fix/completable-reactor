@@ -23,7 +23,7 @@ class RouterNode(
 
         children.add(routerNodeShape)
 
-        this.styleClass.add("routerNode");
+        this.styleClass.add("routerNode")
         this.routerNodeShape.getStyleClass().add("router")
         this.radius = 13.0
 
@@ -53,12 +53,6 @@ class RouterNode(
             val title = Label(it)
             this.children.add(title)
         }
-
-
-        router.title?.let {
-            val title = Label(it)
-            this.getChildren().add(title)
-        }
     }
 
     fun initializePopupMenu() {
@@ -67,7 +61,11 @@ class RouterNode(
         val textBuilder = StringBuilder()
 
         router.title?.let {
-            textBuilder.append(it).append("\n");
+            textBuilder.appendln(it)
+        }
+
+        router.doc?.let {
+            textBuilder.appendln(it)
         }
 
         val menuItem = MenuItem(
