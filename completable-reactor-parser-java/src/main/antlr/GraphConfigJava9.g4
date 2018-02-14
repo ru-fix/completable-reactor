@@ -28,10 +28,10 @@ payloadType
     ;
 
 vertexAssignmentBlock
-    :   'Vertex' vertexAssignmentName ASSIGN vertexBuilder SEMI
+    :   'Vertex' vertexName ASSIGN vertexBuilder SEMI
     ;
 
-vertexAssignmentName
+vertexName
     :   anyGraphKeyword
     |   Identifier
     ;
@@ -105,15 +105,12 @@ payloadTransitionBlock
     ;
 
 handleBy
-    :	(DOT 'handleBy' LPAREN handleByVertex RPAREN)
+    :	(DOT 'handleBy' LPAREN vertexName RPAREN)
     ;
 
-handleByVertex
-    :   Identifier
-    ;
 
 vertexTransitionBlock
-    :	Identifier vertexTransition+ SEMI
+    :	vertexName vertexTransition+ SEMI
     ;
 
 vertexTransition
@@ -139,11 +136,11 @@ transitionActionComplete
     ;
 
 transitionActionMergeBy
-    :   DOT 'mergeBy' LPAREN Identifier RPAREN
+    :   DOT 'mergeBy' LPAREN vertexName RPAREN
     ;
 
 transitionActionHandleBy
-    :   DOT 'handleBy' LPAREN Identifier RPAREN
+    :   DOT 'handleBy' LPAREN vertexName RPAREN
     ;
 
 coordinatesBlock

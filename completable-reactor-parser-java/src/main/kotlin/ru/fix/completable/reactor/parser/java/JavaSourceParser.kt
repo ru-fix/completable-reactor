@@ -87,7 +87,7 @@ class JavaSourceParser(val listener: Listener) {
                 graphBlocks.asSequence()
                         .mapNotNull { it.vertexAssignmentBlock() }
                         .forEach {
-                            val vertexName = it.vertexAssignmentName().text!!
+                            val vertexName = it.vertexName().text!!
 
                             createVertexFromVertexBuilder(tokens, model, vertexName, it.vertexBuilder(), filePath)
                         }
@@ -97,7 +97,7 @@ class JavaSourceParser(val listener: Listener) {
                         .mapNotNull { it.payloadTransitionBlock() }
                         .also { startPoint.source = sourceFromToken(it.firstOrNull()?.start, filePath) }
                         .flatMap { it.handleBy().asSequence() }
-                        .map { it.handleByVertex().Identifier().symbol }
+                        .map { it.vertexName().Identifier().symbol }
                         .forEach {
                             startPoint.handleBy.add(handleable[it.text] ?: return@forEach listener.error(
                                     "Outgoing transition detected from payload to vertex $it" +
@@ -110,7 +110,7 @@ class JavaSourceParser(val listener: Listener) {
                 graphBlocks.asSequence()
                         .mapNotNull { it.vertexTransitionBlock() }
                         .forEach {
-                            val transitionSourceVertex = it.Identifier().text
+                            val transitionSourceVertex = it.vertexName().text
                             val vertex = transitionable[transitionSourceVertex] ?: return@forEach listener.error(
                                     "Outgoing transition detected for vertex $transitionSourceVertex" +
                                             " at ${tokenPosition(it.start)}." +
@@ -137,14 +137,14 @@ class JavaSourceParser(val listener: Listener) {
                                         transition.target = endpoint
 
                                     } else {
-                                        transitionActionHandleBy()?.Identifier()?.run {
+                                        transitionActionHandleBy()?.vertexName()?.run {
                                             transition.target = handleable[text] ?: return@run listener.error(
-                                                    "Transition target vertex $text at ${tokenPosition(symbol)}." +
+                                                    "Transition target vertex $text at ${tokenPosition(start)}." +
                                                             " But declaration of $text not found.")
 
-                                        } ?: transitionActionMergeBy()?.Identifier()?.run {
+                                        } ?: transitionActionMergeBy()?.vertexName()?.run {
                                             transition.target = transitionable[text] as? Figure ?: return@run listener.error(
-                                                    "Transition target vertex $text at ${tokenPosition(symbol)}." +
+                                                    "Transition target vertex $text at ${tokenPosition(start)}." +
                                                             " But declaration of $text not found.")
                                         }
                                     }
@@ -220,13 +220,13 @@ class JavaSourceParser(val listener: Listener) {
     }
 
     private fun mergeTransitions(transition: Transition, transitions: MutableList<Transition>) {
-        if(transitions.isNotEmpty()){
-            val existingTransition = transitions.filter {
+        if (transitions.isNotEmpty()) {
+            val existingTransition = transitions.firstOrNull {
                 it.target == transition.target &&
-                it.mergeStatuses.isNotEmpty()
-            }.firstOrNull()
+                        it.mergeStatuses.isNotEmpty()
+            }
 
-            if(existingTransition != null && transition.mergeStatuses.isNotEmpty()){
+            if (existingTransition != null && transition.mergeStatuses.isNotEmpty()) {
                 existingTransition.mergeStatuses = existingTransition.mergeStatuses + transition.mergeStatuses
 
             } else {
