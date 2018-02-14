@@ -119,13 +119,12 @@ class JavaSourceParser(val listener: Listener) {
                             it.vertexTransition().forEach {
 
                                 val transition = Transition()
-                                vertex.transitions.add(transition)
 
                                 (it.vertexTransitionOnAny()?.run {
                                     transition.isOnAny = true
                                     transitionAction()
                                 } ?: it.vertexTransitionOn().run {
-                                    transition.mergeStatuses = listOf(transitionCondition().Identifier().last().text)
+                                    transition.mergeStatuses = setOf(transitionCondition().Identifier().last().text)
                                     transitionAction()
                                 }).run {
                                     if (transitionActionComplete() != null) {
@@ -150,6 +149,8 @@ class JavaSourceParser(val listener: Listener) {
                                         }
                                     }
                                 }
+
+                                mergeTransitions(transition, vertex.transitions)
                             }
                         }
 
@@ -190,6 +191,11 @@ class JavaSourceParser(val listener: Listener) {
                                         Coordinate().first().text.toInt(),
                                         Coordinate().last().text.toInt())
 
+                            } ?: it.coordinateRouter()?.run {
+                                routers[Identifier().text]!!.coordinates = Coordinates(
+                                        Coordinate().first().text.toInt(),
+                                        Coordinate().last().text.toInt())
+
                             } ?: it.coordinateMerger().run {
                                 mergers[Identifier().text]!!.coordinates = Coordinates(
                                         Coordinate().first().text.toInt(),
@@ -211,6 +217,25 @@ class JavaSourceParser(val listener: Listener) {
         }
 
         return result
+    }
+
+    private fun mergeTransitions(transition: Transition, transitions: MutableList<Transition>) {
+        if(transitions.isNotEmpty()){
+            val existingTransition = transitions.filter {
+                it.target == transition.target &&
+                it.mergeStatuses.isNotEmpty()
+            }.firstOrNull()
+
+            if(existingTransition != null && transition.mergeStatuses.isNotEmpty()){
+                existingTransition.mergeStatuses = existingTransition.mergeStatuses + transition.mergeStatuses
+
+            } else {
+                transitions.add(transition)
+            }
+
+        } else {
+            transitions.add(transition)
+        }
     }
 
     private fun CommonTokenStream.checkCommentsToRight(tokenIndex: Int): Comment? =
@@ -325,17 +350,8 @@ class JavaSourceParser(val listener: Listener) {
         )
     }
 
-    private fun textFromStringLiteral(token: TerminalNode): String {
-        val text = token.text
-        if (text.startsWith("\"") && text.endsWith("\"")) {
-            return text.substring(1, text.length - 1)
-        }
-        return text
-    }
-
     data class Comment(val title: String?, val doc: String?)
 
-    val lineCommentRegex = """^\s*//""".toRegex(RegexOption.MULTILINE)
 
     fun parseComment(commentText: String): Comment {
         val lines = commentText.split('\n')

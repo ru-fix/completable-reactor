@@ -28,7 +28,7 @@ data class TransitionDocumentation(
 )
 
 data class Transition(
-        var mergeStatuses: List<String>? = null,
+        var mergeStatuses: Set<String> = emptySet(),
         var isOnAny: Boolean = false,
         var isComplete: Boolean = false,
 
