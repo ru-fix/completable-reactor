@@ -49,9 +49,8 @@ class RouterNode(
             mouseEvent.consume()
         }
 
-        router.title?.let {
-            val title = Label(it)
-            this.children.add(title)
+        (router.title ?: router.name).let {
+            this.children.add(Label(it))
         }
     }
 
@@ -60,7 +59,7 @@ class RouterNode(
 
         val textBuilder = StringBuilder()
 
-        router.title?.let {
+        (router.title ?: router.name).let {
             textBuilder.appendln(it)
         }
 
@@ -68,10 +67,9 @@ class RouterNode(
             textBuilder.appendln(it)
         }
 
-        val menuItem = MenuItem(
-                if (textBuilder.isNotEmpty()) textBuilder.toString() else "router"
-        )
-        contextMenu.getItems().add(menuItem)
+        val menuItem = MenuItem(textBuilder.toString())
+
+        contextMenu.items.add(menuItem)
 
 
         menuItem.setOnAction { event -> router.source?.let { actionListener.goToSource(it) } }
