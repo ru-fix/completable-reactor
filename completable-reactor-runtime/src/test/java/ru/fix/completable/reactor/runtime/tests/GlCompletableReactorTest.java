@@ -620,12 +620,6 @@ class GlCompletableReactorTest {
     }
 
 
-    /*
-        It possible for Router to have several outgoing transitions.
-        This transitions could be executed conditionally.
-        If condition evaluated to false then this outgoing transitions marked as dead.
-        If all incoming transitions to handler or subgraph marked as dead, then this handler or subgraph and it's merge point marked as dead.
-    */
     static class DeadTransitionBreaksFlowPayload extends IdListPayload {
         public enum FlowDecision {
             THREE, TWO
@@ -638,6 +632,12 @@ class GlCompletableReactorTest {
         }
     }
 
+    /*
+        It possible for Router to have several outgoing transitions.
+        This transitions could be executed conditionally.
+        If condition evaluated to false then this outgoing transitions marked as dead.
+        If all incoming transitions to handler or subgraph marked as dead, then this handler or subgraph and it's merge point marked as dead.
+    */
     static class DeadTransitionBreaksFlowGraph extends Graph<DeadTransitionBreaksFlowPayload> {
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
@@ -696,18 +696,17 @@ class GlCompletableReactorTest {
             idProcessor3b.onAny().handleBy(idProcessor4);
 
             coordinates()
-                .handler(idProcessor1, -206, 132)
-                .handler(idProcessor1b, 254, 139)
-                .handler(idProcessor2, -64, 140)
-                .handler(idProcessor3, 63, 140)
-                .handler(idProcessor3b, 391, 131)
-                .handler(idProcessor4, 196, 362)
-                .merger(idProcessor1, -158, 214)
-                .merger(idProcessor2, -21, 253)
-                .merger(idProcessor3, 111, 272)
-                .merger(idProcessor3b, 421, 241)
-                .complete(idProcessor4, 250, 503);
-
+                    .handler(idProcessor1, -206, 132)
+                    .handler(idProcessor1b, 254, 139)
+                    .handler(idProcessor2, -64, 140)
+                    .handler(idProcessor3, 63, 140)
+                    .handler(idProcessor3b, 391, 131)
+                    .handler(idProcessor4, 196, 362)
+                    .merger(idProcessor1, -158, 214)
+                    .merger(idProcessor2, -21, 253)
+                    .merger(idProcessor3, 111, 272)
+                    .merger(idProcessor3b, 421, 241)
+                    .complete(idProcessor4, 250, 503);
 
 
         }
@@ -946,52 +945,36 @@ class GlCompletableReactorTest {
 //        assertEquals(Arrays.asList(0, 4), result.idSequence);
 //    }
 //
-//    @Reactored({
-//            "Test will check that single detached merge point id end up at payloads idList.",
-//            "Expected result: {1}"
-//    })
-//    static class SingleDetachedMergePointPayload extends IdListPayload {
-//    }
-//
-//    @Test
-//    public void single_detached_merge_point() throws Exception {
-//
-//        class Config {
-//            final ReactorGraphBuilder builder = new ReactorGraphBuilder(this);
-//
-//            MergePoint<IdListPayload> mergePoint = builder.mergePoint()
-//                    .forPayload(IdListPayload.class)
-//                    .withMerger(pld -> {
-//                        pld.idSequence.add(1);
-//                        return Status.OK;
-//                    })
-//                    .buildMergePoint();
-//
-//
-//            ReactorGraph buildGraph() {
-//                return builder.payload(SingleDetachedMergePointPayload.class)
-//                        .merge(mergePoint)
-//                        .mergePoint(mergePoint)
-//                        .onAny().complete()
-//                        .coordinates()
-//                        .start(500, 100)
-//                        .merge(mergePoint, 615, 179)
-//                        .complete(mergePoint, 615, 263)
-//
-//                        .buildGraph();
-//            }
-//        }
-//
-//        val graph = new Config().buildGraph();
-//
-//        printGraph(graph);
-//
-//        reactor.registerReactorGraph(graph);
-//
-//        SingleDetachedMergePointPayload resultPayload = reactor.submit(new SingleDetachedMergePointPayload())
-//                .getResultFuture()
-//                .get(10, TimeUnit.SECONDS);
-//
-//        assertEquals(Arrays.asList(1), resultPayload.idSequence);
-//    }
+
+    /**
+     * Test will check that single detached merge point id end up at payloads idList.
+     * Expected result: {1}
+     */
+    static class SingleRouterGraph extends Graph<IdListPayload> {
+
+        Vertex mergePoint = router(pld -> {
+            pld.idSequence.add(1);
+            return Status.OK;
+        });
+
+        {
+            payload()
+                    .handleBy(mergePoint);
+
+            mergePoint.onAny().complete();
+        }
+    }
+
+    @Test
+    public void single_detached_merge_point() throws Exception {
+
+
+        reactor.registerIfAbsent(SingleRouterGraph.class);
+
+        IdListPayload resultPayload = reactor.submit(new IdListPayload())
+                .getResultFuture()
+                .get(10, TimeUnit.SECONDS);
+
+        assertEquals(Arrays.asList(1), resultPayload.idSequence);
+    }
 }
