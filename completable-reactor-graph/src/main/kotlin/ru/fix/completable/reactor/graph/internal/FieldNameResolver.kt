@@ -10,7 +10,9 @@ class FieldNameResolver(
         private val instance: Any,
         private val fieldTypes: List<Class<out Any>>) {
 
-    private val graphConfigFields: IdentityHashMap<Any, String> by lazy {
+    private var graphConfigFields = IdentityHashMap<Any, String>()
+
+    private fun scanFields(): IdentityHashMap<Any, String> {
 
         val configFields = IdentityHashMap<Any, String>()
 
@@ -37,15 +39,22 @@ class FieldNameResolver(
             clazz = clazz.superclass
         }
 
-        configFields
+        return configFields
     }
 
     fun resolveFieldName(configField: Any): String {
 
-        return graphConfigFields[configField] ?: throw IllegalArgumentException("""
-            You are probably using local variable instead of class field in GraphConfig builder API.
-            You should convert Vertex local variable to config field.
-            Failed to resolve field within class ${instance.javaClass} that reference given object $configField.
-            """.trimIndent())
+        if (graphConfigFields.containsKey(configField)) {
+            return graphConfigFields[configField]!!
+
+        } else {
+            graphConfigFields = scanFields()
+
+            return graphConfigFields[configField] ?: throw IllegalArgumentException("""
+                You are probably using local variable instead of class field in GraphConfig builder API.
+                You should convert Vertex local variable to config field.
+                Failed to resolve field within class ${instance.javaClass} that reference given object $configField.
+                """.trimIndent())
+        }
     }
 }
