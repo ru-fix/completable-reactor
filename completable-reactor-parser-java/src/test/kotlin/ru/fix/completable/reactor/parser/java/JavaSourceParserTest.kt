@@ -111,7 +111,7 @@ class JavaSourceParserTest {
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
-                            it is VertexFigure && it.name == "userJournal"
+                            it is VertexFigure && it.name == "txLog2"
                         }
                     })
 
@@ -181,6 +181,18 @@ class JavaSourceParserTest {
                     })
                 }
 
+        vertexTransitions("txLog2")
+                .apply {
+                    assertEquals(1, count())
+
+                    assertNotNull(find {
+                        it.mergeStatuses.isEmpty()
+                                && !it.isComplete
+                                && it.isOnAny
+                                && it.target.let { it is VertexFigure && it.name == "userJournal" }
+                    })
+                }
+
         vertexTransitions("userJournal")
                 .apply {
                     assertEquals(1, count())
@@ -222,14 +234,14 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
         assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
 
-        assertEquals(Source(sourceFilePath, 196, 9, 7321), model.startPoint.source)
+        assertEquals(Source(sourceFilePath, 198, 9, 7357), model.startPoint.source)
 
-        assertEquals(Source(sourceFilePath, 85, 13, 2601), model.handlers["bank"]!!.source)
-        assertEquals(Source(sourceFilePath, 93, 15, 3054), model.mergers["bank"]!!.source)
-        assertEquals(Source(sourceFilePath, 73, 13, 2249), model.handlers["webNotification"]!!.source)
+        assertEquals(Source(sourceFilePath, 87, 13, 2637), model.handlers["bank"]!!.source)
+        assertEquals(Source(sourceFilePath, 95, 15, 3090), model.mergers["bank"]!!.source)
+        assertEquals(Source(sourceFilePath, 75, 13, 2285), model.handlers["webNotification"]!!.source)
 
-        assertEquals(Source(sourceFilePath, 225, 9, 8249), model.coordinatesStart)
-        assertEquals(Source(sourceFilePath, 240, 50, 8948), model.coordinatesEnd)
+        assertEquals(Source(sourceFilePath, 229, 9, 8327), model.coordinatesStart)
+        assertEquals(Source(sourceFilePath, 244, 50, 9026), model.coordinatesEnd)
     }
 
     @Test

@@ -53,6 +53,8 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         }
     };
 
+    Vertex txLog2 = txLog.clone();
+
     Vertex userJournal = new Vertex() {
         UserJournal userJournal;
 
@@ -203,7 +205,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
         serviceInfo
                 .on(Flow.WITHDRAWAL).handleBy(bank)
-                .on(Flow.NO_WITHDRAWAL).handleBy(userJournal)
+                .on(Flow.NO_WITHDRAWAL).handleBy(txLog2)
                 .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
                 .on(Flow.NO_WITHDRAWAL).handleBy(smsNotification)
                 .on(Flow.STOP).complete();
@@ -213,6 +215,8 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         isPartnerService.onAny().handleBy(txLog);
 
         txLog.onAny().handleBy(userJournal);
+
+        txLog2.onAny().handleBy(userJournal);
 
         userJournal.onAny().handleBy(marketingCampaign);
 
