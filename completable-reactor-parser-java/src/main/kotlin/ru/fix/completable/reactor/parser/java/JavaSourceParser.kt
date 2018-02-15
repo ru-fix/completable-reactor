@@ -3,7 +3,6 @@ package ru.fix.completable.reactor.parser.java
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.Token
-import org.antlr.v4.runtime.tree.TerminalNode
 import ru.fix.completable.reactor.model.*
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Lexer
 import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Parser
@@ -116,16 +115,18 @@ class JavaSourceParser(val listener: Listener) {
                                             " at ${tokenPosition(it.start)}." +
                                             " But declaration of $transitionSourceVertex not found.")
 
-                            it.vertexTransition().forEach {
+                            it.vertexTransition().forEach transitionIteration@ {
 
                                 val transition = Transition()
 
                                 (it.vertexTransitionOnAny()?.run {
                                     transition.isOnAny = true
                                     transitionAction()
+
                                 } ?: it.vertexTransitionOn().run {
                                     transition.mergeStatuses = setOf(transitionCondition().Identifier().last().text)
                                     transitionAction()
+
                                 }).run {
                                     if (transitionActionComplete() != null) {
                                         transition.isComplete = true
@@ -138,14 +139,16 @@ class JavaSourceParser(val listener: Listener) {
 
                                     } else {
                                         transitionActionHandleBy()?.vertexName()?.run {
-                                            transition.target = handleable[text] ?: return@run listener.error(
+                                            transition.target = handleable[text]
+                                                    ?: return@transitionIteration listener.error("" +
                                                     "Transition target vertex $text at ${tokenPosition(start)}." +
-                                                            " But declaration of $text not found.")
+                                                    " But declaration of $text not found.")
 
                                         } ?: transitionActionMergeBy()?.vertexName()?.run {
-                                            transition.target = transitionable[text] as? Figure ?: return@run listener.error(
+                                            transition.target = transitionable[text] as? Figure
+                                                    ?: return@transitionIteration listener.error("" +
                                                     "Transition target vertex $text at ${tokenPosition(start)}." +
-                                                            " But declaration of $text not found.")
+                                                    " But declaration of $text not found.")
                                         }
                                     }
                                 }
