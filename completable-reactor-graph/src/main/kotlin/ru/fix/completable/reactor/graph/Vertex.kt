@@ -52,4 +52,19 @@ open class Vertex {
                 vx.transitions
         )
     }
+
+    /**
+     * Create new instance of Vertex with same handler, merger, router or subgraph.
+     * Position on the graph and transitions are not copied, they should be defined by using
+     * transition api separately for each vertices.
+     */
+    fun clone(): Vertex {
+        return Vertex().also {
+            it.vx.handler = this.vx.handler
+            it.vx.merger = this.vx.merger
+            it.vx.router = this.vx.router
+            it.vx.subgraphPayloadBuilder = this.vx.subgraphPayloadBuilder
+            it.vx.subgraphPayloadType = this.vx.subgraphPayloadType
+        }
+    }
 }
