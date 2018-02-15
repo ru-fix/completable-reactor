@@ -100,7 +100,9 @@ class GraphViewPane(
     fun initializePopupMenu() {
         val contextMenu = ContextMenu()
 
-        val buildGraphMenuItem = MenuItem("Graph location")
+        val shortcutTitleSuffix = shortcutProvider(ShortcutType.GOTO_GRAPH)?.getTitle()?.let { " ($it)" } ?: ""
+
+        val buildGraphMenuItem = MenuItem("Graph location$shortcutTitleSuffix")
         buildGraphMenuItem.setOnAction { graphModel?.startPoint?.source?.let { actionListener.goToSource(it) } }
         contextMenu.items.add(buildGraphMenuItem)
 
