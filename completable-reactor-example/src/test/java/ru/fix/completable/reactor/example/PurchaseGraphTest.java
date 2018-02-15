@@ -21,10 +21,10 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-        PurchaseGraphConfigTest.ServicesConfig.class,
+        PurchaseGraphTest.ServicesConfig.class,
         CompletableReactorSpringSupportConfiguration.class
 })
-public class PurchaseGraphConfigTest {
+public class PurchaseGraphTest {
 
     @Configuration
     public static class ServicesConfig {
@@ -62,11 +62,16 @@ public class PurchaseGraphConfigTest {
         UserProfileManager userProfileManager() {
             return new UserProfileManager();
         }
+
+        @Bean
+        CompletableReactor reactor(){
+            return new CompletableReactor(new SimpleProfiler());
+        }
     }
 
 
     //TODO: fix after implementing CR2
-    @Ignore
+//    @Ignore
     @Test()
     public void purchase_invalid_user_and_service() throws Exception {
 
