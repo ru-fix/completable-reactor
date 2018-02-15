@@ -346,7 +346,7 @@ class JavaSourceParser(val listener: Listener) {
     private fun CommonTokenStream.checkCommentsToLeft(tokenIndex: Int): Comment? =
             this.getHiddenTokensToLeft(tokenIndex)
                     ?.takeIf { it.size > 0 }
-                    ?.first()
+                    ?.last()
                     ?.run {
                         parseComment(text)
                     }

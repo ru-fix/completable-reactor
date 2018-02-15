@@ -69,7 +69,7 @@ class RouterNode(
         }
 
         val menuItem = MenuItem(
-                if (textBuilder.isNotEmpty()) textBuilder.toString() else ""
+                if (textBuilder.isNotEmpty()) textBuilder.toString() else "router"
         )
         contextMenu.getItems().add(menuItem)
 
