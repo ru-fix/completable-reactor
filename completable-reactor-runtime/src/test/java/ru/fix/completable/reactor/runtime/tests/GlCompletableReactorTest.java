@@ -17,11 +17,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author Kamil Asfandiyarov
@@ -744,7 +746,7 @@ class GlCompletableReactorTest {
      * or subgraph merge point.
      * Expected result: {2, 0, 1, 3}
      */
-    static class StartPointMergeGroupPayload extends Graph<IdListPayload> {
+    static class StartPointRouterGraph extends Graph<IdListPayload> {
 
         Semaphore mergePoint2Semaphore = new Semaphore(0);
 
@@ -796,34 +798,26 @@ class GlCompletableReactorTest {
             idProcessor3.onAny().complete();
 
             coordinates()
-                .handler(idProcessor0, 13, 72)
-                .handler(idProcessor1, -201, 70)
-                .handler(idProcessor3, 278, 158)
-                .router(router2, 207, 65)
-                .merger(idProcessor0, 89, 207)
-                .merger(idProcessor1, -113, 249)
-                .merger(idProcessor3, 88, 319)
-                .complete(idProcessor3, 90, 413);
+                    .handler(idProcessor0, 13, 72)
+                    .handler(idProcessor1, -201, 70)
+                    .handler(idProcessor3, 278, 158)
+                    .router(router2, 207, 65)
+                    .merger(idProcessor0, 89, 207)
+                    .merger(idProcessor1, -113, 249)
+                    .merger(idProcessor3, 196, 299)
+                    .complete(idProcessor3, 185, 391);
 
         }
     }
 
     @Test
-    public void graph_with_detached_merge_point_connected_to_start_point() throws Exception {
+    public void graph_with_router_connected_to_start_point() throws Exception {
 
+        StartPointRouterGraph graph = new StartPointRouterGraph();
 
-        class Config {
+        reactor.registerIfAbsent(graph);
 
-
-        }
-
-        val graph = new Config().buildGraph();
-
-        printGraph(graph);
-
-        reactor.registerReactorGraph(graph);
-
-        val resultFuture = reactor.submit(new StartPointMergeGroupPayload()).getResultFuture();
+        CompletableFuture<IdListPayload> resultFuture = reactor.submit(new IdListPayload()).getResultFuture();
 
         try {
             resultFuture.get(1, TimeUnit.SECONDS);
@@ -832,12 +826,11 @@ class GlCompletableReactorTest {
             //ignore timeout exception
         }
 
-        mergePoint2Semaphore.release();
+        graph.mergePoint2Semaphore.release();
 
-        val result = resultFuture.get(5, TimeUnit.MINUTES);
+        IdListPayload result = resultFuture.get(5, TimeUnit.MINUTES);
 
         assertEquals(Arrays.asList(2, 0, 1, 3), result.idSequence);
-
     }
 
 //    @Reactored({
