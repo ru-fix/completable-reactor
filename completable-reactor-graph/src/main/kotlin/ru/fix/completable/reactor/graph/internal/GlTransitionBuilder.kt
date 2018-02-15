@@ -77,23 +77,24 @@ class GlTransitionBuilder(
         } else {
             // not complete transition
 
-            val targetAccessor: (GlTransition) -> GlVertex
+            val targetAccessor: (GlTransition) -> GlVertex?
 
             when {
-                newTransition.handleBy != null -> targetAccessor = { transition: GlTransition -> transition.handleBy!! }
+                newTransition.handleBy != null -> targetAccessor = { transition: GlTransition -> transition.handleBy }
 
-                newTransition.mergeBy != null -> targetAccessor = { transition: GlTransition -> transition.mergeBy!! }
+                newTransition.mergeBy != null -> targetAccessor = { transition: GlTransition -> transition.mergeBy }
 
                 else -> throw IllegalArgumentException("Transition does not have neither handleBy neither mergeBy target")
             }
 
-            val newTransitionTarget = targetAccessor(newTransition)
+            val newTransitionTarget = targetAccessor(newTransition)!!
 
             val existingTransitionToSameTarget = sourceVertexTransitions
+                    .asSequence()
                     .filter { targetAccessor(it) == newTransitionTarget }
+                    .toList()
 
-
-            if (existingTransitionToSameTarget.isNotEmpty()) {
+            if (existingTransitionToSameTarget .isNotEmpty()) {
                 if (existingTransitionToSameTarget.size > 1) {
                     throw IllegalArgumentException("" +
                             "More that one transition exit" +
