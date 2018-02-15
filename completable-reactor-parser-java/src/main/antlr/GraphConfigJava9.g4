@@ -11,6 +11,7 @@ graphBlock
     |   vertexTransitionBlock
     |   vertexInitializationBlock
     |   vertexAssignmentBlock
+    |   vertexCloningBlock
     |   coordinatesBlock
     |   graphDeclarationBlock
     ;
@@ -29,6 +30,10 @@ payloadType
 
 vertexAssignmentBlock
     :   'Vertex' vertexName ASSIGN vertexBuilder SEMI
+    ;
+
+vertexCloningBlock
+    :   'Vertex' vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI
     ;
 
 vertexName
@@ -181,6 +186,7 @@ HANDLER_SYNC : 'handlerSync';
 PAYLOAD : 'payload';
 COMPLETE : 'complete';
 ROUTER : 'router';
+CLONE : 'clone';
 
 
 anyGraphKeyword
@@ -191,6 +197,7 @@ anyGraphKeyword
     |   PAYLOAD
     |   COMPLETE
     |   ROUTER
+    |   CLONE
     ;
 
 
