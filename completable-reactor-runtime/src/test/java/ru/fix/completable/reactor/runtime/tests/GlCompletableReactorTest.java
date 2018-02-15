@@ -9,7 +9,6 @@ import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
-import ru.fix.completable.reactor.runtime.dsl.Processor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -833,121 +832,118 @@ class GlCompletableReactorTest {
         assertEquals(Arrays.asList(2, 0, 1, 3), result.idSequence);
     }
 
-//    @Reactored({
-//            "Dead transition deactivates merge point and all outgoing transitions from this merge point",
-//            "Expected result: {2, 0, 1, 3}"
-//    })
-//    @Data
-//    @EqualsAndHashCode(callSuper = true)
-//    static class DeadTransitionPayload extends IdListPayload {
-//        public enum Status {
-//            FIRST, SECOND
-//        }
-//    }
-//
-//    @Test
-//    public void dead_transition_kills_merge_point_and_all_outgoing_transitions() throws Exception {
-//
-//        Semaphore processor4mergerSemaphore = new Semaphore(0);
-//
-//
-//        class Config {
-//            final ReactorGraphBuilder builder = new ReactorGraphBuilder(this);
-//
-//            Processor<IdListPayload> idProcessor0 = builder.processor()
-//                    .forPayload(IdListPayload.class)
-//                    .withHandler(new IdProcessor(0)::handle)
-//                    .withMerger((pld, id) -> {
-//                        pld.idSequence.add(id);
-//                        return DeadTransitionPayload.Status.FIRST;
-//                    })
-//                    .buildProcessor();
-//
-//            Processor<IdListPayload> idProcessor1 = buildProcessor(builder, new IdProcessor(1));
-//            Processor<IdListPayload> idProcessor2 = buildProcessor(builder, new IdProcessor(2));
-//            Processor<IdListPayload> idProcessor3 = buildProcessor(builder, new IdProcessor(3));
-//
-//
-//            Processor<IdListPayload> idProcessor4 = builder.processor()
-//                    .forPayload(IdListPayload.class)
-//                    .withHandler(new IdProcessor(4)::handle)
-//                    .withMerger((pld, id) -> {
-//                        try {
-//                            pld.idSequence.add(id);
-//                            processor4mergerSemaphore.acquire();
-//                            return Status.OK;
-//                        } catch (Exception exc) {
-//                            throw new RuntimeException(exc);
-//                        }
-//                    })
-//                    .buildProcessor();
-//
-//
-//            ReactorGraph<DeadTransitionPayload> buildGraph() {
-//                return builder.payload(DeadTransitionPayload.class)
-//                        .handleBy(idProcessor0)
-//                        .handleBy(idProcessor1)
-//                        .handleBy(idProcessor2)
-//
-//                        .mergePoint(idProcessor0)
-//                        .on(DeadTransitionPayload.Status.FIRST).handleBy(idProcessor4)
-//                        .on(DeadTransitionPayload.Status.SECOND).merge(idProcessor1)
-//
-//                        .mergePoint(idProcessor1)
-//                        .onAny().merge(idProcessor2)
-//
-//                        .mergePoint(idProcessor2)
-//                        .onAny().handleBy(idProcessor3)
-//
-//                        .mergePoint(idProcessor3)
-//                        .onAny().complete()
-//
-//                        .mergePoint(idProcessor4)
-//                        .onAny().complete()
-//
-//                        .coordinates()
-//                        .start(461, 96)
-//                        .proc(idProcessor0, 366, 177)
-//                        .proc(idProcessor2, 649, 181)
-//                        .proc(idProcessor1, 502, 178)
-//                        .proc(idProcessor3, 708, 396)
-//                        .proc(idProcessor4, 289, 339)
-//                        .merge(idProcessor0, 407, 250)
-//                        .merge(idProcessor1, 538, 304)
-//                        .merge(idProcessor2, 682, 315)
-//                        .merge(idProcessor3, 755, 477)
-//                        .merge(idProcessor4, 330, 436)
-//                        .complete(idProcessor3, 820, 514)
-//                        .complete(idProcessor4, 396, 475)
-//
-//                        .buildGraph();
-//            }
-//        }
-//
-//        val graph = new Config().buildGraph();
-//
-//        printGraph(graph);
-//
-//        reactor.registerReactorGraph(graph);
-//
-//        val resultFuture = reactor.submit(new DeadTransitionPayload()).getResultFuture();
-//
-//
-//        try {
-//            log.info("wait for 2 seconds to test if graph executes merge points number 2 or 3");
-//            val result = resultFuture.get(2, TimeUnit.SECONDS);
-//            fail("Failed to wait graph execution. " + result);
-//        } catch (TimeoutException exc) {
-//            //ignore timeout exception
-//        }
-//
-//        processor4mergerSemaphore.release();
-//
-//        val result = resultFuture.get(5, TimeUnit.MINUTES);
-//
-//        assertEquals(Arrays.asList(0, 4), result.idSequence);
-//    }
-//
+    /**
+     * Dead transition deactivates merger and all outgoing transitions
+     * Expected result: {2, 0, 1, 3}
+     */
+    static class DeadTransitionGraph extends Graph<IdListPayload> {
+
+        Semaphore processor4mergerSemaphore = new Semaphore(0);
+
+        public enum Status {
+            FIRST, SECOND
+        }
+
+        Vertex idProcessor0 = handler(new IdProcessor(0)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return DeadTransitionGraph.Status.FIRST;
+                });
+
+        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return GlCompletableReactorTest.Status.OK;
+                });
+
+        Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return GlCompletableReactorTest.Status.OK;
+                });
+
+        Vertex idProcessor3 = handler(new IdProcessor(3)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return GlCompletableReactorTest.Status.OK;
+                });
+
+
+        Vertex idProcessor4 = handler(new IdProcessor(4)::handle)
+                .withMerger((pld, id) -> {
+                    try {
+                        pld.idSequence.add(id);
+                        processor4mergerSemaphore.acquire();
+                        return GlCompletableReactorTest.Status.OK;
+                    } catch (Exception exc) {
+                        throw new RuntimeException(exc);
+                    }
+                });
+
+
+        {
+            payload()
+                    .handleBy(idProcessor0)
+                    .handleBy(idProcessor1)
+                    .handleBy(idProcessor2);
+
+            idProcessor0
+                    .on(DeadTransitionGraph.Status.FIRST).handleBy(idProcessor4)
+                    .on(DeadTransitionGraph.Status.SECOND).mergeBy(idProcessor1);
+
+            idProcessor1
+                    .onAny().mergeBy(idProcessor2);
+
+            idProcessor2
+                    .onAny().handleBy(idProcessor3);
+
+            idProcessor3
+                    .onAny().complete();
+
+            idProcessor4
+                    .onAny().complete();
+
+            coordinates()
+                    .payload(461, 96)
+                    .handler(idProcessor0, 366, 177)
+                    .handler(idProcessor2, 649, 181)
+                    .handler(idProcessor1, 502, 178)
+                    .handler(idProcessor3, 708, 396)
+                    .handler(idProcessor4, 289, 339)
+                    .merger(idProcessor0, 407, 250)
+                    .merger(idProcessor1, 538, 304)
+                    .merger(idProcessor2, 682, 315)
+                    .merger(idProcessor3, 755, 477)
+                    .merger(idProcessor4, 330, 436)
+                    .complete(idProcessor3, 820, 514)
+                    .complete(idProcessor4, 396, 475);
+        }
+    }
+
+    @Test
+    public void dead_transition_kills_merge_point_and_all_outgoing_transitions() throws Exception {
+
+        DeadTransitionGraph graph = new DeadTransitionGraph();
+
+        reactor.registerIfAbsent(graph);
+
+        CompletableFuture<IdListPayload> resultFuture = reactor.submit(new IdListPayload()).getResultFuture();
+
+        try {
+            log.info("wait for 2 seconds to test if graph executes merge points number 2 or 3");
+            IdListPayload result = resultFuture.get(2, TimeUnit.SECONDS);
+            fail("Failed to wait graph execution. " + result);
+        } catch (TimeoutException exc) {
+            //ignore timeout exception
+        }
+
+        graph.processor4mergerSemaphore.release();
+
+        IdListPayload result = resultFuture.get(5, TimeUnit.MINUTES);
+
+        assertEquals(Arrays.asList(0, 4), result.idSequence);
+    }
+
 
     /**
      * Test will check that single detached merge point id end up at payloads idList.
