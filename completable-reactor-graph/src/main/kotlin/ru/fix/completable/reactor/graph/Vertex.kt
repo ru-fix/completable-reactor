@@ -59,12 +59,18 @@ open class Vertex {
      * transition api separately for each vertices.
      */
     fun clone(): Vertex {
-        if (vx.handler == null || vx.router == null || vx.subgraphPayloadBuilder == null) {
+
+        BuilderContext.get().getGraph()?.let { graph ->
+            if (vx.name == null) {
+                vx.name = BuilderContext.get().resolveVertexName(this)
+            }
+        }
+
+        if (vx.handler == null && vx.router == null && vx.subgraphPayloadBuilder == null) {
             throw IllegalArgumentException("" +
                     "Vertex ${vx.name} could not be cloned." +
                     " It does not have neither handler, router or subgraph.")
         }
-
 
         return Vertex().also {
             it.vx.handler = this.vx.handler
