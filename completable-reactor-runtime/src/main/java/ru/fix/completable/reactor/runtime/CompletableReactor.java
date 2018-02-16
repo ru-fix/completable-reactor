@@ -82,7 +82,7 @@ public class CompletableReactor implements AutoCloseable {
         glGraphConfigs.computeIfAbsent(graphConfig.getClass(), type -> {
 
             Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfig.getClass());
-            GlGraph graph = graphBuilder.buildGraph(graphConfig);
+            GlGraph graph = graphBuilder.buildGraph(graphConfig, dependencyInjector);
 
             Object prevGraph = glPayloadGraphs.putIfAbsent(payloadType, graph);
             if (prevGraph != null) {
@@ -129,7 +129,7 @@ public class CompletableReactor implements AutoCloseable {
                             + " If it is inner class then it sould be static.",
                             exc);
                 }
-                GlGraph graph = graphBuilder.buildGraph(graphConfig);
+                GlGraph graph = graphBuilder.buildGraph(graphConfig, dependencyInjector);
 
                 glPayloadGraphs.putIfAbsent(payloadType, graph);
 
