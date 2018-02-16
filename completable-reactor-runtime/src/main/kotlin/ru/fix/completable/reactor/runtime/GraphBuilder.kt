@@ -66,30 +66,52 @@ class GraphBuilder {
         graph.javaClass.declaredFields
                 .asSequence()
                 .filter { Vertex::class.java.isAssignableFrom(it.type) }
-                .forEach {
-
+                .forEach { vertexGraphField ->
 
                     try {
-                        if (!it.isAccessible) {
-                            it.isAccessible = true
+                        if (!vertexGraphField.isAccessible) {
+                            vertexGraphField.isAccessible = true
                         }
 
-                        if (dependencyInjector == null) {
-                            log.warn {
-                                "Found candidate for dependency injection: ${it.name} of type ${it.type}" +
-                                        ",  but dependencyInjector is not provided to Completable Reactor." +
-                                        " Skip field."
-                            }
-                        } else {
-                            // could be NULL
-                            val dependency = dependencyInjector.resolve(it.name, it.type)
-                            it.set(graph, dependency)
-                        }
+                        val vertexFieldValue = vertexGraphField.get(graph)
 
+                        if (vertexFieldValue != null) {
+
+                            vertexFieldValue.javaClass.declaredFields
+                                    .asSequence()
+                                    .filter { !it.name.contains('$') }
+//                                    .filter { it.name != "vx" }
+                                    .filter { !Graph::class.java.isAssignableFrom(it.type) }
+                                    .forEach { vertexField ->
+                                        if (dependencyInjector == null) {
+                                            log.warn {
+                                                "Found candidate for dependency injection: ${vertexField.name} of type ${vertexField.type}" +
+                                                        ",  but dependencyInjector is not provided to Completable Reactor." +
+                                                        " Skip field."
+                                            }
+                                        } else {
+                                            // could be NULL
+                                            val dependency = dependencyInjector.resolve(vertexField.name, vertexField.type)
+                                            try {
+
+                                                if (!vertexField.isAccessible) {
+                                                    vertexField.isAccessible = true
+                                                }
+
+                                                vertexField.set(vertexFieldValue, dependency)
+                                            } catch (exc: Exception) {
+                                                log.error(exc) {
+                                                    "Failed to resolve and set dependency ${vertexField.name} of type ${vertexField.type}" +
+                                                            " due to exception. Skip field."
+                                                }
+                                            }
+                                        }
+                                    }
+                        }
                     } catch (exc: Exception) {
                         log.error(exc) {
-                            "Failed to resolve and set dependency ${it.name} of type ${it.type} due to exception." +
-                                    " Skip field."
+                            "Failed to process Vertex Graph field ${vertexGraphField.name} of type " +
+                                    "${vertexGraphField.type} due to exception. Skip field."
                         }
                     }
                 }
