@@ -62,7 +62,7 @@ public class CompletableReactor implements AutoCloseable {
 
     final Map<Class<?>, PayloadStatCounters> payloadStatCounters = new ConcurrentHashMap<>();
 
-    private final AtomicLong maxPendingRequestCount = new AtomicLong(100_000);
+    private final AtomicLong maxPendingRequestCount = new AtomicLong(Long.MAX_VALUE);
 
     /**
      * Used as a synchronized monitor.
@@ -627,7 +627,7 @@ public class CompletableReactor implements AutoCloseable {
                 timeoutMs,
                 TimeUnit.MILLISECONDS);
 
-        execution.getChainExecutionFuture().thenRunAsync(() -> {
+        execution.getChainExecutionFuture().handleAsync((result, throwable) -> {
             long count = pendingRequestCount.decrementAndGet();
             if (count == 0) {
                 synchronized (pendingRequestCount) {
@@ -636,6 +636,8 @@ public class CompletableReactor implements AutoCloseable {
             }
 
             schedule.cancel(false);
+
+            return null;
         });
 
         execution.getResultFuture().thenRunAsync(payloadCall::stop);
@@ -657,6 +659,11 @@ public class CompletableReactor implements AutoCloseable {
         isClosed.set(true);
 
         if (pendingRequestCount.get() > 0) {
+
+            log.info("Closing Completable Reactor. Waiting for pending requests: {} for {} ms",
+                    pendingRequestCount.get(),
+                    closeTimeoutMs);
+
             long deadline = System.currentTimeMillis() + closeTimeoutMs.get();
 
             synchronized (pendingRequestCount) {
@@ -667,6 +674,14 @@ public class CompletableReactor implements AutoCloseable {
                     }
                     pendingRequestCount.wait(timeoutLeft);
                 }
+            }
+
+
+            if (pendingRequestCount.get() > 0) {
+                log.error("Completable Reactor forced to be closed due to timeout." +
+                        " There are {} pending request left.", pendingRequestCount.get());
+            } else {
+                log.info("Completable Reactor closed without any pending request left to process.");
             }
         }
     }

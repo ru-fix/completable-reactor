@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.runtime.tests;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -42,6 +43,12 @@ class GlCompletableReactorTest {
         reactor = new CompletableReactor(profiler)
                 .setDebugProcessingVertexGraphState(true);
     }
+
+    @AfterEach
+    void after() throws Exception{
+        reactor.close();
+    }
+
 
     enum Status {OK, UNUSED}
 
