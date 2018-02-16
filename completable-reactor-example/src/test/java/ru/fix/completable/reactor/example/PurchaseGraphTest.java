@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         PurchaseGraphTest.ServicesConfig.class,
-        CompletableReactorSpringSupportConfiguration.class,
+//        CompletableReactorSpringSupportConfiguration.class,
         PurchaseGraphTest.GraphsConfig.class
 })
 public class PurchaseGraphTest {
@@ -79,11 +79,12 @@ public class PurchaseGraphTest {
         @Bean
         PurchaseGraph purchaseGraph(){
             PurchaseGraph purchaseGraph = new PurchaseGraph();
-            reactor.registerIfAbsent(purchaseGraph);
             return purchaseGraph;
         }
     }
 
+    @Autowired
+    PurchaseGraph purchaseGraph;
 
     @Autowired
     CompletableReactor reactor;
@@ -95,6 +96,7 @@ public class PurchaseGraphTest {
     @Test()
     public void purchase_invalid_user_and_service() throws Exception {
 
+        reactor.registerIfAbsent(purchaseGraph);
 
         PurchasePayload payload = new PurchasePayload();
         payload.request.setUserId(UserProfileManager.USER_ID_INVALID).setServiceId(ServiceRegistry.SERVICE_ID_INVALID);

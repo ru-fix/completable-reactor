@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime
 
 import mu.KotlinLogging
 import ru.fix.completable.reactor.graph.Graph
+import ru.fix.completable.reactor.graph.Vertex
 import ru.fix.completable.reactor.graph.internal.GlGraph
 import ru.fix.completable.reactor.graph.internal.InternalGlAccessor
 import ru.fix.completable.reactor.graph.internal.ModelBuilder
@@ -53,28 +54,44 @@ class GraphBuilder {
             }
         }
 
-        if(dependencyInjector != null) {
-            injectDependencies(graph, dependencyInjector)
-        }
+
+        injectDependencies(graph, dependencyInjector)
+
 
         return glGraph
     }
 
-    private fun injectDependencies(graph: Graph<Any?>, dependencyInjector: DependencyInjector) {
+    private fun injectDependencies(graph: Graph<Any?>, dependencyInjector: DependencyInjector?) {
         //No need to cache since graph registration is rare operation
-        graph.javaClass.declaredFields.forEach {
-            try {
-                if (!it.isAccessible) {
-                    it.isAccessible = true
+        graph.javaClass.declaredFields
+                .asSequence()
+                .filter { Vertex::class.java.isAssignableFrom(it.type) }
+                .forEach {
+
+
+                    try {
+                        if (!it.isAccessible) {
+                            it.isAccessible = true
+                        }
+
+                        if (dependencyInjector == null) {
+                            log.warn {
+                                "Found candidate for dependency injection: ${it.name} of type ${it.type}" +
+                                        ",  but dependencyInjector is not provided to Completable Reactor." +
+                                        " Skip field."
+                            }
+                        } else {
+                            // could be NULL
+                            val dependency = dependencyInjector.resolve(it.name, it.type)
+                            it.set(graph, dependency)
+                        }
+
+                    } catch (exc: Exception) {
+                        log.error(exc) {
+                            "Failed to resolve and set dependency ${it.name} of type ${it.type} due to exception." +
+                                    " Skip field."
+                        }
+                    }
                 }
-
-                // could be NULL
-                val dependency = dependencyInjector.resolve(it.name, it.type)
-
-                it.set(graph, dependency)
-            } catch (exc: Exception) {
-                log.error { "Failed to resolve and set dependency ${it.name} ${it.type}. Skip field." }
-            }
-        }
     }
 }
