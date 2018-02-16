@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.example;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
@@ -22,7 +23,8 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         PurchaseGraphTest.ServicesConfig.class,
-        CompletableReactorSpringSupportConfiguration.class
+        CompletableReactorSpringSupportConfiguration.class,
+        PurchaseGraphTest.GraphsConfig.class
 })
 public class PurchaseGraphTest {
 
@@ -69,14 +71,30 @@ public class PurchaseGraphTest {
         }
     }
 
+    @Configuration
+    public static class GraphsConfig {
+        @Autowired
+        CompletableReactor reactor;
+
+        @Bean
+        PurchaseGraph purchaseGraph(){
+            PurchaseGraph purchaseGraph = new PurchaseGraph();
+            reactor.registerIfAbsent(purchaseGraph);
+            return purchaseGraph;
+        }
+    }
+
+
+    @Autowired
+    CompletableReactor reactor;
+
+
 
     //TODO: fix after implementing CR2
 //    @Ignore
     @Test()
     public void purchase_invalid_user_and_service() throws Exception {
 
-        CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
-        reactor.registerIfAbsent(new PurchaseGraph());
 
         PurchasePayload payload = new PurchasePayload();
         payload.request.setUserId(UserProfileManager.USER_ID_INVALID).setServiceId(ServiceRegistry.SERVICE_ID_INVALID);
@@ -84,6 +102,7 @@ public class PurchaseGraphTest {
         PurchasePayload result = reactor.submit(payload).getResultFuture().get(5, TimeUnit.SECONDS);
 
         assertEquals(UserProfileManager.Status.USER_NOT_FOUND, result.response.getStatus());
+
     }
 
 

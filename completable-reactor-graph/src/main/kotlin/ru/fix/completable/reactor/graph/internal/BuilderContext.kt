@@ -23,14 +23,14 @@ class BuilderContext {
         this.vertex = vertex
     }
 
-    fun extractVertexOrDefault(defaultVertex: GlVertex): GlVertex {
+    fun extractVertexOrDefault(defaultVertexSupplier: ()->GlVertex): GlVertex {
         if (this.vertex != null) {
             val result = this.vertex
             this.vertex = null
 
             return result!!
         } else {
-            return defaultVertex
+            return defaultVertexSupplier()
         }
     }
 

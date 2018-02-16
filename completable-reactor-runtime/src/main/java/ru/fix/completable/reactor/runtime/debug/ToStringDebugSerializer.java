@@ -11,4 +11,5 @@ public class ToStringDebugSerializer implements DebugSerializer {
     public String dumpObject(Object object) {
         return "" + object;
     }
+    //TODO add to doc example how to provide custom debug serializer
 }
