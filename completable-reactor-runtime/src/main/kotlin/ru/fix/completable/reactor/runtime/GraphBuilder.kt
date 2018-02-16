@@ -1,16 +1,19 @@
 package ru.fix.completable.reactor.runtime
 
+import mu.KotlinLogging
 import ru.fix.completable.reactor.graph.Graph
 import ru.fix.completable.reactor.graph.internal.GlGraph
 import ru.fix.completable.reactor.graph.internal.InternalGlAccessor
 import ru.fix.completable.reactor.graph.internal.ModelBuilder
 import ru.fix.completable.reactor.model.validation.*
 
+private val log = KotlinLogging.logger {}
+
 class GraphBuilder {
 
     private val modelBuilder = ModelBuilder()
 
-    fun buildGraph(graph: Graph<Any?>): GlGraph {
+    fun buildGraph(graph: Graph<Any?>, dependencyInjector: DependencyInjector?): GlGraph {
 
         val glGraph = InternalGlAccessor.graph(graph)
 
@@ -50,6 +53,28 @@ class GraphBuilder {
             }
         }
 
+        if(dependencyInjector != null) {
+            injectDependencies(graph, dependencyInjector)
+        }
+
         return glGraph
+    }
+
+    private fun injectDependencies(graph: Graph<Any?>, dependencyInjector: DependencyInjector) {
+        //No need to cache since graph registration is rare operation
+        graph.javaClass.declaredFields.forEach {
+            try {
+                if (!it.isAccessible) {
+                    it.isAccessible = true
+                }
+
+                // could be NULL
+                val dependency = dependencyInjector.resolve(it.name, it.type)
+
+                it.set(graph, dependency)
+            } catch (exc: Exception) {
+                log.error { "Failed to resolve and set dependency ${it.name} ${it.type}. Skip field." }
+            }
+        }
     }
 }
