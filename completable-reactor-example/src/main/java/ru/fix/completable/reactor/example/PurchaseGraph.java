@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex userProfile = new Vertex() {
+        @Autowired
         UserProfileManager userProfile;
 
         {
@@ -42,6 +43,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     };
 
     Vertex txLog = new Vertex() {
+        @Autowired
         TransactionLog txLog;
 
         {
@@ -56,6 +58,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     Vertex txLog2 = txLog.clone();
 
     Vertex userJournal = new Vertex() {
+        @Autowired
         UserJournal userJournal;
 
         {
@@ -81,6 +84,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
 
     Vertex bank = new Vertex() {
+        @Autowired
         Bank bank;
 
         {
@@ -133,10 +137,16 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                     });
 
     Vertex serviceInfo = new Vertex() {
+        @Autowired
         ServiceRegistry serviceRegistry;
 
         {
-            handler(pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
+            handler(
+                    /*
+                     * Loads data for given service from database.
+                     * Service could be not active. In that case purchase request will be denied.
+                     */
+                    pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
                     .withMerger(
                             //# checkServiceState
                             (pld, result) -> {
@@ -163,6 +173,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     };
 
     Vertex marketingCampaign = new Vertex() {
+        @Autowired
         MarketingService marketingService;
 
         {
