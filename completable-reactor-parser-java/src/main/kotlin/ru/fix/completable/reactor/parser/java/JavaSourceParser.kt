@@ -148,7 +148,16 @@ class JavaSourceParser(val listener: Listener) {
                                     transitionAction()
 
                                 } ?: it.vertexTransitionOn().run {
-                                    transition.mergeStatuses = setOf(transitionCondition().Identifier().last().text)
+                                    val status = transitionCondition().Identifier().last().text
+                                    transition.mergeStatuses = setOf(status)
+
+                                    tokens.checkCommentsToLeft(this.start.tokenIndex)?.let {
+                                        transition.transitionDocs.add(TransitionDocumentation(
+                                                mergeStatus = status,
+                                                docs = it.doc ?: ""))
+                                    }
+
+
                                     transitionAction()
 
                                 }).run {

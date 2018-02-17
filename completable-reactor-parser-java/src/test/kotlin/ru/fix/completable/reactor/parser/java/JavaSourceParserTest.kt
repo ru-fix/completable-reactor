@@ -62,7 +62,7 @@ class JavaSourceParserTest {
 
         assertEquals("PurchasePayload", model.startPoint.payloadType)
         assertEquals("PurchaseGraph", model.graphClass)
-        assertEquals("Define purchase process when user buys good in the shop.", model.startPoint.doc)
+        assertEquals("Defines purchase process when user buys good in the shop.", model.startPoint.doc)
 
         assertEquals(
                 listOf("userProfile", "serviceInfo"),
@@ -80,7 +80,7 @@ class JavaSourceParserTest {
                     })
 
                     assertEquals(
-                            Coordinates(963, 258),
+                            Coordinates(897, 225),
                             find { it.mergeStatuses == setOf("STOP") }?.target?.coordinates)
 
                     assertNotNull(find {
@@ -141,7 +141,7 @@ class JavaSourceParserTest {
                     })
 
                     assertEquals(
-                            Coordinates(480, 310),
+                            Coordinates(497, 293),
                             find { it.mergeStatuses == setOf("STOP") }?.target?.coordinates)
                 }
 
@@ -205,6 +205,34 @@ class JavaSourceParserTest {
                     })
                 }
 
+        vertexTransitions("marketingCampaign")
+                .apply {
+                    assertEquals(2, count())
+
+                    assertNotNull(find {
+                        it.mergeStatuses.singleOrNull() == "BONUS_EXIST"
+                                && !it.isComplete
+                                && !it.isOnAny
+                                && it.target.let { it is VertexFigure && it.name == "bonusPurchaseSubgraph" }
+                    }?.also {
+                        val docs = it.transitionDocs.singleOrNull()
+                        assertNotNull(docs)
+                        assertEquals("BONUS_EXIST", docs!!.mergeStatus)
+                        assertEquals("User can claim bonus purchase", docs.docs)
+                    })
+
+                    assertNotNull(find {
+                        it.mergeStatuses.singleOrNull() == "NO_BONUS"
+                                && it.isComplete
+                                && !it.isOnAny
+                                && it.target.let { it is EndPoint }
+                    }?.also {
+                        val docs = it.transitionDocs.singleOrNull()
+                        assertNotNull(docs)
+                        assertEquals("NO_BONUS", docs!!.mergeStatus)
+                        assertEquals("User does not have any bonuses", docs.docs)
+                    })
+                }
 
         assertEquals("CheckWithdraw", model.mergers["bank"]!!.title)
         assertEquals("check profile state", model.mergers["userProfile"]!!.title)
@@ -218,30 +246,16 @@ class JavaSourceParserTest {
         }
 
 
-        assertEquals(Coordinates(680, 60), model.startPoint.coordinates)
-        assertEquals(Coordinates(410, 440), model.handleable["bank"]!!.coordinates)
-        assertEquals(Coordinates(880, 430), model.handleable["webNotification"]!!.coordinates)
-        assertEquals(Coordinates(850, 450), model.handleable["smsNotification"]!!.coordinates)
-        assertEquals(Coordinates(480, 120), model.handleable["serviceInfo"]!!.coordinates)
-        assertEquals(Coordinates(420, 650), model.handleable["txLog"]!!.coordinates)
-        assertEquals(Coordinates(680, 820), model.handleable["userJournal"]!!.coordinates)
-        assertEquals(Coordinates(770, 120), model.handleable["userProfile"]!!.coordinates)
-        assertEquals(Coordinates(480, 550), model.mergers["bank"]!!.coordinates)
-        assertEquals(Coordinates(640, 280), model.mergers["serviceInfo"]!!.coordinates)
-        assertEquals(Coordinates(530, 770), model.mergers["txLog"]!!.coordinates)
-        assertEquals(Coordinates(760, 930), model.mergers["userJournal"]!!.coordinates)
-        assertEquals(Coordinates(806, 201), model.mergers["userProfile"]!!.coordinates)
-        assertEquals(Coordinates(480, 310), model.endpoints["serviceInfo"]!!.coordinates)
-        assertEquals(Coordinates(963, 258), model.endpoints["userProfile"]!!.coordinates)
+        assertEquals(Coordinates(627, 46), model.startPoint.coordinates)
+        assertEquals(Coordinates(349, 377), model.handleable["bank"]!!.coordinates)
+        assertEquals(Coordinates(926, 333), model.handleable["webNotification"]!!.coordinates)
+        assertEquals(Coordinates( 378, 441), model.mergers["bank"]!!.coordinates)
+        assertEquals(Coordinates(497, 293), model.endpoints["serviceInfo"]!!.coordinates)
 
-        assertEquals(Source(sourceFilePath, 198, 9, 7357), model.startPoint.source)
+        assertEquals(Source(sourceFilePath, 212, 9, 7712), model.startPoint.source)
 
-        assertEquals(Source(sourceFilePath, 87, 13, 2637), model.handlers["bank"]!!.source)
-        assertEquals(Source(sourceFilePath, 95, 15, 3090), model.mergers["bank"]!!.source)
-        assertEquals(Source(sourceFilePath, 75, 13, 2285), model.handlers["webNotification"]!!.source)
+        assertEquals(Source(sourceFilePath, 94, 13, 2757), model.handlers["bank"]!!.source)
 
-        assertEquals(Source(sourceFilePath, 229, 9, 8327), model.coordinatesStart)
-        assertEquals(Source(sourceFilePath, 244, 50, 9026), model.coordinatesEnd)
     }
 
     @Test
