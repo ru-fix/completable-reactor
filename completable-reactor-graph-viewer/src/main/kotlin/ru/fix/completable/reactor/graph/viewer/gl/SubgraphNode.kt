@@ -20,14 +20,10 @@ class SubgraphNode(
         this.styleClass.add("subgraph")
 
 
-        val nameLabel = Label(subgraph.name)
+        val nameLabel = Label("${subgraph.name}<${subgraph.payloadClass}>")
         nameLabel.font = Font(16.0)
 
-        val payloadClassLabel = Label(subgraph.payloadClass)
-        payloadClassLabel.font = Font(14.0)
-
         this.children.add(nameLabel)
-        this.children.add(payloadClassLabel)
         subgraph.title?.let { this.children.add(Text(it)) }
 
         this.setOnMouseClicked { event ->

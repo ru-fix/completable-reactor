@@ -5,6 +5,7 @@ import javafx.scene.control.ContextMenu
 import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.layout.Pane
+import javafx.scene.text.Font
 import ru.fix.completable.reactor.model.Router
 
 /**
@@ -17,7 +18,7 @@ class RouterNode(
 
     val routerNodeShape = Pane()
 
-    var radius: Double = 0.0
+    var radius: Double = 18.0
 
     init {
 
@@ -25,7 +26,7 @@ class RouterNode(
 
         this.styleClass.add("routerNode")
         this.routerNodeShape.getStyleClass().add("router")
-        this.radius = 13.0
+
 
 
         this.routerNodeShape.prefWidth = radius * 2;
@@ -50,7 +51,9 @@ class RouterNode(
         }
 
         (router.title ?: router.name).let {
-            this.children.add(Label(it))
+            val label = Label(it)
+            label.font = Font(16.0)
+            this.children.add(label)
         }
     }
 

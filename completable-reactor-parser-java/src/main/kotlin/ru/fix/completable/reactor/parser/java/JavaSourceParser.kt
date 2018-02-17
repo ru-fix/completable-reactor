@@ -495,3 +495,6 @@ class JavaSourceParser(val listener: Listener) {
         return Comment(title, doc.takeIf { it.isNotBlank() })
     }
 }
+
+//TODO: withEmptyMerger()
+//TODO: maybe remove handlerSync because it behave as router?
