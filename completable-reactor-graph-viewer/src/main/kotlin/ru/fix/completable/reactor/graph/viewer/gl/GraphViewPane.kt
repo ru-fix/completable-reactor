@@ -309,8 +309,15 @@ class GraphViewPane(
 
         pane.requestResize({})
 
-        vvalue = 0.5
-        hvalue = 0.5
+        if(resetViewer) {
+            vvalue = 0.5
+            hvalue = 0.5
+
+        } else {
+            hvalue = oldScrollPosition.x
+            vvalue = oldScrollPosition.y
+        }
+
 
         //TODO during first opening scroll pane so payload will be displayed in top middle position
         return this

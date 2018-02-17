@@ -97,7 +97,7 @@ public class PurchaseGraphTest {
 
 
     @Test()
-    public void purchase_invalid_user_and_service() throws Exception {
+    public void invalid_user_purchases_invalid_service() throws Exception {
 
         PurchasePayload payload = new PurchasePayload();
         payload.request.setUserId(UserProfileManager.USER_ID_INVALID).setServiceId(ServiceRegistry.SERVICE_ID_INVALID);
@@ -109,7 +109,7 @@ public class PurchaseGraphTest {
     }
 
     @Test
-    public void purchase_car_wash() throws Exception {
+    public void john_purchase_car_wash() throws Exception {
         PurchasePayload payload = new PurchasePayload();
         payload.request.setUserId(UserProfileManager.USER_ID_JOHN).setServiceId(ServiceRegistry.SERVICE_ID_CAR_WASH);
 
