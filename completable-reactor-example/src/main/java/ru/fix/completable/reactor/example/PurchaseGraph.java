@@ -18,7 +18,10 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
         {
             handler(
-                    //# load user profile
+                    /*
+                    * # load user profile
+                    * Loads user profile from database by user id
+                    */
                     pld -> userProfile.loadUserProfileById(pld.request.getUserId())
             ).withMerger(
                     //# check profile state
@@ -239,22 +242,26 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
         coordinates()
                 .payload(627, 46)
-                .handler(bank, 410, 440)
-                .handler(serviceInfo, 480, 120)
-                .handler(smsNotification, 850, 450)
-                .handler(txLog, 433, 702)
-                .handler(txLog2, 664, 493)
-                .handler(userJournal, 680, 820)
-                .handler(userProfile, 770, 120)
-                .handler(webNotification, 959, 401)
-                .router(isPartnerService, 420, 599)
-                .merger(bank, 437, 517)
-                .merger(serviceInfo, 640, 280)
-                .merger(txLog, 530, 770)
-                .merger(userJournal, 760, 930)
-                .merger(userProfile, 806, 201)
-                .complete(marketingCampaign, 972, 1147)
-                .complete(serviceInfo, 480, 310)
-                .complete(userProfile, 963, 258);
+                .handler(bank, 349, 377)
+                .handler(marketingCampaign, 595, 806)
+                .handler(serviceInfo, 565, 96)
+                .handler(smsNotification, 823, 392)
+                .handler(txLog, 434, 586)
+                .handler(txLog2, 700, 481)
+                .handler(userJournal, 554, 694)
+                .handler(userProfile, 734, 97)
+                .handler(webNotification, 926, 333)
+                .router(isPartnerService, 376, 513)
+                .merger(bank, 378, 441)
+                .merger(bonusPurchaseSubgraph, 582, 1033)
+                .merger(serviceInfo, 643, 232)
+                .merger(txLog, 464, 658)
+                .merger(txLog2, 719, 551)
+                .merger(userJournal, 593, 757)
+                .merger(userProfile, 737, 160)
+                .complete(bonusPurchaseSubgraph, 578, 1086)
+                .complete(marketingCampaign, 775, 934)
+                .complete(serviceInfo, 497, 293)
+                .complete(userProfile, 897, 225);
     }
 }
