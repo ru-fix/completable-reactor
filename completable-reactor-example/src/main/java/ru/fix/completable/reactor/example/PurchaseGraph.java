@@ -8,12 +8,12 @@ import ru.fix.completable.reactor.graph.Vertex;
 import java.math.BigDecimal;
 
 /**
- * Define purchase process when user buys good in the shop.
+ * Defines purchase process when user buys good in the shop.
  */
 public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex userProfile = new Vertex() {
-        @Autowired
+
         UserProfileManager userProfile;
 
         {
@@ -43,7 +43,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     };
 
     Vertex txLog = new Vertex() {
-        @Autowired
+
         TransactionLog txLog;
 
         {
@@ -58,7 +58,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     Vertex txLog2 = txLog.clone();
 
     Vertex userJournal = new Vertex() {
-        @Autowired
+
         UserJournal userJournal;
 
         {
@@ -84,7 +84,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
 
     Vertex bank = new Vertex() {
-        @Autowired
+
         Bank bank;
 
         {
@@ -137,7 +137,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                     });
 
     Vertex serviceInfo = new Vertex() {
-        @Autowired
+
         ServiceRegistry serviceRegistry;
 
         {
@@ -173,7 +173,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     };
 
     Vertex marketingCampaign = new Vertex() {
-        @Autowired
+
         MarketingService marketingService;
 
         {
