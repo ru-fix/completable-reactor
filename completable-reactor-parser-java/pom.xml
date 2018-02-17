@@ -77,10 +77,13 @@
   </dependencies>
 
   <build>
-
     <plugins>
-
       <plugin>
+        <!--
+          To reg-generate source files from antlr sources
+          run in parser module working directory command:
+          mvn antlr4:antlr4
+        -->
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
         <version>${antlr.version}</version>
@@ -96,13 +99,6 @@
             <argument>ru.fix.completable.reactor.parser.java.antlr</argument>
           </arguments>
         </configuration>
-        <!--<executions>-->
-        <!--<execution>-->
-        <!--<goals>-->
-        <!--<goal>antlr4</goal>-->
-        <!--</goals>-->
-        <!--</execution>-->
-        <!--</executions>-->
       </plugin>
     </plugins>
   </build>

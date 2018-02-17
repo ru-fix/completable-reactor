@@ -18,14 +18,14 @@ private val log = KotlinLogging.logger {}
  */
 class JavaSourceParserTest {
 
-    fun readResource(resource: String): String {
+    private fun readResource(resource: String): String {
         return JavaSourceParserTest::class.java.getResourceAsStream(resource)
                 .reader(StandardCharsets.UTF_8)
                 .use { it.readText() }
     }
 
     @Test
-    fun `build compilation model for single purchase graph`() {
+    fun build_compilation_model_for_single_purchase_graph() {
         val sourceFilePath = "/single-purchase-graph.java.txt"
 
         val body = readResource(sourceFilePath)
@@ -245,7 +245,7 @@ class JavaSourceParserTest {
     }
 
     @Test
-    fun `two test graphs in single source`() {
+    fun two_test_graphs_in_single_source() {
         val sourceFilePath = "/two-test-graphs-in-one-source.java.txt"
         val body = readResource(sourceFilePath)
 
@@ -288,7 +288,7 @@ class JavaSourceParserTest {
 
 
     @Test
-    fun `parse various comments`() {
+    fun parse_various_comments() {
         val parser = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 fail(msg)
