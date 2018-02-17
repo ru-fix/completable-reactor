@@ -89,9 +89,10 @@ class Viewer(
 
             if (models.isEmpty()) {
                 notificator.warn("" +
-                        "Can not open graph for give source." +
+                        "Can not open graph for given source." +
                         " Source does not contain graph classes." +
                         " Source: ${virtualFile.path}")
+                return
             }
 
             val model = if (models.size == 1) {
