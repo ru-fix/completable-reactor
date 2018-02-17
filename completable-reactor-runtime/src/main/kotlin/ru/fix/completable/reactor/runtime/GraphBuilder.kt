@@ -66,21 +66,23 @@ class GraphBuilder {
         graph.javaClass.declaredFields
                 .asSequence()
                 .filter { Vertex::class.java.isAssignableFrom(it.type) }
-                .forEach { vertexGraphField ->
+                .forEach { graphField ->
 
                     try {
-                        if (!vertexGraphField.isAccessible) {
-                            vertexGraphField.isAccessible = true
+                        if (!graphField.isAccessible) {
+                            graphField.isAccessible = true
                         }
 
-                        val vertexFieldValue = vertexGraphField.get(graph)
+                        val graphFieldValue = graphField.get(graph)
 
-                        if (vertexFieldValue != null) {
+                        // graph field could be of type Vertex or could be anonymous class that extends Vertex
+                        // we interested only in anonymous classes, only them could have dependencies waiting to be
+                        // injected
+                        if (graphFieldValue != null && graphFieldValue.javaClass != Vertex::class.java) {
 
-                            vertexFieldValue.javaClass.declaredFields
+                            graphFieldValue.javaClass.declaredFields
                                     .asSequence()
                                     .filter { !it.name.contains('$') }
-//                                    .filter { it.name != "vx" }
                                     .filter { !Graph::class.java.isAssignableFrom(it.type) }
                                     .forEach { vertexField ->
                                         if (dependencyInjector == null) {
@@ -98,7 +100,7 @@ class GraphBuilder {
                                                     vertexField.isAccessible = true
                                                 }
 
-                                                vertexField.set(vertexFieldValue, dependency)
+                                                vertexField.set(graphFieldValue, dependency)
                                             } catch (exc: Exception) {
                                                 log.error(exc) {
                                                     "Failed to resolve and set dependency ${vertexField.name} of type ${vertexField.type}" +
@@ -110,8 +112,8 @@ class GraphBuilder {
                         }
                     } catch (exc: Exception) {
                         log.error(exc) {
-                            "Failed to process Vertex Graph field ${vertexGraphField.name} of type " +
-                                    "${vertexGraphField.type} due to exception. Skip field."
+                            "Failed to process Vertex Graph field ${graphField.name} of type " +
+                                    "${graphField.type} due to exception. Skip field."
                         }
                     }
                 }
