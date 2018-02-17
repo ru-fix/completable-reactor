@@ -32,7 +32,7 @@ data class Transition(
         var isOnAny: Boolean = false,
         var isComplete: Boolean = false,
 
-        val transitionsDoc: List<TransitionDocumentation> = ArrayList(),
+        val transitionDocs: MutableList<TransitionDocumentation> = ArrayList(),
 
         var transitionOnAnySource: Source? = null,
         var transitionOnStatusSource: Map<String, Source>? = null,

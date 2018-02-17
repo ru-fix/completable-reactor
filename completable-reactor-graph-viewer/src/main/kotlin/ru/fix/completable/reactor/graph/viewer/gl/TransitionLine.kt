@@ -286,7 +286,7 @@ class TransitionLine(
             val mergeStatusDocumentation = HashMap<String, String>()
 
             transition.mergeStatuses?.forEach { status -> mergeStatusDocumentation[status] = "" }
-            transition.transitionsDoc.forEach { doc -> mergeStatusDocumentation[doc.mergeStatus] = doc.docs }
+            transition.transitionDocs.forEach { doc -> mergeStatusDocumentation[doc.mergeStatus] = doc.docs }
 
 
             for ((status, statusDoc) in mergeStatusDocumentation) {

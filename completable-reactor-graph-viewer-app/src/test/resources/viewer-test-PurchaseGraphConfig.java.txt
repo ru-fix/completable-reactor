@@ -8,16 +8,20 @@ import ru.fix.completable.reactor.graph.Vertex;
 import java.math.BigDecimal;
 
 /**
- * Define purchase process when user buys good in the shop.
+ * Defines purchase process when user buys good in the shop.
  */
 public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex userProfile = new Vertex() {
+
         UserProfileManager userProfile;
 
         {
             handler(
-                    //# load user profile
+                    /*
+                     * # load user profile
+                     * Loads user profile from database by user id
+                     */
                     pld -> userProfile.loadUserProfileById(pld.request.getUserId())
             ).withMerger(
                     //# check profile state
@@ -42,6 +46,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     };
 
     Vertex txLog = new Vertex() {
+
         TransactionLog txLog;
 
         {
@@ -53,7 +58,10 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         }
     };
 
+    Vertex txLog2 = txLog.clone();
+
     Vertex userJournal = new Vertex() {
+
         UserJournal userJournal;
 
         {
@@ -79,6 +87,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
 
     Vertex bank = new Vertex() {
+
         Bank bank;
 
         {
@@ -131,10 +140,16 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                     });
 
     Vertex serviceInfo = new Vertex() {
+
         ServiceRegistry serviceRegistry;
 
         {
-            handler(pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
+            handler(
+                    /*
+                     * Loads data for given service from database.
+                     * Service could be not active. In that case purchase request will be denied.
+                     */
+                    pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
                     .withMerger(
                             //# checkServiceState
                             (pld, result) -> {
@@ -161,6 +176,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     };
 
     Vertex marketingCampaign = new Vertex() {
+
         MarketingService marketingService;
 
         {
@@ -203,7 +219,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
         serviceInfo
                 .on(Flow.WITHDRAWAL).handleBy(bank)
-                .on(Flow.NO_WITHDRAWAL).handleBy(userJournal)
+                .on(Flow.NO_WITHDRAWAL).handleBy(txLog2)
                 .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
                 .on(Flow.NO_WITHDRAWAL).handleBy(smsNotification)
                 .on(Flow.STOP).complete();
@@ -214,29 +230,40 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
         txLog.onAny().handleBy(userJournal);
 
+        txLog2.onAny().handleBy(userJournal);
+
         userJournal.onAny().handleBy(marketingCampaign);
 
         marketingCampaign
+                //User can claim bonus purchase
                 .on(Flow.BONUS_EXIST).handleBy(bonusPurchaseSubgraph)
+                //User does not have any bonuses
                 .on(Flow.NO_BONUS).complete();
 
         bonusPurchaseSubgraph.onAny().complete();
 
         coordinates()
-                .payload(680, 60)
-                .handler(bank, 410, 440)
-                .handler(webNotification, 880, 430)
-                .handler(smsNotification, 850, 450)
-                .handler(serviceInfo, 480, 120)
-                .handler(txLog, 420, 650)
-                .handler(userJournal, 680, 820)
-                .handler(userProfile, 770, 120)
-                .merger(bank, 480, 550)
-                .merger(serviceInfo, 640, 280)
-                .merger(txLog, 530, 770)
-                .merger(userJournal, 760, 930)
-                .merger(userProfile, 806, 201)
-                .complete(serviceInfo, 480, 310)
-                .complete(userProfile, 963, 258);
+                .payload(627, 46)
+                .handler(bank, 349, 377)
+                .handler(marketingCampaign, 595, 806)
+                .handler(serviceInfo, 565, 96)
+                .handler(smsNotification, 823, 392)
+                .handler(txLog, 434, 586)
+                .handler(txLog2, 700, 481)
+                .handler(userJournal, 554, 694)
+                .handler(userProfile, 734, 97)
+                .handler(webNotification, 926, 333)
+                .router(isPartnerService, 376, 513)
+                .merger(bank, 378, 441)
+                .merger(bonusPurchaseSubgraph, 582, 1033)
+                .merger(serviceInfo, 643, 232)
+                .merger(txLog, 464, 658)
+                .merger(txLog2, 719, 551)
+                .merger(userJournal, 593, 757)
+                .merger(userProfile, 737, 160)
+                .complete(bonusPurchaseSubgraph, 578, 1086)
+                .complete(marketingCampaign, 775, 934)
+                .complete(serviceInfo, 497, 293)
+                .complete(userProfile, 897, 225);
     }
 }

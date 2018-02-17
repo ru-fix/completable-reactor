@@ -19,9 +19,9 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         {
             handler(
                     /*
-                    * # load user profile
-                    * Loads user profile from database by user id
-                    */
+                     * # load user profile
+                     * Loads user profile from database by user id
+                     */
                     pld -> userProfile.loadUserProfileById(pld.request.getUserId())
             ).withMerger(
                     //# check profile state
@@ -235,7 +235,9 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         userJournal.onAny().handleBy(marketingCampaign);
 
         marketingCampaign
+                //User can claim bonus purchase
                 .on(Flow.BONUS_EXIST).handleBy(bonusPurchaseSubgraph)
+                //User does not have any bonuses
                 .on(Flow.NO_BONUS).complete();
 
         bonusPurchaseSubgraph.onAny().complete();
