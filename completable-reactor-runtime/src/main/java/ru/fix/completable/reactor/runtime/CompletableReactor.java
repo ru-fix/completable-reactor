@@ -76,7 +76,7 @@ public class CompletableReactor implements AutoCloseable {
     private final ConcurrentHashMap<Class<? extends Graph>, Boolean> glGraphConfigs = new ConcurrentHashMap<>();
 
     public <GraphConfigType extends Graph>
-    void registerIfAbsent(GraphConfigType graphConfig) {
+    void registerGraphIfAbsent(GraphConfigType graphConfig) {
         Objects.requireNonNull(graphConfig, "graphConfig");
 
         glGraphConfigs.computeIfAbsent(graphConfig.getClass(), type -> {
@@ -106,7 +106,7 @@ public class CompletableReactor implements AutoCloseable {
      * Validated that there is no conflicts between merging vertices and all required endpoints exist.
      */
     public <PayloadType, GraphConfigType extends Graph>
-    void registerIfAbsent(Class<GraphConfigType> graphConfigClass) {
+    void registerGraphIfAbsent(Class<GraphConfigType> graphConfigClass) {
         Objects.requireNonNull(graphConfigClass, "graphConfigClass");
 
         glGraphConfigs.computeIfAbsent(graphConfigClass, type -> {
@@ -386,6 +386,7 @@ public class CompletableReactor implements AutoCloseable {
     }
 
     /**
+     * //TODO remove
      * Register functional graph implementation.
      * For test subgraph mocking purpose.
      * If graph with same payload already registered by {@link #registerReactorGraph(ReactorGraph)}
@@ -395,7 +396,27 @@ public class CompletableReactor implements AutoCloseable {
      * @param payloadProcessingFunction
      * @param <PayloadType>
      */
+    @Deprecated
     public <PayloadType> void registerReactorGraph(
+            Class<PayloadType> payloadType,
+            Function<PayloadType, CompletableFuture<PayloadType>> payloadProcessingFunction) {
+
+        inlinePayloadGraphs.put(payloadType, payloadProcessingFunction);
+        payloadGraphs.remove(payloadType);
+    }
+
+
+    /**
+     * Register functional graph implementation.
+     * For test subgraph mocking purpose.
+     * If graph with same payload already registered by {@link #registerReactorGraph(ReactorGraph)}
+     * it will be unregistered.
+     *
+     * @param payloadType
+     * @param payloadProcessingFunction
+     * @param <PayloadType>
+     */
+    public <PayloadType> void registerGraph(
             Class<PayloadType> payloadType,
             Function<PayloadType, CompletableFuture<PayloadType>> payloadProcessingFunction) {
 

@@ -85,7 +85,7 @@ class GlCompletableReactorTest {
     @Test
     void single_processor() throws Exception {
 
-        reactor.registerIfAbsent(SingleProcessorGraph.class);
+        reactor.registerGraphIfAbsent(SingleProcessorGraph.class);
 
         IdListPayload resultPayload = reactor.submit(new IdListPayload())
                 .getResultFuture()
@@ -126,7 +126,7 @@ class GlCompletableReactorTest {
     @Test
     public void two_processors_sequential_merge() throws Exception {
 
-        reactor.registerIfAbsent(TwoProcessorSequentialMergeGraph.class);
+        reactor.registerGraphIfAbsent(TwoProcessorSequentialMergeGraph.class);
         CompletableReactor.Execution<IdListPayload> execution = reactor.submit(new IdListPayload());
         IdListPayload resultPayload = execution.getResultFuture().get(10, TimeUnit.SECONDS);
 
@@ -179,7 +179,7 @@ class GlCompletableReactorTest {
     public void detached_processor() throws Exception {
 
         DetachedProcessorGraph graph = new DetachedProcessorGraph();
-        reactor.registerIfAbsent(graph);
+        reactor.registerGraphIfAbsent(graph);
 
         CompletableReactor.Execution<IdListPayload> result = reactor.submit(new IdListPayload());
 
@@ -293,8 +293,8 @@ class GlCompletableReactorTest {
     @Test
     public void run_subgraph() throws Exception {
 
-        reactor.registerIfAbsent(ParentGraphPayloadGraph.class);
-        reactor.registerIfAbsent(SubgraphPayloadGraph.class);
+        reactor.registerGraphIfAbsent(ParentGraphPayloadGraph.class);
+        reactor.registerGraphIfAbsent(SubgraphPayloadGraph.class);
 
         SubgraphPaylaod subgraphResult = reactor.submit(new SubgraphPaylaod()).getResultFuture().get(5, SECONDS);
         assertEquals(Arrays.asList(11, 12, 13), subgraphResult.idSequence);
@@ -343,7 +343,7 @@ class GlCompletableReactorTest {
         SingleInterfaceProcessorGraph graph = new SingleInterfaceProcessorGraph();
         graph.processorInterface = processorInterface;
 
-        reactor.registerIfAbsent(graph);
+        reactor.registerGraphIfAbsent(graph);
 
 
         IdListPayload resultPayload = reactor.submit(new IdListPayload())
@@ -382,7 +382,7 @@ class GlCompletableReactorTest {
         SingleClassProcessorMockGraph graph = new SingleClassProcessorMockGraph();
         graph.processor = processor;
 
-        reactor.registerIfAbsent(graph);
+        reactor.registerGraphIfAbsent(graph);
 
         IdListPayload resultPayload = reactor.submit(new IdListPayload())
                 .getResultFuture()
@@ -453,7 +453,7 @@ class GlCompletableReactorTest {
 
     @Test
     public void router_from_start_point() throws Exception {
-        reactor.registerIfAbsent(RouterFromStartPointGraph.class);
+        reactor.registerGraphIfAbsent(RouterFromStartPointGraph.class);
 
         CompletableReactor.Execution<IdListPayload> result = reactor.submit(new IdListPayload());
 
@@ -517,7 +517,7 @@ class GlCompletableReactorTest {
     @Test
     public void router_from_processors_merge_point() throws Exception {
 
-        reactor.registerIfAbsent(RouterFromProcessorsMergerGraph.class);
+        reactor.registerGraphIfAbsent(RouterFromProcessorsMergerGraph.class);
 
         CompletableReactor.Execution<IdListPayload> result = reactor.submit(new IdListPayload());
 
@@ -611,7 +611,7 @@ class GlCompletableReactorTest {
     @Test
     public void optional_processor_execution() throws Exception {
 
-        reactor.registerIfAbsent(OptionalProcessorExecutionGraph.class);
+        reactor.registerGraphIfAbsent(OptionalProcessorExecutionGraph.class);
 
         CompletableReactor.Execution<OptionalProcessorExecutionPayload> result = reactor.submit(
                 new OptionalProcessorExecutionPayload(OPTIONAL_DECISION.RIGHT));
@@ -729,7 +729,7 @@ class GlCompletableReactorTest {
     @Test
     public void dead_transition_breaks_flow() throws Exception {
 
-        reactor.registerIfAbsent(DeadTransitionBreaksFlowGraph.class);
+        reactor.registerGraphIfAbsent(DeadTransitionBreaksFlowGraph.class);
 
         DeadTransitionBreaksFlowPayload result = reactor.submit(
                 new DeadTransitionBreaksFlowPayload(DeadTransitionBreaksFlowPayload.FlowDecision.THREE))
@@ -821,7 +821,7 @@ class GlCompletableReactorTest {
 
         StartPointRouterGraph graph = new StartPointRouterGraph();
 
-        reactor.registerIfAbsent(graph);
+        reactor.registerGraphIfAbsent(graph);
 
         CompletableFuture<IdListPayload> resultFuture = reactor.submit(new IdListPayload()).getResultFuture();
 
@@ -932,7 +932,7 @@ class GlCompletableReactorTest {
 
         DeadTransitionGraph graph = new DeadTransitionGraph();
 
-        reactor.registerIfAbsent(graph);
+        reactor.registerGraphIfAbsent(graph);
 
         CompletableFuture<IdListPayload> resultFuture = reactor.submit(new IdListPayload()).getResultFuture();
 
@@ -975,7 +975,7 @@ class GlCompletableReactorTest {
     public void single_detached_merge_point() throws Exception {
 
 
-        reactor.registerIfAbsent(SingleRouterGraph.class);
+        reactor.registerGraphIfAbsent(SingleRouterGraph.class);
 
         IdListPayload resultPayload = reactor.submit(new IdListPayload())
                 .getResultFuture()

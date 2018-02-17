@@ -83,7 +83,7 @@ public class PurchaseGraphTest {
         @Bean
         PurchaseGraph purchaseGraph() {
             PurchaseGraph purchaseGraph = new PurchaseGraph();
-            reactor.registerIfAbsent(purchaseGraph);
+            reactor.registerGraphIfAbsent(purchaseGraph);
             return purchaseGraph;
         }
     }
