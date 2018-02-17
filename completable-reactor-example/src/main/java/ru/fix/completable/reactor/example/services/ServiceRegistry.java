@@ -67,7 +67,9 @@ public class ServiceRegistry {
         }
     }
 
-    @Reactored({"Load service information from database."})
+    /**
+     * Load service information from database.
+     */
     public CompletableFuture<ServiceInfoResult> loadServiceInformation(Long serviceId) {
 
         return CompletableFuture
