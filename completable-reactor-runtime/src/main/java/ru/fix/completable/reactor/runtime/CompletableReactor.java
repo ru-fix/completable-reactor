@@ -424,6 +424,25 @@ public class CompletableReactor implements AutoCloseable {
         payloadGraphs.remove(payloadType);
     }
 
+    /**
+     * Register functional graph implementation.
+     * For test subgraph mocking purpose.
+     * If graph with same payload already registered by {@link #registerReactorGraph(ReactorGraph)}
+     * it will be unregistered.
+     *
+     * @param payloadType
+     * @param payloadProcessingFunction
+     * @param <PayloadType>
+     */
+    public <PayloadType> void registerGraphSync(
+            Class<PayloadType> payloadType,
+            Function<PayloadType, PayloadType> payloadProcessingFunction) {
+
+        registerGraph(
+                payloadType,
+                pld -> CompletableFuture.completedFuture(payloadProcessingFunction.apply(pld)));
+    }
+
     //TODO extract statistics
 
     static class PayloadStatCounters {
