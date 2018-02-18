@@ -145,7 +145,7 @@ class JavaSourceParser(val listener: Listener) {
 
                                 (it.vertexTransitionOnAny()?.run {
                                     transition.isOnAny = true
-                                    transition.transitionOnAnySource = sourceFromToken(this.start, filePath)
+                                    transition.onAnySource = sourceFromToken(this.start, filePath)
                                     transitionAction()
 
                                 } ?: it.vertexTransitionOn().run {
@@ -153,7 +153,7 @@ class JavaSourceParser(val listener: Listener) {
                                     transition.mergeStatuses = setOf(status)
 
                                     sourceFromToken(this.start, filePath)?.let { source ->
-                                        transition.mergeStatusSources.put(status, source)
+                                        transition.onStatusSource.put(status, source)
                                     }
 
                                     tokens.checkCommentsToLeft(this.start.tokenIndex)?.let {
@@ -339,7 +339,7 @@ class JavaSourceParser(val listener: Listener) {
 
             if (existingTransition != null && transition.mergeStatuses.isNotEmpty()) {
                 existingTransition.mergeStatuses = existingTransition.mergeStatuses + transition.mergeStatuses
-                existingTransition.mergeStatusSources.putAll(existingTransition.mergeStatusSources)
+                existingTransition.onStatusSource.putAll(existingTransition.onStatusSource)
 
             } else {
                 transitions.add(transition)
