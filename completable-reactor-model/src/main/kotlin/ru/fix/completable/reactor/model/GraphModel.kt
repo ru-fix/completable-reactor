@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.model
 
 import java.util.*
+import kotlin.collections.HashMap
 
 data class Coordinates(
         val x: Int,
@@ -36,7 +37,7 @@ data class Transition(
 
         var transitionOnAnySource: Source? = null,
         var transitionOnStatusSource: Map<String, Source>? = null,
-        var mergeStatusSources: Map<String, Source>? = null) {
+        var mergeStatusSources: HashMap<String, Source> = HashMap()) {
 
     lateinit var target: Figure
 }
