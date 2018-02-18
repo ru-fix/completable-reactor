@@ -101,15 +101,16 @@ class GraphPane : Pane() {
 
             //TODO: fix scroll during resizing of the content
 
-
             this.graphBordersInModelCoordinates = graphBorders
             this.prefWidth = targetWidth
             this.prefHeight = targetHeight
 
-            //to refresh parent scroll pane sliders and ask parent to redraw itself and content
+            this.afterResizeCallback()
+
+            // to refresh parent scroll pane sliders and ask parent to redraw itself and content
+            // runLater so requestParenLayout invocation could take effect
             Platform.runLater {
                 this.requestParentLayout()
-                this.afterResizeCallback()
             }
         }
     }
@@ -121,6 +122,7 @@ class GraphPane : Pane() {
     fun requestResize(afterResize: () -> Unit) {
         resizeRequested = true
         this.afterResizeCallback = afterResize
+
         this.requestLayout()
     }
 }
