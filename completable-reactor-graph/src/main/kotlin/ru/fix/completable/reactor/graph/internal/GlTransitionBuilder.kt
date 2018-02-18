@@ -35,14 +35,32 @@ class GlTransitionBuilder(
         }
 
         if (targetGlVertex.merger == null) {
+
+            val vertexTypeMessage =
+                    if (targetGlVertex.router != null) {
+                        "Vertex ${targetGlVertex.name} is of type Router." +
+                                " Routers allowed to participate only in handleBy transitions."
+                    } else if (targetGlVertex.handler != null) {
+                        "Vertex ${targetGlVertex.name} is of type Handler without Merger." +
+                                " It can participate only in handleBy transitions."
+                    } else if (targetGlVertex.subgraphPayloadBuilder != null) {
+                        "Vertex ${targetGlVertex.name} is of type Subgrpah without Merger." +
+                                " It can participate only in handleBy transitions."
+                    } else {
+                        ""
+                    }
+
+
             throw IllegalArgumentException(
                     """
                         MergeBy transition is targeting vertex ${targetGlVertex.name} that does not have merger.
+                        $vertexTypeMessage
                         MergeBy can only transition to vertexes with mergers.
                         You can build such vertexes in two manners:
                             handler(...).withMerger(...)
                             subgraph(...).withMerger(...)
                         Other vertices that built without mergers can not be targeted by mergeBy transition.
+                        You probably have to use HandleBy transition instead.
                         """.trimIndent())
         }
 
@@ -94,7 +112,7 @@ class GlTransitionBuilder(
                     .filter { targetAccessor(it) == newTransitionTarget }
                     .toList()
 
-            if (existingTransitionToSameTarget .isNotEmpty()) {
+            if (existingTransitionToSameTarget.isNotEmpty()) {
                 if (existingTransitionToSameTarget.size > 1) {
                     throw IllegalArgumentException("" +
                             "More that one transition exit" +
