@@ -75,15 +75,15 @@ class TransitionLine(
             val anyStatusLabel = Label("<Any>")
             labelsPane.getChildren().add(anyStatusLabel)
 
-            if (transitionItem.transitionOnAnySource != null) {
+            if (transitionItem.onAnySource != null) {
                 anyStatusLabel.setOnMouseClicked { mouseEvent ->
                     if (mouseEvent.getClickCount() == 2) {
-                        transitionItem.transitionOnAnySource?.let { actionListener.goToSource(it) }
+                        transitionItem.onAnySource?.let { actionListener.goToSource(it) }
                     }
                 }
                 menuArea.setOnMouseClicked { mouseEvent ->
                     if (mouseEvent.getClickCount() == 2) {
-                        transitionItem.transitionOnAnySource?.let { actionListener.goToSource(it) }
+                        transitionItem.onAnySource?.let { actionListener.goToSource(it) }
                     }
                 }
             }
@@ -94,7 +94,7 @@ class TransitionLine(
                 val statusLabel = Label(status)
                 labelsPane.getChildren().add(statusLabel)
 
-                transitionItem.transitionOnStatusSource?.get(status)?.let { source ->
+                transitionItem.onStatusSource?.get(status)?.let { source ->
 
                     statusLabel.setOnMouseClicked { mouseEvent ->
                         if (mouseEvent.getClickCount() == 2) {
@@ -285,7 +285,7 @@ class TransitionLine(
             //documentation
             val mergeStatusDocumentation = HashMap<String, String>()
 
-            transition.mergeStatuses?.forEach { status -> mergeStatusDocumentation[status] = "" }
+            transition.mergeStatuses.forEach { status -> mergeStatusDocumentation[status] = "" }
             transition.transitionDocs.forEach { doc -> mergeStatusDocumentation[doc.mergeStatus] = doc.docs }
 
 
@@ -298,7 +298,7 @@ class TransitionLine(
 
                 contextMenu.items.add(documentationMenuItem)
 
-                transition.transitionOnStatusSource?.get(status)?.let { source ->
+                transition.onStatusSource?.get(status)?.let { source ->
                     documentationMenuItem.setOnAction { _ -> actionListener.goToSource(source) }
                 }
 
@@ -316,7 +316,7 @@ class TransitionLine(
                 content.children.add(Text("Transition activated by any status."))
                 contextMenu.items.add(onAnyMenuItem)
 
-                val source = transition.transitionOnAnySource
+                val source = transition.onAnySource
                 if (source != null) {
                     onAnyMenuItem.setOnAction { _ -> actionListener.goToSource(source) }
                 }
