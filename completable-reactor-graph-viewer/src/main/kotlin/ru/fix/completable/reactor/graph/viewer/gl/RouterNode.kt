@@ -50,10 +50,14 @@ class RouterNode(
             mouseEvent.consume()
         }
 
-        (router.title ?: router.name).let {
-            val label = Label(it)
-            label.font = Font(16.0)
-            this.children.add(label)
+        this.children.add(Label(router.name).apply {
+            font = Font(16.0)
+        })
+
+        router.title?.let {
+            this.children.add(Label(it).apply {
+                font = Font(14.0)
+            })
         }
     }
 
