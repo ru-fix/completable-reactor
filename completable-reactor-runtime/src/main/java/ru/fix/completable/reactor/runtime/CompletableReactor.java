@@ -159,20 +159,27 @@ public class CompletableReactor implements AutoCloseable {
                     + " Actual superclass of graph config is: " + graphConfigClass.getSuperclass());
         }
 
-        if (graphConfigClass.getGenericSuperclass() == null) {
+        Class actualClass = graphConfigClass;
+
+        while (actualClass != null && !actualClass.getSuperclass().equals(Graph.class)){
+            actualClass = actualClass.getSuperclass();
+        }
+
+
+        if (actualClass.getGenericSuperclass() == null) {
             throw new IllegalArgumentException(""
                     + "Generic Superclass of graph config class " + graphConfigClass + " is NULL."
                     + " Superclass of graph config class should be generic GraphConfig<PayloadType>.");
         }
 
-        if (!(graphConfigClass.getGenericSuperclass() instanceof ParameterizedType)) {
+        if (!(actualClass.getGenericSuperclass() instanceof ParameterizedType)) {
             throw new IllegalArgumentException(""
                     + "Superclass of graph config class " + graphConfigClass + " is not ParameterizedType"
                     + " Superclass of graph config class should be GraphConfig<PayloadType>."
                     + " Actual generic superclass of graph config is: " + graphConfigClass.getGenericSuperclass());
         }
 
-        Type[] genericConfigParams = ((ParameterizedType) graphConfigClass.getGenericSuperclass())
+        Type[] genericConfigParams = ((ParameterizedType) actualClass.getGenericSuperclass())
                 .getActualTypeArguments();
 
         if (genericConfigParams.length != 1) {
