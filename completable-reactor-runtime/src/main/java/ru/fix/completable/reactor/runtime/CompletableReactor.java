@@ -152,7 +152,7 @@ public class CompletableReactor implements AutoCloseable {
             );
         }
 
-        if (!graphConfigClass.getSuperclass().equals(Graph.class)) {
+        if (!Graph.class.isAssignableFrom(graphConfigClass)) {
             throw new IllegalArgumentException(""
                     + "Superclass of graph config class " + graphConfigClass + " is not GraphConfig<PayloadType>."
                     + " Superclass of graph config class should be GraphConfig<PayloadType>."
