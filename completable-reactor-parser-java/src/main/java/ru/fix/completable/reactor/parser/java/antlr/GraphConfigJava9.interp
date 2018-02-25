@@ -23,7 +23,7 @@ null
 'subgraph'
 'merger'
 'handler'
-'handlerSync'
+'syncHandler'
 'payload'
 'complete'
 'router'
@@ -162,7 +162,7 @@ Coordinate
 SUBGRAPH
 MERGER
 HANDLER
-HANDLER_SYNC
+SYNC_HANDLER
 PAYLOAD
 COMPLETE
 ROUTER

@@ -180,7 +180,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         MarketingService marketingService;
 
         {
-            handlerSync(pld -> marketingService.checkBonuses(pld.request.userId, pld.request.serviceId)
+            syncHandler(pld -> marketingService.checkBonuses(pld.request.userId, pld.request.serviceId)
             ).withMerger((pld, bonus) -> {
                 if (bonus.isPresent()) {
                     pld.intermediateData.bonusService = bonus.get();

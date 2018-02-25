@@ -72,7 +72,7 @@ builderHandler
     ;
 
 handler
-    :   HANDLER | HANDLER_SYNC
+    :   HANDLER | SYNC_HANDLER
     ;
 
 builderMerger
@@ -182,7 +182,7 @@ ignoredToken
 SUBGRAPH : 'subgraph';
 MERGER : 'merger';
 HANDLER : 'handler';
-HANDLER_SYNC : 'handlerSync';
+SYNC_HANDLER : 'syncHandler';
 PAYLOAD : 'payload';
 COMPLETE : 'complete';
 ROUTER : 'router';
@@ -193,7 +193,7 @@ anyGraphKeyword
     :   SUBGRAPH
     |   MERGER
     |   HANDLER
-    |   HANDLER_SYNC
+    |   SYNC_HANDLER
     |   PAYLOAD
     |   COMPLETE
     |   ROUTER
