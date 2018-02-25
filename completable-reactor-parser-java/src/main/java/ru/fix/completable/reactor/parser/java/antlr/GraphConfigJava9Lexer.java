@@ -20,7 +20,7 @@ public class GraphConfigJava9Lexer extends Lexer {
 		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
 		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17, 
 		T__17=18, T__18=19, Coordinate=20, SUBGRAPH=21, MERGER=22, HANDLER=23, 
-		HANDLER_SYNC=24, PAYLOAD=25, COMPLETE=26, ROUTER=27, CLONE=28, ABSTRACT=29, 
+		SYNC_HANDLER=24, PAYLOAD=25, COMPLETE=26, ROUTER=27, CLONE=28, ABSTRACT=29, 
 		ASSERT=30, BOOLEAN=31, BREAK=32, BYTE=33, CASE=34, CATCH=35, CHAR=36, 
 		CLASS=37, CONST=38, CONTINUE=39, DEFAULT=40, DO=41, DOUBLE=42, ELSE=43, 
 		ENUM=44, EXTENDS=45, FINAL=46, FINALLY=47, FLOAT=48, FOR=49, IF=50, GOTO=51, 
@@ -49,7 +49,7 @@ public class GraphConfigJava9Lexer extends Lexer {
 	public static final String[] ruleNames = {
 		"T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6", "T__7", "T__8", 
 		"T__9", "T__10", "T__11", "T__12", "T__13", "T__14", "T__15", "T__16", 
-		"T__17", "T__18", "Coordinate", "SUBGRAPH", "MERGER", "HANDLER", "HANDLER_SYNC", 
+		"T__17", "T__18", "Coordinate", "SUBGRAPH", "MERGER", "HANDLER", "SYNC_HANDLER", 
 		"PAYLOAD", "COMPLETE", "ROUTER", "CLONE", "ABSTRACT", "ASSERT", "BOOLEAN", 
 		"BREAK", "BYTE", "CASE", "CATCH", "CHAR", "CLASS", "CONST", "CONTINUE", 
 		"DEFAULT", "DO", "DOUBLE", "ELSE", "ENUM", "EXTENDS", "FINAL", "FINALLY", 
@@ -84,7 +84,7 @@ public class GraphConfigJava9Lexer extends Lexer {
 		"'on'", "'onAny'", "'mergeBy'", "'coordinates'", "'open'", "'module'", 
 		"'requires'", "'exports'", "'to'", "'opens'", "'uses'", "'provides'", 
 		"'with'", "'transitive'", null, "'subgraph'", "'merger'", "'handler'", 
-		"'handlerSync'", "'payload'", "'complete'", "'router'", "'clone'", "'abstract'", 
+		"'syncHandler'", "'payload'", "'complete'", "'router'", "'clone'", "'abstract'", 
 		"'assert'", "'boolean'", "'break'", "'byte'", "'case'", "'catch'", "'char'", 
 		"'class'", "'const'", "'continue'", "'default'", "'do'", "'double'", "'else'", 
 		"'enum'", "'extends'", "'final'", "'finally'", "'float'", "'for'", "'if'", 
@@ -103,7 +103,7 @@ public class GraphConfigJava9Lexer extends Lexer {
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, null, null, null, null, null, null, null, null, null, null, null, 
 		null, null, null, null, null, null, null, null, "Coordinate", "SUBGRAPH", 
-		"MERGER", "HANDLER", "HANDLER_SYNC", "PAYLOAD", "COMPLETE", "ROUTER", 
+		"MERGER", "HANDLER", "SYNC_HANDLER", "PAYLOAD", "COMPLETE", "ROUTER", 
 		"CLONE", "ABSTRACT", "ASSERT", "BOOLEAN", "BREAK", "BYTE", "CASE", "CATCH", 
 		"CHAR", "CLASS", "CONST", "CONTINUE", "DEFAULT", "DO", "DOUBLE", "ELSE", 
 		"ENUM", "EXTENDS", "FINAL", "FINALLY", "FLOAT", "FOR", "IF", "GOTO", "IMPLEMENTS", 
@@ -444,10 +444,10 @@ public class GraphConfigJava9Lexer extends Lexer {
 		"\2\u020e\u020f\7g\2\2\u020f\u0210\7t\2\2\u0210\u0211\7i\2\2\u0211\u0212"+
 		"\7g\2\2\u0212\u0213\7t\2\2\u0213.\3\2\2\2\u0214\u0215\7j\2\2\u0215\u0216"+
 		"\7c\2\2\u0216\u0217\7p\2\2\u0217\u0218\7f\2\2\u0218\u0219\7n\2\2\u0219"+
-		"\u021a\7g\2\2\u021a\u021b\7t\2\2\u021b\60\3\2\2\2\u021c\u021d\7j\2\2\u021d"+
-		"\u021e\7c\2\2\u021e\u021f\7p\2\2\u021f\u0220\7f\2\2\u0220\u0221\7n\2\2"+
-		"\u0221\u0222\7g\2\2\u0222\u0223\7t\2\2\u0223\u0224\7U\2\2\u0224\u0225"+
-		"\7{\2\2\u0225\u0226\7p\2\2\u0226\u0227\7e\2\2\u0227\62\3\2\2\2\u0228\u0229"+
+		"\u021a\7g\2\2\u021a\u021b\7t\2\2\u021b\60\3\2\2\2\u021c\u021d\7u\2\2\u021d"+
+		"\u021e\7{\2\2\u021e\u021f\7p\2\2\u021f\u0220\7e\2\2\u0220\u0221\7J\2\2"+
+		"\u0221\u0222\7c\2\2\u0222\u0223\7p\2\2\u0223\u0224\7f\2\2\u0224\u0225"+
+		"\7n\2\2\u0225\u0226\7g\2\2\u0226\u0227\7t\2\2\u0227\62\3\2\2\2\u0228\u0229"+
 		"\7r\2\2\u0229\u022a\7c\2\2\u022a\u022b\7{\2\2\u022b\u022c\7n\2\2\u022c"+
 		"\u022d\7q\2\2\u022d\u022e\7c\2\2\u022e\u022f\7f\2\2\u022f\64\3\2\2\2\u0230"+
 		"\u0231\7e\2\2\u0231\u0232\7q\2\2\u0232\u0233\7o\2\2\u0233\u0234\7r\2\2"+

@@ -68,7 +68,7 @@ public abstract class Graph<Payload> {
         return new GlMergerBuilder<>(vx);
     }
 
-    protected <HandlerResult> MergerBuilder<Payload, HandlerResult> handlerSync(
+    protected <HandlerResult> MergerBuilder<Payload, HandlerResult> syncHandler(
             SyncHandler<Payload, HandlerResult> handlerSync) {
         return handler(payload -> CompletableFuture.supplyAsync(() -> handlerSync.handle(payload)));
     }
