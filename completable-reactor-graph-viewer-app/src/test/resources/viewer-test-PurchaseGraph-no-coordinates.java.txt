@@ -8,16 +8,20 @@ import ru.fix.completable.reactor.graph.Vertex;
 import java.math.BigDecimal;
 
 /**
- * Define purchase process when user buys good in the shop.
+ * Defines purchase process when user buys good in the shop.
  */
 public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex userProfile = new Vertex() {
+
         UserProfileManager userProfile;
 
         {
             handler(
-                    //# load user profile
+                    /*
+                     * # load user profile
+                     * Loads user profile from database by user id
+                     */
                     pld -> userProfile.loadUserProfileById(pld.request.getUserId())
             ).withMerger(
                     //# check profile state
@@ -42,6 +46,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     };
 
     Vertex txLog = new Vertex() {
+
         TransactionLog txLog;
 
         {
@@ -53,7 +58,10 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         }
     };
 
+    Vertex txLog2 = txLog.clone();
+
     Vertex userJournal = new Vertex() {
+
         UserJournal userJournal;
 
         {
@@ -79,6 +87,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
 
     Vertex bank = new Vertex() {
+
         Bank bank;
 
         {
@@ -118,7 +127,6 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex isPartnerService =
             router(/*
-                       # is service is provided by a partner
                        Check if given service is provided by a partner.
                        Update payload response.
                    */
@@ -132,10 +140,16 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                     });
 
     Vertex serviceInfo = new Vertex() {
+
         ServiceRegistry serviceRegistry;
 
         {
-            handler(pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
+            handler(
+                    /*
+                     * Loads data for given service from database.
+                     * Service could be not active. In that case purchase request will be denied.
+                     */
+                    pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
                     .withMerger(
                             //# checkServiceState
                             (pld, result) -> {
@@ -162,10 +176,11 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     };
 
     Vertex marketingCampaign = new Vertex() {
+
         MarketingService marketingService;
 
         {
-            handlerSync(pld -> marketingService.checkBonuses(pld.request.userId, pld.request.serviceId)
+            syncHandler(pld -> marketingService.checkBonuses(pld.request.userId, pld.request.serviceId)
             ).withMerger((pld, bonus) -> {
                 if (bonus.isPresent()) {
                     pld.intermediateData.bonusService = bonus.get();
@@ -204,7 +219,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
         serviceInfo
                 .on(Flow.WITHDRAWAL).handleBy(bank)
-                .on(Flow.NO_WITHDRAWAL).handleBy(userJournal)
+                .on(Flow.NO_WITHDRAWAL).handleBy(txLog2)
                 .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
                 .on(Flow.NO_WITHDRAWAL).handleBy(smsNotification)
                 .on(Flow.STOP).complete();
@@ -215,10 +230,14 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
         txLog.onAny().handleBy(userJournal);
 
+        txLog2.onAny().handleBy(userJournal);
+
         userJournal.onAny().handleBy(marketingCampaign);
 
         marketingCampaign
+                //User can claim bonus purchase
                 .on(Flow.BONUS_EXIST).handleBy(bonusPurchaseSubgraph)
+                //User does not have any bonuses
                 .on(Flow.NO_BONUS).complete();
 
         bonusPurchaseSubgraph.onAny().complete();
