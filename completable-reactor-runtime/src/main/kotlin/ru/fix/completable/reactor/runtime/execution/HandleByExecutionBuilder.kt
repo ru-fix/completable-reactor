@@ -186,18 +186,33 @@ class HandleByExecutionBuilder<PayloadType>(
 
     private fun invokeHandlerHandlingMethod(pvx: ProcessingVertex, payload: Any?): CompletableFuture<Any?> {
 
-        return try {
-            pvx.vertex.handler!!.handle(payload)
+        var result: CompletableFuture<Any?>?
+
+        try {
+            result = pvx.vertex.handler!!.handle(payload)
+
         } catch (exc: Exception) {
-            val result = CompletableFuture<Any?>()
+            result = CompletableFuture()
             result.completeExceptionally(
-                    IllegalArgumentException("""
+                    IllegalArgumentException(
+                            """
                             Exception during handler invocation for vertex ${pvx.vertex.name}.
                             Payload: ${builder.debugSerializer.dumpObject(payload)}
                             """,
                             exc))
-            result
         }
+
+        if (result == null) {
+            result = CompletableFuture()
+            result.completeExceptionally(
+                    NullPointerException(
+                            """
+                            Handler returned NULL for vertex ${pvx.vertex.name}.
+                            Payload: ${builder.debugSerializer.dumpObject(payload)}
+                            """))
+        }
+
+        return result
     }
 
     private fun <PayloadType> handle(

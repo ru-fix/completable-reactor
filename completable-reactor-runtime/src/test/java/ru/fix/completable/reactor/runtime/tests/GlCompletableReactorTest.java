@@ -21,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -45,7 +46,7 @@ class GlCompletableReactorTest {
     }
 
     @AfterEach
-    void after() throws Exception{
+    void after() throws Exception {
         reactor.close();
     }
 
@@ -982,5 +983,46 @@ class GlCompletableReactorTest {
                 .get(10, TimeUnit.SECONDS);
 
         assertEquals(Arrays.asList(1), resultPayload.idSequence);
+    }
+
+
+    /**
+     * Handler return null as a result.
+     */
+    static class ReturnNullInHandlerGraph extends Graph<IdListPayload> {
+        Vertex handler1 =
+                handler(
+                        // returns null result
+                        pld -> null
+
+                ).withMerger((pld, result) -> {
+                    assertNull(result);
+                    pld.idSequence.add(1);
+                    return GlCompletableReactorTest.Status.OK;
+                });
+
+        {
+            payload()
+                    .handleBy(handler1);
+
+            handler1.onAny().complete();
+        }
+    }
+
+    @Test
+    void handler_returns_null_as_a_result() throws Exception {
+        reactor.registerGraphIfAbsent(ReturnNullInHandlerGraph.class);
+
+        try {
+
+            reactor.submit(new IdListPayload())
+                    .getResultFuture()
+                    .get(10, TimeUnit.SECONDS);
+
+            fail("When handler returns NULL result future should complete exceptionally.");
+
+        } catch (Exception exc) {
+            log.info("When handler returns NULL result future completed with NPE");
+        }
     }
 }
