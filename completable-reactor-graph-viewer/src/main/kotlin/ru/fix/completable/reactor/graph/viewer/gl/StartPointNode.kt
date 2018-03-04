@@ -19,10 +19,13 @@ class StartPointNode(
     init {
         this.styleClass.add("startPoint")
 
-        val nameLabel = Label(startPoint.title ?: startPoint.payloadType)
-        nameLabel.font = Font(16.0)
+        children.add(Label(startPoint.payloadType).apply {
+            font = Font(16.0)
+        })
 
-        this.children.add(nameLabel)
+        startPoint.title?.let {
+            children.add(Label(it).apply { font = Font(14.0) })
+        }
 
         this.setOnMouseClicked { event ->
             if (event.clickCount == 2) {
@@ -49,16 +52,17 @@ class StartPointNode(
         }
     }
 
-    fun fireGoToSourceEvent() {
+    private fun fireGoToSourceEvent() {
         startPoint.source?.let {
             actionListener.goToSource(it)
         }
     }
 
-    fun buildTooltipContent(): VBox {
+    private fun buildTooltipContent(): VBox {
         return VBox().apply {
             children.add(Text(startPoint.payloadType))
-            children.add(Text(startPoint.doc))
+            startPoint.title?.let { children.add(Text(it)) }
+            startPoint.doc?.let { children.add(Text(it)) }
         }
     }
 }
