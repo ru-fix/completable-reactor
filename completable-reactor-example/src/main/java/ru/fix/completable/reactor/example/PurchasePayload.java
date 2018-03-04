@@ -41,11 +41,6 @@ public class PurchasePayload {
         Enum bonusServiceStatus;
         boolean isPartnerService;
 
-        public Response setStatusIfNull(Enum status) {
-            this.status = status;
-            return this;
-        }
-
         public Enum getStatus() {
             return status;
         }
