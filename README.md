@@ -1,40 +1,44 @@
 # CompletableReactor
-CompletableReactor framework makes it easier to create business flows that have concurrently running parts and complex execution branching.
+CompletableReactor framework makes it easier to create business flows that have concurrently running parts
+ and complex execution branching.
 
-CompletableReactor provides DSL-like builder-style API to describe business flows.
+CompletableReactor provides DSL-like builder-style API to describe business flows and visualization plugin 
+that parse code and displays it as an execution graph. CompletableReactor follows code-first approach when developer 
+writes code and IDE visualize it in plugin window and provides ability to navigate from graph to code and backward.       
 
-Framework built on top of Fork Join Pool and CompletableFuture API.
+Framework built on top of Fork Join Pool and CompletableFuture API. An extension exist to support Kotlin suspendable 
+functions. 
 
 ## Motivation
 [CompletableFuture API](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html) 
 with [ForkJoinPool](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html) 
 provides ability to write asynchronous code. But sometimes business logic not as straight forward as we would like.
-This leads to complex thenApply/thenCompose CompletableFuture chains that hard to read and maintain.
-Complex business logic with lots of branching and concurrently executing parts hard to describe using regular coding approach
-without proper visualization. And best way to represent that branching is graph with nodes.   
+This leads to complex `thenApply`/`thenCompose` CompletableFuture chains that hard to read and maintain.
+Complex business logic with lots of branching and concurrently executing parts hard to describe using regular coding
+ approach without proper visualization. And best way to represent that branching is graph with nodes.   
 CompletableReactor API tries to keep API as simple and possible in same time provides ability to visualize 
 code as graph of execution flows.
  
 ## Concept
+To describe and idea behind CompletableReactor let's start with simple model and then evolve it step by step.
 
 ### Simple sequential model
-To better understanding of CompletableReactor lets start with simple sequential execution model and then evolve it step 
-by step. This model consists of two base elements: *Payload* and *Processor*. Payload is a simple POJO. Processor is 
-active element of model that takes Payload, execute business logic based on that Payload, then modify Payload, store 
-computation result inside this Payload and pass this Payload to the next Processor. All Processors linked in chain one 
-after another. Modification of Payload is optional for Processor.
+This model consists of two base elements: *Payload* and *Vertex*. Payload is a simple POJO. Vertex is 
+active element of model that takes Payload, execute business logic based on that Payload, then modify Vertex, stores 
+computation result inside this Payload and pass this Payload to the next Vertex. All Vertices linked in chain one 
+after another. Modification of Payload is optional for Vertex.
 
 ![Alt sequential-model.png](docs/sequential-model.png?raw=true "sequential-model")
  
-In given example we have two processors and payload object. Payload consists of two fields: x and result. 
-MultiplyProcessor reads x from payload, multiplies it by 2 store computation result in result field. StdoutProcessor
-does not modify incoming payload and simply prints result field.   
+In given example we have two vertices and payload object. Payload consists of two fields: x and result. 
+MultiplyVertex reads x from payload, multiplies it by 2 store computation result in result field. StdoutVertex
+does not modify incoming payload and simply prints result field to stdout.   
 
 ### Sequential asynchronous handler-merger model
-Now lets make our processors work asynchronously. We will split computation logic of processors in two parts. First 
-one, called *handler*, will read input data from payload and perform computation. Second one, called *merger*, will 
-store computation result inside payload. Handler will be asynchronous function and merger will be synchronous.  
-Here is an example how to split MultiplyProcessor logic to handler and merger functions: handler will read 
+Now lets make our vertices work asynchronously. We will split computation logic of vertices in two parts. First 
+one, called *Handler*, will read input data from payload and perform computation. Second one, called *Merger*, will 
+store computation result inside payload. Handler will be asynchronous function and Merger will be synchronous.  
+Here is an example how to split MultiplyVertex logic to handler and merger functions: handler will read 
 argument x from payload, then asynchronously perform multiplication and return CompletableFuture of this operation. 
 Merger will get result of handler function as an argument and will store it inside payload in result filed.
 ```java
@@ -52,13 +56,13 @@ Visual representation:
 ![Alt sequential-asynchronous-handler-merger-model.png](docs/sequential-asynchronous-handler-merger-model.png?raw=true "sequential-asynchronous-handler-merger-model")
 
 Visual representation of such computation contains several items:
- - *Processor* bar that represent asynchronous computation of handler function
- - *MergePoint* circle that represent synchronous computation of merger function
- - *Transition* between processor and mergePoint that carries two objects: payload and computation result of handler 
+ - *Handler* bar that represent asynchronous computation of handler function
+ - *Merger* circle that represent synchronous computation of merger function
+ - *Transition* between handler and merger that carries two objects: payload and computation result of handler 
  function.
- - *Transition* that goes into Processor and carries single object - Payload.
- - *Transition* that goes out of MergePoint and carries single object - Payload.  
- - *Paylaod* object that goes into Processors, then to MergePoint then out of MergerPoint.
+ - *Transition* that goes into Handler and carries single object - Payload.
+ - *Transition* that goes out of Merger and carries single object - Payload.  
+ - *Payload* object that goes into Handlers, then to Merger then out of Merger.
  
 Now we can simplify visual notation and hide implicit Payload and handler function result.  
 ![Alt sequential-asynchronous-handler-merger-model2.png](docs/sequential-asynchronous-handler-merger-model2.png?raw=true "sequential-asynchronous-handler-merger-model2")

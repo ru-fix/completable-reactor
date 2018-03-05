@@ -8,7 +8,7 @@ import ru.fix.completable.reactor.graph.Vertex;
 import java.math.BigDecimal;
 
 /**
- * Defines purchase process when user buys good in the shop.
+ * # Defines purchase process when user buys good in the shop.
  */
 public class PurchaseGraph extends Graph<PurchasePayload> {
 
