@@ -50,6 +50,7 @@ class JavaSourceParserTest {
 
         val LOAD_USER_PROFILE = "loadUserProfile"
         val TX_LOG = "logTransaction"
+        val TX_LOG2 = "logTransaction2"
         val USER_JOURNAL = "logActionToUserJournal"
         val WEB_NOTIFICATION = "sendWebNotification"
         val SMS_NOTIFICATION = "sendSmsNotification"
@@ -73,7 +74,7 @@ class JavaSourceParserTest {
 
         assertEquals("PurchasePayload", model.startPoint.payloadType)
         assertEquals("PurchaseGraph", model.graphClass)
-        assertEquals("Defines purchase process when user buys good in the shop.", model.startPoint.doc)
+        assertEquals("Defines purchase process when user buys good in the shop.", model.startPoint.title)
 
         assertEquals(
                 listOf(LOAD_USER_PROFILE, SERVICE_INFO),
@@ -122,7 +123,7 @@ class JavaSourceParserTest {
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
-                            it is VertexFigure && it.name == "txLog2"
+                            it is VertexFigure && it.name == TX_LOG2
                         }
                     })
 
@@ -192,7 +193,7 @@ class JavaSourceParserTest {
                     })
                 }
 
-        vertexTransitions("txLog2")
+        vertexTransitions(TX_LOG2)
                 .apply {
                     assertEquals(1, count())
 
@@ -263,9 +264,9 @@ class JavaSourceParserTest {
         assertEquals(Coordinates( 378, 441), model.mergers[BANK]!!.coordinates)
         assertEquals(Coordinates(497, 293), model.endpoints[SERVICE_INFO]!!.coordinates)
 
-        assertEquals(Source(sourceFilePath, 212, 9, 7712), model.startPoint.source)
+        assertEquals(Source(sourceFilePath, 223, 9, 8220), model.startPoint.source)
 
-        assertEquals(Source(sourceFilePath, 94, 13, 2757), model.handlers[BANK]!!.source)
+        assertEquals(Source(sourceFilePath, 111, 13, 3354), model.handlers[BANK]!!.source)
 
     }
 
