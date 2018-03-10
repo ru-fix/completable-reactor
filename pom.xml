@@ -32,7 +32,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <kotlin.version>1.2.21</kotlin.version>
+    <kotlin.version>1.2.30</kotlin.version>
   </properties>
 
   <url>https://github.com/ru-fix/completable-reactor</url>
