@@ -9,6 +9,7 @@ import ru.fix.completable.reactor.runtime.CompletableReactor;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * # Defines purchase process when user buys good in the shop.
@@ -41,7 +42,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     CompletableReactor completableReactor;
 
     @PostConstruct
-    public void initialize(){
+    public void initialize() {
         completableReactor.registerGraphIfAbsent(this);
     }
 
@@ -191,8 +192,9 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex checkBonuses = new Vertex() {
         {
-            syncHandler(pld -> marketingService.checkBonuses(pld.request.userId, pld.request.serviceId)
-            ).withMerger((pld, bonus) -> {
+            router(pld -> {
+                Optional<Long> bonus = marketingService.checkBonuses(pld.request.userId, pld.request.serviceId);
+
                 if (bonus.isPresent()) {
                     pld.intermediateData.bonusService = bonus.get();
                     return Flow.BONUS_EXIST;
@@ -256,7 +258,6 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         coordinates()
                 .payload(627, 46)
                 .handler(withdrawMoneyWithMinus, 349, 377)
-                .handler(checkBonuses, 595, 806)
                 .handler(loadServiceInfo, 565, 96)
                 .handler(sendSmsNotification, 823, 392)
                 .handler(logTransaction, 434, 586)
@@ -265,6 +266,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                 .handler(loadUserProfile, 734, 97)
                 .handler(sendWebNotification, 926, 333)
                 .router(isPartnerService, 376, 513)
+                .router(checkBonuses, 595, 806)
                 .merger(withdrawMoneyWithMinus, 378, 441)
                 .merger(bonusPurchaseSubgraph, 582, 1033)
                 .merger(loadServiceInfo, 643, 232)
