@@ -67,7 +67,7 @@ class JavaSourceParserTest {
         assertTrue(model.handlers.containsKey(SMS_NOTIFICATION))
         assertTrue(model.handlers.containsKey(BANK))
         assertTrue(model.handlers.containsKey(SERVICE_INFO))
-        assertTrue(model.handlers.containsKey(MARKETING_CAMPAIGN))
+        assertTrue(model.routers.containsKey(MARKETING_CAMPAIGN))
         assertTrue(model.subgraphs.containsKey(BONUS_PURCHASE_SUBGRAPH))
         assertTrue(model.routers.containsKey(IS_PARTNER_SERVICE))
 
@@ -264,9 +264,9 @@ class JavaSourceParserTest {
         assertEquals(Coordinates( 378, 441), model.mergers[BANK]!!.coordinates)
         assertEquals(Coordinates(497, 293), model.endpoints[SERVICE_INFO]!!.coordinates)
 
-        assertEquals(Source(sourceFilePath, 223, 9, 8220), model.startPoint.source)
+        assertEquals(Source(sourceFilePath, 225, 9, 8243), model.startPoint.source)
 
-        assertEquals(Source(sourceFilePath, 111, 13, 3354), model.handlers[BANK]!!.source)
+        assertEquals(Source(sourceFilePath, 112, 13, 3382), model.handlers[BANK]!!.source)
 
     }
 
