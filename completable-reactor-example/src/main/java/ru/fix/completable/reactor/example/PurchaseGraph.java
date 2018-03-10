@@ -5,7 +5,9 @@ import org.springframework.context.annotation.Configuration;
 import ru.fix.completable.reactor.example.services.*;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
+import ru.fix.completable.reactor.runtime.CompletableReactor;
 
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 
 /**
@@ -34,6 +36,14 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
     @Autowired
     MarketingService marketingService;
+
+    @Autowired
+    CompletableReactor completableReactor;
+
+    @PostConstruct
+    public void initialize(){
+        completableReactor.registerGraphIfAbsent(this);
+    }
 
     Vertex loadUserProfile = new Vertex() {
         {
@@ -77,7 +87,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex logTransaction2 = logTransaction.clone();
 
-    Vertex logActoinToUserJournal = new Vertex() {
+    Vertex logActionToUserJournal = new Vertex() {
         {
             handler(
                     pld -> userJournal.logAction(
@@ -229,11 +239,11 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
         isPartnerService.onAny().handleBy(logTransaction);
 
-        logTransaction.onAny().handleBy(logActoinToUserJournal);
+        logTransaction.onAny().handleBy(logActionToUserJournal);
 
-        logTransaction2.onAny().handleBy(logActoinToUserJournal);
+        logTransaction2.onAny().handleBy(logActionToUserJournal);
 
-        logActoinToUserJournal.onAny().handleBy(checkBonuses);
+        logActionToUserJournal.onAny().handleBy(checkBonuses);
 
         checkBonuses
                 //User can claim bonus purchase
@@ -251,7 +261,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                 .handler(sendSmsNotification, 823, 392)
                 .handler(logTransaction, 434, 586)
                 .handler(logTransaction2, 700, 481)
-                .handler(logActoinToUserJournal, 554, 694)
+                .handler(logActionToUserJournal, 554, 694)
                 .handler(loadUserProfile, 734, 97)
                 .handler(sendWebNotification, 926, 333)
                 .router(isPartnerService, 376, 513)
@@ -260,7 +270,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                 .merger(loadServiceInfo, 643, 232)
                 .merger(logTransaction, 464, 658)
                 .merger(logTransaction2, 719, 551)
-                .merger(logActoinToUserJournal, 593, 757)
+                .merger(logActionToUserJournal, 593, 757)
                 .merger(loadUserProfile, 737, 160)
                 .complete(bonusPurchaseSubgraph, 578, 1086)
                 .complete(checkBonuses, 775, 934)

@@ -1,28 +1,58 @@
 package ru.fix.completable.reactor.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import ru.fix.completable.reactor.example.services.*;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
+import ru.fix.completable.reactor.runtime.CompletableReactor;
 
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 
 /**
- * Defines purchase process when user buys good in the shop.
+ * # Defines purchase process when user buys good in the shop.
  */
+@Configuration
 public class PurchaseGraph extends Graph<PurchasePayload> {
 
-    Vertex userProfile = new Vertex() {
+    @Autowired
+    UserProfileManager userProfileManager;
 
-        UserProfileManager userProfile;
+    @Autowired
+    TransactionLog transactionLog;
 
+    @Autowired
+    UserJournal userJournal;
+
+    @Autowired
+    Notifier notifier;
+
+    @Autowired
+    Bank bank;
+
+    @Autowired
+    ServiceRegistry serviceRegistry;
+
+    @Autowired
+    MarketingService marketingService;
+
+    @Autowired
+    CompletableReactor completableReactor;
+
+    @PostConstruct
+    public void initialize(){
+        completableReactor.registerGraphIfAbsent(this);
+    }
+
+    Vertex loadUserProfile = new Vertex() {
         {
             handler(
                     /*
                      * # load user profile
                      * Loads user profile from database by user id
                      */
-                    pld -> userProfile.loadUserProfileById(pld.request.getUserId())
+                    pld -> userProfileManager.loadUserProfileById(pld.request.getUserId())
             ).withMerger(
                     //# check profile state
                     (pld, result) -> {
@@ -45,25 +75,19 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         }
     };
 
-    Vertex txLog = new Vertex() {
-
-        TransactionLog txLog;
-
+    Vertex logTransaction = new Vertex() {
         {
             handler(
-                    pld -> txLog.logTransactioin(pld.request.getUserId())
+                    pld -> transactionLog.logTransactioin(pld.request.getUserId())
             ).withMerger(
                     (pld, any) -> Flow.CONTINUE
             );
         }
     };
 
-    Vertex txLog2 = txLog.clone();
+    Vertex logTransaction2 = logTransaction.clone();
 
-    Vertex userJournal = new Vertex() {
-
-        UserJournal userJournal;
-
+    Vertex logActionToUserJournal = new Vertex() {
         {
             handler(
                     pld -> userJournal.logAction(
@@ -73,23 +97,16 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         }
     };
 
-    @Autowired
-    Notifier notifier;
 
-
-    Vertex webNotification =
+    Vertex sendWebNotification =
             handler(pld -> notifier.sendHttpPurchaseNotification(pld.request.getUserId()))
                     .withoutMerger();
 
-    Vertex smsNotification =
+    Vertex sendSmsNotification =
             handler(pld -> notifier.sendSmsPurchaseNotification(pld.request.getUserId()))
                     .withoutMerger();
 
-
-    Vertex bank = new Vertex() {
-
-        Bank bank;
-
+    Vertex withdrawMoneyWithMinus = new Vertex() {
         {
             handler(/*
                         # WithdrawMoneyMinus
@@ -139,10 +156,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                         }
                     });
 
-    Vertex serviceInfo = new Vertex() {
-
-        ServiceRegistry serviceRegistry;
-
+    Vertex loadServiceInfo = new Vertex() {
         {
             handler(
                     /*
@@ -175,10 +189,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         }
     };
 
-    Vertex marketingCampaign = new Vertex() {
-
-        MarketingService marketingService;
-
+    Vertex checkBonuses = new Vertex() {
         {
             syncHandler(pld -> marketingService.checkBonuses(pld.request.userId, pld.request.serviceId)
             ).withMerger((pld, bonus) -> {
@@ -210,31 +221,31 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     {
 
         payload()
-                .handleBy(userProfile)
-                .handleBy(serviceInfo);
+                .handleBy(loadUserProfile)
+                .handleBy(loadServiceInfo);
 
-        userProfile
+        loadUserProfile
                 .on(Flow.STOP).complete()
-                .on(Flow.CONTINUE).mergeBy(serviceInfo);
+                .on(Flow.CONTINUE).mergeBy(loadServiceInfo);
 
-        serviceInfo
-                .on(Flow.WITHDRAWAL).handleBy(bank)
-                .on(Flow.NO_WITHDRAWAL).handleBy(txLog2)
-                .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
-                .on(Flow.NO_WITHDRAWAL).handleBy(smsNotification)
+        loadServiceInfo
+                .on(Flow.WITHDRAWAL).handleBy(withdrawMoneyWithMinus)
+                .on(Flow.NO_WITHDRAWAL).handleBy(logTransaction2)
+                .on(Flow.NO_WITHDRAWAL).handleBy(sendWebNotification)
+                .on(Flow.NO_WITHDRAWAL).handleBy(sendSmsNotification)
                 .on(Flow.STOP).complete();
 
-        bank.onAny().handleBy(isPartnerService);
+        withdrawMoneyWithMinus.onAny().handleBy(isPartnerService);
 
-        isPartnerService.onAny().handleBy(txLog);
+        isPartnerService.onAny().handleBy(logTransaction);
 
-        txLog.onAny().handleBy(userJournal);
+        logTransaction.onAny().handleBy(logActionToUserJournal);
 
-        txLog2.onAny().handleBy(userJournal);
+        logTransaction2.onAny().handleBy(logActionToUserJournal);
 
-        userJournal.onAny().handleBy(marketingCampaign);
+        logActionToUserJournal.onAny().handleBy(checkBonuses);
 
-        marketingCampaign
+        checkBonuses
                 //User can claim bonus purchase
                 .on(Flow.BONUS_EXIST).handleBy(bonusPurchaseSubgraph)
                 //User does not have any bonuses
@@ -244,26 +255,26 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
         coordinates()
                 .payload(627, 46)
-                .handler(bank, 349, 377)
-                .handler(marketingCampaign, 595, 806)
-                .handler(serviceInfo, 565, 96)
-                .handler(smsNotification, 823, 392)
-                .handler(txLog, 434, 586)
-                .handler(txLog2, 700, 481)
-                .handler(userJournal, 554, 694)
-                .handler(userProfile, 734, 97)
-                .handler(webNotification, 926, 333)
+                .handler(withdrawMoneyWithMinus, 349, 377)
+                .handler(checkBonuses, 595, 806)
+                .handler(loadServiceInfo, 565, 96)
+                .handler(sendSmsNotification, 823, 392)
+                .handler(logTransaction, 434, 586)
+                .handler(logTransaction2, 700, 481)
+                .handler(logActionToUserJournal, 554, 694)
+                .handler(loadUserProfile, 734, 97)
+                .handler(sendWebNotification, 926, 333)
                 .router(isPartnerService, 376, 513)
-                .merger(bank, 378, 441)
+                .merger(withdrawMoneyWithMinus, 378, 441)
                 .merger(bonusPurchaseSubgraph, 582, 1033)
-                .merger(serviceInfo, 643, 232)
-                .merger(txLog, 464, 658)
-                .merger(txLog2, 719, 551)
-                .merger(userJournal, 593, 757)
-                .merger(userProfile, 737, 160)
+                .merger(loadServiceInfo, 643, 232)
+                .merger(logTransaction, 464, 658)
+                .merger(logTransaction2, 719, 551)
+                .merger(logActionToUserJournal, 593, 757)
+                .merger(loadUserProfile, 737, 160)
                 .complete(bonusPurchaseSubgraph, 578, 1086)
-                .complete(marketingCampaign, 775, 934)
-                .complete(serviceInfo, 497, 293)
-                .complete(userProfile, 897, 225);
+                .complete(checkBonuses, 775, 934)
+                .complete(loadServiceInfo, 497, 293)
+                .complete(loadUserProfile, 897, 225);
     }
 }

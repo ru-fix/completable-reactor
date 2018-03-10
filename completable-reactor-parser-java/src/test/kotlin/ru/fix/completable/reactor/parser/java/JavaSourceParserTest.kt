@@ -48,16 +48,27 @@ class JavaSourceParserTest {
         fun vertexTransitions(name: String) = model.transitionable[name]!!.transitions.asSequence()
 
 
-        assertTrue(model.handlers.containsKey("userProfile"))
-        assertTrue(model.handlers.containsKey("txLog"))
-        assertTrue(model.handlers.containsKey("userJournal"))
-        assertTrue(model.handlers.containsKey("webNotification"))
-        assertTrue(model.handlers.containsKey("smsNotification"))
-        assertTrue(model.handlers.containsKey("bank"))
-        assertTrue(model.handlers.containsKey("serviceInfo"))
-        assertTrue(model.handlers.containsKey("marketingCampaign"))
-        assertTrue(model.subgraphs.containsKey("bonusPurchaseSubgraph"))
-        assertTrue(model.routers.containsKey("isPartnerService"))
+        val LOAD_USER_PROFILE = "loadUserProfile"
+        val TX_LOG = "logTransaction"
+        val USER_JOURNAL = "logActionToUserJournal"
+        val WEB_NOTIFICATION = "sendWebNotification"
+        val SMS_NOTIFICATION = "sendSmsNotification"
+        val BANK = "withdrawMoneyWithMinus"
+        val IS_PARTNER_SERVICE = "isPartnerService"
+        val SERVICE_INFO = "loadServiceInfo"
+        val MARKETING_CAMPAIGN = "checkBonuses"
+        val BONUS_PURCHASE_SUBGRAPH = "bonusPurchaseSubgraph"
+
+        assertTrue(model.handlers.containsKey(LOAD_USER_PROFILE))
+        assertTrue(model.handlers.containsKey(TX_LOG))
+        assertTrue(model.handlers.containsKey(USER_JOURNAL))
+        assertTrue(model.handlers.containsKey(WEB_NOTIFICATION))
+        assertTrue(model.handlers.containsKey(SMS_NOTIFICATION))
+        assertTrue(model.handlers.containsKey(BANK))
+        assertTrue(model.handlers.containsKey(SERVICE_INFO))
+        assertTrue(model.handlers.containsKey(MARKETING_CAMPAIGN))
+        assertTrue(model.subgraphs.containsKey(BONUS_PURCHASE_SUBGRAPH))
+        assertTrue(model.routers.containsKey(IS_PARTNER_SERVICE))
 
 
         assertEquals("PurchasePayload", model.startPoint.payloadType)
@@ -65,10 +76,10 @@ class JavaSourceParserTest {
         assertEquals("Defines purchase process when user buys good in the shop.", model.startPoint.doc)
 
         assertEquals(
-                listOf("userProfile", "serviceInfo"),
+                listOf(LOAD_USER_PROFILE, SERVICE_INFO),
                 model.startPoint.handleBy.map { it.name })
 
-        vertexTransitions("userProfile")
+        vertexTransitions(LOAD_USER_PROFILE)
                 .apply {
                     assertEquals(2, count())
 
@@ -88,12 +99,12 @@ class JavaSourceParserTest {
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
-                            it is VertexFigure && it.name == "serviceInfo"
+                            it is VertexFigure && it.name == SERVICE_INFO
                         }
                     })
                 }
 
-        vertexTransitions("serviceInfo")
+        vertexTransitions(SERVICE_INFO)
                 .apply {
                     assertEquals(5, count())
 
@@ -102,7 +113,7 @@ class JavaSourceParserTest {
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
-                            it is VertexFigure && it.name == "bank"
+                            it is VertexFigure && it.name == BANK
                         }
                     })
 
@@ -120,7 +131,7 @@ class JavaSourceParserTest {
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
-                            it is VertexFigure && it.name == "webNotification"
+                            it is VertexFigure && it.name == WEB_NOTIFICATION
                         }
                     })
 
@@ -129,7 +140,7 @@ class JavaSourceParserTest {
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
-                            it is VertexFigure && it.name == "smsNotification"
+                            it is VertexFigure && it.name == SMS_NOTIFICATION
                         }
                     })
 
@@ -145,7 +156,7 @@ class JavaSourceParserTest {
                             find { it.mergeStatuses == setOf("STOP") }?.target?.coordinates)
                 }
 
-        vertexTransitions("bank")
+        vertexTransitions(BANK)
                 .apply {
                     assertEquals(1, count())
 
@@ -153,11 +164,11 @@ class JavaSourceParserTest {
                         it.mergeStatuses.isEmpty()
                                 && !it.isComplete
                                 && it.isOnAny
-                                && it.target.let { it is VertexFigure && it.name == "isPartnerService" }
+                                && it.target.let { it is VertexFigure && it.name == IS_PARTNER_SERVICE }
                     })
                 }
 
-        vertexTransitions("isPartnerService")
+        vertexTransitions(IS_PARTNER_SERVICE)
                 .apply {
                     assertEquals(1, count())
 
@@ -165,11 +176,11 @@ class JavaSourceParserTest {
                         it.mergeStatuses.isEmpty()
                                 && !it.isComplete
                                 && it.isOnAny
-                                && it.target.let { it is VertexFigure && it.name == "txLog" }
+                                && it.target.let { it is VertexFigure && it.name == TX_LOG }
                     })
                 }
 
-        vertexTransitions("txLog")
+        vertexTransitions(TX_LOG)
                 .apply {
                     assertEquals(1, count())
 
@@ -177,7 +188,7 @@ class JavaSourceParserTest {
                         it.mergeStatuses.isEmpty()
                                 && !it.isComplete
                                 && it.isOnAny
-                                && it.target.let { it is VertexFigure && it.name == "userJournal" }
+                                && it.target.let { it is VertexFigure && it.name == USER_JOURNAL }
                     })
                 }
 
@@ -189,11 +200,11 @@ class JavaSourceParserTest {
                         it.mergeStatuses.isEmpty()
                                 && !it.isComplete
                                 && it.isOnAny
-                                && it.target.let { it is VertexFigure && it.name == "userJournal" }
+                                && it.target.let { it is VertexFigure && it.name == USER_JOURNAL }
                     })
                 }
 
-        vertexTransitions("userJournal")
+        vertexTransitions(USER_JOURNAL)
                 .apply {
                     assertEquals(1, count())
 
@@ -201,11 +212,11 @@ class JavaSourceParserTest {
                         it.mergeStatuses.isEmpty()
                                 && !it.isComplete
                                 && it.isOnAny
-                                && it.target.let { it is VertexFigure && it.name == "marketingCampaign" }
+                                && it.target.let { it is VertexFigure && it.name == MARKETING_CAMPAIGN }
                     })
                 }
 
-        vertexTransitions("marketingCampaign")
+        vertexTransitions(MARKETING_CAMPAIGN)
                 .apply {
                     assertEquals(2, count())
 
@@ -213,7 +224,7 @@ class JavaSourceParserTest {
                         it.mergeStatuses.singleOrNull() == "BONUS_EXIST"
                                 && !it.isComplete
                                 && !it.isOnAny
-                                && it.target.let { it is VertexFigure && it.name == "bonusPurchaseSubgraph" }
+                                && it.target.let { it is VertexFigure && it.name == BONUS_PURCHASE_SUBGRAPH }
                     }?.also {
                         val docs = it.transitionDocs.singleOrNull()
                         assertNotNull(docs)
@@ -234,27 +245,27 @@ class JavaSourceParserTest {
                     })
                 }
 
-        assertEquals("CheckWithdraw", model.mergers["bank"]!!.title)
-        assertEquals("check profile state", model.mergers["userProfile"]!!.title)
-        assertEquals("load user profile", model.handlers["userProfile"]!!.title)
+        assertEquals("CheckWithdraw", model.mergers[BANK]!!.title)
+        assertEquals("check profile state", model.mergers[LOAD_USER_PROFILE]!!.title)
+        assertEquals("load user profile", model.handlers[LOAD_USER_PROFILE]!!.title)
 
-        assertNull(model.routers["isPartnerService"]!!.title)
+        assertNull(model.routers[IS_PARTNER_SERVICE]!!.title)
         assertTrue {
-            model.routers["isPartnerService"]!!
+            model.routers[IS_PARTNER_SERVICE]!!
                     .doc!!
                     .startsWith("Check if given service is provided by a partner.")
         }
 
 
         assertEquals(Coordinates(627, 46), model.startPoint.coordinates)
-        assertEquals(Coordinates(349, 377), model.handleable["bank"]!!.coordinates)
-        assertEquals(Coordinates(926, 333), model.handleable["webNotification"]!!.coordinates)
-        assertEquals(Coordinates( 378, 441), model.mergers["bank"]!!.coordinates)
-        assertEquals(Coordinates(497, 293), model.endpoints["serviceInfo"]!!.coordinates)
+        assertEquals(Coordinates(349, 377), model.handleable[BANK]!!.coordinates)
+        assertEquals(Coordinates(926, 333), model.handleable[WEB_NOTIFICATION]!!.coordinates)
+        assertEquals(Coordinates( 378, 441), model.mergers[BANK]!!.coordinates)
+        assertEquals(Coordinates(497, 293), model.endpoints[SERVICE_INFO]!!.coordinates)
 
         assertEquals(Source(sourceFilePath, 212, 9, 7712), model.startPoint.source)
 
-        assertEquals(Source(sourceFilePath, 94, 13, 2757), model.handlers["bank"]!!.source)
+        assertEquals(Source(sourceFilePath, 94, 13, 2757), model.handlers[BANK]!!.source)
 
     }
 
