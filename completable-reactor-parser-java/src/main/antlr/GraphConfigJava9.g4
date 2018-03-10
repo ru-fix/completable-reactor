@@ -17,7 +17,11 @@ graphBlock
     ;
 
 graphDeclarationBlock
-    :   ('public' | 'private' | 'static')? 'class' graphClass 'extends' 'Graph' '<' payloadType '>'
+    :   classAnnotation* ('public' | 'private' | 'static')? 'class' graphClass 'extends' 'Graph' '<' payloadType '>'
+    ;
+
+classAnnotation
+    :   '@' Identifier (LPAREN anythingBeforeRParen RPAREN)?
     ;
 
 graphClass
@@ -72,7 +76,7 @@ builderHandler
     ;
 
 handler
-    :   HANDLER | SYNC_HANDLER
+    :   HANDLER
     ;
 
 builderMerger
@@ -182,7 +186,6 @@ ignoredToken
 SUBGRAPH : 'subgraph';
 MERGER : 'merger';
 HANDLER : 'handler';
-SYNC_HANDLER : 'syncHandler';
 PAYLOAD : 'payload';
 COMPLETE : 'complete';
 ROUTER : 'router';
@@ -193,7 +196,6 @@ anyGraphKeyword
     :   SUBGRAPH
     |   MERGER
     |   HANDLER
-    |   SYNC_HANDLER
     |   PAYLOAD
     |   COMPLETE
     |   ROUTER
