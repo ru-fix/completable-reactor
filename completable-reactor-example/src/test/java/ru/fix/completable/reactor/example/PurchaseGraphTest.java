@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         PurchaseGraphTest.ServicesConfig.class,
-        PurchaseGraphTest.GraphsConfig.class
+        PurchaseGraph.class
 })
 public class PurchaseGraphTest {
 
@@ -71,20 +71,6 @@ public class PurchaseGraphTest {
             CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
             reactor.registerDependecnyInjector(applicationContext::getBean);
             return reactor;
-        }
-    }
-
-    @Configuration
-    public static class GraphsConfig {
-
-        @Autowired
-        CompletableReactor reactor;
-
-        @Bean
-        PurchaseGraph purchaseGraph() {
-            PurchaseGraph purchaseGraph = new PurchaseGraph();
-            reactor.registerGraphIfAbsent(purchaseGraph);
-            return purchaseGraph;
         }
     }
 
