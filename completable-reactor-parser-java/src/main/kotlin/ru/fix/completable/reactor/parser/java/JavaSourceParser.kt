@@ -58,7 +58,6 @@ class JavaSourceParser(val listener: Listener) {
                 graphBlocks.asSequence()
                         .mapNotNull { it.graphDeclarationBlock() }
                         .forEach {
-                            //TODO include annotations into graph declaration, check comments above annotations
                             tokens.checkCommentsToLeft(it.start.tokenIndex)?.run {
                                 startPoint.title = title
                                 startPoint.doc = doc
@@ -504,4 +503,3 @@ class JavaSourceParser(val listener: Listener) {
 }
 
 //TODO: withEmptyMerger()
-//TODO: maybe remove handlerSync because it behave as router?
