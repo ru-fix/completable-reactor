@@ -1,128 +1,141 @@
 package ru.fix.completable.reactor.example
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Configuration
 import ru.fix.completable.reactor.example.services.*
 import ru.fix.completable.reactor.example.services.UserProfileManager.Status
-import ru.fix.completable.reactor.graph.Graph
+import ru.fix.completable.reactor.graph.KGraph
+import ru.fix.completable.reactor.runtime.CompletableReactor
+import javax.annotation.PostConstruct
 
 /**
  * Created by Kamil Asfandiyarov
  */
-class SubscribeGraph : Graph<SubscribePayload>() {
+@Configuration
+class SubscribeGraph : KGraph<SubscribePayload>() {
 
-    val userProfile = object : ru.fix.completable.reactor.graph.Vertex() {
-        lateinit var userProfile: UserProfileManager
+    @Autowired
+    lateinit var userProfile: UserProfileManager
 
-        init {
-            handler { pld ->
-                userProfile.loadUserProfileById(pld.request.userId)
-            }.withMerger(
-                    //check profile status
-                    { pld, result ->
-                        if (pld.response.status != null) {
-                            Flow.STOP
-                        }
+    @Autowired
+    lateinit var txLog: TransactionLog
 
-                        when (result.status) {
-                            Status.USER_NOT_FOUND, Status.USER_IS_BLOCKED -> {
-                                pld.response.status = result.status
-                                Flow.STOP
-                            }
+    @Autowired
+    lateinit var completableReactor: CompletableReactor
 
-                            Status.OK -> {
-                                pld.intermediateData.userInfo = result.userProfile
-                                Flow.CONTINUE
-                            }
-
-                            else -> throw IllegalArgumentException("result.status = " + result.status)
-                        }
-                    })
-        }
-    }
-
-    val txLog = object : ru.fix.completable.reactor.graph.Vertex() {
-        lateinit var txLog: TransactionLog
-
-        init {
-            handler { pld ->
-                txLog.logTransactioin(pld.request.userId)
-            }.withMerger { pld, any -> Flow.CONTINUE }
-        }
-    }
-
-    val userJournal = object : ru.fix.completable.reactor.graph.Vertex() {
-        lateinit var userJournal: UserJournal
-
-        init {
-            handler { pld ->
-                userJournal.logAction(
-                        pld.request.userId,
-                        String.format("Request type: %s", pld.javaClass.getSimpleName()))
-            }.withMerger {
-                //ignore result of logging
-                pld, result ->
-
-                Flow.CONTINUE
-            }
-        }
-    }
+    @Autowired
+    lateinit var userJournal: UserJournal
 
     @Autowired
     lateinit var notifier: Notifier
 
+    @Autowired
+    lateinit var bank: Bank
+
+    @Autowired
+    lateinit var serviceRegistry: ServiceRegistry
+
+
+    @PostConstruct
+    fun initialize() {
+        completableReactor.registerGraphIfAbsent(this)
+    }
+
+    val loadUserProfile =
+            handler {
+                userProfile.loadUserProfileById(request.userId)
+
+            }.withMerger {
+                //check profile status
+                result ->
+                if (response.status != null) {
+                    Flow.STOP
+                }
+
+                when (result.status) {
+                    Status.USER_NOT_FOUND, Status.USER_IS_BLOCKED -> {
+                        response.status = result.status
+                        Flow.STOP
+                    }
+
+                    Status.OK -> {
+                        intermediateData.userInfo = result.userProfile
+                        Flow.CONTINUE
+                    }
+
+                    else -> throw IllegalArgumentException("result.status = " + result.status)
+                }
+            }
+
+    val logTransaction =
+            handler {
+                txLog.logTransactioin(request.userId)
+
+            }.withMerger { any ->
+                Flow.CONTINUE
+            }
+
+
+    val logActionToUserJournal =
+            handler {
+                userJournal.logAction(
+                        request.userId,
+                        String.format("Request type: %s", javaClass.simpleName))
+            }.withMerger {
+                //ignore result of logging
+                result ->
+                Flow.CONTINUE
+            }
+
+
     val webNotification =
-            handler { pld ->
-                notifier.sendHttpPurchaseNotification(pld.request.userId)
+            handler {
+                notifier.sendHttpPurchaseNotification(request.userId)
+
             }.withoutMerger()
 
 
-    val bank = object : ru.fix.completable.reactor.graph.Vertex() {
-        lateinit var bank: Bank
-
-        init {
-            handler { pld ->
+    val withdrawMoney =
+            handler {
                 bank.withdrawMoney(
-                        pld.intermediateData.userInfo,
-                        pld.intermediateData.serviceInfo)
-            }.withMerger(
-                    //update new amount
-                    { pld, withdraw ->
-                        when (withdraw.getStatus()) {
-                            Bank.Withdraw.Status.WALLET_NOT_FOUND,
-                            Bank.Withdraw.Status.USER_IS_BLOCKED -> {
-                                pld.response.status = withdraw.status
-                                Flow.STOP
-                            }
-                            Bank.Withdraw.Status.OK -> {
-                                pld.response.newAmount = withdraw.getNewAmount()
-                                pld.response.status = Bank.Withdraw.Status.OK
-                                Flow.CONTINUE
-                            }
+                        intermediateData.userInfo,
+                        intermediateData.serviceInfo)
 
-                            else -> throw IllegalArgumentException("Status: " + withdraw.getStatus());
-                        }
-                    })
-        }
-    }
+            }.withMerger {
+                //update new amount
+                withdraw ->
+                when (withdraw.getStatus()) {
+                    Bank.Withdraw.Status.WALLET_NOT_FOUND,
+                    Bank.Withdraw.Status.USER_IS_BLOCKED -> {
+                        response.status = withdraw.status
+                        Flow.STOP
+                    }
+                    Bank.Withdraw.Status.OK -> {
+                        response.newAmount = withdraw.getNewAmount()
+                        response.status = Bank.Withdraw.Status.OK
+                        Flow.CONTINUE
+                    }
 
-    val serviceInfo = object : ru.fix.completable.reactor.graph.Vertex() {
-        lateinit var serviceInfo: ServiceRegistry
+                    else -> throw IllegalArgumentException("Status: " + withdraw.status)
+                }
+            }
 
-        init {
-            handler { pld ->
-                serviceInfo.loadServiceInformation(pld.request.serviceId)
-            }.withMerger { pld, result ->
-                if (pld.response.status != null) {
+    val loadServiceInfo =
+            handler {
+                serviceRegistry.loadServiceInformation(request.serviceId)
+
+            }.withMerger { result ->
+                if (response.status != null) {
                     Flow.STOP
                 }
 
                 when (result.status!!) {
                     ServiceRegistry.Status.SERVICE_NOT_FOUND -> {
-                        pld.response.status = result.getStatus()
+                        response.status = result.getStatus()
                         Flow.STOP
                     }
                     ServiceRegistry.Status.OK -> {
-                        pld.intermediateData.serviceInfo = result.getServiceInfo()
+                        intermediateData.serviceInfo = result.getServiceInfo()
 
                         if (result.getServiceInfo().isActive()) {
                             Flow.CONTINUE
@@ -134,67 +147,62 @@ class SubscribeGraph : Graph<SubscribePayload>() {
 
                 Flow.CONTINUE
             }
+
+    val checkTrialPeriod = router {
+        // Checks whether service supports trial period
+        payload ->
+        if (payload.intermediateData.serviceInfo!!.isSupportTrialPeriod) {
+            Flow.WITHDRAWAL
+        } else {
+            Flow.NO_WITHDRAWAL
         }
-
     }
-
-    val checkTrialPeriod = router(
-            //checkTrialPeriod
-            //Checks whether service supports trial period
-            { payload ->
-
-                if (payload.intermediateData.serviceInfo!!.isSupportTrialPeriod) {
-                    Flow.WITHDRAWAL
-                } else {
-                    Flow.NO_WITHDRAWAL
-                }
-            })
 
     init {
         payload()
-                .handleBy(userProfile)
-                .handleBy(serviceInfo)
+                .handleBy(loadUserProfile)
+                .handleBy(loadServiceInfo)
 
-        userProfile
+        loadUserProfile
                 .on(Flow.STOP).complete()
-                .on(Flow.CONTINUE).mergeBy(serviceInfo)
+                .on(Flow.CONTINUE).mergeBy(loadServiceInfo)
 
-        serviceInfo
+        loadServiceInfo
                 .on(Flow.CONTINUE).mergeBy(checkTrialPeriod)
                 .on(Flow.STOP).complete()
 
         checkTrialPeriod
-                .on(Flow.WITHDRAWAL).handleBy(bank)
-                .on(Flow.NO_WITHDRAWAL).handleBy(userJournal)
+                .on(Flow.WITHDRAWAL).handleBy(withdrawMoney)
+                .on(Flow.NO_WITHDRAWAL).handleBy(logActionToUserJournal)
                 .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
 
-        bank
+        withdrawMoney
                 .onAny()
-                .handleBy(txLog)
+                .handleBy(logTransaction)
 
-        txLog
+        logTransaction
                 .onAny()
-                .handleBy(userJournal)
+                .handleBy(logActionToUserJournal)
 
-        userJournal
+        logActionToUserJournal
                 .onAny().complete()
 
         coordinates()
                 .payload(680, 60)
-                .handler(bank, 410, 440)
+                .handler(withdrawMoney, 410, 440)
                 .handler(webNotification, 889, 465)
-                .handler(serviceInfo, 480, 120)
-                .handler(txLog, 420, 650)
-                .handler(userJournal, 680, 820)
-                .handler(userProfile, 770, 120)
-                .merger(bank, 480, 550)
+                .handler(loadServiceInfo, 480, 120)
+                .handler(logTransaction, 420, 650)
+                .handler(logActionToUserJournal, 680, 820)
+                .handler(loadUserProfile, 770, 120)
+                .merger(withdrawMoney, 480, 550)
                 .merger(checkTrialPeriod, 702, 363)
-                .merger(serviceInfo, 640, 280)
-                .merger(txLog, 530, 770)
-                .merger(userJournal, 760, 930)
-                .merger(userProfile, 830, 250)
-                .complete(serviceInfo, 480, 310)
-                .complete(userJournal, 740, 1020)
-                .complete(userProfile, 920, 300)
+                .merger(loadServiceInfo, 640, 280)
+                .merger(logTransaction, 530, 770)
+                .merger(logActionToUserJournal, 760, 930)
+                .merger(loadUserProfile, 830, 250)
+                .complete(loadServiceInfo, 480, 310)
+                .complete(logActionToUserJournal, 740, 1020)
+                .complete(loadUserProfile, 920, 300)
     }
 }
