@@ -110,8 +110,6 @@ open class SubscribeGraphTest {
 
         val execution = reactor.submit(payload)
 
-        Thread.sleep(3000)
-
         val result = execution.resultFuture.get(5, TimeUnit.SECONDS)
 
         assertEquals(Bank.Withdraw.Status.OK, result.response.status)
