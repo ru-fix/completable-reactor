@@ -62,5 +62,3 @@ open class Graph<Payload> : Graphable {
         return GlMergerBuilder(vx)
     }
 }
-
-

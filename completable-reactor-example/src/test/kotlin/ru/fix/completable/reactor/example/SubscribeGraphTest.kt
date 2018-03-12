@@ -75,6 +75,9 @@ open class SubscribeGraphTest {
 
             })
 
+            //For debug purpose to resolve blocked vertices that does not completed correctly
+            reactor.setDebugProcessingVertexGraphState(true)
+
             return reactor
         }
     }
@@ -97,8 +100,7 @@ open class SubscribeGraphTest {
 
     }
 
-//    @Test
-//    TODO: fix test
+    @Test
     fun john_subscribes_on_car_wash() {
 
         val payload = SubscribePayload(SubscribePayload.Request(
@@ -106,7 +108,11 @@ open class SubscribeGraphTest {
                 serviceId = ServiceRegistry.SERVICE_ID_CAR_WASH
         ))
 
-        val result = reactor.submit(payload).resultFuture.get(5, TimeUnit.SECONDS)
+        val execution = reactor.submit(payload)
+
+        Thread.sleep(3000)
+
+        val result = execution.resultFuture.get(5, TimeUnit.SECONDS)
 
         assertEquals(Bank.Withdraw.Status.OK, result.response.status)
     }
