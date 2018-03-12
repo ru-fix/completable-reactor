@@ -206,19 +206,19 @@ class KotlinGraphTest {
     class SubgraphPayloadGraph : Graph<SubgraphPaylaod>() {
 
         var idProcessor11 = handler { IdProcessor(11).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor12 = handler { IdProcessor(12).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor13 = handler { IdProcessor(13).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
@@ -244,19 +244,19 @@ class KotlinGraphTest {
      */
     class ParentGraphPayloadGraph : Graph<IdListPayload>() {
         var idProcessor1 = handler { IdProcessor(1).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor2 = handler { IdProcessor(2).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor3 = handler { IdProcessor(3).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
@@ -304,7 +304,6 @@ class KotlinGraphTest {
     }
 
 
-    
     /**
      * Router works as an regular merge point
      * but there is no processor or subgraph or theirs result to merge.
@@ -315,13 +314,13 @@ class KotlinGraphTest {
     class RouterFromStartPointGraph : Graph<IdListPayload>() {
 
         var idProcessor0 = handler { IdProcessor(0).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor1 = handler { IdProcessor(1).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
@@ -381,13 +380,13 @@ class KotlinGraphTest {
     class RouterFromProcessorsMergerGraph : Graph<IdListPayload>() {
 
         var idProcessor0 = handler { IdProcessor(0).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor1 = handler { IdProcessor(1).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
@@ -446,19 +445,19 @@ class KotlinGraphTest {
 
     class OptionalProcessorExecutionGraph : Graph<OptionalProcessorExecutionPayload>() {
         var idProcessor1 = handler { IdProcessor(1).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor2 = handler { IdProcessor(2).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor3 = handler { IdProcessor(3).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
@@ -540,20 +539,20 @@ class KotlinGraphTest {
     class DeadTransitionBreaksFlowGraph : Graph<DeadTransitionBreaksFlowPayload>() {
 
         var idProcessor1 = handler { IdProcessor(1).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
         var idProcessor1b = idProcessor1.clone()
 
         var idProcessor2 = handler { IdProcessor(2).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor3 = handler { IdProcessor(3).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
@@ -562,7 +561,7 @@ class KotlinGraphTest {
 
 
         var idProcessor4 = handler { IdProcessor(4).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
@@ -642,13 +641,13 @@ class KotlinGraphTest {
         var mergePoint2Semaphore = Semaphore(0)
 
         var idProcessor0 = handler { IdProcessor(0).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         var idProcessor1 = handler { IdProcessor(1).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
@@ -739,7 +738,7 @@ class KotlinGraphTest {
         val processor4mergerSemaphore = Semaphore(0)
 
         val idProcessor0 = handler { IdProcessor(0).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     DeadTransitionGraph.Status.FIRST
                 }
@@ -757,7 +756,7 @@ class KotlinGraphTest {
                 }
 
         val idProcessor3 = handler { IdProcessor(3).handle() }
-                .withMerger{
+                .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
@@ -860,7 +859,6 @@ class KotlinGraphTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun single_detached_merge_point() {
 
 
@@ -887,8 +885,8 @@ class KotlinGraphTest {
                         .withMerger {
                             assertNull(it)
                             idSequence.add(1)
-            Status.OK
-        }
+                            Status.OK
+                        }
 
         init {
             payload()
@@ -899,7 +897,6 @@ class KotlinGraphTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun handler_returns_null_as_a_result() {
         reactor.registerGraphIfAbsent<Any, ReturnNullInHandlerGraph>(ReturnNullInHandlerGraph::class.java)
 
@@ -912,7 +909,7 @@ class KotlinGraphTest {
             fail("When handler returns NULL result future should complete exceptionally.")
 
         } catch (exc: Exception) {
-            log.info("When handler returns NULL result future completed with NPE")
+            log.info(exc) { "When handler returns NULL result future completed with NPE" }
         }
 
     }

@@ -82,7 +82,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
             handler {
                 userJournal.logAction(
                         request.userId,
-                        String.format("Request type: %s", javaClass.simpleName))
+                        "Request type: ${javaClass.simpleName}")
             }.withMerger {
                 //ignore result of logging
                 Flow.CONTINUE

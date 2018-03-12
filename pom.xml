@@ -34,6 +34,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <kotlin.version>1.2.30</kotlin.version>
+    <!-- 1.7.10 - current intellij idea sfl4j logger version -->
+    <slf4j.version>1.7.10</slf4j.version>
   </properties>
 
   <url>https://github.com/ru-fix/completable-reactor</url>
@@ -112,8 +114,13 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <!-- 1.7.10 - current intellij idea sfl4j logger version -->
-        <version>1.7.10</version>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
       </dependency>
 
       <dependency>
