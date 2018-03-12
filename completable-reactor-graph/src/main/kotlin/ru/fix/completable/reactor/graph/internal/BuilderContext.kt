@@ -1,6 +1,6 @@
 package ru.fix.completable.reactor.graph.internal
 
-import ru.fix.completable.reactor.graph.Graph
+import ru.fix.completable.reactor.graph.Graphable
 import ru.fix.completable.reactor.graph.Vertex
 
 class BuilderContext {
@@ -11,7 +11,7 @@ class BuilderContext {
 
     private var graph: GlGraph? = null
 
-    fun setGraph(graph: Graph<*>, glGraph: GlGraph) {
+    fun setGraph(graph: Graphable, glGraph: GlGraph) {
         this.graph = glGraph
         this.fieldNameResolver = FieldNameResolver(graph, listOf(Vertex::class.java))
     }

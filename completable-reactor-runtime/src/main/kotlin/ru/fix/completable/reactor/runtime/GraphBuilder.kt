@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime
 
 import mu.KotlinLogging
 import ru.fix.completable.reactor.graph.Graph
+import ru.fix.completable.reactor.graph.Graphable
 import ru.fix.completable.reactor.graph.Vertex
 import ru.fix.completable.reactor.graph.internal.GlGraph
 import ru.fix.completable.reactor.graph.internal.InternalGlAccessor
@@ -14,7 +15,7 @@ class GraphBuilder {
 
     private val modelBuilder = ModelBuilder()
 
-    fun buildGraph(graph: Graph<Any?>, dependencyInjector: DependencyInjector?): GlGraph {
+    fun buildGraph(graph: Graphable, dependencyInjector: DependencyInjector?): GlGraph {
 
         val glGraph = InternalGlAccessor.graph(graph)
 
@@ -61,7 +62,7 @@ class GraphBuilder {
         return glGraph
     }
 
-    private fun injectDependencies(graph: Graph<Any?>, dependencyInjector: DependencyInjector?) {
+    private fun injectDependencies(graph: Graphable, dependencyInjector: DependencyInjector?) {
         //No need to cache since graph registration is rare operation
         graph.javaClass.declaredFields
                 .asSequence()

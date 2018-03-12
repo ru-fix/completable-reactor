@@ -27,6 +27,7 @@
     <module>completable-reactor-spring</module>
     <module>completable-reactor-parser-java</module>
     <module>completable-reactor-graph</module>
+    <module>completable-reactor-graph-kotlin</module>
   </modules>
 
   <properties>

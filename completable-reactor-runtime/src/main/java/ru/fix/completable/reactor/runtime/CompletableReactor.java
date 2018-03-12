@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.fix.commons.profiler.PrefixedProfiler;
 import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.Profiler;
-import ru.fix.completable.reactor.graph.Graph;
+import ru.fix.completable.reactor.graph.Graphable;
 import ru.fix.completable.reactor.graph.internal.GlGraph;
 import ru.fix.completable.reactor.runtime.cloning.CopierThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
@@ -73,9 +73,9 @@ public class CompletableReactor implements AutoCloseable {
     private final AtomicLong closeTimeoutMs = new AtomicLong(120_000);
 
     private final ConcurrentHashMap<Class<?>, GlGraph> glPayloadGraphs = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Class<? extends Graph>, Boolean> glGraphConfigs = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<? extends Graphable>, Boolean> glGraphConfigs = new ConcurrentHashMap<>();
 
-    public <GraphConfigType extends Graph>
+    public <GraphConfigType extends Graphable>
     void registerGraphIfAbsent(GraphConfigType graphConfig) {
         Objects.requireNonNull(graphConfig, "graphConfig");
 
@@ -105,7 +105,7 @@ public class CompletableReactor implements AutoCloseable {
      * Check all execution paths.
      * Validated that there is no conflicts between merging vertices and all required endpoints exist.
      */
-    public <PayloadType, GraphConfigType extends Graph>
+    public <PayloadType, GraphConfigType extends Graphable>
     void registerGraphIfAbsent(Class<GraphConfigType> graphConfigClass) {
         Objects.requireNonNull(graphConfigClass, "graphConfigClass");
 
@@ -115,7 +115,7 @@ public class CompletableReactor implements AutoCloseable {
                 Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfigClass);
 
 
-                Graph graphConfig;
+                Graphable graphConfig;
                 try {
                     Constructor<GraphConfigType> ctor = graphConfigClass.getDeclaredConstructor();
                     if (!ctor.isAccessible()) {
@@ -152,7 +152,7 @@ public class CompletableReactor implements AutoCloseable {
             );
         }
 
-        if (!Graph.class.isAssignableFrom(graphConfigClass)) {
+        if (!Graphable.class.isAssignableFrom(graphConfigClass)) {
             throw new IllegalArgumentException(""
                     + "Superclass of graph config class " + graphConfigClass + " is not GraphConfig<PayloadType>."
                     + " Superclass of graph config class should be GraphConfig<PayloadType>."
@@ -161,7 +161,10 @@ public class CompletableReactor implements AutoCloseable {
 
         Class actualClass = graphConfigClass;
 
-        while (actualClass != null && !actualClass.getSuperclass().equals(Graph.class)){
+        while (actualClass != null
+                && actualClass.getSuperclass() != null
+                && !Arrays.asList(actualClass.getSuperclass().getInterfaces()).contains(Graphable.class)){
+
             actualClass = actualClass.getSuperclass();
         }
 

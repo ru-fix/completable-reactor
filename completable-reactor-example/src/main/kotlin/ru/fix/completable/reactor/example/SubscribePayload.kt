@@ -20,13 +20,15 @@ data class SubscribePayload(val request: Request) {
 
     data class Response(
             var status: Enum<*>? = null,
-            var moneyWithdrawed: Integer? = null,
-            var newAmount: BigDecimal? = null
+            var moneyWithdrawed: Int? = null,
+            var newAmount: BigDecimal? = null,
+            //TODO replace Enum with internal status enum
+            var bonusPurchaseStatus: Enum<*>? = null
     )
 
-    data class IntermediateData(
-            var serviceInfo: ServiceInfo? = null,
-            var accountInfo: AccountInfo? = null,
-            var userInfo: UserProfile? = null
-    )
+    class IntermediateData {
+        lateinit var serviceInfo: ServiceInfo
+        lateinit var accountInfo: AccountInfo
+        lateinit var userInfo: UserProfile
+    }
 }
