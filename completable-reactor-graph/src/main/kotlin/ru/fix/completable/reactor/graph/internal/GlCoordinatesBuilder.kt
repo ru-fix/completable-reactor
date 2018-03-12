@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.graph.internal
 import ru.fix.completable.reactor.graph.CoordinatesBuilder
 import ru.fix.completable.reactor.graph.Vertex
 
-internal class GlCoordinatesBuilder : CoordinatesBuilder {
+class GlCoordinatesBuilder : CoordinatesBuilder {
     override fun payload(x: Int, y: Int): CoordinatesBuilder {
         return this
     }

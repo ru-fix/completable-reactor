@@ -76,11 +76,7 @@ public class PurchaseGraphTest {
 
 
     @Autowired
-    PurchaseGraph purchaseGraph;
-
-    @Autowired
     CompletableReactor reactor;
-
 
     @Test()
     public void invalid_user_purchases_invalid_service() throws Exception {

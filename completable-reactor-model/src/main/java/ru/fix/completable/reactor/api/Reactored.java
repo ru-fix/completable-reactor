@@ -45,8 +45,11 @@ import java.lang.annotation.Target;
  * .withMerger(ClassWithMergingMethod::mergingMethod)
  * </code></pre>
  *
+ * @deprecated will be removed. Use simple javadoc instead
+ *
  * @author Kamil Asfandiyarov
  */
+@Deprecated()
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE, ElementType.FIELD})
 public @interface Reactored {
