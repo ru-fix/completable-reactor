@@ -152,9 +152,9 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
     val checkTrialPeriod = router {
         // Checks whether service supports trial period
         if (intermediateData.serviceInfo.isSupportTrialPeriod) {
-            Flow.WITHDRAWAL
-        } else {
             Flow.NO_WITHDRAWAL
+        } else {
+            Flow.WITHDRAWAL
         }
     }
 
@@ -194,13 +194,11 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
 
         logTransaction
                 .onAny().handleBy(logActionToUserJournal)
-                .onAny().handleBy(bonusPurchaseSubgraph)
-
-
-        bonusPurchaseSubgraph
-                .onAny().mergeBy(logActionToUserJournal)
 
         logActionToUserJournal
+                .onAny().handleBy(bonusPurchaseSubgraph)
+
+        bonusPurchaseSubgraph
                 .onAny().complete()
 
         coordinates()

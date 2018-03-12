@@ -15,6 +15,7 @@ import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.concurrent.TimeUnit
 
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import ru.fix.completable.reactor.runtime.DependencyInjector
 
 /**
@@ -84,6 +85,15 @@ open class SubscribeGraphTest {
 
     @Autowired
     lateinit var reactor: CompletableReactor
+
+    @Before
+    fun before(){
+        reactor.registerGraphSync(PurchasePayload::class.java){
+            it.apply{
+                response.status = Bank.Withdraw.Status.OK
+            }
+        }
+    }
 
 
     @Test
