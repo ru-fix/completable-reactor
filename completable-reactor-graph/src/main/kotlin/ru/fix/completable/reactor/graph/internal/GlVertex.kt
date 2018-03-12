@@ -28,4 +28,13 @@ class GlVertex(
     @JvmField
     val transitions: MutableList<GlTransition> = ArrayList()
 
+    override fun toString(): String {
+        val type = when {
+            handler != null -> "handler"
+            router != null -> "router"
+            subgraphPayloadBuilder != null -> "subgraph"
+            else -> "unknown: $name"
+        }
+        return "$type: $name"
+    }
 }
