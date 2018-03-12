@@ -883,7 +883,7 @@ class KotlinGraphTest {
         var handler1 =
                 handler { nullResultHandler.handleWithNullResult() }
                         .withMerger {
-                            assertNull(it)
+                            fail("Merger should not be invoked when handler returned NULL")
                             idSequence.add(1)
                             Status.OK
                         }
