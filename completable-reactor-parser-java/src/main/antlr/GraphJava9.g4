@@ -21,7 +21,7 @@ graphDeclarationBlock
     ;
 
 classAnnotation
-`    :   AT Identifier (LPAREN anythingBeforeRParen RPAREN)?
+    :   AT Identifier (LPAREN anythingBeforeRParen RPAREN)?
     ;
 
 graphClass
