@@ -87,19 +87,19 @@ builderWithoutMerger
     ;
 
 anythingBeforeRParen
-    :   (ignoreParenthesesBlock | ignoreBracesBlock | ~RPAREN)*
+    :   (ignoreParenthesesBlock | ignoreBracesBlock | ~(LPAREN|RPAREN))*
     ;
 
 anythingBeforeRBrace
-    :   (ignoreBracesBlock | ignoreBracesBlock | ~RBRACE)*
+    :   (ignoreBracesBlock | ignoreBracesBlock | ~(LPAREN|RPAREN))*
     ;
 
 ignoreBracesBlock
-    :   LBRACE (~(RBRACE|LBRACE) | ignoreBracesBlock)* RBRACE
+    :   LBRACE ( ~(LBRACE|RBRACE) | ignoreBracesBlock )* RBRACE
     ;
 
 ignoreParenthesesBlock
-    :   LPAREN (~(RPAREN|LPAREN) | ignoreParenthesesBlock)* RPAREN
+    :   LPAREN ( ~(LPAREN|RPAREN) | ignoreParenthesesBlock )* RPAREN
     ;
 
 
