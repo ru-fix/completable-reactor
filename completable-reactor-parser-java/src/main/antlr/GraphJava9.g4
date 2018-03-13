@@ -21,7 +21,7 @@ graphDeclarationBlock
     ;
 
 classAnnotation
-    :   '@' Identifier (LPAREN anythingBeforeRParen RPAREN)?
+`    :   AT Identifier (LPAREN anythingBeforeRParen RPAREN)?
     ;
 
 graphClass
@@ -33,11 +33,11 @@ payloadType
     ;
 
 vertexAssignmentBlock
-    :   'Vertex' vertexName ASSIGN vertexBuilder SEMI
+    :   VERTEX vertexName ASSIGN vertexBuilder SEMI
     ;
 
 vertexCloningBlock
-    :   'Vertex' vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI
+    :   VERTEX vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI
     ;
 
 vertexName
@@ -46,7 +46,7 @@ vertexName
     ;
 
 vertexInitializationBlock
-    :   'Vertex' Identifier ASSIGN NEW 'Vertex' LPAREN RPAREN vertexInitializationStaticSection SEMI
+    :   VERTEX Identifier ASSIGN NEW VERTEX LPAREN RPAREN vertexInitializationStaticSection SEMI
     ;
 
 vertexInitializationStaticSection
@@ -172,7 +172,7 @@ coordinateRouter : DOT ROUTER LPAREN Identifier COMMA Coordinate COMMA Coordinat
 coordinateMerger : DOT MERGER LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
 coordinateComplete : DOT COMPLETE LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
 
-Coordinate: '-'? DecimalIntegerLiteral;
+Coordinate: '-'? DecimalNumeral;
 
 transitionCondition
     :   Identifier (DOT Identifier)*
@@ -190,7 +190,7 @@ PAYLOAD : 'payload';
 COMPLETE : 'complete';
 ROUTER : 'router';
 CLONE : 'clone';
-
+VERTEX : 'Vertex';
 
 anyGraphKeyword
     :   SUBGRAPH
@@ -202,346 +202,19 @@ anyGraphKeyword
     |   CLONE
     ;
 
-
-
-
-// §3.10.1 Integer Literals
-
-IntegerLiteral
-	:	DecimalIntegerLiteral
-	|	HexIntegerLiteral
-	|	OctalIntegerLiteral
-	|	BinaryIntegerLiteral
-	;
-
-fragment
-DecimalIntegerLiteral
-	:	DecimalNumeral IntegerTypeSuffix?
-	;
-
-fragment
-HexIntegerLiteral
-	:	HexNumeral IntegerTypeSuffix?
-	;
-
-fragment
-OctalIntegerLiteral
-	:	OctalNumeral IntegerTypeSuffix?
-	;
-
-fragment
-BinaryIntegerLiteral
-	:	BinaryNumeral IntegerTypeSuffix?
-	;
-
-fragment
-IntegerTypeSuffix
-	:	[lL]
-	;
-
-fragment
-DecimalNumeral
-	:	'0'
-	|	NonZeroDigit (Digits? | Underscores Digits)
-	;
-
-fragment
-Digits
-	:	Digit (DigitsAndUnderscores? Digit)?
-	;
-
-fragment
-Digit
-	:	'0'
-	|	NonZeroDigit
-	;
-
-fragment
-NonZeroDigit
-	:	[1-9]
-	;
-
-fragment
-DigitsAndUnderscores
-	:	DigitOrUnderscore+
-	;
-
-fragment
-DigitOrUnderscore
-	:	Digit
-	|	'_'
-	;
-
-fragment
-Underscores
-	:	'_'+
-	;
-
-fragment
-HexNumeral
-	:	'0' [xX] HexDigits
-	;
-
-fragment
-HexDigits
-	:	HexDigit (HexDigitsAndUnderscores? HexDigit)?
-	;
-
-fragment
-HexDigit
-	:	[0-9a-fA-F]
-	;
-
-fragment
-HexDigitsAndUnderscores
-	:	HexDigitOrUnderscore+
-	;
-
-fragment
-HexDigitOrUnderscore
-	:	HexDigit
-	|	'_'
-	;
-
-fragment
-OctalNumeral
-	:	'0' Underscores? OctalDigits
-	;
-
-fragment
-OctalDigits
-	:	OctalDigit (OctalDigitsAndUnderscores? OctalDigit)?
-	;
-
-fragment
-OctalDigit
-	:	[0-7]
-	;
-
-fragment
-OctalDigitsAndUnderscores
-	:	OctalDigitOrUnderscore+
-	;
-
-fragment
-OctalDigitOrUnderscore
-	:	OctalDigit
-	|	'_'
-	;
-
-fragment
-BinaryNumeral
-	:	'0' [bB] BinaryDigits
-	;
-
-fragment
-BinaryDigits
-	:	BinaryDigit (BinaryDigitsAndUnderscores? BinaryDigit)?
-	;
-
-fragment
-BinaryDigit
-	:	[01]
-	;
-
-fragment
-BinaryDigitsAndUnderscores
-	:	BinaryDigitOrUnderscore+
-	;
-
-fragment
-BinaryDigitOrUnderscore
-	:	BinaryDigit
-	|	'_'
-	;
-
-// §3.10.2 Floating-Point Literals
-
-FloatingPointLiteral
-	:	DecimalFloatingPointLiteral
-	|	HexadecimalFloatingPointLiteral
-	;
-
-fragment
-DecimalFloatingPointLiteral
-	:	Digits '.' Digits? ExponentPart? FloatTypeSuffix?
-	|	'.' Digits ExponentPart? FloatTypeSuffix?
-	|	Digits ExponentPart FloatTypeSuffix?
-	|	Digits FloatTypeSuffix
-	;
-
-fragment
-ExponentPart
-	:	ExponentIndicator SignedInteger
-	;
-
-fragment
-ExponentIndicator
-	:	[eE]
-	;
-
-fragment
-SignedInteger
-	:	Sign? Digits
-	;
-
-fragment
-Sign
-	:	[+-]
-	;
-
-fragment
-FloatTypeSuffix
-	:	[fFdD]
-	;
-
-fragment
-HexadecimalFloatingPointLiteral
-	:	HexSignificand BinaryExponent FloatTypeSuffix?
-	;
-
-fragment
-HexSignificand
-	:	HexNumeral '.'?
-	|	'0' [xX] HexDigits? '.' HexDigits
-	;
-
-fragment
-BinaryExponent
-	:	BinaryExponentIndicator SignedInteger
-	;
-
-fragment
-BinaryExponentIndicator
-	:	[pP]
-	;
-
-// §3.10.3 Boolean Literals
-
-BooleanLiteral
-	:	'true'
-	|	'false'
-	;
-
-// §3.10.4 Character Literals
-
-CharacterLiteral
-	:	'\'' SingleCharacter '\''
-	|	'\'' EscapeSequence '\''
-	;
-
-fragment
-SingleCharacter
-	:	~['\\\r\n]
-	;
-
-// §3.10.5 String Literals
-
-StringLiteral
-	:	'"' StringCharacters? '"'
-	;
-
-fragment
-StringCharacters
-	:	StringCharacter+
-	;
-
-fragment
-StringCharacter
-	:	~["\\\r\n]
-	|	EscapeSequence
-	;
-
-// §3.10.6 Escape Sequences for Character and String Literals
-
-fragment
-EscapeSequence
-	:	'\\' [btnfr"'\\]
-	|	OctalEscape
-    |   UnicodeEscape // This is not in the spec but prevents having to preprocess the input
-	;
-
-fragment
-OctalEscape
-	:	'\\' OctalDigit
-	|	'\\' OctalDigit OctalDigit
-	|	'\\' ZeroToThree OctalDigit OctalDigit
-	;
-
-fragment
-ZeroToThree
-	:	[0-3]
-	;
-
-// This is not in the spec but prevents having to preprocess the input
-fragment
-UnicodeEscape
-    :   '\\' 'u'+ HexDigit HexDigit HexDigit HexDigit
-    ;
-
-// §3.10.7 The Null Literal
-
-NullLiteral
-	:	'null'
-	;
-
-// §3.11 Separators
+DecimalNumeral : [0-9_]+;
 
 LPAREN : '(';
 RPAREN : ')';
 LBRACE : '{';
 RBRACE : '}';
-LBRACK : '[';
-RBRACK : ']';
+
 SEMI : ';';
 COMMA : ',';
 DOT : '.';
-ELLIPSIS : '...';
 AT : '@';
-COLONCOLON : '::';
-
-
-// §3.12 Operators
-
 ASSIGN : '=';
-GT : '>';
-LT : '<';
-BANG : '!';
-TILDE : '~';
-QUESTION : '?';
-COLON : ':';
-ARROW : '->';
-EQUAL : '==';
-LE : '<=';
-GE : '>=';
-NOTEQUAL : '!=';
-AND : '&&';
-OR : '||';
-INC : '++';
-DEC : '--';
-ADD : '+';
-SUB : '-';
-MUL : '*';
-DIV : '/';
-BITAND : '&';
-BITOR : '|';
-CARET : '^';
-MOD : '%';
-//LSHIFT : '<<';
-//RSHIFT : '>>';
-//URSHIFT : '>>>';
-
-ADD_ASSIGN : '+=';
-SUB_ASSIGN : '-=';
-MUL_ASSIGN : '*=';
-DIV_ASSIGN : '/=';
-AND_ASSIGN : '&=';
-OR_ASSIGN : '|=';
-XOR_ASSIGN : '^=';
-MOD_ASSIGN : '%=';
-LSHIFT_ASSIGN : '<<=';
-RSHIFT_ASSIGN : '>>=';
-URSHIFT_ASSIGN : '>>>=';
+NEW : 'new';
 
 // §3.8 Identifiers (must appear after all keywords in the grammar)
 
