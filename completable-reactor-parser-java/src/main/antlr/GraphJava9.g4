@@ -16,7 +16,9 @@ graphBlock
     ;
 
 graphDeclarationBlock
-    :   classAnnotation* ('public' | 'private' | 'static')? 'class' graphClass 'extends' 'Graph' '<' payloadType '>'
+    :   classAnnotation*
+        ('public' | 'private' | 'static' | 'open' | 'sealed')*
+        'class' graphClass ('extends' | ':') 'Graph' '<' payloadType '>'
     ;
 
 classAnnotation
@@ -32,11 +34,11 @@ payloadType
     ;
 
 vertexAssignmentBlock
-    :   VERTEX vertexName ASSIGN vertexBuilder SEMI
+    :   (VERTEX | 'val') vertexName ASSIGN vertexBuilder SEMI?
     ;
 
 vertexCloningBlock
-    :   VERTEX vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI
+    :   (VERTEX | 'val') vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI?
     ;
 
 vertexName
@@ -64,6 +66,7 @@ builderRouter
 
 builderHandler
     :   (handler LPAREN anythingBeforeRParen RPAREN DOT builderMerger)
+    |   (handler LBRACE anythingBeforeRBrace RBRACE DOT builderMerger)
     ;
 
 handler
@@ -76,6 +79,7 @@ builderMerger
 
 builderWithMerger
     :   ('withMerger' LPAREN anythingBeforeRParen RPAREN)
+    |   ('withMerger' LBRACE anythingBeforeRBrace RBRACE)
     ;
 
 builderWithoutMerger
@@ -101,7 +105,7 @@ ignoreParenthesesBlock
 
 
 payloadTransitionBlock
-    :	PAYLOAD LPAREN RPAREN handleBy+ SEMI
+    :	PAYLOAD LPAREN RPAREN handleBy+ SEMI?
     ;
 
 handleBy
@@ -110,7 +114,7 @@ handleBy
 
 
 vertexTransitionBlock
-    :	vertexName vertexTransition+ SEMI
+    :	vertexName vertexTransition+ SEMI?
     ;
 
 vertexTransition
@@ -144,7 +148,7 @@ transitionActionHandleBy
     ;
 
 coordinatesBlock
-    :   'coordinates' LPAREN RPAREN coordinate* SEMI
+    :   'coordinates' LPAREN RPAREN coordinate* SEMI?
     ;
 
 coordinate
@@ -207,10 +211,10 @@ AT : '@';
 ASSIGN : '=';
 NEW : 'new';
 
-// §3.8 Identifiers (must appear after all keywords in the grammar)
 
 Identifier
-	:	JavaLetter JavaLetterOrDigit*
+	:	(JavaLetter JavaLetterOrDigit*)
+	|   '`' ~('`')+ '`'
 	;
 
 fragment
