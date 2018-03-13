@@ -37,6 +37,9 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
     @Autowired
     lateinit var serviceRegistry: ServiceRegistry
 
+    @Autowired
+    lateinit var remotePartnerNotificator: RemotePartnerNotificator
+
 
     @PostConstruct
     fun initialize() {
@@ -95,6 +98,14 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
 
             }.withoutMerger()
 
+    val notifyRemotePartner =
+            suspendHandler {
+                remotePartnerNotificator.notifyRemotePartner("subscribe ${request.userId} to ${request.serviceId}")
+
+            }.withMerger {
+                response.remoteServiceNotificationResult = it
+                Flow.CONTINUE
+            }
 
     val withdrawMoney =
             handler {
@@ -171,7 +182,9 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 Flow.CONTINUE
             }
 
+
     init {
+
         payload()
                 .handleBy(loadUserProfile)
                 .handleBy(loadServiceInfo)
@@ -186,8 +199,13 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
 
         checkTrialPeriod
                 .on(Flow.WITHDRAWAL).handleBy(withdrawMoney)
+                .on(Flow.WITHDRAWAL).handleBy(notifyRemotePartner)
+
                 .on(Flow.NO_WITHDRAWAL).handleBy(logActionToUserJournal)
                 .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
+
+        notifyRemotePartner
+                .onAny().mergeBy(withdrawMoney)
 
         withdrawMoney
                 .onAny().handleBy(logTransaction)
