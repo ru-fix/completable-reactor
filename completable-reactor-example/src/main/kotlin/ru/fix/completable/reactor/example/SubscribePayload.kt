@@ -23,7 +23,8 @@ data class SubscribePayload(val request: Request) {
             var moneyWithdrawed: Int? = null,
             var newAmount: BigDecimal? = null,
             //TODO replace Enum with internal status enum
-            var bonusPurchaseStatus: Enum<*>? = null
+            var bonusPurchaseStatus: Enum<*>? = null,
+            var remoteServiceNotificationResult: Boolean = false
     )
 
     class IntermediateData {

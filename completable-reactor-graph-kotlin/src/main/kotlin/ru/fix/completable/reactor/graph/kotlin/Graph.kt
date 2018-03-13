@@ -5,6 +5,7 @@ import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.kotlin.internal.GlMergerBuilder
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
+import kotlinx.coroutines.experimental.future.future
 
 open class Graph<Payload> : Graphable {
 
@@ -39,6 +40,15 @@ open class Graph<Payload> : Graphable {
         return GlMergerBuilder(vx)
     }
 
+    protected fun <HandlerResult> suspendHandler(handler: suspend Payload.() -> HandlerResult):
+            MergerBuilder<Payload, HandlerResult> {
+
+        return handler {
+            future {
+                handler()
+            }
+        }
+    }
 
     protected fun router(router: Payload.() -> Enum<*>): Vertex {
         val vx = BuilderContext.get().extractVertexOrDefault { InternalGlAccessor.vx(Vertex()) }

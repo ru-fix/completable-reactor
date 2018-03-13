@@ -79,7 +79,7 @@ class KotlinGraphTest {
     @Test
     fun single_processor() {
 
-        reactor.registerGraphIfAbsent<Any, SingleProcessorGraph>(SingleProcessorGraph::class.java)
+        reactor.registerGraphIfAbsent(SingleProcessorGraph::class.java)
 
         val resultPayload = reactor.submit(IdListPayload())
                 .resultFuture
@@ -122,7 +122,7 @@ class KotlinGraphTest {
     @Throws(Exception::class)
     fun two_processors_sequential_merge() {
 
-        reactor.registerGraphIfAbsent<Any, TwoProcessorSequentialMergeGraph>(TwoProcessorSequentialMergeGraph::class.java)
+        reactor.registerGraphIfAbsent(TwoProcessorSequentialMergeGraph::class.java)
         val execution = reactor.submit(IdListPayload())
         val resultPayload = execution.resultFuture.get(10, TimeUnit.SECONDS)
 
@@ -291,8 +291,8 @@ class KotlinGraphTest {
     @Throws(Exception::class)
     fun run_subgraph() {
 
-        reactor.registerGraphIfAbsent<Any, ParentGraphPayloadGraph>(ParentGraphPayloadGraph::class.java)
-        reactor.registerGraphIfAbsent<Any, SubgraphPayloadGraph>(SubgraphPayloadGraph::class.java)
+        reactor.registerGraphIfAbsent(ParentGraphPayloadGraph::class.java)
+        reactor.registerGraphIfAbsent(SubgraphPayloadGraph::class.java)
 
         val subgraphResult = reactor.submit(SubgraphPaylaod()).resultFuture.get(5, SECONDS)
         assertEquals(Arrays.asList(11, 12, 13), subgraphResult.idSequence)
@@ -360,7 +360,7 @@ class KotlinGraphTest {
     @Test
     @Throws(Exception::class)
     fun router_from_start_point() {
-        reactor.registerGraphIfAbsent<Any, RouterFromStartPointGraph>(RouterFromStartPointGraph::class.java)
+        reactor.registerGraphIfAbsent(RouterFromStartPointGraph::class.java)
 
         val result = reactor.submit(IdListPayload())
 
@@ -419,7 +419,7 @@ class KotlinGraphTest {
     @Throws(Exception::class)
     fun router_from_processors_merge_point() {
 
-        reactor.registerGraphIfAbsent<Any, RouterFromProcessorsMergerGraph>(RouterFromProcessorsMergerGraph::class.java)
+        reactor.registerGraphIfAbsent(RouterFromProcessorsMergerGraph::class.java)
 
         val result = reactor.submit(IdListPayload())
 
@@ -501,7 +501,7 @@ class KotlinGraphTest {
     @Throws(Exception::class)
     fun optional_processor_execution() {
 
-        reactor.registerGraphIfAbsent<Any, OptionalProcessorExecutionGraph>(OptionalProcessorExecutionGraph::class.java)
+        reactor.registerGraphIfAbsent(OptionalProcessorExecutionGraph::class.java)
 
         var result: CompletableReactor.Execution<OptionalProcessorExecutionPayload> = reactor.submit(
                 OptionalProcessorExecutionPayload(OPTIONAL_DECISION.RIGHT))
@@ -613,7 +613,7 @@ class KotlinGraphTest {
     @Throws(Exception::class)
     fun dead_transition_breaks_flow() {
 
-        reactor.registerGraphIfAbsent<Any, DeadTransitionBreaksFlowGraph>(DeadTransitionBreaksFlowGraph::class.java)
+        reactor.registerGraphIfAbsent(DeadTransitionBreaksFlowGraph::class.java)
 
         var result = reactor.submit(
                 DeadTransitionBreaksFlowPayload(DeadTransitionBreaksFlowPayload.FlowDecision.THREE))
@@ -862,7 +862,7 @@ class KotlinGraphTest {
     fun single_detached_merge_point() {
 
 
-        reactor.registerGraphIfAbsent<Any, SingleRouterGraph>(SingleRouterGraph::class.java)
+        reactor.registerGraphIfAbsent(SingleRouterGraph::class.java)
 
         val resultPayload = reactor.submit(IdListPayload())
                 .resultFuture
@@ -898,7 +898,7 @@ class KotlinGraphTest {
 
     @Test
     fun handler_returns_null_as_a_result() {
-        reactor.registerGraphIfAbsent<Any, ReturnNullInHandlerGraph>(ReturnNullInHandlerGraph::class.java)
+        reactor.registerGraphIfAbsent(ReturnNullInHandlerGraph::class.java)
 
         try {
 

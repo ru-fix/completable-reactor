@@ -105,7 +105,7 @@ public class CompletableReactor implements AutoCloseable {
      * Check all execution paths.
      * Validated that there is no conflicts between merging vertices and all required endpoints exist.
      */
-    public <PayloadType, GraphConfigType extends Graphable>
+    public <GraphConfigType extends Graphable>
     void registerGraphIfAbsent(Class<GraphConfigType> graphConfigClass) {
         Objects.requireNonNull(graphConfigClass, "graphConfigClass");
 

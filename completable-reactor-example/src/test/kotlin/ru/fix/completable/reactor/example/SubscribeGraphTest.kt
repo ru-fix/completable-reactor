@@ -32,39 +32,30 @@ open class SubscribeGraphTest {
         lateinit var applicationContext: ApplicationContext
 
         @Bean
-        open fun bank(): Bank {
-            return Bank()
-        }
+        open fun bank() = Bank()
 
         @Bean
-        open fun marketingService(): MarketingService {
-            return MarketingService()
-        }
+        open fun marketingService() = MarketingService()
 
         @Bean
-        open fun notifier(): Notifier {
-            return Notifier()
-        }
+        open fun notifier() = Notifier ()
 
         @Bean
-        open fun serviceRegistry(): ServiceRegistry {
-            return ServiceRegistry()
-        }
+        open fun serviceRegistry() = ServiceRegistry()
 
         @Bean
-        open fun txLog(): TransactionLog {
-            return TransactionLog()
-        }
+        open fun txLog() = TransactionLog()
+
 
         @Bean
-        open fun userJournal(): UserJournal {
-            return UserJournal()
-        }
+        open fun userJournal() = UserJournal()
 
         @Bean
-        open fun userProfile(): UserProfileManager {
-            return UserProfileManager()
-        }
+        open fun userProfile() = UserProfileManager()
+
+
+        @Bean
+        open fun remotePartnerNotificator() = RemotePartnerNotificator()
 
         @Bean
         open fun reactor(): CompletableReactor {

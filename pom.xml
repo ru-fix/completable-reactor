@@ -36,6 +36,7 @@
     <kotlin.version>1.2.30</kotlin.version>
     <!-- 1.7.10 - current intellij idea sfl4j logger version -->
     <slf4j.version>1.7.10</slf4j.version>
+    <kotlin.coroutines.version>0.22.3</kotlin.coroutines.version>
   </properties>
 
   <url>https://github.com/ru-fix/completable-reactor</url>
@@ -143,6 +144,18 @@
         <scope>test</scope>
       </dependency>
 
+      <dependency>
+        <groupId>org.jetbrains.kotlinx</groupId>
+        <artifactId>kotlinx-coroutines-core</artifactId>
+        <version>${kotlin.coroutines.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jetbrains.kotlinx</groupId>
+        <artifactId>kotlinx-coroutines-jdk8</artifactId>
+        <version>${kotlin.coroutines.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -204,6 +217,11 @@
         <artifactId>kotlin-maven-plugin</artifactId>
         <groupId>org.jetbrains.kotlin</groupId>
         <version>${kotlin.version}</version>
+        <configuration>
+          <args>
+            <arg>-Xcoroutines=enable</arg>
+          </args>
+        </configuration>
         <executions>
           <execution>
             <id>compile</id>
