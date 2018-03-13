@@ -92,11 +92,11 @@ builderWithoutMerger
     ;
 
 anythingBeforeRParen
-    :   (~RPAREN | ignoreBracesBlock | ignoreParenthesesBlock)+
+    :   (~RPAREN | ignoreBracesBlock | ignoreParenthesesBlock)*
     ;
 
 anythingBeforeRBrace
-    :   (~RBRACE | ignoreBracesBlock | ignoreParenthesesBlock)+
+    :   (~RBRACE | ignoreBracesBlock | ignoreParenthesesBlock)*
     ;
 
 ignoreBracesBlock
