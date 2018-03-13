@@ -9,7 +9,6 @@ sourceFile
 graphBlock
     :   payloadTransitionBlock
     |   vertexTransitionBlock
-    |   vertexInitializationBlock
     |   vertexAssignmentBlock
     |   vertexCloningBlock
     |   coordinatesBlock
@@ -43,14 +42,6 @@ vertexCloningBlock
 vertexName
     :   anyGraphKeyword
     |   Identifier
-    ;
-
-vertexInitializationBlock
-    :   VERTEX Identifier ASSIGN NEW VERTEX LPAREN RPAREN vertexInitializationStaticSection SEMI
-    ;
-
-vertexInitializationStaticSection
-    :   '{' ~'{'* '{' vertexBuilder SEMI '}' '}'
     ;
 
 vertexBuilder

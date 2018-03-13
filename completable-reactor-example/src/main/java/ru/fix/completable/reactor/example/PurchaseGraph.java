@@ -46,8 +46,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         completableReactor.registerGraphIfAbsent(this);
     }
 
-    Vertex loadUserProfile = new Vertex() {
-        {
+    Vertex loadUserProfile =
             handler(
                     /*
                      * # load user profile
@@ -73,31 +72,22 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                         }
                         throw new IllegalArgumentException("result.status = " + result.status);
                     });
-        }
-    };
 
-    Vertex logTransaction = new Vertex() {
-        {
+    Vertex logTransaction =
             handler(
                     pld -> transactionLog.logTransactioin(pld.request.getUserId())
             ).withMerger(
                     (pld, any) -> Flow.CONTINUE
             );
-        }
-    };
 
     Vertex logTransaction2 = logTransaction.clone();
 
-    Vertex logActionToUserJournal = new Vertex() {
-        {
+    Vertex logActionToUserJournal =
             handler(
                     pld -> userJournal.logAction(
                             pld.request.getUserId(),
                             String.format("Request type: %s", pld.getClass().getSimpleName()))
             ).withMerger((pld, result) -> Flow.CONTINUE);
-        }
-    };
-
 
     Vertex sendWebNotification =
             handler(pld -> notifier.sendHttpPurchaseNotification(pld.request.getUserId()))
@@ -107,8 +97,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
             handler(pld -> notifier.sendSmsPurchaseNotification(pld.request.getUserId()))
                     .withoutMerger();
 
-    Vertex withdrawMoneyWithMinus = new Vertex() {
-        {
+    Vertex withdrawMoneyWithMinus =
             handler(/*
                         # WithdrawMoneyMinus
                         Withdraw money even if user does not have money on his account.
@@ -140,8 +129,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                                 throw new IllegalArgumentException("Status: " + withdraw.getStatus());
                         }
                     });
-        }
-    };
+
 
     Vertex isPartnerService =
             router(/*
@@ -157,8 +145,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                         }
                     });
 
-    Vertex loadServiceInfo = new Vertex() {
-        {
+    Vertex loadServiceInfo =
             handler(
                     /*
                      * Loads data for given service from database.
@@ -187,11 +174,9 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                                 }
                                 return Flow.CONTINUE;
                             });
-        }
-    };
 
-    Vertex checkBonuses = new Vertex() {
-        {
+
+    Vertex checkBonuses =
             router(pld -> {
                 Optional<Long> bonus = marketingService.checkBonuses(pld.request.userId, pld.request.serviceId);
 
@@ -202,8 +187,6 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                     return Flow.NO_BONUS;
                 }
             });
-        }
-    };
 
     Vertex bonusPurchaseSubgraph =
             subgraph(
