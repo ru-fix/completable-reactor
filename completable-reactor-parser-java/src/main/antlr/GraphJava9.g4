@@ -65,8 +65,9 @@ builderRouter
     ;
 
 builderHandler
-    :   (handler LPAREN anythingBeforeRParen RPAREN DOT builderMerger)
-    |   (handler LBRACE anythingBeforeRBrace RBRACE DOT builderMerger)
+    :   handler
+        (LPAREN anythingBeforeRParen RPAREN DOT builderMerger)
+    |   (LBRACE anythingBeforeRBrace RBRACE DOT builderMerger)
     ;
 
 handler
@@ -78,28 +79,27 @@ builderMerger
     ;
 
 builderWithMerger
-    :   ('withMerger' LPAREN anythingBeforeRParen RPAREN)
-    |   ('withMerger' LBRACE anythingBeforeRBrace RBRACE)
+    :   'withMerger' (LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE)
     ;
 
 builderWithoutMerger
-    :   ('withoutMerger' LPAREN RPAREN)
+    :   'withoutMerger' LPAREN RPAREN
     ;
 
 anythingBeforeRParen
-    :   (~RPAREN | ignoreBracesBlock | ignoreParenthesesBlock)*
+    :   (ignoreParenthesesBlock | ignoreBracesBlock | ~RPAREN)*
     ;
 
 anythingBeforeRBrace
-    :   (~RBRACE | ignoreBracesBlock | ignoreParenthesesBlock)*
+    :   (ignoreBracesBlock | ignoreBracesBlock | ~RBRACE)*
     ;
 
 ignoreBracesBlock
-    :   LBRACE (~RBRACE | ignoreBracesBlock)* RBRACE
+    :   LBRACE (~(RBRACE|LBRACE) | ignoreBracesBlock)* RBRACE
     ;
 
 ignoreParenthesesBlock
-    :   LPAREN (~RPAREN | ignoreParenthesesBlock)* RPAREN
+    :   LPAREN (~(RPAREN|LPAREN) | ignoreParenthesesBlock)* RPAREN
     ;
 
 

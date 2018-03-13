@@ -151,29 +151,30 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                      * Loads data for given service from database.
                      * Service could be not active. In that case purchase request will be denied.
                      */
-                    pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId()))
-                    .withMerger(
-                            //# checkServiceState
-                            (pld, result) -> {
-                                if (pld.response.getStatus() != null) {
-                                    return Flow.STOP;
-                                }
+                    pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId())
 
-                                switch (result.getStatus()) {
-                                    case SERVICE_NOT_FOUND:
-                                        pld.response.setStatus(result.getStatus());
-                                        return Flow.STOP;
-                                    case OK:
-                                        pld.intermediateData.setServiceInfo(result.getServiceInfo());
+            ).withMerger(
+                    //# checkServiceState
+                    (pld, result) -> {
+                        if (pld.response.getStatus() != null) {
+                            return Flow.STOP;
+                        }
 
-                                        if (result.getServiceInfo().isActive()) {
-                                            return Flow.WITHDRAWAL;
-                                        } else {
-                                            return Flow.NO_WITHDRAWAL;
-                                        }
+                        switch (result.getStatus()) {
+                            case SERVICE_NOT_FOUND:
+                                pld.response.setStatus(result.getStatus());
+                                return Flow.STOP;
+                            case OK:
+                                pld.intermediateData.setServiceInfo(result.getServiceInfo());
+
+                                if (result.getServiceInfo().isActive()) {
+                                    return Flow.WITHDRAWAL;
+                                } else {
+                                    return Flow.NO_WITHDRAWAL;
                                 }
-                                return Flow.CONTINUE;
-                            });
+                        }
+                        return Flow.CONTINUE;
+                    });
 
 
     Vertex checkBonuses =
