@@ -8,7 +8,7 @@ import ru.fix.completable.reactor.graph.internal.GlVertex
 /**
  * Graph node.
  */
-open class Vertex {
+class Vertex {
 
     //field name is used via reflection
     private var vx = GlVertex(this)
