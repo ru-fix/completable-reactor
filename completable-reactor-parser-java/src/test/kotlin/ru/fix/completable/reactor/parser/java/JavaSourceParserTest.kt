@@ -365,5 +365,85 @@ class JavaSourceParserTest {
                         """.trimIndent()))
     }
 
+    @Test
+    fun build_compilation_model_for_single_subscribe_graph_in_kotlin() {
+        val sourceFilePath = "/single-subscribe-graph.kt.txt"
+
+        val body = readResource(sourceFilePath)
+
+        val startTime = Instant.now()
+
+        val models = JavaSourceParser(object : JavaSourceParser.Listener {
+            override fun error(msg: String) {
+                log.error { msg }
+                fail(msg)
+            }
+        }).parse(body, sourceFilePath)
+
+        log.info { "Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms" }
+
+        assertEquals(1, models.size)
+
+        val model = models[0]
+
+        fun vertexTransitions(name: String) = model.transitionable[name]!!.transitions.asSequence()
+
+
+        val LOAD_USER_PROFILE = "loadUserProfile"
+        val TX_LOG = "logTransaction"
+        val TX_LOG2 = "logTransaction2"
+        val USER_JOURNAL = "logActionToUserJournal"
+
+
+        val BANK = "withdrawMoney"
+        val PURCHASE_SUBGRPAPH = "bonusPurchaseSubgraph"
+        val SERVICE_INFO = "loadServiceInfo"
+        val CHECK_TRIAL_PERIOD = "checkTrialPeriod"
+
+        assertTrue(model.handlers.containsKey(LOAD_USER_PROFILE))
+        assertTrue(model.handlers.containsKey(TX_LOG))
+        assertTrue(model.handlers.containsKey(TX_LOG2))
+        assertTrue(model.handlers.containsKey(USER_JOURNAL))
+        assertTrue(model.handlers.containsKey(BANK))
+        assertTrue(model.handlers.containsKey(SERVICE_INFO))
+        assertTrue(model.subgraphs.containsKey(PURCHASE_SUBGRPAPH))
+        assertTrue(model.routers.containsKey(CHECK_TRIAL_PERIOD))
+
+
+        assertEquals("SubscribePayload", model.startPoint.payloadType)
+        assertEquals("SubscribeGraph", model.graphClass)
+        assertEquals("Subscribe user to service and regularly withdraw money", model.startPoint.title)
+
+        assertEquals(
+                listOf(LOAD_USER_PROFILE, SERVICE_INFO),
+                model.startPoint.handleBy.map { it.name })
+
+        vertexTransitions(LOAD_USER_PROFILE)
+                .apply {
+                    assertEquals(2, count())
+
+                    assertNotNull(find {
+                        it.mergeStatuses == setOf("STOP")
+                                && it.isComplete
+                                && !it.isOnAny
+                                && it.target is EndPoint
+                    })
+
+                    assertEquals(
+                            Coordinates(920, 300),
+                            find { it.mergeStatuses == setOf("STOP") }?.target?.coordinates)
+
+                    assertNotNull(find {
+                        it.mergeStatuses == setOf("CONTINUE")
+                                && !it.isComplete
+                                && !it.isOnAny
+                                && it.target.let {
+                            it is VertexFigure && it.name == SERVICE_INFO
+                        }
+                    })
+                }
+
+    }
+
 }
 

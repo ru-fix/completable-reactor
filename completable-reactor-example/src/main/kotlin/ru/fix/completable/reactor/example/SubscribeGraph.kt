@@ -230,7 +230,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 .handler(logActionToUserJournal, 680, 820)
                 .handler(loadUserProfile, 770, 120)
                 .merger(withdrawMoney, 480, 550)
-                .merger(checkTrialPeriod, 702, 363)
+                .router(checkTrialPeriod, 702, 363)
                 .merger(loadServiceInfo, 640, 280)
                 .merger(logTransaction, 530, 770)
                 .merger(logActionToUserJournal, 760, 930)
