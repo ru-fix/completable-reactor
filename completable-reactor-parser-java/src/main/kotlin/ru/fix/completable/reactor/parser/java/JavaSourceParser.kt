@@ -366,7 +366,7 @@ class JavaSourceParser(private val listener: Listener) {
             handlers[vertexName] = Handler(vertexName).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
+                tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
@@ -376,7 +376,7 @@ class JavaSourceParser(private val listener: Listener) {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
-                    tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
+                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
                         it.title = title
                         it.doc = doc
                     }
@@ -391,7 +391,7 @@ class JavaSourceParser(private val listener: Listener) {
             ).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
+                tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
@@ -402,7 +402,7 @@ class JavaSourceParser(private val listener: Listener) {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
-                    tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
+                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
                         it.title = title
                         it.doc = doc
                     }
@@ -414,7 +414,7 @@ class JavaSourceParser(private val listener: Listener) {
             routers[vertexName] = Router(vertexName).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight(this.LPAREN().symbol.tokenIndex)?.run {
+                tokens.checkCommentsToRight((LPAREN()?:LBRACE()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
