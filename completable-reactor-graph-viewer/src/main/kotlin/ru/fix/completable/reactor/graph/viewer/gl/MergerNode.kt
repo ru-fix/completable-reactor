@@ -56,10 +56,14 @@ class MergerNode(
 
     fun initializePopupMenu(): ContextMenu {
         val contextMenu = ContextMenu()
-        val textBuilder = StringBuilder();
+        val textBuilder = StringBuilder()
 
-        if (merger.title != null) {
-            textBuilder.append(merger.title).append("\n")
+        merger.title?.let {
+            textBuilder.append(it).appendln()
+        }
+
+        merger.doc?.let {
+            textBuilder.append(it).appendln()
         }
 
         val menuItem = MenuItem(
