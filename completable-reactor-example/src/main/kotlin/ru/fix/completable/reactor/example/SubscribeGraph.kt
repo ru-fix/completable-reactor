@@ -51,8 +51,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 userProfile.loadUserProfileById(request.userId)
 
             }.withMerger {
-                //check profile status
-
+                // check profile status
                 if (response.status != null) {
                     Flow.STOP
                 }
@@ -199,10 +198,14 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 .on(Flow.STOP).complete()
 
         checkTrialPeriod
+                // Withdraw money required
                 .on(Flow.WITHDRAWAL).handleBy(withdrawMoney)
+                // Withdraw money required
                 .on(Flow.WITHDRAWAL).handleBy(notifyRemotePartner)
 
+                // No withdrawal required
                 .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
+                // No withdrawal required
                 .on(Flow.NO_WITHDRAWAL).handleBy(logTransaction2)
 
         notifyRemotePartner
