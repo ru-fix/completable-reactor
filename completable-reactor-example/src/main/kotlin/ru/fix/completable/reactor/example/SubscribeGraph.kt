@@ -51,7 +51,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 userProfile.loadUserProfileById(request.userId)
 
             }.withMerger {
-                // check profile status
+                //# check profile status
                 if (response.status != null) {
                     Flow.STOP
                 }
@@ -239,7 +239,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 .subgraph(bonusPurchaseSubgraph, 698, 889)
                 .router(checkTrialPeriod, 711, 326)
                 .merger(bonusPurchaseSubgraph, 866, 951)
-                .merger(loadServiceInfo, 693, 235)
+                .merger(loadServiceInfo, 693, 252)
                 .merger(loadUserProfile, 814, 189)
                 .merger(logActionToUserJournal, 867, 828)
                 .merger(logTransaction, 585, 697)
@@ -248,7 +248,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 .merger(withdrawMoney, 582, 557)
                 .complete(bonusPurchaseSubgraph, 863, 1015)
                 .complete(loadServiceInfo, 565, 281)
-                .complete(loadUserProfile, 891, 245);
+                .complete(loadUserProfile, 924, 257);
 
     }
 }
