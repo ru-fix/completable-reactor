@@ -25,7 +25,7 @@ class JavaSourceParserTest {
     }
 
     @Test
-    fun build_compilation_model_for_single_purchase_graph() {
+    fun build_compilation_model_for_single_purchase_graph_in_java() {
         val sourceFilePath = "/single-purchase-graph.java.txt"
 
         val body = readResource(sourceFilePath)
@@ -264,9 +264,9 @@ class JavaSourceParserTest {
         assertEquals(Coordinates( 378, 441), model.mergers[BANK]!!.coordinates)
         assertEquals(Coordinates(497, 293), model.endpoints[SERVICE_INFO]!!.coordinates)
 
-        assertEquals(Source(sourceFilePath, 225, 9, 8243), model.startPoint.source)
+        assertEquals(Source(sourceFilePath, 209, 9, 7833), model.startPoint.source)
 
-        assertEquals(Source(sourceFilePath, 112, 13, 3382), model.handlers[BANK]!!.source)
+        assertEquals(Source(sourceFilePath, 101, 13, 3230), model.handlers[BANK]!!.source)
 
     }
 
