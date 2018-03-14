@@ -2,7 +2,6 @@ package ru.fix.completable.reactor.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.example.services.*;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
