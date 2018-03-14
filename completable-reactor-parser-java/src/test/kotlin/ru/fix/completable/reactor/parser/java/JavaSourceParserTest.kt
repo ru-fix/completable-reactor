@@ -249,6 +249,7 @@ class JavaSourceParserTest {
         assertEquals("CheckWithdraw", model.mergers[BANK]!!.title)
         assertEquals("check profile state", model.mergers[LOAD_USER_PROFILE]!!.title)
         assertEquals("load user profile", model.handlers[LOAD_USER_PROFILE]!!.title)
+        assertEquals("Make bonus purchase", model.subgraphs[BONUS_PURCHASE_SUBGRAPH]!!.title)
 
         assertNull(model.routers[IS_PARTNER_SERVICE]!!.title)
         assertTrue {
@@ -264,9 +265,19 @@ class JavaSourceParserTest {
         assertEquals(Coordinates( 378, 441), model.mergers[BANK]!!.coordinates)
         assertEquals(Coordinates(497, 293), model.endpoints[SERVICE_INFO]!!.coordinates)
 
-        assertEquals(Source(sourceFilePath, 209, 9, 7833), model.startPoint.source)
+        model.startPoint.source!!.let {
+            assertEquals(sourceFilePath, it.filePath)
+            assertTrue(it.line > 0)
+            assertTrue(it.offset > 0)
+            assertTrue(it.column > 0)
+        }
 
-        assertEquals(Source(sourceFilePath, 101, 13, 3230), model.handlers[BANK]!!.source)
+        model.handlers[BANK]!!.source!!.let {
+            assertEquals(sourceFilePath, it.filePath)
+            assertTrue(it.line > 0)
+            assertTrue(it.offset > 0)
+            assertTrue(it.column > 0)
+        }
 
     }
 
@@ -413,6 +424,7 @@ class JavaSourceParserTest {
         assertEquals("SubscribePayload", model.startPoint.payloadType)
         assertEquals("SubscribeGraph", model.graphClass)
         assertEquals("Subscribe user to service and regularly withdraw money", model.startPoint.title)
+        assertEquals("Make bonus purchase", model.subgraphs[PURCHASE_SUBGRPAPH]!!.title)
 
         assertEquals(
                 listOf(LOAD_USER_PROFILE, SERVICE_INFO),
@@ -430,7 +442,7 @@ class JavaSourceParserTest {
                     })
 
                     assertEquals(
-                            Coordinates(920, 300),
+                            Coordinates(924, 257),
                             find { it.mergeStatuses == setOf("STOP") }?.target?.coordinates)
 
                     assertNotNull(find {

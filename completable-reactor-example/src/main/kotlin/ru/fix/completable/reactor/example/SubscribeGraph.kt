@@ -171,6 +171,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
 
     val bonusPurchaseSubgraph =
             subgraph(PurchasePayload::class) {
+                //# Make bonus purchase
                 PurchasePayload().apply {
                     request
                             .setServiceId(107L)

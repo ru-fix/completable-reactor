@@ -191,6 +191,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex bonusPurchaseSubgraph =
             subgraph(
+                    //# Make bonus purchase
                     PurchasePayload.class,
                     pld -> {
                         PurchasePayload subgraphRequest = new PurchasePayload();
