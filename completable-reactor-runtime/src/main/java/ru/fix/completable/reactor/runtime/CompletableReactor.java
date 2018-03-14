@@ -736,3 +736,4 @@ public class CompletableReactor implements AutoCloseable {
         }
     }
 }
+//TODO: readme: add scenario when you launch long B and short A, after A you decide to ignore result of B
