@@ -4,11 +4,11 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.Token
 import ru.fix.completable.reactor.model.*
-import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Lexer
-import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Parser
-import ru.fix.completable.reactor.parser.java.antlr.GraphConfigJava9Parser.VertexBuilderContext
+import ru.fix.completable.reactor.parser.java.antlr.GraphLexer
+import ru.fix.completable.reactor.parser.java.antlr.GraphParser
+import ru.fix.completable.reactor.parser.java.antlr.GraphParser.VertexBuilderContext
 
-class JavaSourceParser(val listener: Listener) {
+class JavaSourceParser(private val listener: Listener) {
 
     interface Listener {
         fun error(msg: String)
@@ -17,13 +17,13 @@ class JavaSourceParser(val listener: Listener) {
     fun parse(body: String, filePath: String): List<GraphModel> {
         val result = ArrayList<GraphModel>()
 
-        val lexer = GraphConfigJava9Lexer(CharStreams.fromString(body))
+        val lexer = GraphLexer(CharStreams.fromString(body))
 
         //Do not log into stderr in case of invalid tokens
         lexer.removeErrorListeners()
 
         val tokens = CommonTokenStream(lexer)
-        val parser = GraphConfigJava9Parser(tokens)
+        val parser = GraphParser(tokens)
 
         val sourceBlocks = parser.sourceFile().graphBlock()
 
@@ -69,20 +69,7 @@ class JavaSourceParser(val listener: Listener) {
                         }
 
 
-                //vertex
-                graphBlocks.asSequence()
-                        .mapNotNull { it.vertexInitializationBlock() }
-                        .forEach {
-                            val vertexName = it.Identifier().text!!
-
-                            createVertexFromVertexBuilder(
-                                    tokens,
-                                    model,
-                                    vertexName,
-                                    it.vertexInitializationStaticSection().vertexBuilder(),
-                                    filePath)
-                        }
-
+                //vertex assignment
                 graphBlocks.asSequence()
                         .mapNotNull { it.vertexAssignmentBlock() }
                         .forEach {
@@ -91,6 +78,7 @@ class JavaSourceParser(val listener: Listener) {
                             createVertexFromVertexBuilder(tokens, model, vertexName, it.vertexBuilder(), filePath)
                         }
 
+                //vertex cloning
                 graphBlocks.asSequence()
                         .mapNotNull { it.vertexCloningBlock() }
                         .forEach {
