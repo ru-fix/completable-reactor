@@ -202,7 +202,6 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 .on(Flow.WITHDRAWAL).handleBy(withdrawMoney)
                 .on(Flow.WITHDRAWAL).handleBy(notifyRemotePartner)
 
-                .on(Flow.NO_WITHDRAWAL).handleBy(logActionToUserJournal)
                 .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
                 .on(Flow.NO_WITHDRAWAL).handleBy(logTransaction2)
 
@@ -215,6 +214,9 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
         logTransaction
                 .onAny().handleBy(logActionToUserJournal)
 
+        logTransaction2
+                .onAny().handleBy(logActionToUserJournal)
+
         logActionToUserJournal
                 .onAny().handleBy(bonusPurchaseSubgraph)
 
@@ -222,21 +224,28 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 .onAny().complete()
 
         coordinates()
-                .payload(680, 60)
-                .handler(withdrawMoney, 410, 440)
-                .handler(webNotification, 889, 465)
-                .handler(loadServiceInfo, 480, 120)
-                .handler(logTransaction, 420, 650)
-                .handler(logActionToUserJournal, 680, 820)
-                .handler(loadUserProfile, 770, 120)
-                .merger(withdrawMoney, 480, 550)
-                .router(checkTrialPeriod, 702, 363)
-                .merger(loadServiceInfo, 640, 280)
-                .merger(logTransaction, 530, 770)
-                .merger(logActionToUserJournal, 760, 930)
-                .merger(loadUserProfile, 830, 250)
-                .complete(loadServiceInfo, 480, 310)
-                .complete(logActionToUserJournal, 740, 1020)
-                .complete(loadUserProfile, 920, 300)
+                .payload(554, 59)
+                .handler(loadServiceInfo, 548, 122)
+                .handler(loadUserProfile, 811, 118)
+                .handler(logActionToUserJournal, 787, 749)
+                .handler(logTransaction, 536, 622)
+                .handler(logTransaction2, 962, 592)
+                .handler(notifyRemotePartner, 340, 460)
+                .handler(webNotification, 1115, 511)
+                .handler(withdrawMoney, 576, 477)
+                .subgraph(bonusPurchaseSubgraph, 698, 889)
+                .router(checkTrialPeriod, 711, 326)
+                .merger(bonusPurchaseSubgraph, 866, 951)
+                .merger(loadServiceInfo, 693, 235)
+                .merger(loadUserProfile, 814, 189)
+                .merger(logActionToUserJournal, 867, 828)
+                .merger(logTransaction, 585, 697)
+                .merger(logTransaction2, 1023, 661)
+                .merger(notifyRemotePartner, 455, 520)
+                .merger(withdrawMoney, 582, 557)
+                .complete(bonusPurchaseSubgraph, 863, 1015)
+                .complete(loadServiceInfo, 565, 281)
+                .complete(loadUserProfile, 891, 245);
+
     }
 }
