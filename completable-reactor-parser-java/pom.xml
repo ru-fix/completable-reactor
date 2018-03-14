@@ -91,7 +91,7 @@
         <configuration>
           <sourceDirectory>${basedir}/src/main/antlr</sourceDirectory>
           <includes>
-            <include>GraphJava9.g4</include>
+            <include>Graph.g4</include>
           </includes>
           <visitor>false</visitor>
           <listener>false</listener>
