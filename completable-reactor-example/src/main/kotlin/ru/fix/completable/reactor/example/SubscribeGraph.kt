@@ -80,6 +80,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 Flow.CONTINUE
             }
 
+    val logTransaction2 = logTransaction.clone()
 
     val logActionToUserJournal =
             handler {
@@ -203,6 +204,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
 
                 .on(Flow.NO_WITHDRAWAL).handleBy(logActionToUserJournal)
                 .on(Flow.NO_WITHDRAWAL).handleBy(webNotification)
+                .on(Flow.NO_WITHDRAWAL).handleBy(logTransaction2)
 
         notifyRemotePartner
                 .onAny().mergeBy(withdrawMoney)

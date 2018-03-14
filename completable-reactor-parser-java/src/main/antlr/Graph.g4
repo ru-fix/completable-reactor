@@ -1,4 +1,4 @@
-grammar GraphJava9;
+grammar Graph;
 
 
 sourceFile
@@ -53,7 +53,9 @@ vertexBuilder
     ;
 
 builderSubgraph
-    :   SUBGRAPH LPAREN subgraphPayloadClass DOT 'class' anythingBeforeRParen RPAREN DOT builderMerger
+    :   SUBGRAPH LPAREN subgraphPayloadClass ((DOT 'class')|(COLONCOLON 'class')) anythingBeforeRParen RPAREN
+        (LBRACE anythingBeforeRBrace RBRACE)?
+        DOT builderMerger
     ;
 
 subgraphPayloadClass
@@ -61,25 +63,27 @@ subgraphPayloadClass
     ;
 
 builderRouter
-    :   ROUTER LPAREN anythingBeforeRParen RPAREN
+    :   ROUTER
+        ((LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE))
     ;
 
 builderHandler
     :   handler
-        (LPAREN anythingBeforeRParen RPAREN DOT builderMerger)
-    |   (LBRACE anythingBeforeRBrace RBRACE DOT builderMerger)
+        ((LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE))
+        DOT builderMerger
     ;
 
 handler
     :   HANDLER
-    ;
+    |   SUSPEND_HANDLER
+   ;
 
 builderMerger
     :   builderWithMerger | builderWithoutMerger
     ;
 
 builderWithMerger
-    :   'withMerger' (LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE)
+    :   'withMerger' ((LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE))
     ;
 
 builderWithoutMerger
@@ -91,7 +95,7 @@ anythingBeforeRParen
     ;
 
 anythingBeforeRBrace
-    :   (ignoreBracesBlock | ignoreBracesBlock | ~(LPAREN|RPAREN))*
+    :   (ignoreBracesBlock | ignoreBracesBlock | ~(LBRACE|RBRACE))*
     ;
 
 ignoreBracesBlock
@@ -181,6 +185,7 @@ ignoredToken
 SUBGRAPH : 'subgraph';
 MERGER : 'merger';
 HANDLER : 'handler';
+SUSPEND_HANDLER : 'suspendHandler';
 PAYLOAD : 'payload';
 COMPLETE : 'complete';
 ROUTER : 'router';
@@ -210,6 +215,19 @@ DOT : '.';
 AT : '@';
 ASSIGN : '=';
 NEW : 'new';
+COLONCOLON : '::';
+
+
+StringLiteral
+	:	('"' StringCharacter* '"')
+	|   ('"""' .*? '"""')
+	;
+
+fragment
+StringCharacter
+	:	~["]
+	|	'\\"'
+	;
 
 
 Identifier
