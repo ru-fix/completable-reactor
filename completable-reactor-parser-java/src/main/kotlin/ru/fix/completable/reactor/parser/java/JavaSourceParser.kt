@@ -391,7 +391,7 @@ class JavaSourceParser(private val listener: Listener) {
             ).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                tokens.checkCommentsToRight((LBRACE()?: LPAREN()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
