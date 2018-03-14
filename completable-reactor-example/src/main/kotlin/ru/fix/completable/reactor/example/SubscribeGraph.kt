@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.example
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
+import ru.fix.completable.reactor.api.Reactored
 import ru.fix.completable.reactor.example.services.*
 import ru.fix.completable.reactor.example.services.UserProfileManager.Status
 import ru.fix.completable.reactor.graph.kotlin.*
@@ -45,6 +46,34 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
     fun initialize() {
         completableReactor.registerGraphIfAbsent(this)
     }
+
+    enum class Flow {
+        /**
+         * Continue processing
+         */
+        CONTINUE,
+        /**
+         * Stop processing
+         */
+        STOP,
+        /**
+         * Withdraw money required
+         */
+        WITHDRAWAL,
+        /**
+         * There is extra service available to user as a bonus
+         */
+        BONUS_EXIST,
+        /**
+         * There is no bonus available for given purchase.
+         */
+        NO_BONUS,
+        /**
+         * No withdrawal required
+         */
+        NO_WITHDRAWAL
+    }
+
 
     val loadUserProfile =
             handler {

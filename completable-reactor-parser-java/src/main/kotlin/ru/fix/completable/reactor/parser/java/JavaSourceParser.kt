@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.parser.java
 
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import ru.fix.completable.reactor.model.*
 import ru.fix.completable.reactor.parser.java.antlr.GraphLexer
@@ -14,6 +15,10 @@ class JavaSourceParser(private val listener: Listener) {
         fun error(msg: String)
     }
 
+    private lateinit var tokens: CommonTokenStream
+    private lateinit var enums: Map<String, Map<String, Comment>>
+    private lateinit var sourceBlocks: List<GraphParser.GraphBlockContext>
+
     fun parse(body: String, filePath: String): List<GraphModel> {
         val result = ArrayList<GraphModel>()
 
@@ -22,10 +27,10 @@ class JavaSourceParser(private val listener: Listener) {
         //Do not log into stderr in case of invalid tokens
         lexer.removeErrorListeners()
 
-        val tokens = CommonTokenStream(lexer)
+        tokens = CommonTokenStream(lexer)
         val parser = GraphParser(tokens)
 
-        val sourceBlocks = parser.sourceFile().graphBlock()
+        sourceBlocks = parser.sourceFile().graphBlock()
 
         if (sourceBlocks.isEmpty()) {
             return emptyList()
@@ -39,6 +44,8 @@ class JavaSourceParser(private val listener: Listener) {
         if (declarationBlockIndexes.isEmpty()) {
             return emptyList()
         }
+
+        enums = parseEnums()
 
         for (borderStart in 0 until declarationBlockIndexes.size) {
 
@@ -58,7 +65,7 @@ class JavaSourceParser(private val listener: Listener) {
                 graphBlocks.asSequence()
                         .mapNotNull { it.graphDeclarationBlock() }
                         .forEach {
-                            tokens.checkCommentsToLeft(it.start.tokenIndex)?.run {
+                            checkCommentsToLeft(it)?.run {
                                 startPoint.title = title
                                 startPoint.doc = doc
                             }
@@ -75,7 +82,7 @@ class JavaSourceParser(private val listener: Listener) {
                         .forEach {
                             val vertexName = it.vertexName().text!!
 
-                            createVertexFromVertexBuilder(tokens, model, vertexName, it.vertexBuilder(), filePath)
+                            createVertexFromVertexBuilder(model, vertexName, it.vertexBuilder(), filePath)
                         }
 
                 //vertex cloning
@@ -127,7 +134,7 @@ class JavaSourceParser(private val listener: Listener) {
                                             " at ${tokenPosition(it.start)}." +
                                             " But declaration of $transitionSourceVertex not found.")
 
-                            it.vertexTransition().forEach transitionIteration@ {
+                            it.vertexTransition().forEach transitionIteration@{
 
                                 val transition = Transition()
 
@@ -144,11 +151,21 @@ class JavaSourceParser(private val listener: Listener) {
                                         transition.onStatusSource.put(status, source)
                                     }
 
-                                    tokens.checkCommentsToLeft(this.start.tokenIndex)?.let {
-                                        transition.transitionDocs.add(TransitionDocumentation(
-                                                mergeStatus = status,
-                                                docs = it.doc ?: ""))
+
+                                    var transitionDocs = checkCommentsToLeft(this)
+                                            ?.let {
+                                                TransitionDocumentation(
+                                                        mergeStatus = status,
+                                                        docs = it.doc ?: "")
+                                            }
+
+                                    if(transitionDocs == null){
+                                        transitionDocs = resolveEnumDocumentation(transitionCondition())
                                     }
+
+                                    transitionDocs?.let { transition.transitionDocs.add(it) }
+
+
 
 
                                     transitionAction()
@@ -338,16 +355,18 @@ class JavaSourceParser(private val listener: Listener) {
         }
     }
 
-    private fun CommonTokenStream.checkCommentsToRight(tokenIndex: Int): Comment? =
-            this.getHiddenTokensToRight(tokenIndex)
+    private fun checkCommentsToRight(tokenIndex: Int): Comment? =
+            tokens.getHiddenTokensToRight(tokenIndex)
                     ?.takeIf { it.size > 0 }
                     ?.first()
                     ?.run {
                         parseComment(text)
                     }
 
-    private fun CommonTokenStream.checkCommentsToLeft(tokenIndex: Int): Comment? =
-            this.getHiddenTokensToLeft(tokenIndex)
+    private fun checkCommentsToLeft(item: ParserRuleContext) = checkCommentsToLeft(item.start.tokenIndex)
+
+    private fun checkCommentsToLeft(tokenIndex: Int): Comment? =
+            tokens.getHiddenTokensToLeft(tokenIndex)
                     ?.takeIf { it.size > 0 }
                     ?.last()
                     ?.run {
@@ -355,7 +374,6 @@ class JavaSourceParser(private val listener: Listener) {
                     }
 
     private fun createVertexFromVertexBuilder(
-            tokens: CommonTokenStream,
             model: GraphModel,
             vertexName: String,
             vertexBuilder: VertexBuilderContext,
@@ -366,7 +384,7 @@ class JavaSourceParser(private val listener: Listener) {
             handlers[vertexName] = Handler(vertexName).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
@@ -376,7 +394,7 @@ class JavaSourceParser(private val listener: Listener) {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
-                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                    checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                         it.title = title
                         it.doc = doc
                     }
@@ -391,7 +409,7 @@ class JavaSourceParser(private val listener: Listener) {
             ).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight((LBRACE()?: LPAREN()).symbol.tokenIndex)?.run {
+                checkCommentsToRight((LBRACE() ?: LPAREN()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
@@ -402,7 +420,7 @@ class JavaSourceParser(private val listener: Listener) {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
-                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                    checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                         it.title = title
                         it.doc = doc
                     }
@@ -414,7 +432,7 @@ class JavaSourceParser(private val listener: Listener) {
             routers[vertexName] = Router(vertexName).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight((LPAREN()?:LBRACE()).symbol.tokenIndex)?.run {
+                checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
@@ -488,6 +506,44 @@ class JavaSourceParser(private val listener: Listener) {
 
         return Comment(title, doc.takeIf { it.isNotBlank() })
     }
+
+
+    private fun parseEnums(): Map<String, Map<String, Comment>> {
+
+        return sourceBlocks
+                .asSequence()
+                .mapNotNull { it.enumDeclaration() }
+                .map {
+                    it.enumType().text to it.enumConstant()
+                            .mapNotNull { item ->
+                                checkCommentsToLeft(it)?.let { comment -> item.text to comment }
+                            }
+                            .toMap()
+                }
+                .toMap()
+    }
+
+    private fun resolveEnumDocumentation(condition: GraphParser.TransitionConditionContext):
+            TransitionDocumentation? {
+
+        if(condition.Identifier().size == 2){
+            enums.get(condition.Identifier()[0].text)
+                    ?.get(condition.Identifier()[1].text)
+                    ?.let {
+                        TransitionDocumentation(
+                                mergeStatus = condition.Identifier()[1].text,
+                                docs = it.doc ?: ""
+                        )
+                    }
+        }
+
+        return null
+
+
+
+    }
+
+
 }
 
 //TODO: withEmptyMerger()

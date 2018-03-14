@@ -13,12 +13,23 @@ graphBlock
     |   vertexCloningBlock
     |   coordinatesBlock
     |   graphDeclarationBlock
+    |   enumDeclaration
     ;
 
 graphDeclarationBlock
-    :   classAnnotation*
-        ('public' | 'private' | 'static' | 'open' | 'sealed')*
+    :   classAnnotation* classModifier*
         'class' graphClass ('extends' | ':') 'Graph' '<' payloadType '>'
+    ;
+
+classModifier
+    :   'public'
+    |   'protected'
+    |   'private'
+    |   'abstract'
+    |   'static'
+    |   'final'
+    |   'open'
+    |   'sealed'
     ;
 
 classAnnotation
@@ -177,10 +188,21 @@ transitionCondition
     :   Identifier (DOT Identifier)*
     ;
 
+enumDeclaration
+    :   classModifier* 'enum' 'class'? enumType LBRACE enumConstant (COMMA enumConstant)*
+    ;
+
+enumType
+    : Identifier
+    ;
+
+enumConstant
+    : Identifier
+    ;
+
 ignoredToken
     :   .
     ;
-
 
 SUBGRAPH : 'subgraph';
 MERGER : 'merger';

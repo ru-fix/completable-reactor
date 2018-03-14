@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.example.services.*;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
@@ -44,6 +45,35 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     @PostConstruct
     public void initialize() {
         completableReactor.registerGraphIfAbsent(this);
+    }
+
+    enum Flow {
+        /**
+         * Continue processing
+         */
+        CONTINUE,
+        /**
+         * Stop processing
+         */
+        STOP,
+        /**
+         * Withdraw money required
+         */
+        WITHDRAWAL,
+        /**
+         * There is extra service available to user as a bonus
+         * User can claim bonus purchase
+         */
+        BONUS_EXIST,
+        /**
+         * There is no bonus available for given purchase.
+         * User does not have any bonuses
+         */
+        NO_BONUS,
+        /**
+         * No withdrawal required
+         */
+        NO_WITHDRAWAL,
     }
 
     Vertex loadUserProfile =
@@ -212,6 +242,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                 .handleBy(loadServiceInfo);
 
         loadUserProfile
+                //stop purchase
                 .on(Flow.STOP).complete()
                 .on(Flow.CONTINUE).mergeBy(loadServiceInfo);
 
@@ -233,7 +264,6 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         logActionToUserJournal.onAny().handleBy(checkBonuses);
 
         checkBonuses
-                //User can claim bonus purchase
                 .on(Flow.BONUS_EXIST).handleBy(bonusPurchaseSubgraph)
                 //User does not have any bonuses
                 .on(Flow.NO_BONUS).complete();
