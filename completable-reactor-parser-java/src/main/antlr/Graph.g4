@@ -79,7 +79,7 @@ handler
    ;
 
 builderMerger
-    :   builderWithMerger | builderWithoutMerger
+    :   builderWithMerger | builderWithoutMerger | builderWithEmptyMerger
     ;
 
 builderWithMerger
@@ -88,6 +88,10 @@ builderWithMerger
 
 builderWithoutMerger
     :   'withoutMerger' LPAREN RPAREN
+    ;
+
+builderWithEmptyMerger
+    :   'withEmptyMerger' LPAREN RPAREN
     ;
 
 anythingBeforeRParen

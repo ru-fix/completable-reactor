@@ -375,7 +375,7 @@ class JavaSourceParserTest {
                           */
                         """.trimIndent()))
     }
-
+    //TODO check why kotlin parsed in 240ms and java parssed in 66ms, in same time antlr viewer shows same result ~20ms
     @Test
     fun build_compilation_model_for_single_subscribe_graph_in_kotlin() {
         val sourceFilePath = "/single-subscribe-graph.kt.txt"

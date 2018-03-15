@@ -16,6 +16,15 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vx: GlVertex)
         return vx.vertex
     }
 
+    override fun withEmptyMerger(): Vertex {
+        if (vx.merger != null) {
+            throw IllegalStateException("withMerger method used twice on same vertex")
+        }
+        vx.merger = GlEmptyMerger()
+        vx.isEmptyMerger = true
+        return vx.vertex
+    }
+
     override fun withoutMerger(): Vertex {
         return vx.vertex
     }

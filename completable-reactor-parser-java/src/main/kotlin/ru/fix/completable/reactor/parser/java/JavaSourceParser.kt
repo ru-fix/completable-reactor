@@ -371,8 +371,19 @@ class JavaSourceParser(private val listener: Listener) {
                     it.doc = doc
                 }
             }
-
+            //withMerger
             builderMerger().builderWithMerger()?.apply {
+                mergers[vertexName] = Merger(vertexName).also {
+                    it.source = sourceFromToken(start, fileName)
+
+                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                        it.title = title
+                        it.doc = doc
+                    }
+                }
+            }
+            //withEmptyMerger
+            builderMerger().builderWithEmptyMerger()?.apply {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
@@ -396,9 +407,20 @@ class JavaSourceParser(private val listener: Listener) {
                     it.doc = doc
                 }
             }
-
+            //withMerger
             builderMerger().builderWithMerger()?.apply {
-                //merger
+                mergers[vertexName] = Merger(vertexName).also {
+                    it.source = sourceFromToken(start, fileName)
+
+                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                        it.title = title
+                        it.doc = doc
+                    }
+
+                }
+            }
+            //withEmptyMerger
+            builderMerger().builderWithEmptyMerger()?.apply {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
@@ -489,5 +511,3 @@ class JavaSourceParser(private val listener: Listener) {
         return Comment(title, doc.takeIf { it.isNotBlank() })
     }
 }
-
-//TODO: withEmptyMerger()
