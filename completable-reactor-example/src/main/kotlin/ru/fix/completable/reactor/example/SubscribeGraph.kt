@@ -75,9 +75,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
             handler {
                 txLog.logTransactioin(request.userId)
 
-            }.withMerger {
-                Flow.CONTINUE
-            }
+            }.withEmptyMerger()
 
     val logTransaction2 = logTransaction.clone()
 

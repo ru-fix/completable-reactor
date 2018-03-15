@@ -30,6 +30,12 @@ class Vertex {
     }
 
     fun on(mergeStatus: Enum<*>): TransitionBuilder {
+        if(vx.isEmptyMerger){
+            throw IllegalArgumentException("" +
+                    "Vertex ${vx.name} have emptyMerger." +
+                    " That vertex could participate only in .onAny() transition.")
+        }
+
         val transition = GlTransition()
         transition.mergeStatuses = hashSetOf(mergeStatus)
 

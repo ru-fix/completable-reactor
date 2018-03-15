@@ -76,9 +76,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     Vertex logTransaction =
             handler(
                     pld -> transactionLog.logTransactioin(pld.request.getUserId())
-            ).withMerger(
-                    (pld, any) -> Flow.CONTINUE
-            );
+            ).withEmptyMerger();
 
     Vertex logTransaction2 = logTransaction.clone();
 
