@@ -9,7 +9,6 @@ import org.junit.Test
 import ru.fix.commons.profiler.impl.SimpleProfiler
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
@@ -883,9 +882,11 @@ class KotlinGraphTest {
 
         val nullResultHandler = NullResultHandler()
 
-        var handler1 =
-                handler { nullResultHandler.handleWithNullResult() }
-                        .withMerger {
+        var vx1 =
+                handler {
+                    nullResultHandler.handleWithNullResult()
+
+                }.withMerger {
                             fail("Merger should not be invoked when handler returned NULL")
                             idSequence.add(1)
                             Status.OK
@@ -893,9 +894,9 @@ class KotlinGraphTest {
 
         init {
             payload()
-                    .handleBy(handler1)
+                    .handleBy(vx1)
 
-            handler1.onAny().complete()
+            vx1.onAny().complete()
         }
     }
 
