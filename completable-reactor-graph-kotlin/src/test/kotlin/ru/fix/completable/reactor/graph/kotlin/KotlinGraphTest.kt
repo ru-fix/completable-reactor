@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.graph.kotlin
 
 import mu.KotlinLogging
+import org.apache.commons.lang3.exception.ExceptionUtils
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -8,6 +9,8 @@ import org.junit.Test
 import ru.fix.commons.profiler.impl.SimpleProfiler
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.SECONDS
@@ -912,5 +915,33 @@ class KotlinGraphTest {
             log.info(exc) { "When handler returns NULL result future completed with NPE" }
         }
 
+    }
+
+    class RiseExceptionForEmptyMergerGraph : Graph<IdListPayload>(){
+
+        enum class STATUS {OK}
+
+        val vertex = handler { completedFuture("data") }.withEmptyMerger()
+        val vertex2 = handler { completedFuture("data2") }.withEmptyMerger()
+
+        init{
+            payload().handleBy(vertex)
+            vertex.on(STATUS.OK).handleBy(vertex2)
+            vertex2.onAny().complete()
+        }
+    }
+
+    @Test
+    fun vertex_with_empty_merger_rise_exception_when_used_in_on_transition(){
+        try {
+            reactor.registerGraphIfAbsent(RiseExceptionForEmptyMergerGraph::class.java)
+            fail("should rise exception")
+
+        }catch (exc: Exception){
+            ExceptionUtils.getStackTrace(exc).let{
+                assertTrue(it.contains("have emptyMerger"))
+                assertTrue(it.contains("could participate only in .onAny() transition"))
+            }
+        }
     }
 }
