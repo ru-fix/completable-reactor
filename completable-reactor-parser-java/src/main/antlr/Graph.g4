@@ -34,11 +34,11 @@ payloadType
     ;
 
 vertexAssignmentBlock
-    :   (VERTEX | 'val') vertexName ASSIGN vertexBuilder SEMI?
+    :   (VERTEX | 'val' | 'var') vertexName ASSIGN vertexBuilder SEMI?
     ;
 
 vertexCloningBlock
-    :   (VERTEX | 'val') vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI?
+    :   (VERTEX | 'val' | 'var') vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI?
     ;
 
 vertexName
