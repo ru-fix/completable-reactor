@@ -5,7 +5,7 @@
   <parent>
     <groupId>ru.fix</groupId>
     <artifactId>completable-reactor</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1.8</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -21,38 +21,38 @@
     <dependency>
       <groupId>ru.fix</groupId>
       <artifactId>completable-reactor-model</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.1.8</version>
     </dependency>
 
     <dependency>
       <groupId>ru.fix</groupId>
       <artifactId>completable-reactor-graph</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.1.8</version>
     </dependency>
 
     <dependency>
       <groupId>ru.fix</groupId>
       <artifactId>completable-reactor-graph-kotlin</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.1.8</version>
     </dependency>
 
     <dependency>
       <groupId>ru.fix</groupId>
       <artifactId>completable-reactor-ui</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.1.8</version>
     </dependency>
 
 
     <dependency>
       <groupId>ru.fix</groupId>
       <artifactId>completable-reactor-runtime</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.1.8</version>
     </dependency>
 
     <dependency>
       <groupId>ru.fix</groupId>
       <artifactId>completable-reactor-spring</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.1.8</version>
     </dependency>
 
     <dependency>
