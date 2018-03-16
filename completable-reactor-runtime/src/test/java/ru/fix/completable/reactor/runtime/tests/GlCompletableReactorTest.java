@@ -86,7 +86,7 @@ class GlCompletableReactorTest {
     @Test
     void single_processor() throws Exception {
 
-        reactor.registerGraphIfAbsent(SingleProcessorGraph.class);
+        reactor.registerGraph(SingleProcessorGraph.class);
 
         IdListPayload resultPayload = reactor.submit(new IdListPayload())
                 .getResultFuture()

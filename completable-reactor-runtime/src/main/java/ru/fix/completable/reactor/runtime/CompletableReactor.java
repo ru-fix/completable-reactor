@@ -75,9 +75,16 @@ public class CompletableReactor implements AutoCloseable {
     private final ConcurrentHashMap<Class<?>, GlGraph> glPayloadGraphs = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Class<? extends Graphable>, Boolean> glGraphConfigs = new ConcurrentHashMap<>();
 
+    /**
+     * @param graphConfig
+     * @param <GraphConfigType>
+     * @return true if graph is built and registered, false - if graph already registered
+     */
     public <GraphConfigType extends Graphable>
-    void registerGraphIfAbsent(GraphConfigType graphConfig) {
+    boolean registerGraphIfAbsent(GraphConfigType graphConfig) {
         Objects.requireNonNull(graphConfig, "graphConfig");
+
+        AtomicBoolean isComputed = new AtomicBoolean(false);
 
         glGraphConfigs.computeIfAbsent(graphConfig.getClass(), type -> {
 
@@ -92,9 +99,31 @@ public class CompletableReactor implements AutoCloseable {
                         + " is registering graph for payload " + payloadType + "."
                         + " But this payload was already registered by another graph config.");
             }
+
+            isComputed.set(true);
             return true;
         });
+
+        return isComputed.get();
     }
+
+    /**
+     * @throws IllegalStateException if graph already registered.
+     */
+    public <GraphConfigType extends Graphable>
+    void registerGraph(GraphConfigType graphConfig) {
+        if (!registerGraphIfAbsent(graphConfig)) {
+            throw new IllegalStateException("Graph '" + graphConfig.getClass().getName() + "' already registered.");
+        }
+    }
+
+    public <GraphConfigType extends Graphable>
+    void registerGraph(Class<GraphConfigType> graphConfigClass) {
+        if (!registerGraphIfAbsent(graphConfigClass)) {
+            throw new IllegalStateException("Graph '" + graphConfigClass.getName() + "' already registered.");
+        }
+    }
+
 
     private final GraphBuilder graphBuilder = new GraphBuilder();
 
@@ -106,15 +135,15 @@ public class CompletableReactor implements AutoCloseable {
      * Validated that there is no conflicts between merging vertices and all required endpoints exist.
      */
     public <GraphConfigType extends Graphable>
-    void registerGraphIfAbsent(Class<GraphConfigType> graphConfigClass) {
+    boolean registerGraphIfAbsent(Class<GraphConfigType> graphConfigClass) {
         Objects.requireNonNull(graphConfigClass, "graphConfigClass");
+
+        AtomicBoolean isComputed = new AtomicBoolean(false);
 
         glGraphConfigs.computeIfAbsent(graphConfigClass, type -> {
             try {
 
                 Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfigClass);
-
-
                 Graphable graphConfig;
                 try {
                     Constructor<GraphConfigType> ctor = graphConfigClass.getDeclaredConstructor();
@@ -132,6 +161,7 @@ public class CompletableReactor implements AutoCloseable {
                 GlGraph graph = graphBuilder.buildGraph(graphConfig, dependencyInjector);
 
                 glPayloadGraphs.putIfAbsent(payloadType, graph);
+                isComputed.set(true);
 
             } catch (Exception exc) {
                 throw new RuntimeException(
@@ -140,6 +170,8 @@ public class CompletableReactor implements AutoCloseable {
             }
             return true;
         });
+
+        return isComputed.get();
     }
 
 
@@ -163,7 +195,7 @@ public class CompletableReactor implements AutoCloseable {
 
         while (actualClass != null
                 && actualClass.getSuperclass() != null
-                && !Arrays.asList(actualClass.getSuperclass().getInterfaces()).contains(Graphable.class)){
+                && !Arrays.asList(actualClass.getSuperclass().getInterfaces()).contains(Graphable.class)) {
 
             actualClass = actualClass.getSuperclass();
         }
