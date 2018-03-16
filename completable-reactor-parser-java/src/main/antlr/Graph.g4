@@ -18,7 +18,7 @@ graphBlock
 graphDeclarationBlock
     :   classAnnotation*
         ('public' | 'private' | 'static' | 'open' | 'sealed')*
-        'class' graphClass ('extends' | ':') 'Graph' '<' payloadType '>'
+        'class' graphClass (LPAREN anythingBeforeRParen RPAREN)? ('extends' | ':') 'Graph' '<' payloadType '>'
     ;
 
 classAnnotation
