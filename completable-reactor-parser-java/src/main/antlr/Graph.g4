@@ -16,10 +16,22 @@ graphBlock
     ;
 
 graphDeclarationBlock
-    :   classAnnotation*
-        ('public' | 'private' | 'static' | 'open' | 'sealed')*
-        'class' graphClass (LPAREN anythingBeforeRParen RPAREN)? ('extends' | ':') 'Graph' '<' payloadType '>'
+    :   classAnnotation* classModifier* 'class' graphClass
+        (classModifier | classAnnotation)* 'constructor'? (LPAREN anythingBeforeRParen RPAREN)?
+        ('extends' | ':') 'Graph' '<' payloadType '>'
     ;
+
+classModifier
+    :   'public'
+    |   'protected'
+    |   'private'
+    |   'abstract'
+    |   'static'
+    |   'final'
+    |   'open'
+    |   'sealed'
+    ;
+
 
 classAnnotation
     :   AT Identifier (LPAREN anythingBeforeRParen RPAREN)?
