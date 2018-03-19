@@ -16,8 +16,12 @@ class GlVertex(
     @JvmField
     var merger: RoutingMerger<Any?, Any?>? = null
 
+    /**
+     * Merger or EmptyMerger
+     * not RoutingMerger
+     */
     @JvmField
-    var isEmptyMerger: Boolean = false
+    var isNoTransitionMerger: Boolean = false
 
     @JvmField
     var router: Router<Any?>? = null

@@ -10,6 +10,7 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vx: GlVertex)
                 HandlerResult> {
 
     override fun withMerger(merger: Merger<Payload, HandlerResult>): Vertex {
+        vx.isNoTransitionMerger = true
         return withRoutingMerger{ payload, handlerResult ->
             merger.merge(payload, handlerResult)
             GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
@@ -30,7 +31,7 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vx: GlVertex)
             throw IllegalStateException("withMerger method used twice on same vertex")
         }
         vx.merger = GlEmptyMerger()
-        vx.isEmptyMerger = true
+        vx.isNoTransitionMerger = true
         return vx.vertex
     }
 

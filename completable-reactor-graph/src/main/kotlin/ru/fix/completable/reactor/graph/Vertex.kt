@@ -30,7 +30,7 @@ class Vertex {
     }
 
     fun on(mergeStatus: Enum<*>): TransitionBuilder {
-        if(vx.isEmptyMerger){
+        if(vx.isNoTransitionMerger){
             throw IllegalArgumentException("" +
                     "Vertex ${vx.name} have emptyMerger." +
                     " That vertex could participate only in .onAny() transition.")
