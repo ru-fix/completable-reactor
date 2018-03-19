@@ -4,7 +4,7 @@ public interface MergerBuilder<Payload, HandlerResult> {
 
     Vertex withMerger(Merger<Payload, HandlerResult> merger);
 
-    Vertex withRoutingMerger(Merger<Payload, HandlerResult> merger);
+    Vertex withRoutingMerger(RoutingMerger<Payload, HandlerResult> merger);
 
     Vertex withEmptyMerger();
 

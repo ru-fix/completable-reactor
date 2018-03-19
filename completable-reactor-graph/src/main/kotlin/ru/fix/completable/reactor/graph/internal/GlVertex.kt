@@ -14,7 +14,7 @@ class GlVertex(
     var handler: Handler<Any?, Any?>? = null
 
     @JvmField
-    var merger: Merger<Any?, Any?>? = null
+    var merger: RoutingMerger<Any?, Any?>? = null
 
     @JvmField
     var isEmptyMerger: Boolean = false
