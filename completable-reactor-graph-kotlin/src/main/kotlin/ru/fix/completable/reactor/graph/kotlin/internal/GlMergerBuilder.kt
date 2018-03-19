@@ -1,6 +1,5 @@
 package ru.fix.completable.reactor.graph.kotlin.internal
 
-import ru.fix.completable.reactor.graph.Merger
 import ru.fix.completable.reactor.graph.RoutingMerger
 import ru.fix.completable.reactor.graph.Vertex
 import ru.fix.completable.reactor.graph.internal.GlEmptyMerger
@@ -21,6 +20,7 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vx: GlVertex)
     }
 
     override fun withMerger(merger: Payload.(handlerResult: HandlerResult) -> Unit): Vertex {
+        vx.isNoTransitionMerger = true
         return withRoutingMerger { handlerResult ->
             merger(this, handlerResult)
             GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
@@ -36,7 +36,7 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vx: GlVertex)
             throw IllegalStateException("withMerger method used twice on same vertex")
         }
         vx.merger = GlEmptyMerger()
-        vx.isEmptyMerger = true
+        vx.isNoTransitionMerger = true
 
         return vx.vertex
     }

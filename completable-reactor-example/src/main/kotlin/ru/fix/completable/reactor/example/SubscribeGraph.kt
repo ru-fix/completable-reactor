@@ -50,7 +50,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
             handler {
                 userProfile.loadUserProfileById(request.userId)
 
-            }.withMerger {
+            }.withRoutingMerger {
                 //# check profile status
                 if (response.status != null) {
                     Flow.STOP
@@ -84,10 +84,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 userJournal.logAction(
                         request.userId,
                         "Request type: ${javaClass.simpleName}")
-            }.withMerger {
-                //ignore result of logging
-                Flow.CONTINUE
-            }
+            }.withEmptyMerger()
 
 
     val webNotification =
@@ -102,7 +99,6 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
 
             }.withMerger {
                 response.remoteServiceNotificationResult = it
-                Flow.CONTINUE
             }
 
     val withdrawMoney =
@@ -111,7 +107,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                         intermediateData.userInfo,
                         intermediateData.serviceInfo)
 
-            }.withMerger {
+            }.withRoutingMerger {
                 //update new amount
                 withdraw ->
                 when (withdraw.getStatus()) {
@@ -134,7 +130,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
             handler {
                 serviceRegistry.loadServiceInformation(request.serviceId)
 
-            }.withMerger { result ->
+            }.withRoutingMerger { result ->
                 if (response.status != null) {
                     Flow.STOP
                 }

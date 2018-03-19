@@ -53,7 +53,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                      * Loads user profile from database by user id
                      */
                     pld -> userProfileManager.loadUserProfileById(pld.request.getUserId())
-            ).withMerger(
+            ).withRoutingMerger(
                     //# check profile state
                     (pld, result) -> {
                         if (pld.response.getStatus() != null) {
@@ -85,7 +85,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                     pld -> userJournal.logAction(
                             pld.request.getUserId(),
                             String.format("Request type: %s", pld.getClass().getSimpleName()))
-            ).withMerger((pld, result) -> Flow.CONTINUE);
+            ).withEmptyMerger();
 
     Vertex sendWebNotification =
             handler(pld -> notifier.sendHttpPurchaseNotification(pld.request.getUserId()))
@@ -104,7 +104,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                     pld -> bank.withdrawMoneyWithMinus(
                             pld.intermediateData.getUserInfo(),
                             pld.intermediateData.getServiceInfo())
-            ).withMerger(
+            ).withRoutingMerger(
                     /*
                         # CheckWithdraw
                         Checks result of withdraw operation
@@ -151,7 +151,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                      */
                     pld -> serviceRegistry.loadServiceInformation(pld.request.getServiceId())
 
-            ).withMerger(
+            ).withRoutingMerger(
                     //# checkServiceState
                     (pld, result) -> {
                         if (pld.response.getStatus() != null) {
