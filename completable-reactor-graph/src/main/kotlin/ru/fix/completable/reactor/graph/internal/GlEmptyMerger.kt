@@ -1,8 +1,8 @@
 package ru.fix.completable.reactor.graph.internal
 
-import ru.fix.completable.reactor.graph.Merger
+import ru.fix.completable.reactor.graph.RoutingMerger
 
-class GlEmptyMerger : Merger<Any?, Any?> {
+class GlEmptyMerger : RoutingMerger<Any?, Any?> {
 
     enum class EmptyMergerStatusEnum{
         EMPTY_MERGER_STATUS

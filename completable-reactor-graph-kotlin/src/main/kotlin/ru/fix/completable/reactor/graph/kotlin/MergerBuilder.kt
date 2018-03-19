@@ -6,7 +6,9 @@ interface MergerBuilder<Payload, HandlerResult> {
 
     //TODO merger that could return any object, or do not return anything at all
 
-    fun withMerger(merger: Payload.(handlerResult: HandlerResult) -> Enum<*>): Vertex
+    fun withRoutingMerger(merger: Payload.(handlerResult: HandlerResult) -> Enum<*>): Vertex
+
+    fun withMerger(merger: Payload.(handlerResult: HandlerResult) -> Unit): Vertex
 
     fun withoutMerger(): Vertex
 
