@@ -31,7 +31,7 @@ public class GraphAsSpringConfig extends Graph<TestPayload> {
 
     Vertex router =
             handler(p -> myService.foo())
-                    .withMerger((payload, result) -> {
+                    .withRoutingMerger((payload, result) -> {
                         payload.result = result;
                         return Flow.OK;
                     });

@@ -371,6 +371,21 @@ You can jump to code using double click on graph item or context menu.
  
 ## Examples
 
+## Best Practice
+
+Do not vertex templating via functions. use clone instead
+//TODO explain best practice block here
+```
+val vertex = handler{}.withMerger{}
+--- 
+not: 
+val vertex = foo(myState)
+fun foo(){
+    return handler{}.withMerger()
+}
+```  
+
+
 # How to build this project
 Intellij plugin located at `completable-reactor-plugin-idea` directory.  
 In order to include plugin module into Intellij Idea you have to manually add line   

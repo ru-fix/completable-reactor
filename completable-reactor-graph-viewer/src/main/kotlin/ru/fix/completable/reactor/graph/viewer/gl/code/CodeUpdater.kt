@@ -10,9 +10,6 @@ import ru.fix.completable.reactor.model.Source
 class CodeUpdater {
 
     companion object {
-        private val coordinatesRegex = """\\s*coordinates\s*\(\s*\)""".toRegex()
-        private val replacementCodeRegex = """(\s*\.\s*(payload|handler|merger|complete)\s*\(\s*[^\)]+\))+;?""".toRegex()
-
         private val coordinateTypeOrder = listOf(
                 StartPoint::class,
                 Handler::class,

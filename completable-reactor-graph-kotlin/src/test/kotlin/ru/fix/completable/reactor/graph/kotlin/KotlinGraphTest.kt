@@ -68,7 +68,6 @@ class KotlinGraphTest {
                     IdProcessor(1).handle()
                 }.withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         init {
@@ -99,13 +98,11 @@ class KotlinGraphTest {
         var idProcessor1 = handler { IdProcessor(1).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         var idProcessor2 = handler { IdProcessor(2).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         init {
@@ -149,13 +146,11 @@ class KotlinGraphTest {
         var idProcessor1 = handler { IdProcessor(1).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         var idProcessor2 = handler { IdProcessor(2).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         var idProcessor3 = handler { detachedProcessor.handle() }
@@ -210,19 +205,16 @@ class KotlinGraphTest {
         var idProcessor11 = handler { IdProcessor(11).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         var idProcessor12 = handler { IdProcessor(12).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         var idProcessor13 = handler { IdProcessor(13).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         init {
@@ -248,25 +240,21 @@ class KotlinGraphTest {
         var idProcessor1 = handler { IdProcessor(1).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         var idProcessor2 = handler { IdProcessor(2).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         var idProcessor3 = handler { IdProcessor(3).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         var subgraphProcessor = subgraph(SubgraphPaylaod::class) { SubgraphPaylaod() }
                 .withMerger {
                     idSequence.addAll(it.idSequence)
-                    Status.OK
                 }
 
         init {
@@ -318,18 +306,15 @@ class KotlinGraphTest {
         var idProcessor0 = handler { IdProcessor(0).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
         var idProcessor1 = handler { IdProcessor(1).handle() }
                 .withMerger {
                     idSequence.add(it)
-                    Status.OK
                 }
 
-        var mergePoint = router {
+        var mergePoint = mutator {
             idSequence.add(42)
-            Status.OK
         }
 
         init {
@@ -740,36 +725,36 @@ class KotlinGraphTest {
         val processor4mergerSemaphore = Semaphore(0)
 
         val idProcessor0 = handler { IdProcessor(0).handle() }
-                .withMerger {
+                .withRoutingMerger {
                     idSequence.add(it)
                     DeadTransitionGraph.Status.FIRST
                 }
 
         val idProcessor1 = handler { IdProcessor(1).handle() }
-                .withMerger {
+                .withRoutingMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         val idProcessor2 = handler { IdProcessor(2).handle() }
-                .withMerger {
+                .withRoutingMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
         val idProcessor3 = handler { IdProcessor(3).handle() }
-                .withMerger {
+                .withRoutingMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
 
         val idProcessor4 = handler { IdProcessor(4).handle() }
-                .withMerger {
+                .withRoutingMerger {
                     try {
                         idSequence.add(it)
                         processor4mergerSemaphore.acquire()
-                        return@withMerger Status.OK
+                        Status.OK
                     } catch (exc: Exception) {
                         throw RuntimeException(exc)
                     }

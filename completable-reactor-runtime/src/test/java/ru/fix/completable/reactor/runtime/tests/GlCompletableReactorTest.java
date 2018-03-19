@@ -72,7 +72,6 @@ class GlCompletableReactorTest {
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         {
@@ -102,12 +101,12 @@ class GlCompletableReactorTest {
     static class TwoProcessorSequentialMergeGraph extends Graph<IdListPayload> {
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
         Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
@@ -149,13 +148,13 @@ class GlCompletableReactorTest {
         IdProcessor detachedProcessor = new IdProcessor(3).withLaunchingLatch();
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
 
         Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
@@ -212,19 +211,16 @@ class GlCompletableReactorTest {
         Vertex idProcessor11 = handler(new IdProcessor(11)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex idProcessor12 = handler(new IdProcessor(12)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex idProcessor13 = handler(new IdProcessor(13)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         {
@@ -250,25 +246,21 @@ class GlCompletableReactorTest {
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex idProcessor3 = handler(new IdProcessor(3)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex subgraphProcessor = subgraph(SubgraphPaylaod.class, payload -> new SubgraphPaylaod())
                 .withMerger((payload, result) -> {
                     payload.idSequence.addAll(result.idSequence);
-                    return Status.OK;
                 });
 
         {
@@ -321,7 +313,6 @@ class GlCompletableReactorTest {
         Vertex idProcessor1 = handler(() -> processorInterface.handle())
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         {
@@ -361,7 +352,6 @@ class GlCompletableReactorTest {
         Vertex idProcessor1 = handler(() -> processor.handle())
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         {
@@ -405,13 +395,11 @@ class GlCompletableReactorTest {
         Vertex idProcessor0 = handler(new IdProcessor(0)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex mergePoint = router(
@@ -476,13 +464,11 @@ class GlCompletableReactorTest {
         Vertex idProcessor0 = handler(new IdProcessor(0)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex router = router(
@@ -552,19 +538,16 @@ class GlCompletableReactorTest {
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex idProcessor3 = handler(new IdProcessor(3)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return Status.OK;
                 });
 
         Vertex mergePoint = router(
@@ -656,7 +639,7 @@ class GlCompletableReactorTest {
     static class DeadTransitionBreaksFlowGraph extends Graph<DeadTransitionBreaksFlowPayload> {
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return pld.flowDecision;
                 });
@@ -664,13 +647,13 @@ class GlCompletableReactorTest {
         Vertex idProcessor1b = idProcessor1.clone();
 
         Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
 
         Vertex idProcessor3 = handler(new IdProcessor(3)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
@@ -679,7 +662,7 @@ class GlCompletableReactorTest {
 
 
         Vertex idProcessor4 = handler(new IdProcessor(4)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
@@ -758,13 +741,13 @@ class GlCompletableReactorTest {
         Semaphore mergePoint2Semaphore = new Semaphore(0);
 
         Vertex idProcessor0 = handler(new IdProcessor(0)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
@@ -782,7 +765,7 @@ class GlCompletableReactorTest {
                 });
 
         Vertex idProcessor3 = handler(new IdProcessor(3)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return Status.OK;
                 });
@@ -853,32 +836,32 @@ class GlCompletableReactorTest {
         }
 
         Vertex idProcessor0 = handler(new IdProcessor(0)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return DeadTransitionGraph.Status.FIRST;
                 });
 
         Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return GlCompletableReactorTest.Status.OK;
                 });
 
         Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return GlCompletableReactorTest.Status.OK;
                 });
 
         Vertex idProcessor3 = handler(new IdProcessor(3)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     pld.idSequence.add(id);
                     return GlCompletableReactorTest.Status.OK;
                 });
 
 
         Vertex idProcessor4 = handler(new IdProcessor(4)::handle)
-                .withMerger((pld, id) -> {
+                .withRoutingMerger((pld, id) -> {
                     try {
                         pld.idSequence.add(id);
                         processor4mergerSemaphore.acquire();
@@ -998,7 +981,6 @@ class GlCompletableReactorTest {
                 ).withMerger((pld, result) -> {
                     assertNull(result);
                     pld.idSequence.add(1);
-                    return GlCompletableReactorTest.Status.OK;
                 });
 
         {
