@@ -48,6 +48,13 @@ public abstract class Graph<Payload> implements Graphable {
         return vx.vertex;
     }
 
+    protected Vertex mutator(Mutator<Payload> mutator) {
+        return router(payload -> {
+            mutator.mutate(payload);
+            return GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS;
+        });
+    }
+
     protected <SubgraphPayload> MergerBuilder<Payload, SubgraphPayload> subgraph(
             Class<SubgraphPayload> subgraphPayloadType,
             Subgraph<Payload, SubgraphPayload> subgraph) {
@@ -60,8 +67,6 @@ public abstract class Graph<Payload> implements Graphable {
         vx.subgraphPayloadBuilder = (Subgraph<Object, Object>) subgraph;
         return new GlMergerBuilder<>(vx);
     }
-
-
 
 
 }

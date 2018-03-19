@@ -130,16 +130,13 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
 
     Vertex isPartnerService =
-            router(/*
+            mutator(/*
                        Check if given service is provided by a partner.
                        Update payload response.
                    */
                     pld -> {
                         if (pld.intermediateData.serviceInfo.isPartnerService()) {
                             pld.response.isPartnerService = true;
-                            return Flow.CONTINUE;
-                        } else {
-                            return Flow.CONTINUE;
                         }
                     });
 

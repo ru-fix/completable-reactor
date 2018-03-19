@@ -27,4 +27,12 @@ class GlCoordinatesBuilder : CoordinatesBuilder {
     override fun subgraph(vertex: Vertex, x: Int, y: Int): CoordinatesBuilder {
         return this
     }
+
+    override fun vx(vertex: Vertex, x: Int, y: Int): CoordinatesBuilder {
+        return this
+    }
+
+    override fun vx(vertex: Vertex, x: Int, y: Int, x2: Int, y2: Int): CoordinatesBuilder {
+        return this
+    }
 }

@@ -256,6 +256,46 @@ class JavaSourceParser(private val listener: Listener) {
                                         Coordinate().first().text.toInt(),
                                         Coordinate().last().text.toInt())
 
+                            } ?: it.coordinateVertex().run {
+                                val vertexName = Identifier().text
+
+                                when{
+                                    Coordinate().size == 2 -> {
+                                        val vertex = handleable[vertexName] ?: return@run listener.error("" +
+                                                "Failed to parse coordinates." +
+                                                "Handleable vertex $vertexName not found." )
+
+                                        vertex.coordinates = Coordinates(
+                                                Coordinate()[0].text.toInt(),
+                                                Coordinate()[1].text.toInt())
+                                    }
+                                    Coordinate().size == 4 -> {
+                                        val merger = mergers[vertexName] ?: return@run listener.error("" +
+                                                "Failed to set coordinates." +
+                                                " Merger $vertexName not found.")
+
+                                        merger.coordinates = Coordinates(
+                                                Coordinate()[2].text.toInt(),
+                                                Coordinate()[3].text.toInt())
+
+                                    }
+                                    else -> listener.error("" +
+                                            "Failed to parse coordinates for vertex $vertexName." +
+                                            " Invalid coordinate count: ${Coordinate().size}." +
+                                            " Expected 2 or 4.")
+                                }
+
+
+
+
+                                val merger = mergers[vertexName] ?: return@run listener.error("" +
+                                        "Failed to set coordinates." +
+                                        " Merger $vertexName not found.")
+
+                                merger.coordinates = Coordinates(
+                                        Coordinate().first().text.toInt(),
+                                        Coordinate().last().text.toInt())
+
                             }
                         }
 

@@ -75,7 +75,7 @@ subgraphPayloadClass
     ;
 
 builderRouter
-    :   ROUTER
+    :   (ROUTER | MUTATOR)
         ((LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE))
     ;
 
@@ -95,7 +95,8 @@ builderMerger
     ;
 
 builderWithMerger
-    :   'withMerger' ((LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE))
+    :   ('withMerger' | 'withRoutingMerger')
+        ((LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE))
     ;
 
 builderWithoutMerger
@@ -177,6 +178,7 @@ coordinate
     |   coordinateSubgraph
     |   coordinateRouter
     |   coordinateMerger
+    |   coordinateVertex
     |   coordinateComplete
     ;
 
@@ -185,6 +187,7 @@ coordinateHandler : DOT HANDLER LPAREN Identifier COMMA Coordinate COMMA Coordin
 coordinateSubgraph : DOT SUBGRAPH LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
 coordinateRouter : DOT ROUTER LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
 coordinateMerger : DOT MERGER LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
+coordinateVertex : DOT 'vx' LPAREN Identifier COMMA Coordinate COMMA Coordinate (COMMA Coordinate COMMA Coordinate)? RPAREN;
 coordinateComplete : DOT COMPLETE LPAREN Identifier COMMA Coordinate COMMA Coordinate RPAREN;
 
 Coordinate: '-'? DecimalNumeral;
@@ -205,6 +208,7 @@ SUSPEND_HANDLER : 'suspendHandler';
 PAYLOAD : 'payload';
 COMPLETE : 'complete';
 ROUTER : 'router';
+MUTATOR : 'mutator';
 CLONE : 'clone';
 VERTEX : 'Vertex';
 
@@ -215,6 +219,7 @@ anyGraphKeyword
     |   PAYLOAD
     |   COMPLETE
     |   ROUTER
+    |   MUTATOR
     |   CLONE
     ;
 

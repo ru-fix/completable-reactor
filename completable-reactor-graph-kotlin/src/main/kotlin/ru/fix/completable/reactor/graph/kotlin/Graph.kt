@@ -50,6 +50,13 @@ open class Graph<Payload> : Graphable {
         }
     }
 
+    protected fun mutator(mutator: Payload.() -> Unit): Vertex {
+        return router {
+            mutator(this)
+            GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
+        }
+    }
+
     protected fun router(router: Payload.() -> Enum<*>): Vertex {
         val vx = BuilderContext.get().extractVertexOrDefault { InternalGlAccessor.vx(Vertex()) }
 
