@@ -21,7 +21,7 @@ class GlVertex(
      * not RoutingMerger
      */
     @JvmField
-    var isNoTransitionMerger: Boolean = false
+    var isNonTransitionMerger: Boolean = false
 
     @JvmField
     var router: Router<Any?>? = null
