@@ -11,7 +11,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>completable-reactor-ui</artifactId>
-
+<!--TODO: remove ui module from project -->
   <dependencies>
 
     <dependency>
