@@ -2,16 +2,19 @@ package ru.fix.completable.reactor.graph.internal
 
 import ru.fix.completable.reactor.graph.TransitionBuilder
 import ru.fix.completable.reactor.graph.Vertex
+import ru.fix.completable.reactor.graph.runtime.GlVertex
 
 class GlTransitionBuilder(
-        val vx: GlVertex,
+        val vertex: Vertex,
         val transition: GlTransition,
         val transitionReceiver: MutableList<GlTransition>) : TransitionBuilder {
+
+    private val vx = InternalGlAccessor.vx(vertex)
 
     override fun complete(): Vertex {
         transition.isComplete = true
         mergeTransition(vx, transition, transitionReceiver)
-        return vx.vertex
+        return vertex
     }
 
     override fun handleBy(vertex: Vertex): Vertex {
@@ -24,7 +27,7 @@ class GlTransitionBuilder(
         transition.handleBy = targetGlVertex
         mergeTransition(vx, transition, transitionReceiver)
 
-        return vx.vertex
+        return vertex
     }
 
     override fun mergeBy(vertex: Vertex): Vertex {
@@ -67,7 +70,7 @@ class GlTransitionBuilder(
         transition.mergeBy = targetGlVertex
         mergeTransition(vx, transition, transitionReceiver)
 
-        return vx.vertex
+        return vertex
     }
 
     /**

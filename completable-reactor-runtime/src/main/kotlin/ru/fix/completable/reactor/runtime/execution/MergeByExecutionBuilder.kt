@@ -1,7 +1,7 @@
 package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
-import ru.fix.completable.reactor.graph.internal.GlVertex
+import ru.fix.completable.reactor.graph.runtime.GlVertex
 import ru.fix.completable.reactor.runtime.ProfilerNames
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.*
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_HANDLE_PAYLOAD_CONTEXT

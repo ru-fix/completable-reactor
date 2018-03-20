@@ -5,9 +5,10 @@ import ru.fix.completable.reactor.graph.MergerBuilder
 import ru.fix.completable.reactor.graph.RoutingMerger
 import ru.fix.completable.reactor.graph.Vertex
 
-internal class GlMergerBuilder<Payload, HandlerResult>(private val vx: GlVertex) :
-        MergerBuilder<Payload,
-                HandlerResult> {
+internal class GlMergerBuilder<Payload, HandlerResult>(private val vertex: Vertex) :
+        MergerBuilder<Payload, HandlerResult> {
+
+    private val vx = InternalGlAccessor.vx(vertex)
 
     override fun withMerger(merger: Merger<Payload, HandlerResult>): Vertex {
         vx.isNonTransitionMerger = true
@@ -23,7 +24,7 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vx: GlVertex)
         }
         vx.merger = merger as RoutingMerger<Any?, Any?>
 
-        return vx.vertex
+        return vertex
     }
 
     override fun withEmptyMerger(): Vertex {
@@ -32,10 +33,10 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vx: GlVertex)
         }
         vx.merger = GlEmptyMerger()
         vx.isNonTransitionMerger = true
-        return vx.vertex
+        return vertex
     }
 
     override fun withoutMerger(): Vertex {
-        return vx.vertex
+        return vertex
     }
 }

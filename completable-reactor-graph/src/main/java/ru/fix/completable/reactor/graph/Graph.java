@@ -1,19 +1,13 @@
 package ru.fix.completable.reactor.graph;
 
 import ru.fix.completable.reactor.graph.internal.*;
-
-import java.util.concurrent.CompletableFuture;
+import ru.fix.completable.reactor.graph.runtime.GlGraph;
+import ru.fix.completable.reactor.graph.runtime.GlVertex;
 
 public abstract class Graph<Payload> implements Graphable {
 
-    // Field name used via reflection
+    // Field accessed via reflection by field name
     private GlGraph graph = new GlGraph();
-
-    {
-        // Deliberately leaking reference to ThreadLocal context.
-        // Graph construction is happening in single thread
-        BuilderContext.get().setGraph(this, graph);
-    }
 
     private GraphBuilderValidator graphBuilderValidator = new GraphBuilderValidator();
 
@@ -31,21 +25,23 @@ public abstract class Graph<Payload> implements Graphable {
     }
 
     protected <HandlerResult> MergerBuilder<Payload, HandlerResult> handler(Handler<Payload, HandlerResult> handler) {
-        GlVertex vx = BuilderContext.get().extractVertexOrDefault(() -> InternalGlAccessor.vx(new Vertex()));
+        Vertex vertex = new Vertex();
+        GlVertex vx = InternalGlAccessor.vx(vertex);
 
         graphBuilderValidator.validateHandler(vx);
 
         vx.handler = (Handler<Object, Object>) handler;
-        return new GlMergerBuilder<>(vx);
+        return new GlMergerBuilder<>(vertex);
     }
 
     protected Vertex router(Router<Payload> router) {
-        GlVertex vx = BuilderContext.Companion.get().extractVertexOrDefault(() -> InternalGlAccessor.vx(new Vertex()));
+        Vertex vertex = new Vertex();
+        GlVertex vx = InternalGlAccessor.vx(vertex);
 
         graphBuilderValidator.validateRouter(vx);
 
         vx.router = (Router<Object>) router;
-        return vx.vertex;
+        return vertex;
     }
 
     protected Vertex mutator(Mutator<Payload> mutator) {
@@ -59,13 +55,14 @@ public abstract class Graph<Payload> implements Graphable {
             Class<SubgraphPayload> subgraphPayloadType,
             Subgraph<Payload, SubgraphPayload> subgraph) {
 
-        GlVertex vx = BuilderContext.Companion.get().extractVertexOrDefault(() -> InternalGlAccessor.vx(new Vertex()));
+        Vertex vertex = new Vertex();
+        GlVertex vx = InternalGlAccessor.vx(vertex);
 
         graphBuilderValidator.validateSubgraph(vx);
 
         vx.subgraphPayloadType = subgraphPayloadType;
         vx.subgraphPayloadBuilder = (Subgraph<Object, Object>) subgraph;
-        return new GlMergerBuilder<>(vx);
+        return new GlMergerBuilder<>(vertex);
     }
 
 

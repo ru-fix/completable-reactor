@@ -2,6 +2,8 @@ package ru.fix.completable.reactor.graph.internal
 
 import ru.fix.completable.reactor.graph.Graphable
 import ru.fix.completable.reactor.graph.Vertex
+import ru.fix.completable.reactor.graph.runtime.GlGraph
+import ru.fix.completable.reactor.graph.runtime.GlVertex
 
 class InternalGlAccessor {
 

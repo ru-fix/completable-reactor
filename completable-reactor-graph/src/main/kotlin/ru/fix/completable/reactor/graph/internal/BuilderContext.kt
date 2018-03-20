@@ -2,10 +2,9 @@ package ru.fix.completable.reactor.graph.internal
 
 import ru.fix.completable.reactor.graph.Graphable
 import ru.fix.completable.reactor.graph.Vertex
+import ru.fix.completable.reactor.graph.runtime.GlGraph
 
 class BuilderContext {
-
-    private var vertex: GlVertex? = null
 
     private var fieldNameResolver: FieldNameResolver? = null
 
@@ -17,23 +16,6 @@ class BuilderContext {
     }
 
     fun getGraph() = graph
-
-
-    fun setVertex(vertex: GlVertex) {
-        this.vertex = vertex
-    }
-
-    fun extractVertexOrDefault(defaultVertexSupplier: ()->GlVertex): GlVertex {
-        if (this.vertex != null) {
-            val result = this.vertex
-            this.vertex = null
-
-            return result!!
-        } else {
-            return defaultVertexSupplier()
-        }
-    }
-
 
     companion object {
         private val builderContext = ThreadLocal<BuilderContext>()
