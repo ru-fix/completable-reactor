@@ -1,5 +1,5 @@
 coordinates()
-        .payload(500, -200)
+        .pd(500, -200)
         .vx(plainVertex, 910, 901)
         .vx(complexVertex, 1170, 1270, 123, 213)
-        .complete(endPoint, 1500, 511);
+        .ct(endPoint, 1500, 511);
