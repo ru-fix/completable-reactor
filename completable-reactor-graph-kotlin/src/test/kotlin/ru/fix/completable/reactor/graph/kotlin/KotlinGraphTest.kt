@@ -96,8 +96,9 @@ class KotlinGraphTest {
     class TwoProcessorSequentialMergeGraph : Graph<IdListPayload>() {
 
         var idProcessor1 = handler { IdProcessor(1).handle() }
-                .withMerger {
+                .withRoutingMerger {
                     idSequence.add(it)
+                    Status.OK
                 }
 
         var idProcessor2 = handler { IdProcessor(2).handle() }
@@ -144,8 +145,10 @@ class KotlinGraphTest {
         var detachedProcessor = IdProcessor(3).withLaunchingLatch()
 
         var idProcessor1 = handler { IdProcessor(1).handle() }
-                .withMerger {
+                .withRoutingMerger {
                     idSequence.add(it)
+                    Status.OK
+
                 }
 
         var idProcessor2 = handler { IdProcessor(2).handle() }
@@ -925,7 +928,7 @@ class KotlinGraphTest {
 
         }catch (exc: Exception){
             ExceptionUtils.getStackTrace(exc).let{
-                assertTrue(it.contains("have emptyMerger"))
+                assertTrue(it.contains("non transition merger"))
                 assertTrue(it.contains("could participate only in .onAny() transition"))
             }
         }
