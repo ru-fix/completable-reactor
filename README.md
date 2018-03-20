@@ -18,6 +18,8 @@ Complex business logic with lots of branching and concurrently executing parts h
  approach without proper visualization. And best way to represent that branching is graph with nodes.   
 CompletableReactor API tries to keep API as simple and possible in same time provides ability to visualize 
 code as graph of execution flows.
+
+//TODO add point about static typing
  
 ## Concept
 To describe and idea behind CompletableReactor let's start with simple model and then evolve it step by step.
