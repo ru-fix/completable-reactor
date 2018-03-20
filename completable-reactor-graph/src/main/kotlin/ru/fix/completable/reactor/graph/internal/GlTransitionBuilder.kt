@@ -14,7 +14,7 @@ class GlTransitionBuilder(
     override fun complete(): Vertex {
         transition.isComplete = true
         mergeTransition(vx, transition, transitionReceiver)
-        return vertex
+        return this.vertex
     }
 
     override fun handleBy(vertex: Vertex): Vertex {
@@ -27,7 +27,7 @@ class GlTransitionBuilder(
         transition.handleBy = targetGlVertex
         mergeTransition(vx, transition, transitionReceiver)
 
-        return vertex
+        return this.vertex
     }
 
     override fun mergeBy(vertex: Vertex): Vertex {
@@ -70,7 +70,7 @@ class GlTransitionBuilder(
         transition.mergeBy = targetGlVertex
         mergeTransition(vx, transition, transitionReceiver)
 
-        return vertex
+        return this.vertex
     }
 
     /**

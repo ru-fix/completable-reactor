@@ -35,10 +35,16 @@ open class Graph<Payload> : Graphable {
 
         val vertex = Vertex()
         val vx = InternalGlAccessor.vx(vertex)
+        graph.vertices.add(vx)
 
         graphBuilderValidator.validateHandler(vx)
 
-        vx.handler = Handler<Payload, HandlerResult> { pld -> handler(pld) } as Handler<Any?, Any?>
+        vx.handler = object : Handler<Payload, HandlerResult> {
+            override fun handle(payload: Payload): CompletableFuture<HandlerResult> {
+                return handler(payload)
+            }
+        } as Handler<Any?, Any?>
+
         return GlMergerBuilder(vertex)
     }
 
@@ -62,24 +68,36 @@ open class Graph<Payload> : Graphable {
     protected fun router(router: Payload.() -> Enum<*>): Vertex {
         val vertex = Vertex()
         val vx = InternalGlAccessor.vx(vertex)
+        graph.vertices.add(vx)
 
         graphBuilderValidator.validateRouter(vx)
 
-        vx.router = Router<Payload> { pld -> router(pld) } as Router<Any?>
+        vx.router = object : Router<Payload> {
+            override fun route(payload: Payload): Enum<*> {
+                return router(payload)
+            }
+        } as Router<Any?>
+
         return vertex
     }
 
-    protected fun <SubgraphPayload: Any> subgraph(
+    protected fun <SubgraphPayload : Any> subgraph(
             subgraphPayloadType: KClass<SubgraphPayload>,
             subgraph: Payload.() -> SubgraphPayload): MergerBuilder<Payload, SubgraphPayload> {
 
         val vertex = Vertex()
         val vx = InternalGlAccessor.vx(vertex)
+        graph.vertices.add(vx)
 
         graphBuilderValidator.validateSubgraph(vx)
 
         vx.subgraphPayloadType = subgraphPayloadType.java
-        vx.subgraphPayloadBuilder = Subgraph<Payload, SubgraphPayload> {pld -> subgraph(pld) } as Subgraph<Any?, Any?>
+        vx.subgraphPayloadBuilder = object : Subgraph<Payload, SubgraphPayload> {
+            override fun subgraph(payload: Payload): SubgraphPayload {
+                return subgraph(payload)
+            }
+        } as Subgraph<Any?, Any?>
+
         return GlMergerBuilder(vertex)
     }
 }
