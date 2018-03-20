@@ -5,5 +5,4 @@ package ru.fix.completable.reactor.graph
  * All graphs implicitly extends this interface via class hierarchy through Java Graph or Kotlin Graph builders.
  * Instance should contain field graph of type GlGraph
  */
-interface Graphable {
-}
+interface Graphable
