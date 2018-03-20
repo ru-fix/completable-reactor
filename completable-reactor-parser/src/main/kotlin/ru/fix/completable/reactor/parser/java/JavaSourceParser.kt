@@ -167,14 +167,18 @@ class JavaSourceParser(private val listener: Listener) {
                                         transitionActionHandleBy()?.vertexName()?.run {
                                             transition.target = handleable[text]
                                                     ?: return@transitionIteration listener.error("" +
-                                                    "Transition target vertex $text at ${tokenPosition(start)}." +
-                                                    " But declaration of $text not found.")
+                                                    "HandleBy transition targets vertex $text " +
+                                                    "at ${tokenPosition(start)}. " +
+                                                    "But declaration of handleable $text not found.")
 
                                         } ?: transitionActionMergeBy()?.vertexName()?.run {
                                             transition.target = transitionable[text] as? Figure
                                                     ?: return@transitionIteration listener.error("" +
-                                                    "Transition target vertex $text at ${tokenPosition(start)}." +
-                                                    " But declaration of $text not found.")
+                                                    "MergeBy transition targets vertex $text " +
+                                                    "at ${tokenPosition(start)}. " +
+                                                    "But declaration of transitionable $text not found. " +
+                                                    "Probably vertex $text does not have merger but used in " +
+                                                    "mergeBy transition.")
                                         }
                                     }
                                 }
