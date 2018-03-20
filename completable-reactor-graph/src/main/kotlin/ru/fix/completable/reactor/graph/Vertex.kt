@@ -36,7 +36,7 @@ class Vertex {
 
 
         return GlTransitionBuilder(
-                this.vx,
+                this,
                 transition,
                 vx.transitions
         )
@@ -48,7 +48,7 @@ class Vertex {
 
 
         return GlTransitionBuilder(
-                this.vx,
+                this,
                 transition,
                 vx.transitions
         )
