@@ -127,7 +127,7 @@ class JavaSourceParser(private val listener: Listener) {
                                             " at ${tokenPosition(it.start)}." +
                                             " But declaration of $transitionSourceVertex not found.")
 
-                            it.vertexTransition().forEach transitionIteration@ {
+                            it.vertexTransition().forEach transitionIteration@{
 
                                 val transition = Transition()
 
@@ -246,7 +246,7 @@ class JavaSourceParser(private val listener: Listener) {
                                         Coordinate().last().text.toInt())
 
 
-                            } ?: it.coordinateMerger().run {
+                            } ?: it.coordinateMerger()?.run {
                                 val vertexName = Identifier().text
                                 val merger = mergers[vertexName] ?: return@run listener.error("" +
                                         "Failed to set coordinates." +
@@ -256,45 +256,37 @@ class JavaSourceParser(private val listener: Listener) {
                                         Coordinate().first().text.toInt(),
                                         Coordinate().last().text.toInt())
 
-                            } ?: it.coordinateVertex().run {
+                            } ?: it.coordinateVertex()?.run {
                                 val vertexName = Identifier().text
 
-                                when{
-                                    Coordinate().size == 2 -> {
-                                        val vertex = handleable[vertexName] ?: return@run listener.error("" +
-                                                "Failed to parse coordinates." +
-                                                "Handleable vertex $vertexName not found." )
-
-                                        vertex.coordinates = Coordinates(
-                                                Coordinate()[0].text.toInt(),
-                                                Coordinate()[1].text.toInt())
-                                    }
-                                    Coordinate().size == 4 -> {
-                                        val merger = mergers[vertexName] ?: return@run listener.error("" +
-                                                "Failed to set coordinates." +
-                                                " Merger $vertexName not found.")
-
-                                        merger.coordinates = Coordinates(
-                                                Coordinate()[2].text.toInt(),
-                                                Coordinate()[3].text.toInt())
-
-                                    }
-                                    else -> listener.error("" +
+                                if (Coordinate().size != 2 && Coordinate().size != 4) {
+                                    return@run listener.error("" +
                                             "Failed to parse coordinates for vertex $vertexName." +
                                             " Invalid coordinate count: ${Coordinate().size}." +
                                             " Expected 2 or 4.")
                                 }
 
 
+                                val vertex = handleable[vertexName] ?: return@run listener.error("" +
+                                        "Failed to parse coordinates." +
+                                        "Handleable vertex $vertexName not found.")
+
+                                vertex.coordinates = Coordinates(
+                                        Coordinate()[0].text.toInt(),
+                                        Coordinate()[1].text.toInt())
 
 
-                                val merger = mergers[vertexName] ?: return@run listener.error("" +
-                                        "Failed to set coordinates." +
-                                        " Merger $vertexName not found.")
+                                if (Coordinate().size == 4) {
+                                    val merger = mergers[vertexName] ?: return@run listener.error("" +
+                                            "Failed to set coordinates." +
+                                            " Merger $vertexName not found.")
 
-                                merger.coordinates = Coordinates(
-                                        Coordinate().first().text.toInt(),
-                                        Coordinate().last().text.toInt())
+                                    merger.coordinates = Coordinates(
+                                            Coordinate()[2].text.toInt(),
+                                            Coordinate()[3].text.toInt())
+
+
+                                }
 
                             }
                         }
@@ -406,7 +398,7 @@ class JavaSourceParser(private val listener: Listener) {
             handlers[vertexName] = Handler(vertexName).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                tokens.checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
@@ -416,7 +408,7 @@ class JavaSourceParser(private val listener: Listener) {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
-                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                    tokens.checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                         it.title = title
                         it.doc = doc
                     }
@@ -427,7 +419,7 @@ class JavaSourceParser(private val listener: Listener) {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
-                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                    tokens.checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                         it.title = title
                         it.doc = doc
                     }
@@ -442,7 +434,7 @@ class JavaSourceParser(private val listener: Listener) {
             ).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight((LBRACE()?: LPAREN()).symbol.tokenIndex)?.run {
+                tokens.checkCommentsToRight((LBRACE() ?: LPAREN()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
@@ -452,7 +444,7 @@ class JavaSourceParser(private val listener: Listener) {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
-                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                    tokens.checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                         it.title = title
                         it.doc = doc
                     }
@@ -464,7 +456,7 @@ class JavaSourceParser(private val listener: Listener) {
                 mergers[vertexName] = Merger(vertexName).also {
                     it.source = sourceFromToken(start, fileName)
 
-                    tokens.checkCommentsToRight((LPAREN()?: LBRACE()).symbol.tokenIndex)?.run {
+                    tokens.checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                         it.title = title
                         it.doc = doc
                     }
@@ -476,7 +468,7 @@ class JavaSourceParser(private val listener: Listener) {
             routers[vertexName] = Router(vertexName).also {
                 it.source = sourceFromToken(start, fileName)
 
-                tokens.checkCommentsToRight((LPAREN()?:LBRACE()).symbol.tokenIndex)?.run {
+                tokens.checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
                     it.title = title
                     it.doc = doc
                 }
