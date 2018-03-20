@@ -1,5 +1,7 @@
 package ru.fix.completable.reactor.example
 
+import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,12 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import ru.fix.commons.profiler.impl.SimpleProfiler
 import ru.fix.completable.reactor.example.services.*
 import ru.fix.completable.reactor.runtime.CompletableReactor
-
 import java.util.concurrent.TimeUnit
-
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import ru.fix.completable.reactor.runtime.DependencyInjector
 
 /**
  * @author Kamil Asfandiyarov
@@ -60,12 +57,6 @@ open class SubscribeGraphTest {
         @Bean
         open fun reactor(): CompletableReactor {
             val reactor = CompletableReactor(SimpleProfiler())
-
-            reactor.registerDependecnyInjector(object : DependencyInjector {
-                override fun <T : Any?> resolve(name: String?, type: Class<T>?) =
-                        applicationContext.getBean(name, type)
-
-            })
 
             //For debug purpose to resolve blocked vertices that does not completed correctly
             reactor.setDebugProcessingVertexGraphState(true)
