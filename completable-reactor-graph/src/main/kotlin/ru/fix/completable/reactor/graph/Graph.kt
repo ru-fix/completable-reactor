@@ -2,11 +2,18 @@ package ru.fix.completable.reactor.graph
 
 import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.runtime.GlGraph
+import java.util.concurrent.CompletableFuture
 
 abstract class Graph<Payload> : Graphable {
 
     // Field accessed via reflection by field name
     private val graph = GlGraph()
+
+    init {
+        // Deliberately leaking reference to ThreadLocal context.
+        // Graph construction is happening in single thread
+        BuilderContext.get().setGraph(this, graph)
+    }
 
     private val graphBuilderValidator = GraphBuilderValidator()
 
@@ -20,7 +27,12 @@ abstract class Graph<Payload> : Graphable {
 
     protected fun <HandlerResult> handler(
             handler: NoArgHandler<HandlerResult>): MergerBuilder<Payload, HandlerResult> {
-        return handler(Handler{ handler.handle() })
+
+        return handler(object: Handler<Payload, HandlerResult>{
+            override fun handle(payload: Payload): CompletableFuture<HandlerResult> {
+                return handler.handle()
+            }
+        })
     }
 
     protected fun <HandlerResult> handler(handler: Handler<Payload, HandlerResult>):
@@ -28,6 +40,7 @@ abstract class Graph<Payload> : Graphable {
 
         val vertex = Vertex()
         val vx = InternalGlAccessor.vx(vertex)
+        graph.vertices.add(vx)
 
         graphBuilderValidator.validateHandler(vx)
 
@@ -38,6 +51,7 @@ abstract class Graph<Payload> : Graphable {
     protected fun router(router: Router<Payload>): Vertex {
         val vertex = Vertex()
         val vx = InternalGlAccessor.vx(vertex)
+        graph.vertices.add(vx)
 
         graphBuilderValidator.validateRouter(vx)
 
@@ -46,9 +60,11 @@ abstract class Graph<Payload> : Graphable {
     }
 
     protected fun mutator(mutator: Mutator<Payload>): Vertex {
-        return router(Router { payload ->
-            mutator.mutate(payload)
-            GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
+        return router(object : Router<Payload> {
+            override fun route(payload: Payload): Enum<*> {
+                mutator.mutate(payload)
+                return GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
+            }
         })
     }
 
@@ -58,6 +74,7 @@ abstract class Graph<Payload> : Graphable {
 
         val vertex = Vertex()
         val vx = InternalGlAccessor.vx(vertex)
+        graph.vertices.add(vx)
 
         graphBuilderValidator.validateSubgraph(vx)
 

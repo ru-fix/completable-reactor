@@ -107,6 +107,8 @@ public class CompletableReactor implements AutoCloseable {
         return isComputed.get();
     }
 
+    //TODO: Add jmh test comparison with plain CompletableFuture API
+
     /**
      * @throws IllegalStateException if graph already registered.
      */

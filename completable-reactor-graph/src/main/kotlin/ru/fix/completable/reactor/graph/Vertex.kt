@@ -13,17 +13,6 @@ class Vertex {
     // Field accessed via reflection by field name
     private var vx = GlVertex()
 
-    init {
-        val currentGraph = BuilderContext.get().getGraph() ?: throw IllegalStateException(
-                """
-                Vertex created not inside class that extends Graph.
-                Or vertex created in different thread from Graph class.
-                Builder context is not set.
-                """.trimIndent())
-
-        currentGraph.vertices.add(vx)
-    }
-
     fun on(mergeStatus: Enum<*>): TransitionBuilder {
         if(vx.isNonTransitionMerger){
             throw IllegalArgumentException("" +
@@ -79,6 +68,11 @@ class Vertex {
             it.vx.router = this.vx.router
             it.vx.subgraphPayloadBuilder = this.vx.subgraphPayloadBuilder
             it.vx.subgraphPayloadType = this.vx.subgraphPayloadType
+
+            BuilderContext.get().getGraph()?.vertices?.add(it.vx) ?: throw IllegalStateException("" +
+                    "Vertex created not inside class that extends Graph. " +
+                    "Or vertex created in different thread from Graph class. " +
+                    "Builder context is not set.")
         }
     }
 }

@@ -31,7 +31,7 @@ class BuilderContext {
         }
     }
 
-    fun resolveVertexName(vertex: ru.fix.completable.reactor.graph.Vertex): String? {
+    fun resolveVertexName(vertex: Vertex): String? {
         return fieldNameResolver?.resolveFieldName(vertex)
     }
 }
