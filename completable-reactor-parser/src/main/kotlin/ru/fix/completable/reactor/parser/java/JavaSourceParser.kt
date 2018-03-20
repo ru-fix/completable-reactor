@@ -546,4 +546,6 @@ class JavaSourceParser(private val listener: Listener) {
 
         return Comment(title, doc.takeIf { it.isNotBlank() })
     }
+
+    //TODO: remove old coordinates like payload, merger, subgraoh, router from antlr and code
 }
