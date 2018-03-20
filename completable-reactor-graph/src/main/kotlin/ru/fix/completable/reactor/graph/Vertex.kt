@@ -14,7 +14,12 @@ class Vertex {
     private var vx = GlVertex()
 
     fun on(mergeStatus: Enum<*>): TransitionBuilder {
-        if(vx.isNonTransitionMerger){
+        if(vx.merger == null && vx.router == null){
+            throw IllegalArgumentException("" +
+                    "Vertex ${vx.name} is used as source of on() transition but does not have merger or router.")
+        }
+
+        if(vx.merger != null && !vx.isTransitionableMerger){
             throw IllegalArgumentException("" +
                     "Vertex ${vx.name} have non transition merger." +
                     " That vertex could participate only in .onAny() transition.")
@@ -32,9 +37,13 @@ class Vertex {
     }
 
     fun onAny(): TransitionBuilder {
+        if(vx.merger == null && vx.router == null){
+            throw IllegalArgumentException("" +
+                    "Vertex ${vx.name} is used as source of onAny() transition but does not have merger or router.")
+        }
+
         val transition = GlTransition()
         transition.isOnAny = true
-
 
         return GlTransitionBuilder(
                 this,
