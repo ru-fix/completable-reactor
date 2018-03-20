@@ -7,16 +7,16 @@ import ru.fix.completable.reactor.model.Source
 /**
  * @author Kamil Asfandiyarov
  */
-class CodeUpdater {
+class CodeUpdater(private val codeType: CodeType) {
+
+    enum class CodeType { JAVA, KOTLIN }
 
     companion object {
         private val coordinateTypeOrder = listOf(
-                StartPoint::class,
-                Handler::class,
-                Subgraph::class,
-                Router::class,
-                Merger::class,
-                EndPoint::class)
+                StartPointPhrase::class,
+                PlainVertexPhrase::class,
+                ComplexVertexPhrase::class,
+                EndPointPhrase::class)
                 .mapIndexed { index, type -> Pair(type, index) }
                 .toMap()
     }
@@ -27,36 +27,69 @@ class CodeUpdater {
         with(graphModel) {
 
             startPoint.coordinates?.run {
-                result.add(StartPoint(x, y))
+                result.add(StartPointPhrase(x, y))
             }
 
-            handlers.values.forEach {
-                it.coordinates?.run {
-                    result.add(Handler(it.name, x, y))
+            handlers.values.forEach { handler ->
+
+                val handlerCoordinates = handler.coordinates
+                val mergerCoordinates = mergers[handler.name]?.coordinates
+
+                if (handlerCoordinates != null) {
+                    if (mergerCoordinates != null) {
+                        result.add(ComplexVertexPhrase(
+                                handler.name,
+                                handlerCoordinates.x,
+                                handlerCoordinates.y,
+                                mergerCoordinates.x,
+                                mergerCoordinates.y))
+                    } else {
+                        result.add(PlainVertexPhrase(
+                                handler.name,
+                                handlerCoordinates.x,
+                                handlerCoordinates.y
+                        ))
+                    }
                 }
             }
 
-            subgraphs.values.forEach {
-                it.coordinates?.run {
-                    result.add(Subgraph(it.name, x, y))
+            subgraphs.values.forEach { subgraph ->
+
+                val subgraphCoordinates = subgraph.coordinates
+                val mergerCoordinates = mergers[subgraph.name]?.coordinates
+
+                if (subgraphCoordinates != null) {
+                    if (mergerCoordinates != null) {
+                        result.add(ComplexVertexPhrase(
+                                subgraph.name,
+                                subgraphCoordinates.x,
+                                subgraphCoordinates.y,
+                                mergerCoordinates.x,
+                                mergerCoordinates.y))
+                    } else {
+                        result.add(PlainVertexPhrase(
+                                subgraph.name,
+                                subgraphCoordinates.x,
+                                subgraphCoordinates.y
+                        ))
+                    }
                 }
             }
 
-            routers.values.forEach {
-                it.coordinates?.run {
-                    result.add(Router(it.name, x, y))
+            routers.values.forEach { router ->
+                val routerCoordinates = router.coordinates
+                if (routerCoordinates != null) {
+                    result.add(PlainVertexPhrase(
+                            router.name,
+                            routerCoordinates.x,
+                            routerCoordinates.y
+                    ))
                 }
             }
 
-            mergers.values.forEach {
-                it.coordinates?.run {
-                    result.add(Merger(it.name, x, y))
-                }
-            }
-
-            endpoints.values.forEach {
-                it.coordinates?.run {
-                    result.add(EndPoint(it.name, x, y))
+            endpoints.values.forEach { endpoint ->
+                endpoint.coordinates?.run {
+                    result.add(EndPointPhrase(endpoint.name, x, y))
                 }
             }
         }
@@ -72,29 +105,23 @@ class CodeUpdater {
 
                         //compare Type
                         if (item1::class == item2::class
-                                && item1 is NamedCoordinateCodePhrase
-                                && item2 is NamedCoordinateCodePhrase) {
+                                && item1 is NamedPhrase
+                                && item2 is NamedPhrase) {
 
                             //type are equals, compare processor
-                            val cmpProc = item1.name.compareTo(item2.name)
+                            return@Comparator item1.name.compareTo(item2.name)
 
-                            if (cmpProc == 0) {
-                                //processors are equals
-                                val cmpx = Integer.compare(item1.x, item2.x)
-                                if (cmpx == 0) {
-                                    Integer.compare(item1.y, item2.y)
-                                } else {
-                                    cmpx
-                                }
-                            } else {
-                                cmpProc
-                            }
+
                         } else {
                             Integer.compare(coordinateTypeOrder[item1::class]!!, coordinateTypeOrder[item2::class]!!)
                         }
                     }
                 })
-                .joinToString(separator = "\n$padding", prefix = "coordinates()\n$padding", postfix = ";") { item ->
+                .joinToString(
+                        separator = "\n$padding",
+                        prefix = "coordinates()\n$padding",
+                        postfix = if (codeType == CodeType.JAVA) ";" else "") { item ->
+
                     generateCoordinateBuilderMemberCode(item)
                 }
     }
@@ -116,13 +143,10 @@ class CodeUpdater {
 
     private fun generateCoordinateBuilderMemberCode(phrase: CoordinateCodePhrase): String {
         return when (phrase) {
-            is StartPoint -> ".payload(${phrase.x}, ${phrase.y})"
-            is Handler -> ".handler(${phrase.name}, ${phrase.x}, ${phrase.y})"
-            is Subgraph -> ".subgraph(${phrase.name}, ${phrase.x}, ${phrase.y})"
-            is Merger -> ".merger(${phrase.name}, ${phrase.x}, ${phrase.y})"
-            is Router -> ".router(${phrase.name}, ${phrase.x}, ${phrase.y})"
-            is EndPoint -> ".complete(${phrase.name}, ${phrase.x}, ${phrase.y})"
-            else -> throw IllegalArgumentException("Invalid type ${phrase::class} $phrase")
+            is StartPointPhrase -> ".payload(${phrase.x}, ${phrase.y})"
+            is PlainVertexPhrase -> ".vx(${phrase.name}, ${phrase.x}, ${phrase.y})"
+            is ComplexVertexPhrase -> ".vx(${phrase.name}, ${phrase.x}, ${phrase.y}, ${phrase.x2}, ${phrase.y2})"
+            is EndPointPhrase -> ".complete(${phrase.name}, ${phrase.x}, ${phrase.y})"
         }
     }
 
@@ -131,6 +155,7 @@ class CodeUpdater {
         fun replaceCodeBlock(start: Source, end: Source, newCodeBlock: String)
         fun insert(position: Source, newCodeBlock: String)
     }
+
 
     fun updateCoordinates(graphModel: GraphModel, editor: Editor) {
 
