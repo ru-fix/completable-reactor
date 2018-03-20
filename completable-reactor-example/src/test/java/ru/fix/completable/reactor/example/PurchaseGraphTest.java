@@ -68,9 +68,7 @@ public class PurchaseGraphTest {
 
         @Bean
         CompletableReactor reactor() {
-            CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
-            reactor.registerDependecnyInjector(applicationContext::getBean);
-            return reactor;
+            return new CompletableReactor(new SimpleProfiler());
         }
     }
 

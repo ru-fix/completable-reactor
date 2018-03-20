@@ -89,7 +89,7 @@ public class CompletableReactor implements AutoCloseable {
         glGraphConfigs.computeIfAbsent(graphConfig.getClass(), type -> {
 
             Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfig.getClass());
-            GlGraph graph = graphBuilder.buildGraph(graphConfig, dependencyInjector);
+            GlGraph graph = graphBuilder.buildGraph(graphConfig);
 
             Object prevGraph = glPayloadGraphs.putIfAbsent(payloadType, graph);
             if (prevGraph != null) {
@@ -160,7 +160,7 @@ public class CompletableReactor implements AutoCloseable {
                             + " If it is inner class then it sould be static.",
                             exc);
                 }
-                GlGraph graph = graphBuilder.buildGraph(graphConfig, dependencyInjector);
+                GlGraph graph = graphBuilder.buildGraph(graphConfig);
 
                 glPayloadGraphs.putIfAbsent(payloadType, graph);
                 isComputed.set(true);
@@ -248,15 +248,6 @@ public class CompletableReactor implements AutoCloseable {
         return (Class) genericConfigParams[0];
 
     }
-
-
-    //TODO: fix injection
-    private DependencyInjector dependencyInjector;
-
-    public void registerDependecnyInjector(DependencyInjector dependencyInjector) {
-        this.dependencyInjector = dependencyInjector;
-    }
-
 
     private static class ReactorTracer implements Tracer {
         private static final Logger log = LoggerFactory.getLogger(ReactorTracer.class);
@@ -354,6 +345,9 @@ public class CompletableReactor implements AutoCloseable {
     }
 
     /**
+     * For debug purpose to add internal runtime vertex graph representation into result.
+     * This helps to find blocked vertices that does not completed correctly.
+     *
      * If this flag is enabled then internal processing graph state will be attached to Execution result.
      * This allows easy access to execution state during debug.
      * One of drawbacks of this future is that GC will be prevented form removing internal state objects

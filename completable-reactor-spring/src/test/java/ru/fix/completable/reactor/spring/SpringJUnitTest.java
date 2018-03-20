@@ -22,8 +22,6 @@ import java.util.concurrent.TimeUnit;
 @ContextConfiguration(classes = {
         SpringJUnitTest.TestConfig.class,
         GraphAsSpringConfig.class,
-        CompletableReactorSpringSupportConfiguration.class
-
 })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestExecutionListeners({
