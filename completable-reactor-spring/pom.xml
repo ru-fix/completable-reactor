@@ -10,6 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>completable-reactor-spring</artifactId>
+  <packaging>pom</packaging>
 
   <properties>
     <spring-version>4.3.9.RELEASE</spring-version>
