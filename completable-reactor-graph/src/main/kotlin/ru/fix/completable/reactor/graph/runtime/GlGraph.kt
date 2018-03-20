@@ -1,4 +1,4 @@
-package ru.fix.completable.reactor.graph.internal
+package ru.fix.completable.reactor.graph.runtime
 
 import java.util.*
 

@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.graph.internal
 
+import ru.fix.completable.reactor.graph.runtime.GlGraph
 import ru.fix.completable.reactor.model.GraphModel
 
 class ModelBuilder{

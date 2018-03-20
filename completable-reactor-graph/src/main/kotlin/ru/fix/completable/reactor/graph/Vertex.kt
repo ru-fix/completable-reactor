@@ -3,22 +3,17 @@ package ru.fix.completable.reactor.graph
 import ru.fix.completable.reactor.graph.internal.BuilderContext
 import ru.fix.completable.reactor.graph.internal.GlTransition
 import ru.fix.completable.reactor.graph.internal.GlTransitionBuilder
-import ru.fix.completable.reactor.graph.internal.GlVertex
+import ru.fix.completable.reactor.graph.runtime.GlVertex
 
 /**
  * Graph node.
  */
 class Vertex {
 
-    //field name is used via reflection
-    private var vx = GlVertex(this)
+    // Field accessed via reflection by field name
+    private var vx = GlVertex()
 
     init {
-        if (this.javaClass != Vertex::class.java) {
-            // user derived class that extends Vertex
-            BuilderContext.get().setVertex(vx)
-        }
-
         val currentGraph = BuilderContext.get().getGraph() ?: throw IllegalStateException(
                 """
                 Vertex created not inside class that extends Graph.

@@ -6,10 +6,11 @@ import ru.fix.completable.reactor.graph.kotlin.internal.GlMergerBuilder
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
 import kotlinx.coroutines.experimental.future.future
+import ru.fix.completable.reactor.graph.runtime.GlGraph
 
 open class Graph<Payload> : Graphable {
 
-    // Field name used via reflection
+    // Field accessed via reflection by field name
     private val graph = GlGraph()
 
     init {
@@ -32,12 +33,13 @@ open class Graph<Payload> : Graphable {
     protected fun <HandlerResult> handler(handler: Payload.() -> CompletableFuture<HandlerResult>):
             MergerBuilder<Payload, HandlerResult> {
 
-        val vx = BuilderContext.get().extractVertexOrDefault { InternalGlAccessor.vx(Vertex()) }
+        val vertex = Vertex()
+        val vx = InternalGlAccessor.vx(vertex)
 
         graphBuilderValidator.validateHandler(vx)
 
         vx.handler = Handler<Payload, HandlerResult> { pld -> handler(pld) } as Handler<Any?, Any?>
-        return GlMergerBuilder(vx)
+        return GlMergerBuilder(vertex)
     }
 
     protected fun <HandlerResult> suspendHandler(handler: suspend Payload.() -> HandlerResult):
@@ -58,24 +60,26 @@ open class Graph<Payload> : Graphable {
     }
 
     protected fun router(router: Payload.() -> Enum<*>): Vertex {
-        val vx = BuilderContext.get().extractVertexOrDefault { InternalGlAccessor.vx(Vertex()) }
+        val vertex = Vertex()
+        val vx = InternalGlAccessor.vx(vertex)
 
         graphBuilderValidator.validateRouter(vx)
 
         vx.router = Router<Payload> { pld -> router(pld) } as Router<Any?>
-        return vx.vertex
+        return vertex
     }
 
     protected fun <SubgraphPayload: Any> subgraph(
             subgraphPayloadType: KClass<SubgraphPayload>,
             subgraph: Payload.() -> SubgraphPayload): MergerBuilder<Payload, SubgraphPayload> {
 
-        val vx = BuilderContext.get().extractVertexOrDefault { InternalGlAccessor.vx(Vertex()) }
+        val vertex = Vertex()
+        val vx = InternalGlAccessor.vx(vertex)
 
         graphBuilderValidator.validateSubgraph(vx)
 
         vx.subgraphPayloadType = subgraphPayloadType.java
         vx.subgraphPayloadBuilder = Subgraph<Payload, SubgraphPayload> {pld -> subgraph(pld) } as Subgraph<Any?, Any?>
-        return GlMergerBuilder(vx)
+        return GlMergerBuilder(vertex)
     }
 }

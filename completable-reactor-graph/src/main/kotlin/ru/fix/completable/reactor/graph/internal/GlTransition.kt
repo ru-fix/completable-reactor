@@ -1,5 +1,7 @@
 package ru.fix.completable.reactor.graph.internal
 
+import ru.fix.completable.reactor.graph.runtime.GlVertex
+
 class GlTransition(
 
         var mergeStatuses: Set<Enum<*>> = emptySet(),

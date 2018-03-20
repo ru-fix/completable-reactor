@@ -4,7 +4,7 @@ import mu.KotlinLogging
 import ru.fix.completable.reactor.graph.Graph
 import ru.fix.completable.reactor.graph.Graphable
 import ru.fix.completable.reactor.graph.Vertex
-import ru.fix.completable.reactor.graph.internal.GlGraph
+import ru.fix.completable.reactor.graph.runtime.GlGraph
 import ru.fix.completable.reactor.graph.internal.InternalGlAccessor
 import ru.fix.completable.reactor.graph.internal.ModelBuilder
 import ru.fix.completable.reactor.model.validation.*

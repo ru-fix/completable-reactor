@@ -1,11 +1,10 @@
-package ru.fix.completable.reactor.graph.internal
+package ru.fix.completable.reactor.graph.runtime
 
 import ru.fix.completable.reactor.graph.*
+import ru.fix.completable.reactor.graph.internal.GlTransition
 import java.util.*
 
-class GlVertex(
-        @JvmField
-        val vertex: Vertex) {
+class GlVertex{
 
     @JvmField
     var name: String? = null
