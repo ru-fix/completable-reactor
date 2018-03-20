@@ -143,10 +143,10 @@ class CodeUpdater(private val codeType: CodeType) {
 
     private fun generateCoordinateBuilderMemberCode(phrase: CoordinateCodePhrase): String {
         return when (phrase) {
-            is StartPointPhrase -> ".payload(${phrase.x}, ${phrase.y})"
+            is StartPointPhrase -> ".pd(${phrase.x}, ${phrase.y})"
             is PlainVertexPhrase -> ".vx(${phrase.name}, ${phrase.x}, ${phrase.y})"
             is ComplexVertexPhrase -> ".vx(${phrase.name}, ${phrase.x}, ${phrase.y}, ${phrase.x2}, ${phrase.y2})"
-            is EndPointPhrase -> ".complete(${phrase.name}, ${phrase.x}, ${phrase.y})"
+            is EndPointPhrase -> ".ct(${phrase.name}, ${phrase.x}, ${phrase.y})"
         }
     }
 
