@@ -19,7 +19,9 @@ import ru.fix.completable.reactor.model.Source
  */
 class ReactorGraphAction : AnAction() {
     val notificator = Notificator()
-    val codeUpdater = CodeUpdater()
+
+    //TODO detect code type from source
+    val codeUpdater = CodeUpdater(CodeUpdater.CodeType.JAVA)
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.getData(PlatformDataKeys.PROJECT) ?: return
