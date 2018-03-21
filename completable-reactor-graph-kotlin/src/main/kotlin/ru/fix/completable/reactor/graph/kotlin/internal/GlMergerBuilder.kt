@@ -13,7 +13,7 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vertex: Verte
 
     override fun withRoutingMerger(merger: Payload.(handlerResult: HandlerResult) -> Enum<*>): Vertex {
         if (vx.merger != null) {
-            throw IllegalStateException("withMerger method used twice on same vertex")
+            throw IllegalStateException("with*Merger method used twice on same vertex")
         }
         vx.merger = object : RoutingMerger<Payload, HandlerResult> {
             override fun merge(payload: Payload, handlerResult: HandlerResult): Enum<*> {
@@ -27,10 +27,19 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vertex: Verte
     }
 
     override fun withMerger(merger: Payload.(handlerResult: HandlerResult) -> Unit): Vertex {
-        return withRoutingMerger { handlerResult ->
-            merger(this, handlerResult)
-            GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
+        if (vx.merger != null) {
+            throw IllegalStateException("with*Merger method used twice on same " +
+                    "vertex")
         }
+        vx.merger = object : RoutingMerger<Payload, HandlerResult> {
+            override fun merge(payload: Payload, handlerResult: HandlerResult): Enum<*> {
+                merger(payload, handlerResult)
+                return GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
+            }
+
+        } as RoutingMerger<Any?, Any?>
+
+        return vertex
     }
 
     override fun withoutMerger(): Vertex {
@@ -39,7 +48,7 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vertex: Verte
 
     override fun withEmptyMerger(): Vertex {
         if (vx.merger != null) {
-            throw IllegalStateException("withMerger method used twice on same vertex")
+            throw IllegalStateException("with*Merger method used twice on same vertex")
         }
         vx.merger = GlEmptyMerger()
 
