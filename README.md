@@ -24,7 +24,8 @@ CompletableReactor API tries to keep API as simple and possible, saves benefits 
 same time provides ability for fast code parsing and visualization as a graph of execution flows. 
 
 ## Concept
-Briefly describes how we can decompose concurrent conditional execution: [Concept](docs/concept.md) 
+Briefly describes how we can decompose concurrent conditional execution:
+[Concept](docs/concept/concept.md) 
 
 
 
