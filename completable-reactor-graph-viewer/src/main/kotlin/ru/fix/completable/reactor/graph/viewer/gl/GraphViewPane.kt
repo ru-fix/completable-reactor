@@ -153,6 +153,7 @@ class GraphViewPane(
          */
         val startPointNode = StartPointNode(
                 graphModel.startPoint,
+                graphModel,
                 actionListener)
         pane.children.add(startPointNode)
 
