@@ -105,7 +105,7 @@ Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult){
 MergePoint is a visual graph item that uses Merger method to make modification on Payload. And uses Merger result to 
 select which outgoing transitions to activate and which to deactivate. 
 
-![Alt merge-point.png](docs/merge-point.png?raw=true "MergePoint")
+![Alt merge-point.png](docs/reactor-model/res/merge-point.png?raw=true "MergePoint")
 
 ### Transition
 Transition is a Enum instance that represent jumps between graph items during flow execution. MergePoint merger 
