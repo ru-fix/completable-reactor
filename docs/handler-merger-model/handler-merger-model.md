@@ -65,6 +65,7 @@ Merger have two incoming transitions: one from Vertex that carries Payload with 
 with Payload only, Merger will chose Result from first transition and will merge it to Payload that it received
  from second transition. For activation Merger has to wait for both incoming transitions.   
 ![Alt parallel-handler-merger-join-flows.png](res/parallel-handler-merger-join-flows.png?raw=true)
+
 In given illustration there are two incoming transitions into Merger. First incoming transition carries
 Payload_2 and computation result of Handler2 - value 42. Second incoming transition  carries ony Payload_1.
 Router ignores Payload_2 from first transition. It takes Payload_1 from second transition and takes Result from
