@@ -1,4 +1,4 @@
-# Concept
+#  Handler-Merger concurrent execution concept
 To describe and idea behind CompletableReactor let's start with simple model and then evolve it step by step.
 
 ### Simple sequential model
