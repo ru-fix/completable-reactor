@@ -71,7 +71,7 @@ Router ignores Payload_2 from first transition. It takes Payload_1 from second t
 First transition. Merges them together by merger function and passes Payload_1 to outgoing transition.
   
 Now we are ready to make big step to parallel execution.  
-As an example lets implement purchasing process. Suppose that customer with identifier `userId` want to buy product 
+As an example lets implement purchasing process. Suppose that customer with identifier `userId` wants to buy product 
 with identifier `item`. During purchase process we have to reserve money on users account and reserve product in our 
 storage. `BillingService` will provide asynchronous method to reserve money. And StorageFacility will provide 
 asynchronous method to reserve product in the storage. We can require reservation in parallel in both services and 
@@ -90,62 +90,69 @@ class Purchase{
 `userId` and `item` will identify customer and requested product. `moneyReserved` and `productReserved` fields will 
 keep information about reservation status returned from BillingService and StorageFacility.  
 Lets visualize execution graph and discuss execution steps in detail. 
-![Alt parallel-handler-merer-computation.png](res/parallel-handler-merer-computation.png?raw=true)
-As a first step we create Purchase payload and populate userid and item. After that this payload first MergePoint 
-that does not modify payload but simply sends same Payload instance into two places in parallel: to BillingService 
-Processor and StorageFacility Processor. StorageFacility runs reservation logic and send via outgoing transitions two
- objects: origin Purchase payload and product reservation status. BillingService runs reservation logic and send via 
- outgoing transition two objects: origin Purchase payload and money reservation status.  
-Left MergePoint that belongs to BillingService Processor waits for BillingService to complete. Then MergePoint takes 
-money reservation status and puts in into Purchase payload (by using it's merger function) and sends this Payload 
-through outgoing transition to MergePoint on right side of the graph.       
+![Alt parallel-handler-merger-computation-example](res/parallel-handler-merger-computation-example.png?raw=true)
+As a first step we create Purchase payload and populate userid and item.
+Suppose that first Merger at the top simply sends this Payload into two places in parallel:
+to BillingService Vertex and StorageFacility Vertex. 
+StorageFacility runs reservation logic and send via outgoing transitions two  objects:
+origin Purchase payload and product reservation status. 
+BillingService runs reservation logic and send via outgoing transition two objects:
+origin Purchase payload and money reservation status. 
+Left Merger that belongs to BillingService Vertex waits for BillingService to complete.
+After that Merger takes money reservation status and puts in into Purchase payload
+(by using it's merger function) and sends this Payload through outgoing transition to Merger
+on right side of the graph.  
+     
 ```java
-//BillingService MergePoint merger
+//BillingService Vertex Merger
 void merge(Purchase paylaod, BillingServiceStatus billingStatus){
-    if(billingStatus == MONEY_RESERVED){
+    if(billingStatus == RESERVED){
         paylaod.setMoneyReserved(true);
     }
 }
 ```
-Right MergePoint that belongs to StorageFacility Processor waits two incoming transitions: with StorageFacility 
+Right Merger that belongs to StorageFacility Vertex waits two incoming transitions: with StorageFacility 
 result and with Payload from BillingService. Then it takes StorageFacility product reservation status and puts it into 
 Payload that came from BillingService processor. This payload already contains information about BillingService 
-operation status. After that MergePoint checks both fields: `Purchase.moneyReserved` and `Purchase.productReserved`. 
-If both fields are true, MergePoint sets `Purchase.result` to true. This means that purchase accomplished 
+operation status. After that Merger checks both fields: `Purchase.moneyReserved` and `Purchase.productReserved`. 
+If both fields are true, Merger sets `Purchase.result` to true. This means that purchase accomplished 
 successfully. This process is done by using merge function of StorageFacility MergePoint. 
 ```java
 //StorageFacility MergePoint merger
 void merge(Purchase paylaod, StorageFacilityStatus storageStatus){
-    if(storageStatus == PRODUCT_RESERVED){
+    if(storageStatus == RESERVED){
         paylaod.setProductReserved(true);
     }
     if(paylaod.getMoneyReserved() && payload.getProductReserved()){
         payload.setResult(true);
+    } else {
+        payload.setResult(false);
     }
 }
 ```
-Then StorageFacility MergePoint sends Payload with BillingService and StorageFacility results through outgoing transition at the end of 
-the given graph.  
+Then StorageFacility Merger sends Payload with BillingService and StorageFacility results through outgoing transition
+at the end of the given graph.  
 
 Now we can simplify visualisation:  
-![Alt parallel-handler-merer-computation2.png](res/parallel-handler-merer-computation2.png?raw=true)
+![Alt parallel-handler-merger-computation-example-simplified](res/parallel-handler-merger-computation-example-simplified.png?raw=true)
    
 ### Handler-merger model with conditional transitions
-We almost thee. Fasten seat belts. Lets enrich our MergePoint with last feature: conditional transitions:    
-![Alt merge-point.png](res/merge-point.png?raw=true "MergePoint")
+We almost thee. Fasten seat belts. Lets enrich our Merger with last feature: conditional transitions:    
+![Alt merger-conditional-outgoing-flows](res/merger-conditional-outgoing-flows.png?raw=true "MergePoint")
 
 Each outgoing transitions now have enum value associated with it. In graph this enum value illustrated as text label 
-near arrow.  
+near arrows.  
 Merger function signature is changed too. Now merger should return enum that will control which outgoing transition 
 will be activated and which is not.
 ```java
 Enum merge(Payload payload, HandlerResult handlerResult) {...}
 ``` 
-When MergePoint is activated by incoming transition it evaluates merger function and checks merger result status. 
-After that MergePoint deactivates all outgoing transitions which associated enum values does not match the one 
-returned by merger function. After that MergePoint activates all outgoing transitions which associated enum values  
-matches enum value returned by merger function.  
+When Merger is activated by incoming transition it evaluates merger function and checks merger result. 
+After that Merger deactivates all outgoing transitions which associated enum values does not match the one 
+returned by merger function. After that MergePoint activates all outgoing transitions which associated 
+with enum values that matches enum value returned by merger function.  
 If there are two or more outgoing transitions that matches enum function result then all of them activates and runs 
 in parallel.   
-In given illustration we can control by which way execution flow goes by returning enum value FIRST or SECOND from 
-merger function of the MergePoint.    
+In given illustration we can control how graph will execute.
+If Merger function return FIRST then two outgoing transitions will run in parallel. 
+If Merger function return SECOND then only single transition will run. 
