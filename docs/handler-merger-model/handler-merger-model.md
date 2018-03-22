@@ -52,23 +52,23 @@ Now we can simplify visual notation and hide implicit Payload and handler functi
 
 
 ### Parallel handler-merger model
-Lets update MergePoint and allow it to have several outgoing transitions. When merger function inside MergePoint 
-completes merging process it will send Payload through all of outgoing transitions in parallel.  
-![Alt parallel-handler-merger-merge-point.png](res/parallel-handler-merger-merge-point.png?raw=true 
+Lets update Merger and allow it to have several outgoing transitions. When merger function 
+completes merging process it will send same Payload through all of outgoing transitions in parallel.  
+![Alt parallel-handler-merger-multiple-outgoing](res/parallel-handler-merger-multiple-outgoing.png?raw=true 
 "parallel-handler-merger-merge-point")  
-In given example origin Payload and processors Result goes from Processor to MergePoint. Then MergePoint modifies 
-Payload and puts result inside it. Then MergePoint sends this Payload that contains result 42 to all outgoing 
+In given example origin Payload and vertex Result goes from Handler to Merger. Then Merger modifies 
+Payload and puts result inside it. Then Merger sends this Payload instance that contains result 20 to all outgoing 
 transitions. 
 
-Also we need another feature in MergePoint - an ability to join two incoming transitions into single outgoing. When 
-MergePoint have two incoming transitions: one from Processor that carries Payload with handler Result and another 
-with simply Payload, MergePoint will chose Result from first transition and will merge it to Payload that it received
- from second transition. For activation MergePoint has to wait for both incoming transitions.   
-![Alt parallel-handler-merger-merge-point2.png](res/parallel-handler-merger-merge-point2.png?raw=true)
-In given illustration there are two incoming transitions into MergePoint. First incoming transition carries Payload2 
-and computation result of Processor2 - value 42. Second incoming transition  carries ony Payload1. MergePoint ignores
-Payload2 from first transitions. It takes Payload1 from second transition and takes Result from First transition. 
-Merges them together by merger function and passes Payload1 to outgoing transition.
+Also we need another feature in Merger - an ability to join two incoming transitions into single outgoing. When 
+Merger have two incoming transitions: one from Vertex that carries Payload with handler Result and another 
+with Payload only, Merger will chose Result from first transition and will merge it to Payload that it received
+ from second transition. For activation Merger has to wait for both incoming transitions.   
+![Alt parallel-handler-merger-join-flows.png](res/parallel-handler-merger-join-flows.png?raw=true)
+In given illustration there are two incoming transitions into Merger. First incoming transition carries
+Payload_2 and computation result of Handler2 - value 42. Second incoming transition  carries ony Payload_1.
+Router ignores Payload_2 from first transition. It takes Payload_1 from second transition and takes Result from
+First transition. Merges them together by merger function and passes Payload_1 to outgoing transition.
   
 Now we are ready to make big step to parallel execution.  
 As an example lets implement purchasing process. Suppose that customer with identifier `userId` want to buy product 

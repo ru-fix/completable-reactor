@@ -23,9 +23,9 @@ Complex business logic with lots of branching and concurrently executing parts h
 CompletableReactor API tries to keep API as simple and possible, saves benefits of statically typed languages and in 
 same time provides ability for fast code parsing and visualization as a graph of execution flows. 
 
-## Concept
-Briefly describes how we can decompose concurrent conditional execution:
-[Concept](docs/concept/concept.md) 
+## Handler-Merger execution model
+Briefly describes concept how we can decompose concurrent conditional execution:
+[Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md) 
 
 
 
