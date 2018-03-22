@@ -14,7 +14,8 @@ to support more suitable DSL-like API. Currently supported DSLs are for `Java` a
 with [ForkJoinPool](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html) 
 provides ability to write asynchronous code. But sometimes business logic not as straight forward as we would like.
 This leads to complex `thenApply`/`thenCompose` CompletableFuture chains that hard to read and maintain. Kotlin 
-`suspendable` methods slightly simplify sequential chains, but they are still fail to clarify complexity of 
+[`suspend` methods and coroutines](https://kotlinlang.org/docs/reference/coroutines.html)
+slightly simplify sequential chains, but they are still fail to clarify complexity of 
 unobvious conditional branching with scenarios executed in parallel.  
 
 Complex business logic with lots of branching and concurrently executing parts hard to describe using regular coding
