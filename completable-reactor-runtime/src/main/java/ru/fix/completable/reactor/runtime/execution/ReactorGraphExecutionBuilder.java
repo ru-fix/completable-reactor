@@ -996,7 +996,11 @@ public class ReactorGraphExecutionBuilder {
         }
 
         ProfiledCall handleCall = profiler.profiledCall(
-                ProfilerNames.PROCESSOR_HANDLE + processingVertex.getProcessingItem().getProfilingName())
+                ProfilerNames.HANDLE +
+                        "." + (payload != null ? payload.getClass().getSimpleName() : "null") +
+                        "." + processingVertex
+                        .getProcessingItem()
+                        .getProfilingName())
                 .start();
 
         boolean isTraceablePayload = tracer.isTraceable(payload);
@@ -1189,7 +1193,9 @@ public class ReactorGraphExecutionBuilder {
 
         try {
             ProfiledCall mergeCall = profiler.profiledCall(
-                    ProfilerNames.PROCESSOR_MERGE + processingVertex.getProcessingItem().getProfilingName())
+                    ProfilerNames.MERGE +
+                            "." + (payload != null ? payload.getClass().getSimpleName() : "null") +
+                            "." + processingVertex.getProcessingItem().getProfilingName())
                     .start();
             boolean isTraceablePayload = tracer.isTraceable(payload);
             Object mergeTracingMarker = isTraceablePayload ?
