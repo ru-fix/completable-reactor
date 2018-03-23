@@ -24,9 +24,30 @@ Complex business logic with lots of branching and concurrently executing parts h
 CompletableReactor API tries to keep API as simple and possible, saves benefits of statically typed languages and in 
 same time provides ability for fast code parsing and visualization as a graph of execution flows. 
 
+## Getting Started
+
+The first step is to include CompletableReactor into your project:
+```
+//Java Gradle
+compile "ru.fix:completable-reactor-runtime:1.2.2"
+compile "ru.fix:completable-reactor-graph:1.2.2"
+
+//Kotlin Gradle
+compile "ru.fix:completable-reactor-runtime:1.2.2"
+compile "ru.fix:completable-reactor-graph-kotlin:1.2.2"
+```
+The second is to install plugin into your IDE
+* [Intellij Idea Plugin](https://plugins.jetbrains.com/plugin/9599-completable-reactor)
+* Eclipse Plugin (TODO)
+* Standalone application `ru.fix:completable-reactor-graph-viewer:1.2.2`
+
+The third step is to write the **Hello Graph** program:
+
 ## Handler-Merger execution model
-Briefly describes concept how we can decompose concurrent conditional execution:
+Briefly describes concept behind CompletbleReactor.
+Explains how we can decompose concurrent conditional execution into base graph components.
 [Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md) 
+
 
 
 
