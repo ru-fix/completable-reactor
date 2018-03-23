@@ -119,7 +119,7 @@ operation status. After that Merger checks both fields: `Purchase.moneyReserved`
 If both fields are true, Merger sets `Purchase.result` to true. This means that purchase accomplished 
 successfully. This process is done by using merge function of StorageFacility MergePoint. 
 ```java
-//StorageFacility MergePoint merger
+//StorageFacility Merger
 void merge(Purchase paylaod, StorageFacilityStatus storageStatus){
     if(storageStatus == RESERVED){
         paylaod.setProductReserved(true);
