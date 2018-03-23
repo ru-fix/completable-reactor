@@ -1,7 +1,7 @@
 #  Handler-Merger concurrent execution concept
 To describe and idea behind CompletableReactor let's start with simple model and then evolve it step by step.
 
-### Simple sequential model
+## Simple sequential model
 This model consists of two base elements: *Payload* and *Vertex*.
 Payload is a simple [POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object).
 Vertex is active element of model that takes Payload, execute business logic based on that Payload, 
@@ -14,7 +14,7 @@ In given example we have two vertices and payload object. Payload consists of tw
 MultiplyVertex reads x from payload, multiplies it by 2 and stores computation result in result field.
 StdoutVertex does not modify incoming payload and simply prints result field to stdout.   
 
-### Sequential asynchronous handler-merger model
+## Sequential asynchronous handler-merger model
 Now lets make our vertices work asynchronously. We will split computation logic of vertices in two parts.
 First one, called `Handler`, will read input data from payload and perform computation.
 Second one, called `Merger`, will store computation result inside payload.
@@ -137,7 +137,7 @@ at the end of the given graph.
 Now we can simplify visualisation:  
 ![Alt parallel-handler-merger-computation-example-simplified](res/parallel-handler-merger-computation-example-simplified.png?raw=true)
    
-### Handler-merger model with conditional transitions
+## Handler-merger model with conditional transitions
 We almost thee. Fasten seat belts. Lets enrich our Merger with last feature: conditional transitions:    
 ![Alt merger-conditional-outgoing-flows](res/merger-conditional-outgoing-flows.png?raw=true "MergePoint")
 
@@ -149,11 +149,55 @@ will be activated and which is not.
 Enum merge(Payload payload, HandlerResult handlerResult) {...}
 ``` 
 When Merger is activated by incoming transition it evaluates merger function and checks merger result. 
-After that Merger deactivates all outgoing transitions which associated enum values does not match the one 
-returned by merger function. After that MergePoint activates all outgoing transitions which associated 
-with enum values that matches enum value returned by merger function.  
+After that Merger marks all outgoing transitions which associated enum values does not match 
+merger function result as dead and deactivates them.
+Also Merger activates all outgoing transitions which associated with enum values that matches 
+merger function result.  
 If there are two or more outgoing transitions that matches enum function result then all of them activates and runs 
 in parallel.   
 In given illustration we can control how graph will execute.
 If Merger function return FIRST then two outgoing transitions will run in parallel. 
 If Merger function return SECOND then only single transition will run. 
+
+It is important to mention that when at least one of incoming transition of Merger is marked as dead 
+then Merger itself marked as dead, it does not execute and simply marks all outgoing transitions as dead too. 
+When  Handler have several incoming transitions and one of them is marked as dead 
+then there is nothing happens with Handler. Only if all incoming transitions marked as dead Handler dies too and 
+marks outgoing transition as dead.  
+In other worlds Handler waits result of all incoming transitions. 
+If all incoming transitions dies - Handler dies. 
+If single incoming transition survives - Handler executes. 
+If there are more that one active incoming transitions survives - Handlers rise an error. 
+This is inconsistent graph configuration.
+Merger in same manner waits result of all incoming transitions. 
+But if any of incoming transitions dies - Merger dies too. 
+To execute Merger should have all incoming transitions to be alive.    
+![Alt merger-conditional-outgoing-example](res/merger-conditional-outgoing-example.png?raw=true "MergePoint")   
+
+In given example if Merger returns FIRST then:  
+ * Vertex1 and Vertex2 execute in parallel, Vertex3 dies.
+ * Then runs Merger1 and Merger3 dies.
+ * Then runs Merger2
+ * Then Vertex4 executes.
+ * Then runs Merger4
+
+If Merger returns SECOND then:
+ * Vertex1 and Vertex2 dies. Vertex3 executes.
+ * Then runs Merger3 and Merger1 with Merger2 dies.
+ * Then Vertex4 executes.
+ * Then runs Merger4.   
+
+## StartPoint and EndPoints 
+The difficult part is over. Only two things left to discuss: how to start execution and how to stop it.
+StartPoint specify position where Payload start it trip over graph. There is only one StartPoint for each graph.
+EndPoints defines places where execution of the graph is stops and current Payload is returned 
+as a graph computation result.
+![Alt start-point-and-end-point](res/start-point-and-end-point.png?raw=true "MergePoint")
+
+In given illustration graph execution starts at StartPoint.
+* Then Payload goes to Vertex1 and Vertex2 in parallel.
+* Then Merger1 executes.
+* Then Merger2 executes.
+* Then if Merger2 returns FIRST  graph execution stops at left EndPoint
+* Otherwise if Merger2 returns SECOND execution continues
+* Vertex3 with Merger3 runs sequentially and after that graph execution stops ant bottom EndPoint
