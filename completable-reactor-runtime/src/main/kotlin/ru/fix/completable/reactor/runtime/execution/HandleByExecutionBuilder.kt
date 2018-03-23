@@ -223,7 +223,11 @@ class HandleByExecutionBuilder<PayloadType>(
         val vx = pvx.vertex
         val payload = payloadContext.payload
 
-        val handleCall = builder.profiler.profiledCall("${ProfilerNames.PROCESSOR_HANDLE}${vx.name}").start()
+        val handleCall = builder.profiler.profiledCall("" +
+                ProfilerNames.HANDLE +
+                ".${payload?.javaClass?.simpleName}" +
+                ".${vx.name}")
+                .start()
 
         val isTraceablePayload = builder.tracer.isTraceable(payload)
         val handleTracingMarker =
@@ -347,9 +351,9 @@ class HandleByExecutionBuilder<PayloadType>(
             null
 
         }.exceptionally { exc ->
-                    log.error("Failed to execute afterHandle block for vertex ${pvx.vertex.name}")
-                    null
-                }
+            log.error("Failed to execute afterHandle block for vertex ${pvx.vertex.name}")
+            null
+        }
     }
 
 }
