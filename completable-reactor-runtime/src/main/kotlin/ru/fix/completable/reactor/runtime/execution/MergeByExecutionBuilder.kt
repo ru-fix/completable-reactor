@@ -332,7 +332,9 @@ class MergeByExecutionBuilder<PayloadType>(
         try {
 
             val mergeCall = builder.profiler.profiledCall(
-                    ProfilerNames.PROCESSOR_MERGE + pvx.vertex.name)
+                    ProfilerNames.MERGE +
+                            ".${payload?.javaClass?.simpleName}" +
+                            ".${pvx.vertex.name}")
                     .start()
 
             val isTraceablePayload = builder.tracer.isTraceable(payload)
