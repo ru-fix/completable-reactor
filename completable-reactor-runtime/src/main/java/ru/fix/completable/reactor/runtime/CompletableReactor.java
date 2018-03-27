@@ -690,6 +690,7 @@ public class CompletableReactor implements AutoCloseable {
         execution.getSubmitFuture().complete(payload);
 
 
+        //TODO: add to exception details about vertex statuses, what vertix is currently does not completed on time
         /**
          * Add timeout protection to execution
          */
@@ -737,6 +738,8 @@ public class CompletableReactor implements AutoCloseable {
                 execution.getDebugProcessingVertexGraphState()
         );
     }
+
+
 
     /**
      * Blocks until all pending request is complete or {@link #getCloseTimeoutMs()} time elapsed
