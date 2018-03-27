@@ -188,7 +188,7 @@ If Merger returns SECOND then:
  * Then runs Merger4.   
 
 ## StartPoint and EndPoints 
-The difficult part is over. Only two things left to discuss: how to start execution and how to stop it.
+The difficult part is over. Now let discuss how to start execution and how to stop it.
 StartPoint specify position where Payload start it trip over graph. There is only one StartPoint for each graph.
 EndPoints defines places where execution of the graph is stops and current Payload is returned 
 as a graph computation result.
