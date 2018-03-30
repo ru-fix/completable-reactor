@@ -76,9 +76,17 @@ Start point visualization:
 
 To attach vertices to StartPoint you can use `payload()` builder method of graph.
 ```java
-payload()
-        .handleBy(vertex1)
-        .handleBy(vertex2);
 
+class PurchaseGraph extends Graph<Purchase>{
+
+    Vertex reserveMoney = ...
+    Vertex reserveProduct = ...
+   
+    {
+        payload()
+                .handleBy(reserveMoney)
+                .handleBy(reserveProduct);
+    }
+}
 ``` 
 ![Alt start-point-handle-by](res/start-point-handle-by.png?raw=true "start-point-handle-by")
