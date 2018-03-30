@@ -1,10 +1,10 @@
 #  Completable Reactor Model
 It is essential to read 
-[Handler-Merger execution model](../docs/handler-merger-model/handler-merger-model.md)
+[Handler-Merger execution model](../handler-merger-model/handler-merger-model.md)
 first.
 
 Completable Reactor Model enriches 
-[Handler-Merger execution model](../docs/handler-merger-model/handler-merger-model.md)
+[Handler-Merger execution model](../handler-merger-model/handler-merger-model.md)
 with new components and determinate its execution on JVM.
 
 ## Payload and StartPoint
