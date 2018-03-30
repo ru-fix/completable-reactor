@@ -74,7 +74,7 @@ System.out.print( purchase.getResponse().getPurchaseStatus() );
 Start point visualization:    
 ![Alt start-point](res/start-point.png?raw=true "start-point")
 
-To attach vertexes to StartPoint you can use `payload()` builder method of graph.
+To attach vertices to StartPoint you can use `payload()` builder method of graph.
 ```java
 payload()
         .handleBy(vertex1)
