@@ -58,7 +58,7 @@ It is essential to read
 first.
 
 Describes how reactor components could be described in code and how they visualized. 
-Adds new components and determinate execution of  
+Adds new components and determinate execution of
 [Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md)
 on JVM.
 
