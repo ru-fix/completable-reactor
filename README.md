@@ -46,43 +46,23 @@ The third step is to write the **Hello Graph** program:
 ## Handler-Merger execution model
 Briefly describes concept behind CompletbleReactor.
 Explains how we can decompose concurrent conditional execution into base graph components.
+
 [Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md) 
 
 
 
 
 ## Completable Reactor model
-It is essential to read Concept paragraph to better understanding CompletableReactor model.
+It is essential to read 
+[Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md)
+first.
 
-### Payload
-Payload is a plain old java object that encapsulate request, response and intermediate computation data required for 
-request processing. CompletableReactor receive payload as an argument. Execute business flows, modify payload during 
-execution and returns it as a computation result.
-```java
-class Purchase{
-    //request parameters
-    Long userId;
-    Long productId;
-    
-    //intermediate data
-    Boolean moneyReservationStatus;
-    Boolean productReservationStatus;
-    
-    //execution results
-    Boolean purchaseStatus;
-}
-```
-```java
-Execution<Purchase> execution = completableReactor.submit(
-        new Purchase()
-            .setUserId(107)
-            .setProductId(42));
+Describes how reactor components could be described in code and how they visualized. 
+Adds new components and determinate execution of  
+[Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md)
+on JVM.
 
-Purchase purchase = execution.getResultFuture().get();
-System.out.print( purchase.getPurchaseStatus() );
-```
-Start point of each graph represented by graphs Paylaod:    
-![Alt payload.png](docs/payload.png?raw=true "Payload")
+[Completable Reactor model](docs/completable-reactor-model.md)
 
 
 ### Handler
@@ -127,7 +107,7 @@ Enum myNiceMerger(Paylaod paylaod, HanlderResultType handlerResult){
 MergePoint is a visual graph item that uses Merger method to make modification on Payload. And uses Merger result to 
 select which outgoing transitions to activate and which to deactivate. 
 
-![Alt merge-point.png](docs/reactor-model/res/merge-point.png?raw=true "MergePoint")
+![Alt merge-point.png](docs/completable-reactor-model/res/merge-point.png?raw=true "MergePoint")
 
 ### Transition
 Transition is a Enum instance that represent jumps between graph items during flow execution. MergePoint merger 
