@@ -62,7 +62,7 @@ Adds new components and determinate execution of
 [Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md)
 on JVM.
 
-[Completable Reactor model](docs/completable-reactor-model.md)
+[Completable Reactor model](docs/completable-reactor-model/completable-reactor-model.md)
 
 
 ### Handler
