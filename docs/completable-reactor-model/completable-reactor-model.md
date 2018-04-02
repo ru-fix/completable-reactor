@@ -218,7 +218,7 @@ Vertex fireStatisticEvent =
                         payload.getServiceId())
                     )
         
-        ).withEmptyMerger();
+        ).withoutMerger();
 }
 ``` 
 ![Alt without-merger](res/without-merger.png?raw=true)
