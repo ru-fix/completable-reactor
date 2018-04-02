@@ -43,13 +43,11 @@ The second is to install plugin into your IDE
 
 The third step is to write the **Hello Graph** program:
 
-## Handler-Merger execution model
+## Handler-Merger model
 Briefly describes concept behind CompletbleReactor.
 Explains how we can decompose concurrent conditional execution into base graph components.
 
 [Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md) 
-
-
 
 
 ## Completable Reactor model
@@ -65,7 +63,7 @@ on JVM.
 [Completable Reactor model](docs/completable-reactor-model/completable-reactor-model.md)
 
 
-### Validation
+## Validation
 
 During ReactorGraph building process CompletableReactorBuilder apply validation procedures on ReactorGraph instance. Validators checks 
 that graph is consistent, have complete nodes and correct transitions etc. 
