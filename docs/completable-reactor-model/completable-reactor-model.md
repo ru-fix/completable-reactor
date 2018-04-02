@@ -107,9 +107,10 @@ There are three types of vertices:
     Vertex vx = subgraph(...).withMerger(...);
     Vertex vx = subgraph(...).withoutMerger();
 ```
-* Routers
+* Routers and Mutators
 ```java
     Vertex vx = router(...);
+    Vertex vx = mutator(...);
 ```
 
 ## Handlers and Mergers
@@ -286,3 +287,7 @@ Processor uses Handler to make asynchronous computation, MergePoint uses Merger 
 on Payload. Origin payload is passed to Processors handler, then after handler computation origin payload is passed 
 together with handler result to merge point. Inside merge point origin payload is modified and became Payload*. 
 Outgoing transitions from merge point pass this new Payload* to next nodes.  
+
+## Subgraphs
+
+## Routers and Mutators
