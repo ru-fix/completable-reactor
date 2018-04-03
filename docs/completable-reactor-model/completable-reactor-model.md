@@ -247,51 +247,103 @@ No we can connect described vertices into graph.
 ![Alt mergers-example](res/mergers-example.png?raw=true)
 
 
-
-
-
-
-
-
-
-
-
 ### Transition
-Transition is a Enum instance that represent jumps between graph items during flow execution. MergePoint merger 
-returns instance of Enum. Outgoing transition will be activated according to this value. If merger returns status 
-PLAN_B, then all outgoing transitions with condition status PLAN_B will be activated and all transitions without 
-PLAN_B status will be deactivated or marked as dead transition. For unconditional transitions (onAny) there is no 
-distinct status. That transitions will be always activated regardless of the merger result.
+Transition is a Enum instance that represent jumps between graph items during flow execution. 
+RoutingMerger returns instance of Enum. 
+Outgoing transition will be activated according to this value. 
+If merger returns status PLAN_B, then all outgoing transitions with condition status PLAN_B 
+will be activated and all transitions without PLAN_B status will be deactivated 
+or marked as dead transition. 
+Unconditional transitions `onAny` will be always activated regardless of the Routing Merger result.
+EmptyMerger and Merger work as a RoutingMerger that returns internal default merge status that 
+could participate only in `onAny` transitions.
 
 ```java
 enum MyTransitions{
-    @Reactored("OneWay transition description")
     ONE_WAY,
-    @Reactored("AnotherWay transition description")
     ANOTHER_WAY
 }
+
+{
+    vx1
+        .on(ON_WAY).handleBy(vx2)
+        .on(ANOTHER_WAY).handleBy(vx3);
+        
+    vx2
+        .onAny().handleBy(vx4);
+}
 ```
+* `handleBy` transition connect Merers, Routers and Mutators to Handlers, Subgraphs, Routers and Mutators.  
+* `mergeBy` transition connect Merers, Routers and Mutators to Mergers. 
+
+
+
 ### EndPoint
-EndPoint is a visual graph item that indicates end of flow execution. When graph execution reaches EndPoint then all 
-transitions marked as terminated  and CompletableReactor immediately returns graph result. The only exception
- is detached processors or subgraphs. They will continue to execute but their execution result will be ignored.   
+EndPoint is a visual graph item that indicates end of flow execution. 
+When graph execution reaches EndPoint then all transitions marked as terminated 
+and CompletableReactor immediately returns graph result. 
+The only exception is Handlers and Subgraphs without mergers. 
+They will continue to execute but their execution result will be ignored.
+```java
+Execution<Purchase> execution = reactor.submit(new Purchase(100, 42));
 
-![Alt end-point.png](docs/end-point.png?raw=true "EndPoint")
+//chain execution future completes when all vertices, including
+//Handlers and Subgraphs without mergers are complete and graph reached EndPoint.
+execution.getChainExecutionFuture()
+
+//chain result future completes when graph reaches EndPoint
+execution.getResultFutureFuture()
+
+```
+Yuy can attach EndPoint to any of transition withing reactor graph.
+```java
+    vx3.onAny().complete()
+```    
+
+![Alt endpoint.png](res/endpoint.png?raw=true)
 
 
-### Processor with MergePoint
+## Subgraph
+Subgraph - is a Vertex that allows to invoke one graph from another. 
+It simply submits constructed child Payload to CompletableReactor. 
+Subgraph has implicit Handler that takes Payload as argument and returns Payload 
+as computation result. 
+Subgraphs allows us to reuse graphs.
+```java
+Vertex bonusPurchase = 
+        subgraph(
+                Purchase.class, 
+                paylaod -> new Purchase(payload.userId, payload.bonusServiceId)
+        ).withMerger(...)
 
-![Alt processor-with-merge-point.png](docs/processor-with-merge-point.png?raw=true "Processor with MergePoint")
+```
 
-Processor uses Handler to make asynchronous computation, MergePoint uses Merger to apply Handler computation result 
-on Payload. Origin payload is passed to Processors handler, then after handler computation origin payload is passed 
-together with handler result to merge point. Inside merge point origin payload is modified and became Payload*. 
-Outgoing transitions from merge point pass this new Payload* to next nodes.  
+![Alt subgraph.png](res/subgraph.png?raw=true)
 
-## Subgraphs
 
 ## Routers and Mutators
+* Router is a synchronous function that works as RoutingMerger. 
+It can modify payload. 
+Outgoing transition activated depending ot Router result.  
+* Mutator works as Merger.
+It can only modify payload and does not return any value.
 
+```java
+Vertex vx1 = router(
+        paylaod -> {
+            payload.data = ...;
+            return ONE_WAY;
+            
+        });
+
+Vertex vx2 = mutator(
+        paylaod -> {
+            payload.data = ...;
+        });
+
+
+```
+![](res/routers-and-mutators.png?raw=true)
 
 ### MergePoint decision
 
@@ -352,12 +404,6 @@ or use immutable arguments to prevent concurrent reading by Processor6 and modif
 
 ![Alt detached-with-merge-point.png](docs/detached-with-merge-point.png?raw=true "Parallel execution")
 
-### Subgraph
-
-Subgraph - is a Processor that execute Payload inside CompletableReactor. It have implicit Handler that takes Payload as argument and 
-returns Payload as computation result. Subgraphs allows to reuse graphs.
-
-![Alt subgraph.png](docs/subgraph.png?raw=true "Subgraph")
 
 
 ### How MergePoint decides which incoming Payload to chose
