@@ -1007,4 +1007,67 @@ class GlCompletableReactorTest {
             log.info("When handler returns NULL result future completed with NPE");
         }
     }
+
+
+    static class DumpStateOnTimeoutGraph extends Graph<IdListPayload> {
+        Vertex vx0 = handler(new IdProcessor(0)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return GlCompletableReactorTest.Status.OK;
+                });
+
+        Vertex vx1 = handler(new IdProcessor(1)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return GlCompletableReactorTest.Status.OK;
+                });
+
+
+        IdProcessor delayedProcessor = new IdProcessor(2).withLaunchingLatch();
+
+        Vertex vx2 = handler(delayedProcessor::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return GlCompletableReactorTest.Status.OK;
+                });
+
+        Vertex vx3 = handler(new IdProcessor(2)::handle)
+                .withMerger((pld, id) -> {
+                    pld.idSequence.add(id);
+                    return GlCompletableReactorTest.Status.OK;
+                });
+
+        {
+            payload()
+                    .handleBy(vx0)
+                    .handleBy(vx1);
+
+            vx0.onAny().mergeBy(vx1);
+
+            vx1.onAny().handleBy(vx2);
+
+            vx2.onAny().handleBy(vx3);
+
+            vx3.onAny().complete();
+
+        }
+    }
+
+    @Test
+    void reactor_dump_vertices_steate_when_does_not_complete_on_timeout() throws Exception {
+
+        DumpStateOnTimeoutGraph graph = new DumpStateOnTimeoutGraph();
+        CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
+        reactor.registerGraph(graph);
+        reactor.setExecutionTimeoutMs(500);
+
+        try {
+            reactor.submit(new IdListPayload()).getResultFuture().get(3, SECONDS);
+            fail("Execution should complete by timeout");
+        } catch (Exception exc) {
+            assertTrue(exc.getMessage().contains("TimeoutException"));
+            assertTrue(exc.getMessage().contains("handlingFuture={isDone=true,isExc=false}"));
+            assertTrue(exc.getMessage().contains("handlingFuture={isDone=false,isExc=false}"));
+        }
+    }
 }

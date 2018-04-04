@@ -33,7 +33,6 @@ public class ReactorGraphExecutionBuilder {
     private final DebugSerializer debugSerializer;
     private final Tracer tracer;
 
-    private boolean debugProcessingVertexGraphState = false;
 
     volatile ImmutabilityControlLevel immutabilityControlLevel = ImmutabilityControlLevel.NO_CONTROL;
 
@@ -112,7 +111,7 @@ public class ReactorGraphExecutionBuilder {
      */
     @Data
     @Accessors(chain = true)
-    static class ProcessingVertex {
+    public static class ProcessingVertex {
 
         CRProcessingItem processingItem;
 
@@ -154,22 +153,6 @@ public class ReactorGraphExecutionBuilder {
     public ReactorGraphExecutionBuilder setImmutabilityControlLevel(ImmutabilityControlLevel immutabilityControlLevel) {
         Objects.requireNonNull(immutabilityControlLevel);
         this.immutabilityControlLevel = immutabilityControlLevel;
-        return this;
-    }
-
-    /**
-     * If this flag is enabled then internal processing graph state will be attached to Execution result.
-     * This allows easy access to execution state during debug.
-     * One of drawbacks of this future is that GC will be prevented form removing internal state objects
-     * until all reference to execution result dies.
-     * <p>
-     * By default this flag is disabled.
-     *
-     * @param debugProcessingVertexGraphState
-     * @return
-     */
-    public ReactorGraphExecutionBuilder setDebugProcessingVertexGraphState(boolean debugProcessingVertexGraphState) {
-        this.debugProcessingVertexGraphState = debugProcessingVertexGraphState;
         return this;
     }
 
@@ -804,7 +787,7 @@ public class ReactorGraphExecutionBuilder {
                 submitFuture,
                 executionResultFuture,
                 chainExecutionFuture,
-                debugProcessingVertexGraphState ? processingVertices.values() : null
+                processingVertices.values()
         );
     }
 
@@ -1288,6 +1271,34 @@ public class ReactorGraphExecutionBuilder {
             executionResultFuture.completeExceptionally(exc);
 
             processingVertex.getMergePointFuture().complete(new MergePayloadContext().setDeadTransition(true));
+        }
+    }
+
+    private String dumpFutureState(CompletableFuture<?> future) {
+        return String.format("{isDone=%s,isExc=%s}",
+                future.isDone(),
+                future.isCompletedExceptionally());
+    }
+
+    public <PayloadType> String dumpExecutionState(ReactorGraphExecution<PayloadType> execution) {
+        try {
+            Collection<ProcessingVertex> items = (Collection<ProcessingVertex>) execution.getDebugProcessingVertexGraphState();
+            return items.stream().map(
+                    it -> String.format("%s={" +
+                                    "handlingFuture=%s, " +
+                                    "mergingFuture=%s, " +
+                                    "incomingHandlingFLows=%s, " +
+                                    "incomingMergingFLows=%s" +
+                                    "}",
+                            it.processingItem.getDebugName(),
+                            dumpFutureState(it.getProcessorFuture()),
+                            dumpFutureState(it.getMergePointFuture()),
+                            it.incomingProcessorFlows.stream().map(flow -> dumpFutureState(flow.future)).collect(Collectors.joining(",")),
+                            it.incomingMergeFlows.stream().map(flow -> dumpFutureState(flow.future)).collect(Collectors.joining(",")))
+            ).collect(Collectors.joining(", "));
+        } catch (Exception exc) {
+            log.error("Failed to dump state.", exc);
+            return "(failed to dump state)";
         }
     }
 }

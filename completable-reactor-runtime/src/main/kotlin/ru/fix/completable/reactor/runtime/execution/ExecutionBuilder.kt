@@ -27,16 +27,6 @@ class ExecutionBuilder(
         val tracer: Tracer) {
 
     /**
-     * If this flag is enabled then internal processing graph state will be attached to Execution result.
-     * This allows easy access to execution state during debug.
-     * One of drawbacks of this future is that GC will be prevented form removing internal state objects
-     * until all reference to execution result dies.
-     * <p>
-     * By default this flag is disabled.
-     */
-    var debugProcessingVertexGraphState: Boolean = false
-
-    /**
      * Immutability check ensures that there is no payload modification during handling.
      */
     @Volatile
@@ -119,6 +109,7 @@ class ExecutionBuilder(
 
         val incomingMergingFlows = ArrayList<TransitionFuture<MergePayloadContext>>()
 
+        //TODO: rename to Future
         val handlingFeature = CompletableFuture<HandlePayloadContext>()
 
         val mergingFeature = CompletableFuture<MergePayloadContext>()
@@ -240,17 +231,17 @@ class ExecutionBuilder(
                                     }
 
                                 }.exceptionally { exc ->
-                                            log.error(exc) {
-                                                """
+                                    log.error(exc) {
+                                        """
                                                 Failed to activate handleBy transition.
                                                 Mark transition as dead.
                                                 Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
                                                 Transition: $transition
                                                 """
-                                            }
+                                    }
 
-                                            TransitionPayloadContext(isDeadTransition = true)
-                                        }
+                                    TransitionPayloadContext(isDeadTransition = true)
+                                }
                         ))
 
                     }
@@ -279,17 +270,17 @@ class ExecutionBuilder(
                                         MergePayloadContext(isDeadTransition = true)
                                     }
                                 }.exceptionally { exc ->
-                                            log.error(exc) {
-                                                """
+                                    log.error(exc) {
+                                        """
                                                         Failed to activate mergeBy transition.
                                                         Mark transition as dead.
                                                         Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
                                                         Transition: $transition
                                                         """
-                                            }
+                                    }
 
-                                            MergePayloadContext(isDeadTransition = true)
-                                        }
+                                    MergePayloadContext(isDeadTransition = true)
+                                }
                         ))
 
                     }
@@ -332,12 +323,12 @@ class ExecutionBuilder(
                         future.complete(TransitionPayloadContext(isDeadTransition = true))
                     }
         }.exceptionally { throwable ->
-                    log.error(throwable) {
-                        "Marking transitions as dead " +
-                                "after execution result feature is completed is failed."
-                    }
-                    null
-                }
+            log.error(throwable) {
+                "Marking transitions as dead " +
+                        "after execution result feature is completed is failed."
+            }
+            null
+        }
 
         /**
          * Collect chain execution handling futures.
@@ -361,12 +352,28 @@ class ExecutionBuilder(
                 submitFuture,
                 executionResultFuture,
                 chainExecutionFuture,
-                if (debugProcessingVertexGraphState) {
-                    processingVertices.values
-                } else {
-                    null
-                })
+                processingVertices.values)
     }
 
+    private fun dumpFutureState(future: CompletableFuture<*>): String {
+        return "{isDone=${future.isDone},isExc=${future.isCompletedExceptionally}}"
+    }
+
+    fun <PayloadType> dumpExecutionState(execution: ReactorGraphExecution<PayloadType>): String {
+        try {
+            return (execution.debugProcessingVertexGraphState as Collection<ProcessingVertex>).asSequence()
+                    .joinToString(",\n", "\n", "\n") {
+                        "${it.vertex.name}={\n" +
+                                "handlingFuture=${dumpFutureState(it.handlingFeature)},\n" +
+                                "mergingFuture=${dumpFutureState(it.mergingFeature)},\n" +
+                                "incomingHandlingFLows={${it.incomingHandlingFlows.joinToString { dumpFutureState(it.feature) }}},\n" +
+                                "incomingMergingFLows={${it.incomingMergingFlows.joinToString { dumpFutureState(it.feature) }}}\n" +
+                                "}"
+                    }
+        } catch (exc: Exception) {
+            log.error(exc) { "Failed to dump state." }
+            return "(failed to dump state)"
+        }
+    }
 
 }
