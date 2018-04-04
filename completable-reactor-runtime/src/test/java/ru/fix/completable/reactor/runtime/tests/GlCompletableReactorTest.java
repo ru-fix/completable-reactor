@@ -1013,13 +1013,11 @@ class GlCompletableReactorTest {
         Vertex vx0 = handler(new IdProcessor(0)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return GlCompletableReactorTest.Status.OK;
                 });
 
         Vertex vx1 = handler(new IdProcessor(1)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return GlCompletableReactorTest.Status.OK;
                 });
 
 
@@ -1028,13 +1026,11 @@ class GlCompletableReactorTest {
         Vertex vx2 = handler(delayedProcessor::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return GlCompletableReactorTest.Status.OK;
                 });
 
         Vertex vx3 = handler(new IdProcessor(2)::handle)
                 .withMerger((pld, id) -> {
                     pld.idSequence.add(id);
-                    return GlCompletableReactorTest.Status.OK;
                 });
 
         {
