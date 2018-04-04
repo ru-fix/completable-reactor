@@ -45,6 +45,16 @@ public class CompletableReactor implements AutoCloseable {
     private final ReactorGraphExecutionBuilder executionBuilder;
     private final ExecutionBuilder glExecutionBuilder;
 
+    /**
+     * If this flag is enabled then internal processing graph state will be attached to Execution result.
+     * This allows easy access to execution state during debug.
+     * One of drawbacks of this future is that GC will be prevented form removing internal state objects
+     * until all reference to execution result dies.
+     * <p>
+     * By default this flag is disabled.
+     */
+    private boolean debugProcessingVertexGraphState = false;
+
     private final Map<Class<?>, CRReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
 
     /**
@@ -360,8 +370,7 @@ public class CompletableReactor implements AutoCloseable {
      * @param debugProcessingVertexGraphState By default this flag is disabled.
      */
     public CompletableReactor setDebugProcessingVertexGraphState(boolean debugProcessingVertexGraphState) {
-        executionBuilder.setDebugProcessingVertexGraphState(debugProcessingVertexGraphState);
-        glExecutionBuilder.setDebugProcessingVertexGraphState(debugProcessingVertexGraphState);
+        debugProcessingVertexGraphState = true;
         return this;
     }
 
@@ -705,15 +714,21 @@ public class CompletableReactor implements AutoCloseable {
                      */
                     if (!execution.getResultFuture().isDone()) {
                         execution.getResultFuture().completeExceptionally(
-                                new TimeoutException(
-                                        String.format(
-                                                "Response for payload %s took more than %d ms.", payload, timeoutMs)));
+                                new TimeoutException(String.format("" +
+                                                "Response for payload %s took more than %d ms.\n" +
+                                                "Execution state: %s",
+                                        payload,
+                                        timeoutMs,
+                                        dumpExecutionState(execution))));
                     }
                     if (!execution.getChainExecutionFuture().isDone()) {
                         execution.getChainExecutionFuture().completeExceptionally(
-                                new TimeoutException(
-                                        String.format(
-                                                "Execution of payload %s took more than %d ms.", payload, timeoutMs)));
+                                new TimeoutException(String.format("" +
+                                                "Execution of payload %s took more than %d ms.\n" +
+                                        "Execution state: %s",
+                                        payload,
+                                        timeoutMs,
+                                        dumpExecutionState(execution))));
                     }
                 },
                 timeoutMs,
@@ -735,11 +750,28 @@ public class CompletableReactor implements AutoCloseable {
         execution.getResultFuture().thenRunAsync(payloadCall::stop);
         execution.getChainExecutionFuture().thenRunAsync(executionCall::stop);
 
+        //TODO: replace by interface and hide debugProcessingVertexGraphState
         return new Execution<>(
                 execution.getResultFuture(),
                 execution.getChainExecutionFuture(),
-                execution.getDebugProcessingVertexGraphState()
+                debugProcessingVertexGraphState
+                        ? execution.getDebugProcessingVertexGraphState()
+                        : null
         );
+    }
+
+    private <PayloadType> String dumpExecutionState(ReactorGraphExecution<PayloadType> execution) {
+        Collection state = execution.getDebugProcessingVertexGraphState();
+        if(state.isEmpty()){
+            return "(no vertices)";
+        }
+        if(state.iterator().next() instanceof ExecutionBuilder.ProcessingVertex){
+            return glExecutionBuilder.dumpExecutionState(execution);
+
+        } else if (state.iterator().next() instanceof ReactorGraphExecutionBuilder.ProcessingVertex){
+            return executionBuilder.dumpExecutionState(execution);
+
+        } else return "(invalid type of debug state)";
     }
 
     /**
