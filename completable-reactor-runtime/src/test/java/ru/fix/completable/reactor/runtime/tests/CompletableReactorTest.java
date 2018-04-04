@@ -1182,4 +1182,56 @@ public class CompletableReactorTest {
 
         assertEquals(Arrays.asList(1), resultPayload.getIdSequence());
     }
+
+
+
+    @Test
+    public void reactor_dump_vertices_steate_when_does_not_complete_on_timeout() throws Exception {
+
+        class Config {
+            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+
+
+            Processor<IdListPayload> idProcessor1 = buildProcessor(graphBuilder, new IdProcessor(1));
+            Processor<IdListPayload> idProcessor2 = buildProcessor(graphBuilder, new IdProcessor(2));
+            Processor<IdListPayload> idProcessor3 = buildProcessor(graphBuilder, new IdProcessor(3).withLaunchingLatch());
+            Processor<IdListPayload> idProcessor4 = buildProcessor(graphBuilder, new IdProcessor(4));
+
+
+            ReactorGraph<IdListPayload> graph() {
+                return graphBuilder.payload(IdListPayload.class)
+                        .handle(idProcessor1)
+                        .handle(idProcessor2)
+
+                        .mergePoint(idProcessor1).onAny().merge(idProcessor2)
+                        .mergePoint(idProcessor2).onAny().handle(idProcessor3)
+                        .mergePoint(idProcessor3).onAny().handle(idProcessor4)
+                        .mergePoint(idProcessor4).onAny().complete()
+
+                        .coordinates()
+                        .buildGraph();
+            }
+        }
+
+        val graph = new Config().graph();
+        printGraph(graph);
+
+        CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
+        reactor.setExecutionTimeoutMs(500);
+
+        reactor.registerReactorGraph(graph);
+
+        try {
+            reactor.submit(new IdListPayload())
+                    .getResultFuture()
+                    .get(5, TimeUnit.MINUTES);
+
+            fail("Should rise timeout exception");
+
+        }catch (Exception exc){
+            assertTrue(exc.getMessage().contains("TimeoutException"));
+            assertTrue(exc.getMessage().contains("handlingFuture={isDone=true,isExc=false}"));
+            assertTrue(exc.getMessage().contains("handlingFuture={isDone=false,isExc=false}"));
+        }
+    }
 }
