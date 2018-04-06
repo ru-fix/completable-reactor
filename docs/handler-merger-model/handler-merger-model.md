@@ -136,7 +136,8 @@ at the end of the given graph.
 
 Now we can simplify visualisation:  
 ![Alt parallel-handler-merger-computation-example-simplified](res/parallel-handler-merger-computation-example-simplified.png?raw=true)
-   
+
+
 ## Handler-merger model with conditional transitions
 We almost thee. Fasten seat belts. Lets enrich our Merger with last feature: conditional transitions:    
 ![Alt merger-conditional-outgoing-flows](res/merger-conditional-outgoing-flows.png?raw=true "MergePoint")
