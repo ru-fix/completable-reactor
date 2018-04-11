@@ -10,6 +10,8 @@ import ru.fix.completable.reactor.parser.java.antlr.GraphParser.VertexBuilderCon
 
 class JavaSourceParser(private val listener: Listener) {
 
+    private val commentParser = CommentParser()
+
     interface Listener {
         fun error(msg: String)
     }
@@ -380,7 +382,7 @@ class JavaSourceParser(private val listener: Listener) {
                     ?.takeIf { it.size > 0 }
                     ?.first()
                     ?.run {
-                        parseComment(text)
+                        commentParser.parseComment(text)
                     }
 
     private fun CommonTokenStream.checkCommentsToLeft(tokenIndex: Int): Comment? =
@@ -388,7 +390,7 @@ class JavaSourceParser(private val listener: Listener) {
                     ?.takeIf { it.size > 0 }
                     ?.last()
                     ?.run {
-                        parseComment(text)
+                        commentParser.parseComment(text)
                     }
 
     private fun createVertexFromVertexBuilder(
@@ -509,44 +511,7 @@ class JavaSourceParser(private val listener: Listener) {
         )
     }
 
-    data class Comment(val title: String?, val doc: String?)
 
-
-    fun parseComment(commentText: String): Comment {
-        val lines = commentText.split('\n')
-                .asSequence()
-                .map { it.trim() }
-                .map {
-                    when {
-                        it.startsWith("//") -> it.substring("//".length).trim()
-                        it.startsWith("/**") -> it.substring("/**".length).trim()
-                        it.startsWith("/*") -> it.substring("/*".length).trim()
-                        it.endsWith("*/") -> it.substring(0, it.length - "*/".length).trim()
-                        it.startsWith("*") -> it.substring("*".length).trim()
-                        else -> it
-                    }
-                }
-                .dropWhile { it.isBlank() }
-                .toList()
-                .dropLastWhile { it.isBlank() }
-
-        if (lines.isEmpty()) {
-            return Comment(null, null)
-        }
-
-        val title: String?
-        val doc: String
-
-        if (lines[0].startsWith('#')) {
-            title = lines[0].substring(1).trim()
-            doc = lines.drop(1).joinToString("\n")
-        } else {
-            title = null
-            doc = lines.joinToString("\n")
-        }
-
-        return Comment(title, doc.takeIf { it.isNotBlank() })
-    }
 
     //TODO: remove old coordinates like payload, merger, subgraoh, router from antlr and code
 }

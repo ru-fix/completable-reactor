@@ -324,57 +324,7 @@ class JavaSourceParserTest {
     }
 
 
-    @Test
-    fun parse_various_comments() {
-        val parser = JavaSourceParser(object : JavaSourceParser.Listener {
-            override fun error(msg: String) {
-                fail(msg)
-            }
-        })
 
-        assertEquals(
-                JavaSourceParser.Comment("Title here", null),
-                parser.parseComment(
-                        "/* \n" +
-                                "   #Title here\n" +
-                                "*/"))
-
-        assertEquals(
-                JavaSourceParser.Comment("Title here", "And documentation"),
-                parser.parseComment(
-                        "/*  # Title here\n" +
-                                "   And documentation" +
-                                "*/"))
-
-        assertEquals(
-                JavaSourceParser.Comment("Title here", null),
-                parser.parseComment("//# Title here  \n"))
-
-        assertEquals(
-                JavaSourceParser.Comment("Title here", "And documentation\nmultiline"),
-                parser.parseComment(
-                        "// #    Title here\n" +
-                                "       //     And documentation\n" +
-                                "       //     multiline"))
-
-
-        assertEquals(
-                JavaSourceParser.Comment(null, "Documentation line 1\nDocumentation line 2"),
-                parser.parseComment(
-                        """
-                        Documentation line 1
-                        Documentation line 2
-                        """.trimIndent()))
-
-        assertEquals(
-                JavaSourceParser.Comment(null, "Doc here."),
-                parser.parseComment(
-                        """
-                         /**
-                          * Doc here.
-                          */
-                        """.trimIndent()))
-    }
     //TODO check why kotlin parsed in 240ms and java parssed in 66ms, in same time antlr viewer shows same result ~20ms
     @Test
     fun build_compilation_model_for_single_subscribe_graph_in_kotlin() {
