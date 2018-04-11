@@ -157,10 +157,11 @@ class JavaSourceParser(private val listener: Listener) {
                                     if (transitionActionComplete() != null) {
                                         transition.isComplete = true
 
-                                        val endpoint = EndPoint(
-                                                name = vertex.name,
-                                                source = sourceFromToken(start, filePath))
-                                        endpoints[vertex.name] = endpoint
+                                        val endpoint = endpoints.computeIfAbsent(vertex.name) {
+                                            EndPoint(
+                                                    name = vertex.name,
+                                                    source = sourceFromToken(start, filePath))
+                                        }
                                         transition.target = endpoint
 
                                     } else {
