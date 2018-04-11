@@ -99,4 +99,17 @@ class CommentParserTest {
                         "  with second doc line\n")
         )
     }
+
+    @Test
+    fun `multiline title inside single comments with prefix`() {
+        assertEquals(
+                Comment("Multiline title\nwith second line", null),
+                parser.parseComment("" +
+                        " //# Multiline title   \n" +
+                        " //# with second line  " +
+                        "")
+        )
+    }
+
+
 }
