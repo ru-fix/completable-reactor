@@ -77,19 +77,11 @@ You can jump to code using double click on graph item or context menu.
  
 ## Examples
 
-## Best Practice
+## Best Practice and Code Convention
 
-Do not vertex templating via functions. use clone instead
-//TODO explain best practice block here
-```
-val vertex = handler{}.withMerger{}
---- 
-not: 
-val vertex = foo(myState)
-fun foo(){
-    return handler{}.withMerger()
-}
-```  
+Paragraph explains handy rules that will keep your code clear
+
+[](docs/best-practice-code-convention/best-practice-code-convention.md)  
 
 
 # How to build this project
