@@ -1,5 +1,11 @@
 # Best Practice and Code Convention
 
+- [Best Practice and Code Convention](#best-practice-and-code-convention)
+  * [Give your payloads and graphs similar names](#give-your-payloads-and-graphs-similar-names)
+  * [Treat vertex declaration as a function](#treat-vertex-declaration-as-a-function)
+  * [Give vertex a name as if it is a function](#give-vertex-a-name-as-if-it-is-a-function)
+  * [In Spring project declare your graph as a Bean](#in-spring-project-declare-your-graph-as-a-bean)
+
 ## Give your payloads and graphs similar names
 It is good to follow same naming convention in the project. 
 This way it would be easy to find payloads that could be submitted to reactor 
