@@ -128,12 +128,12 @@ public class ApplicationConfiguration{
 ```
 
 
-
-## Use Vertex clone instead of function reusing for similar logic
-
-Do not vertex templating via functions. use clone instead
-//TODO explain best practice block here
+<!--
 ```
+//TODO explain best practice block here
+Use Vertex clone instead of function reusing for similar logic
+Do not vertex templating via functions. use clone instead
+
 val vertex = handler{}.withMerger{}
 ---
 not:
@@ -142,3 +142,4 @@ fun foo(){
     return handler{}.withMerger()
 }
 ```
+-->
