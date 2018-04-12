@@ -7,6 +7,21 @@ Completable Reactor Model enriches
 [Handler-Merger execution model](../handler-merger-model/handler-merger-model.md)
 with new components and determinate its execution on JVM.
 
+
+## Table of Content
+- [Completable Reactor Model](#completable-reactor-model)
+  * [Payload and StartPoint](#payload-and-startpoint)
+  * [Vertices](#vertices)
+  * [Handlers and Mergers](#handlers-and-mergers)
+    + [Transition](#transition)
+    + [EndPoint](#endpoint)
+  * [Subgraph](#subgraph)
+  * [Routers and Mutators](#routers-and-mutators)
+    + [Merger decision](#merger-decision)
+    + [Parallel execution](#parallel-execution)
+    + [Detached Handler without Merger](#detached--handler-without-merger)
+    + [Detached Handler with Merger](#detached-handler-with-merger)
+
 ## Payload and StartPoint
 Payload is a plain old java object that encapsulates request, response
 and intermediate computation data required for request processing.

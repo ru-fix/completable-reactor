@@ -10,14 +10,17 @@ Framework built on top of Fork Join Pool and CompletableFuture API. Different JV
 to support more suitable DSL-like API. Currently supported DSLs are for `Java` and `Kotlin` languages.  
 
 ## Table of contents
- * [Motivation](#motivation)
- * [Getting Started](#getting-started)
- * [Handler-Merger model](#handler-merger-model)
- * [Completable Reactor model](#completable-reactor-model)
- * [Validation](#validation)
- * [Examples](#examples)
- * [Best Practice and Code Convention](#best-practice-and-code-convention)
- * [How to build this project](how-to-build-this-project)
+- [CompletableReactor](#completablereactor)
+  * [Table of contents](#table-of-contents)
+  * [Motivation](#motivation)
+  * [Getting Started](#getting-started)
+  * [Handler-Merger model](#handler-merger-model)
+  * [Completable Reactor model](#completable-reactor-model)
+  * [Validation](#validation)
+  * [Intellij Idea Plugin](#intellij-idea-plugin)
+  * [Examples](#examples)
+  * [Best Practice and Code Convention](#best-practice-and-code-convention)
+
 
 ## Motivation
 [CompletableFuture API](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html)

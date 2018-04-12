@@ -1,6 +1,14 @@
 #  Handler-Merger concurrent execution concept
 To describe and idea behind CompletableReactor let's start with simple model and then evolve it step by step.
 
+## Table of Content
+- [Handler-Merger concurrent execution concept](#handler-merger-concurrent-execution-concept)
+  * [Simple sequential model](#simple-sequential-model)
+  * [Sequential asynchronous handler-merger model](#sequential-asynchronous-handler-merger-model)
+    + [Parallel handler-merger model](#parallel-handler-merger-model)
+  * [Handler-merger model with conditional transitions](#handler-merger-model-with-conditional-transitions)
+  * [StartPoint and EndPoints](#startpoint-and-endpoints)
+
 ## Simple sequential model
 This model consists of two base elements: *Payload* and *Vertex*.
 Payload is a simple [POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object).
