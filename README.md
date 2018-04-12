@@ -9,6 +9,16 @@ writes code and IDE visualizes it in plugin window and provides ability to navig
 Framework built on top of Fork Join Pool and CompletableFuture API. Different JVM based languages use extension
 to support more suitable DSL-like API. Currently supported DSLs are for `Java` and `Kotlin` languages.  
 
+## Table of contents
+ * [Motivation](#motivation)
+ * [Getting Started](#getting-started)
+ * [Handler-Merger model](#handler-merger-model)
+ * [Completable Reactor model](#completable-reactor-model)
+ * [Validation](#validation)
+ * [Examples](#examples)
+ * [Best Practice and Code Convention](#best-practice-and-code-convention)
+ * [How to build this project](how-to-build-this-project)
+
 ## Motivation
 [CompletableFuture API](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html)
 with [ForkJoinPool](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html)
