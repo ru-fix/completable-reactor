@@ -1,6 +1,10 @@
 # Best Practice and Code Convention
 
 ## Give your payloads and graphs similar names
+It is good to follow same naming convention in the project. 
+This way it would be easy to find payloads that could be submitted to reactor 
+and graphs that implements their execution flows. 
+
 Bad:
 ```java
 class BuyData {...}
@@ -83,6 +87,12 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
 ```
 ## Give vertex a name as if it is a function
+Vertex usually implies business logic that should be executed as a part of 
+use case scenario. 
+It would be better to give vertex a name 
+that describes what action this vertex implements.     
+
+
 Bad:
 ```java
 Vertex userLogWriter = ...;
@@ -93,7 +103,11 @@ Good:
 Vertex writePurchaseToUserLog = ...;
 Vertex firePurchaseEventToStatistics = ...;
 ```
-## In Spring project declare your graph as Bean
+## In Spring project declare your graph as a Bean
+You can use different approaches in registering graphs in you application. 
+Main thing is to be consistent about it. 
+We suggest to use an approach when you declare graph as a Bean
+
 ```java
 public class MyGraph extends Graph<MyPayload>{
     @Autowired
