@@ -248,6 +248,8 @@ Vertex fireStatisticEvent =
 ```
 ![Alt without-merger](res/without-merger.png?raw=true)
 
+### Connect vertices into graph
+
 No we can connect described vertices into graph.
 ```java
 {
