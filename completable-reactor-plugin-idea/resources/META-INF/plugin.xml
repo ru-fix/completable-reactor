@@ -16,8 +16,8 @@
 
   <change-notes>
     <![CDATA[
-      1.2.6 Support multiline title. Fix bug with displaying multiple endpoints for single vertex.
-      1.2.1 Add emptyMerger, routingMerger and mutator. Short coordinates declaration.
+      1.2.6 Support multiline title. Fix bug with displaying multiple endpoints for single vertex.<br>
+      1.2.1 Add emptyMerger, routingMerger and mutator. Short coordinates declaration.<br>
       1.1.7 Fix Kotlin constructor parsing.<br>
       1.1.5 Support Kotlin graph.<br>
       1.1.3 Support sync handler.<br>
