@@ -148,6 +148,9 @@ Merger is a synchronous function that takes Handlers computation result and uses
 It is safe to modify payload within merger.
 
 There are several types of Mergers: RoutingMerger, Merger and EmptyMerger.
+
+### With Routing Merger
+
 Routing Merger can change Payload and should always return enum value that defines outgoing transition.
 Graph will continue to execute by this transition returned from RoutingMerger function.
 In given example we send request to bank.
@@ -180,6 +183,8 @@ Vertex reserveMoney =
 ```
 ![Alt routing-merger](res/routing-merger.png?raw=true)
 
+### With Merger
+
 If the only thing you need is to modify Payload and unconditionally continue to execute graph
 by the next Vertex, then you need to use Merger.
 Merger works in a same way as RoutingMerger but it is not required for Merger to return any value.
@@ -203,6 +208,8 @@ Vertex sendNotification =
 ```
 ![Alt merger](res/merger.png?raw=true)
 
+### With Empty Merger
+
 Some times we even do not care about saving result of asynchronous operation in payload.
 In that case we can use EmptyMerger.
 EmptyMerger does not do anything.
@@ -219,6 +226,8 @@ Vertex trySendEmail =
 }
 ```
 ![Alt empty-merger](res/empty-merger.png?raw=true)
+
+### Without Merger
 
 Last option with mergers is not to use them at all!
 The differences with EmptyMerger is that handler will be executed in parallel with other vertices but will
