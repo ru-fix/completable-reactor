@@ -36,7 +36,7 @@ class MergeByExecutionBuilder<PayloadType>(
                         """)
                 }
 
-                pvx.handlingFeature.handleAsync { context, thr ->
+                pvx.handlingFeature.handle { context, thr ->
                     if (thr != null) {
                         log.error(thr) { "Hanlding feature for vertex ${pvx.vertex.name} without merger failed." }
                         pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
@@ -67,7 +67,7 @@ class MergeByExecutionBuilder<PayloadType>(
             incomingFlows.add(pvx.handlingFeature)
 
             CompletableFuture.allOf(*incomingFlows.toTypedArray())
-                    .thenRunAsync {
+                    .thenRun {
 
                         /**
                          * Handling result could be INVALID_HANDLE_PAYLOAD_CONTEXT in case of exception
@@ -119,7 +119,7 @@ class MergeByExecutionBuilder<PayloadType>(
                              * executionResult completed by exception
                              */
                             pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
-                            return@thenRunAsync
+                            return@thenRun
 
                         } else if (handlePayloadContext.isTerminal) {
                             /**
@@ -128,7 +128,7 @@ class MergeByExecutionBuilder<PayloadType>(
                              * All outgoing flows from merge point will be marked as terminal.
                              */
                             pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
-                            return@thenRunAsync
+                            return@thenRun
 
                         } else if (handlePayloadContext.isDeadTransition) {
                             /**
@@ -137,7 +137,7 @@ class MergeByExecutionBuilder<PayloadType>(
                              * All outgoing flows from merge point will be marked as dead.
                              */
                             pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
-                            return@thenRunAsync
+                            return@thenRun
                         }
 
 

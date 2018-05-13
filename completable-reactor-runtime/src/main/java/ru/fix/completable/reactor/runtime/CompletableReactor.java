@@ -640,7 +640,7 @@ public class CompletableReactor implements AutoCloseable {
             CompletableFuture<PayloadType> inlineGraphResult =
                     (CompletableFuture<PayloadType>) inlineGraphFunction.apply(payload);
 
-            inlineGraphResult.thenAcceptAsync(any -> {
+            inlineGraphResult.thenAccept(any -> {
                 payloadCall.stop();
                 executionCall.stop();
             });
@@ -683,12 +683,12 @@ public class CompletableReactor implements AutoCloseable {
 
         statistics.runningTotal.increment();
 
-        execution.getChainExecutionFuture().handleAsync((result, thr) -> {
+        execution.getChainExecutionFuture().handle((result, thr) -> {
             statistics.runningTotal.decrement();
             return null;
         });
 
-        execution.getResultFuture().handleAsync((result, thr) -> {
+        execution.getResultFuture().handle((result, thr) -> {
             statistics.runningWithoutResult.decrement();
             return null;
         });
@@ -731,7 +731,7 @@ public class CompletableReactor implements AutoCloseable {
                 timeoutMs,
                 TimeUnit.MILLISECONDS);
 
-        execution.getChainExecutionFuture().handleAsync((result, throwable) -> {
+        execution.getChainExecutionFuture().handle((result, throwable) -> {
             long count = pendingRequestCount.decrementAndGet();
             if (count == 0) {
                 synchronized (pendingRequestCount) {
@@ -744,8 +744,8 @@ public class CompletableReactor implements AutoCloseable {
             return null;
         });
 
-        execution.getResultFuture().thenRunAsync(payloadCall::stop);
-        execution.getChainExecutionFuture().thenRunAsync(executionCall::stop);
+        execution.getResultFuture().thenRun(payloadCall::stop);
+        execution.getChainExecutionFuture().thenRun(executionCall::stop);
 
         //TODO: replace by interface and hide debugProcessingVertexGraphState
         return new Execution<>(

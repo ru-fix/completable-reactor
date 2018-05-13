@@ -10,6 +10,8 @@ import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.ForkJoinWorkerThread
 import java.util.stream.Collectors
 
 private val log = KotlinLogging.logger {}
@@ -46,7 +48,7 @@ class HandleByExecutionBuilder<PayloadType>(
             CompletableFuture.allOf(
                     *pvx.incomingHandlingFlows.asSequence().map { it.feature }.toList().toTypedArray()
 
-            ).thenRunAsync {
+            ).thenRun {
 
                 val incomingFlows: List<ExecutionBuilder.TransitionPayloadContext> = pvx
                         .incomingHandlingFlows
@@ -291,7 +293,8 @@ class HandleByExecutionBuilder<PayloadType>(
             return
         }
 
-        handlingResult.handleAsync { result, resultThrowable ->
+
+        fun <T> handlingFunction(result: T?, resultThrowable: Throwable?) {
 
             var throwable = resultThrowable
 
@@ -350,8 +353,23 @@ class HandleByExecutionBuilder<PayloadType>(
 
             null
 
+        }
+
+        handlingResult.handle { result, resultThrowable ->
+            //TODO: support custom pool and check this approach
+            val currentThread = Thread.currentThread()
+            if (currentThread is ForkJoinWorkerThread && currentThread.pool === ForkJoinPool.commonPool()) {
+                handlingFunction(result, resultThrowable)
+            } else {
+                handlingResult.handleAsync { result, resultThrowable ->
+                    handlingFunction(result, resultThrowable)
+                }.exceptionally { exc ->
+                    log.error(exc) { "Failed to execute async afterHandle block for vertex ${pvx.vertex.name}" }
+                    null
+                }
+            }
         }.exceptionally { exc ->
-            log.error("Failed to execute afterHandle block for vertex ${pvx.vertex.name}")
+            log.error(exc) { "Failed to execute sync afterHandle block for vertex ${pvx.vertex.name}" }
             null
         }
     }

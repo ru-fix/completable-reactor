@@ -149,7 +149,7 @@ class ExecutionBuilder(
         /**
          * Will be completed on payload submission to processor chain
          */
-        val startPointTransitionFuture = submitFuture.thenApplyAsync { payload ->
+        val startPointTransitionFuture = submitFuture.thenApply { payload ->
             TransitionPayloadContext(payload = payload)
         }
 
@@ -211,7 +211,7 @@ class ExecutionBuilder(
                         val target = transition.handleBy
 
                         processingVertices[target]!!.incomingHandlingFlows.add(TransitionFuture(
-                                mergingFeature.thenApplyAsync { context ->
+                                mergingFeature.thenApply { context ->
 
                                     if (context.isTerminal) {
                                         TransitionPayloadContext(isTerminal = true)
@@ -253,7 +253,7 @@ class ExecutionBuilder(
                         val target = transition.mergeBy
 
                         processingVertices[target]!!.incomingMergingFlows.add(TransitionFuture(
-                                mergingFeature.thenApplyAsync { context ->
+                                mergingFeature.thenApply { context ->
                                     if (context.isTerminal) {
                                         MergePayloadContext(isTerminal = true)
 
@@ -306,7 +306,7 @@ class ExecutionBuilder(
          * Handle terminal vertices.
          * When execution reaches 'complete' vertex all transitions should be marked dead and complete.
          */
-        executionResultFuture.thenRunAsync {
+        executionResultFuture.thenRun {
             processingVertices.values
                     .asSequence()
                     .flatMap { it.incomingHandlingFlows.asSequence() }
