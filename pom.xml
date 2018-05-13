@@ -28,6 +28,7 @@
     <module>completable-reactor-parser</module>
     <module>completable-reactor-graph</module>
     <module>completable-reactor-graph-kotlin</module>
+    <module>completable-reactor-perf-test</module>
   </modules>
 
   <properties>
