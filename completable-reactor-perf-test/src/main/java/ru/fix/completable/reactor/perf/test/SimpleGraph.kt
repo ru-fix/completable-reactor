@@ -2,15 +2,26 @@ package ru.fix.completable.reactor.perf.test
 
 import ru.fix.completable.reactor.graph.kotlin.Graph
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.atomic.AtomicInteger
 
 class SimpleGraph : Graph<SimplePayload>() {
 
-    private val poolHttp = Executors.newFixedThreadPool(10)
-    private val poolPG = Executors.newFixedThreadPool(10)
-    private val poolHBase = Executors.newFixedThreadPool(10)
-    private val poolSmpp = Executors.newFixedThreadPool(10)
+    private fun namedPool(name: String, size: Int): ExecutorService {
+        val counter = AtomicInteger()
+
+        return Executors.newFixedThreadPool(10) {
+            Thread(it, "$name-${counter.getAndIncrement()}")
+        }
+    }
+
+
+    private val poolHttp = namedPool("pool-http",10)
+    private val poolPG = namedPool("pool-pg",10)
+    private val poolHBase = namedPool("pool-hbase",10)
+    private val poolSmpp = namedPool("pool-smpp",10)
 
 
     private val xmnpmlProcessor = AsyncService(poolHttp, 50)
