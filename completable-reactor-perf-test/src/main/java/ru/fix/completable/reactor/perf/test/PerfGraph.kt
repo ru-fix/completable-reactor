@@ -1,19 +1,22 @@
 package ru.fix.completable.reactor.perf.test
 
+import ru.fix.commons.profiler.Profiler
 import ru.fix.completable.reactor.graph.kotlin.Graph
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
 
-class SimpleGraph : Graph<SimplePayload>() {
+class PerfGraph(val profiler: Profiler) : Graph<PerfPayload>() {
 
     private fun namedPool(name: String, size: Int): ExecutorService {
         val counter = AtomicInteger()
 
         return Executors.newFixedThreadPool(10) {
             Thread(it, "$name-${counter.getAndIncrement()}")
+        }.also {
+            (it as ThreadPoolExecutor).let {
+                profiler.attachIndicator("pending.$name.tasks"){it.taskCount - it.completedTaskCount}
+                profiler.attachIndicator("pending.$name.queue"){it.queue.size.toLong()}
+            }
         }
     }
 
@@ -24,25 +27,25 @@ class SimpleGraph : Graph<SimplePayload>() {
     private val poolSmpp = namedPool("pool-smpp",10)
 
 
-    private val xmnpmlProcessor = AsyncService(poolHttp, 50)
+    private val xmnpmlProcessor = AsyncService(poolHttp, 1)
 
-    private val userProfileProcessor = AsyncService(poolHBase, 22)
+    private val userProfileProcessor = AsyncService(poolHBase, 1)
 
-    private val serviceInfoProcessor = AsyncService(poolPG, 12)
+    private val serviceInfoProcessor = AsyncService(poolPG, 1)
 
-    private val pSmppParametersFetch = AsyncService(poolPG, 12)
+    private val pSmppParametersFetch = AsyncService(poolPG, 1)
 
-    private val restrictionProcessor = AsyncService(poolHBase, 14)
+    private val restrictionProcessor = AsyncService(poolHBase, 1)
 
-    private val systemAttributeProcessor = AsyncService(poolPG, 12)
+    private val systemAttributeProcessor = AsyncService(poolPG, 1)
 
-    private val contentCountProcessor = AsyncService(poolHBase, 23)
+    private val contentCountProcessor = AsyncService(poolHBase, 1)
 
-    private val sendSmsProcessor = AsyncService(poolSmpp, 47)
+    private val sendSmsProcessor = AsyncService(poolSmpp, 1)
 
-    private val smsHistoryAndStatisticsProcessor = AsyncService(poolHBase, 17)
+    private val smsHistoryAndStatisticsProcessor = AsyncService(poolHBase, 1)
 
-    private val hBaseClient = AsyncService(poolHBase, 11)
+    private val hBaseClient = AsyncService(poolHBase, 1)
 
 
     private val readMsisdnInfo =
@@ -331,7 +334,7 @@ class SimpleGraph : Graph<SimplePayload>() {
                 .ct(writeMsisdnTx, -158, 1669);
     }
 
-    internal fun logSmsFireStatisticsAndSetErrorCode(payload: SimplePayload,
+    internal fun logSmsFireStatisticsAndSetErrorCode(payload: PerfPayload,
                                                      errorCode: VaspSmppConstants): CompletableFuture<String> {
 
         return smsHistoryAndStatisticsProcessor.asyncMethod(payload.request.arg + payload.intermedium.smppTransactId)

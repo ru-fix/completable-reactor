@@ -1,6 +1,6 @@
 package ru.fix.completable.reactor.perf.test
 
-class SimplePayload (val request: Request){
+class PerfPayload (val request: Request){
     val intermedium = Intermedium()
     val response = Response()
 

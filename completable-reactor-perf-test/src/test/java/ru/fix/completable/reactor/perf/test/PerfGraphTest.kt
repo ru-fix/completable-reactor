@@ -7,7 +7,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.*
 
-class SimpleGraphTest {
+class PerfGraphTest {
 
     /**
      * Launch graph with routers and handlers that uses various pools.
@@ -18,7 +18,7 @@ class SimpleGraphTest {
 
         val profiler = SimpleProfiler()
         val reactor = CompletableReactor(profiler)
-        reactor.registerGraph(SimpleGraph())
+        reactor.registerGraph(PerfGraph(profiler))
 
         val reporter = profiler.createReporter()
         val schedule = Executors.newSingleThreadScheduledExecutor()
@@ -26,20 +26,20 @@ class SimpleGraphTest {
             println(reporter.buildReportAndReset())
         }, 0, 15, TimeUnit.SECONDS)
 
-        val list = ArrayBlockingQueue<CompletableFuture<*>>(300)
+        val list = ArrayBlockingQueue<CompletableFuture<*>>(5000)
 
 
         val start = Instant.now()
         for (i in 1..100_000) {
 
             val future = reactor.submit(
-                    SimplePayload(SimplePayload.Request(
+                    PerfPayload(PerfPayload.Request(
                             "simple-request-" +
                                     ThreadLocalRandom.current().nextInt().toString())
                     )).resultFuture
             list.put(future)
 
-            future.handle { res, thr -> list.remove(future) }
+            future.handleAsync { res, thr -> list.remove(future) }
 
             if(Duration.between(start, Instant.now()) > Duration.ofMinutes(1)){
                 println("* * * * * * Break test. Use results above ^ * * * * * *")
