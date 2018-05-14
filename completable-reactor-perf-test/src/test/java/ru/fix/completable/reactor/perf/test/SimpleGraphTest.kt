@@ -1,17 +1,20 @@
 package ru.fix.completable.reactor.perf.test
 
-import com.google.common.util.concurrent.RateLimiter
 import org.junit.Test
 import ru.fix.commons.profiler.impl.SimpleProfiler
 import ru.fix.completable.reactor.runtime.CompletableReactor
-import java.util.*
+import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.*
 
 class SimpleGraphTest {
 
-
+    /**
+     * Launch graph with routers and handlers that uses various pools.
+     * Maintain fixed size buffer of pending reactor futures.
+     */
     @Test
-    fun run() {
+    fun fixed_pending_buffer_load() {
 
         val profiler = SimpleProfiler()
         val reactor = CompletableReactor(profiler)
@@ -23,9 +26,10 @@ class SimpleGraphTest {
             println(reporter.buildReportAndReset())
         }, 0, 15, TimeUnit.SECONDS)
 
-        val list = ArrayBlockingQueue<CompletableFuture<*>>(100)
+        val list = ArrayBlockingQueue<CompletableFuture<*>>(300)
 
 
+        val start = Instant.now()
         for (i in 1..100_000) {
 
             val future = reactor.submit(
@@ -36,8 +40,14 @@ class SimpleGraphTest {
             list.put(future)
 
             future.handle { res, thr -> list.remove(future) }
+
+            if(Duration.between(start, Instant.now()) > Duration.ofMinutes(1)){
+                println("* * * * * * Break test. Use results above ^ * * * * * *")
+                break
+            }
         }
 
         reactor.close()
+        println("Test complete for ${Duration.between(start, Instant.now()).toMillis()}ms")
     }
 }
