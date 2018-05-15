@@ -26,26 +26,28 @@ class PerfGraph(val profiler: Profiler) : Graph<PerfPayload>() {
     private val poolHBase = namedPool("pool-hbase",10)
     private val poolSmpp = namedPool("pool-smpp",10)
 
+    private val TIMEOUT = 1
 
-    private val xmnpmlProcessor = AsyncService(poolHttp, 1)
 
-    private val userProfileProcessor = AsyncService(poolHBase, 1)
+    private val xmnpmlProcessor = AsyncService(poolHttp, TIMEOUT)
 
-    private val serviceInfoProcessor = AsyncService(poolPG, 1)
+    private val userProfileProcessor = AsyncService(poolHBase, TIMEOUT)
 
-    private val pSmppParametersFetch = AsyncService(poolPG, 1)
+    private val serviceInfoProcessor = AsyncService(poolPG, TIMEOUT)
 
-    private val restrictionProcessor = AsyncService(poolHBase, 1)
+    private val pSmppParametersFetch = AsyncService(poolPG, TIMEOUT)
 
-    private val systemAttributeProcessor = AsyncService(poolPG, 1)
+    private val restrictionProcessor = AsyncService(poolHBase, TIMEOUT)
 
-    private val contentCountProcessor = AsyncService(poolHBase, 1)
+    private val systemAttributeProcessor = AsyncService(poolPG, TIMEOUT)
 
-    private val sendSmsProcessor = AsyncService(poolSmpp, 1)
+    private val contentCountProcessor = AsyncService(poolHBase, TIMEOUT)
 
-    private val smsHistoryAndStatisticsProcessor = AsyncService(poolHBase, 1)
+    private val sendSmsProcessor = AsyncService(poolSmpp, TIMEOUT)
 
-    private val hBaseClient = AsyncService(poolHBase, 1)
+    private val smsHistoryAndStatisticsProcessor = AsyncService(poolHBase, TIMEOUT)
+
+    private val hBaseClient = AsyncService(poolHBase, TIMEOUT)
 
 
     private val readMsisdnInfo =
@@ -256,11 +258,8 @@ class PerfGraph(val profiler: Profiler) : Graph<PerfPayload>() {
                 .onAny().handleBy(checkTransaction);
 
         checkTransaction
-                // Запрос от КП содержит активную транзакцию
                 .on(TxCheckResult.ACTIVE).handleBy(incrementAndCheckContentCount)
-                // Запрос от КП содержит НЕ неактивную транзакцию
                 .on(TxCheckResult.NOT_ACTIVE).handleBy(registerMaxPushTimeOut1376)
-                // Запрос от КП НЕ содержит транзакцию
                 .on(TxCheckResult.EMPTY).handleBy(checkUnlimPush);
 
         checkUnlimPush
@@ -312,7 +311,7 @@ class PerfGraph(val profiler: Profiler) : Graph<PerfPayload>() {
                 .vx(incrementAndCheckContentCount, -179, 908, 56, 1077)
                 .vx(readMaxPushTimeoutSystemAttribute, 73, 404, 214, 456)
                 .vx(readMsisdnInfo, 10, -383, 67, -314)
-                .vx(readServiceInfo, -118, 135, 95, 181)
+                .vx(readServiceInfo, -118, 135, -12, 210)
                 .vx(readSmppTransactId, 59, 533, 206, 604)
                 .vx(registerAbonentHasRestriction1580, 709, 1348, 845, 1458)
                 .vx(registerCannotDeliver1560, 266, 1511, 369, 1599)

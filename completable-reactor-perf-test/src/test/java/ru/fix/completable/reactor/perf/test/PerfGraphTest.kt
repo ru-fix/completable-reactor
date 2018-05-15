@@ -26,7 +26,7 @@ class PerfGraphTest {
             println(reporter.buildReportAndReset())
         }, 0, 15, TimeUnit.SECONDS)
 
-        val list = ArrayBlockingQueue<CompletableFuture<*>>(5000)
+        val list = ArrayBlockingQueue<CompletableFuture<*>>(3000)
 
 
         val start = Instant.now()
