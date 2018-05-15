@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.perf.test
 
 import com.google.common.util.concurrent.RateLimiter
+import kotlinx.coroutines.experimental.CommonPool
 import org.junit.Test
 import ru.fix.commons.profiler.impl.SimpleProfiler
 import ru.fix.completable.reactor.runtime.CompletableReactor
@@ -25,19 +26,41 @@ class PerfGraphTest {
         val reporter = profiler.createReporter()
         val schedule = Executors.newSingleThreadScheduledExecutor()
         schedule.scheduleAtFixedRate({
-            println(reporter.buildReportAndReset())
+            try {
+                val report = reporter.buildReportAndReset()
+                println(report)
+
+                val pld = report.profilerCallReports.find {
+                    it.name.endsWith("pld.PerfPayload")
+                }
+
+                if(pld != null) {
+                    report.profilerCallReports.forEach {
+                        println("${it.name} diff: ${it.callsCount - pld.callsCount}")
+                    }
+                }
+            } catch (exc: Exception) {
+                exc.printStackTrace()
+            }
+
+
         }, 0, 15, TimeUnit.SECONDS)
 
         val counter = AtomicInteger()
 
         val WINDOW = 300
-        val THROUGHPUT_LIMIT = 2000
+        val THROUGHPUT_LIMIT = 2200
 
         val rateLimiter = RateLimiter.create(THROUGHPUT_LIMIT.toDouble())
 
+        ForkJoinPool.commonPool().parallelism
+
         println("WINDOW = $WINDOW")
         println("THROUGHPUT_LIMIT = $THROUGHPUT_LIMIT")
-        println("POOL_SIZE = ${PerfGraph.POOL_SIZE}")
+        println("Fixed Pools size = ${PerfGraph.POOL_SIZE}")
+        println("CommonPool size = ${ForkJoinPool.commonPool().parallelism}")
+        println("Handler timeout = ${PerfGraph.TIMEOUT}")
+
 
         val start = Instant.now()
         for (i in 1..100_000) {
