@@ -8,10 +8,10 @@ class AsyncService(
         private val timeout: Int) {
 
     fun asyncMethod(arg: String): CompletableFuture<String> {
-        return CompletableFuture<String>().also {
+        return CompletableFuture<String>().also { future ->
             pool.submit {
                 Thread.sleep(timeout.toLong())
-                it.complete("value for arg: $arg")
+                future.complete("value for arg: $arg")
             }
         }
     }
