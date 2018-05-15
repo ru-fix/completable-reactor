@@ -7,10 +7,15 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class PerfGraph(val profiler: Profiler) : Graph<PerfPayload>() {
 
+    companion object {
+        val POOL_SIZE = 50
+    }
+
+
     private fun namedPool(name: String, size: Int): ExecutorService {
         val counter = AtomicInteger()
 
-        return Executors.newFixedThreadPool(10) {
+        return Executors.newFixedThreadPool(size) {
             Thread(it, "$name-${counter.getAndIncrement()}")
         }.also {
             (it as ThreadPoolExecutor).let {
@@ -21,12 +26,14 @@ class PerfGraph(val profiler: Profiler) : Graph<PerfPayload>() {
     }
 
 
-    private val poolHttp = namedPool("pool-http",10)
-    private val poolPG = namedPool("pool-pg",10)
-    private val poolHBase = namedPool("pool-hbase",10)
-    private val poolSmpp = namedPool("pool-smpp",10)
 
-    private val TIMEOUT = 1
+
+    private val poolHttp = namedPool("pool-http",POOL_SIZE)
+    private val poolPG = namedPool("pool-pg",POOL_SIZE)
+    private val poolHBase = namedPool("pool-hbase",POOL_SIZE)
+    private val poolSmpp = namedPool("pool-smpp",POOL_SIZE)
+
+    private val TIMEOUT = 20
 
 
     private val xmnpmlProcessor = AsyncService(poolHttp, TIMEOUT)
