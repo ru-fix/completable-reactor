@@ -1,19 +1,22 @@
 package ru.fix.completable.reactor.perf.test
 
+import ru.fix.commons.profiler.Profiler
 import ru.fix.completable.reactor.graph.kotlin.Graph
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
 
-class SimpleGraph : Graph<SimplePayload>() {
+class PerfGraph(val profiler: Profiler) : Graph<PerfPayload>() {
 
     private fun namedPool(name: String, size: Int): ExecutorService {
         val counter = AtomicInteger()
 
         return Executors.newFixedThreadPool(10) {
             Thread(it, "$name-${counter.getAndIncrement()}")
+        }.also {
+            (it as ThreadPoolExecutor).let {
+                profiler.attachIndicator("pending.$name.tasks"){it.taskCount - it.completedTaskCount}
+                profiler.attachIndicator("pending.$name.queue"){it.queue.size.toLong()}
+            }
         }
     }
 
@@ -23,26 +26,28 @@ class SimpleGraph : Graph<SimplePayload>() {
     private val poolHBase = namedPool("pool-hbase",10)
     private val poolSmpp = namedPool("pool-smpp",10)
 
+    private val TIMEOUT = 1
 
-    private val xmnpmlProcessor = AsyncService(poolHttp, 50)
 
-    private val userProfileProcessor = AsyncService(poolHBase, 22)
+    private val xmnpmlProcessor = AsyncService(poolHttp, TIMEOUT)
 
-    private val serviceInfoProcessor = AsyncService(poolPG, 12)
+    private val userProfileProcessor = AsyncService(poolHBase, TIMEOUT)
 
-    private val pSmppParametersFetch = AsyncService(poolPG, 12)
+    private val serviceInfoProcessor = AsyncService(poolPG, TIMEOUT)
 
-    private val restrictionProcessor = AsyncService(poolHBase, 14)
+    private val pSmppParametersFetch = AsyncService(poolPG, TIMEOUT)
 
-    private val systemAttributeProcessor = AsyncService(poolPG, 12)
+    private val restrictionProcessor = AsyncService(poolHBase, TIMEOUT)
 
-    private val contentCountProcessor = AsyncService(poolHBase, 23)
+    private val systemAttributeProcessor = AsyncService(poolPG, TIMEOUT)
 
-    private val sendSmsProcessor = AsyncService(poolSmpp, 47)
+    private val contentCountProcessor = AsyncService(poolHBase, TIMEOUT)
 
-    private val smsHistoryAndStatisticsProcessor = AsyncService(poolHBase, 17)
+    private val sendSmsProcessor = AsyncService(poolSmpp, TIMEOUT)
 
-    private val hBaseClient = AsyncService(poolHBase, 11)
+    private val smsHistoryAndStatisticsProcessor = AsyncService(poolHBase, TIMEOUT)
+
+    private val hBaseClient = AsyncService(poolHBase, TIMEOUT)
 
 
     private val readMsisdnInfo =
@@ -253,11 +258,8 @@ class SimpleGraph : Graph<SimplePayload>() {
                 .onAny().handleBy(checkTransaction);
 
         checkTransaction
-                // Запрос от КП содержит активную транзакцию
                 .on(TxCheckResult.ACTIVE).handleBy(incrementAndCheckContentCount)
-                // Запрос от КП содержит НЕ неактивную транзакцию
                 .on(TxCheckResult.NOT_ACTIVE).handleBy(registerMaxPushTimeOut1376)
-                // Запрос от КП НЕ содержит транзакцию
                 .on(TxCheckResult.EMPTY).handleBy(checkUnlimPush);
 
         checkUnlimPush
@@ -309,7 +311,7 @@ class SimpleGraph : Graph<SimplePayload>() {
                 .vx(incrementAndCheckContentCount, -179, 908, 56, 1077)
                 .vx(readMaxPushTimeoutSystemAttribute, 73, 404, 214, 456)
                 .vx(readMsisdnInfo, 10, -383, 67, -314)
-                .vx(readServiceInfo, -118, 135, 95, 181)
+                .vx(readServiceInfo, -118, 135, -12, 210)
                 .vx(readSmppTransactId, 59, 533, 206, 604)
                 .vx(registerAbonentHasRestriction1580, 709, 1348, 845, 1458)
                 .vx(registerCannotDeliver1560, 266, 1511, 369, 1599)
@@ -331,7 +333,7 @@ class SimpleGraph : Graph<SimplePayload>() {
                 .ct(writeMsisdnTx, -158, 1669);
     }
 
-    internal fun logSmsFireStatisticsAndSetErrorCode(payload: SimplePayload,
+    internal fun logSmsFireStatisticsAndSetErrorCode(payload: PerfPayload,
                                                      errorCode: VaspSmppConstants): CompletableFuture<String> {
 
         return smsHistoryAndStatisticsProcessor.asyncMethod(payload.request.arg + payload.intermedium.smppTransactId)
