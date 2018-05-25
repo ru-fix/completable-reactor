@@ -162,7 +162,7 @@ public class ApplicationConfiguration{
 
 ## Optional, lateinit vars for Graph context variable
 
-Nullable types `T?` force us to check value for null before we can use it.
+Nullable types `T?` or `Optional<T>` force us to check value for null before we can use it.
 This is very handy for function arguments, class states, etc.
 But lets discuss situation with graphs.
 We usually desing graphs in a way so upper vertices initialize data and bottom vertices uses them.
