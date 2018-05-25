@@ -9,7 +9,8 @@
 ## Give your payloads and graphs similar names
 It is good to follow same naming convention in the project. 
 This way it would be easy to find payloads that could be submitted to reactor 
-and graphs that implements their execution flows. 
+and graphs that implements their execution flows.  
+We can use `ActionNamePayload` and `ActionNameGraph` template for names. 
 
 Bad:
 ```java
@@ -26,6 +27,18 @@ class PurchaseGraph extends Graph<PurchasePayload> {...}
 
 class SubscriptonPayload {...}
 class SubscriptonGraph extends Graph<SubscriptonPayload.> {...}
+```
+## Give your payloads and graphs names that represent actions that graph implies
+
+It is better to give graph a name that represent action. 
+
+Bad:
+```java
+class SmsSenderPayload {...} 
+```
+Good: 
+```java
+class SendSmsPayload {...}
 ```
 
 ## Treat vertex declaration as a function
@@ -146,6 +159,27 @@ public class ApplicationConfiguration{
     }
 }
 ```
+
+## Optional, lateinit vars for Graph context variable
+
+Nullable types `T?` force us to check value for null before we can use it.
+This is very handy for function arguments, class states, etc.
+But lets discuss situation with graphs.
+We usually desing graphs in a way so upper vertices initialize data and bottom vertices uses them.
+Upper vertex1 initialize `data` with value and vertex2 reads `data`. 
+In that case our graph design imply that data will be ready for reading in vertex2. 
+Suppose that data is not ready : vertex2 from our example have only one case: if `data` is null - rise an exception. 
+But Kotlin lateinit or Nullable `data` will rise NPE for this case for us.
+So if our graph design imply that data should be ready before reading by bottom vertices - we should use nullable or lateinit vars.
+ 
+What if our login have two cases: in one we use data, and in another - do not. 
+Best way to solve this case is to try to implement it thought graph design and have two branches of vertices.
+This way we can continue to use lateinit vars/nullable values. 
+But some times it is better not to increase complexity by adding new branches and instead to use
+lateinit/nullable data in graph payload and implement `if(x==null) A else B` logic inside vertex without any exceptions.
+
+
+
 
 
 <!--
