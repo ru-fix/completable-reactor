@@ -172,13 +172,13 @@ Suppose that data is not ready : vertex2 from our example have only one case: if
 But Kotlin lateinit or Nullable `data` will rise NPE for this case for us.
 So if our graph design imply that data should be ready before reading by bottom vertices - we should use nullable or lateinit vars.
  
-What if our login have two cases: in one we use data, and in another - do not. 
+What if our logic have two cases: in one we use data, and in another - do not. 
 Best way to solve this case is to try to implement it thought graph design and have two branches of vertices.
-This way we can continue to use lateinit vars/nullable values. 
-But some times it is better not to increase complexity by adding new branches and instead to use
-lateinit/nullable data in graph payload and implement `if(x==null) A else B` logic inside vertex without any exceptions.
+This way we can continue to use lateinit vars/nullable values inside payload.   
 
-
+But some times it is better not to increase complexity by adding new branches to graph
+ and instead to use `T?/Optional<T>` data in graph payload. 
+Then we simply implement `if (data == null/isPresent) A else B` logic inside vertex without any exceptions.
 
 
 
