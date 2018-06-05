@@ -357,7 +357,7 @@ public class CompletableReactor implements AutoCloseable {
     /**
      * For debug purpose to add internal runtime vertex graph representation into result.
      * This helps to find blocked vertices that does not completed correctly.
-     *
+     * <p>
      * If this flag is enabled then internal processing graph state will be attached to Execution result.
      * This allows easy access to execution state during debug.
      * One of drawbacks of this future is that GC will be prevented form removing internal state objects
@@ -598,8 +598,7 @@ public class CompletableReactor implements AutoCloseable {
 
     public <PayloadType> Execution<PayloadType> submit(PayloadType payload, long timeoutMs) {
         if (isClosed.get()) {
-            throw new IllegalStateException(String.format(
-                    "CompletableReactor is closed. Payload %s is discarded.", payload));
+            throw new IllegalStateException("CompletableReactor is closed. Payload " + payload + " is discarded.");
         }
         return internalSubmit(payload, timeoutMs);
     }
@@ -640,7 +639,7 @@ public class CompletableReactor implements AutoCloseable {
             CompletableFuture<PayloadType> inlineGraphResult =
                     (CompletableFuture<PayloadType>) inlineGraphFunction.apply(payload);
 
-            inlineGraphResult.thenAcceptAsync(any -> {
+            inlineGraphResult.whenCompleteAsync((payloadType, throwable) -> {
                 payloadCall.stop();
                 executionCall.stop();
             });
@@ -666,8 +665,7 @@ public class CompletableReactor implements AutoCloseable {
                 execution = glExecutionBuilder.build(glGraph);
 
             } else {
-                throw new IllegalArgumentException(String.format(
-                        "Rector graph not found for payload %s", payload.getClass()));
+                throw new IllegalArgumentException("Rector graph not found for payload " + payload.getClass());
             }
         }
 
@@ -711,21 +709,17 @@ public class CompletableReactor implements AutoCloseable {
                      */
                     if (!execution.getResultFuture().isDone()) {
                         execution.getResultFuture().completeExceptionally(
-                                new TimeoutException(String.format("" +
-                                                "Response for payload %s took more than %d ms.\n" +
-                                                "Execution state: %s",
-                                        payload,
-                                        timeoutMs,
-                                        dumpExecutionState(execution))));
+                                new TimeoutException("" +
+                                        "Response for payload " + payload +
+                                        " took more than " + timeoutMs + " ms.\n" +
+                                        "Execution state: " + dumpExecutionState(execution)));
                     }
                     if (!execution.getChainExecutionFuture().isDone()) {
                         execution.getChainExecutionFuture().completeExceptionally(
-                                new TimeoutException(String.format("" +
-                                                "Execution of payload %s took more than %d ms.\n" +
-                                        "Execution state: %s",
-                                        payload,
-                                        timeoutMs,
-                                        dumpExecutionState(execution))));
+                                new TimeoutException("" +
+                                        "Execution of payload " + payload +
+                                        " took more than " + timeoutMs + " ms.\n" +
+                                        "Execution state: " + dumpExecutionState(execution)));
                     }
                 },
                 timeoutMs,
@@ -744,8 +738,10 @@ public class CompletableReactor implements AutoCloseable {
             return null;
         });
 
-        execution.getResultFuture().thenRunAsync(payloadCall::stop);
-        execution.getChainExecutionFuture().thenRunAsync(executionCall::stop);
+        execution.getResultFuture()
+                .whenCompleteAsync((payloadType, throwable) -> payloadCall.stop());
+        execution.getChainExecutionFuture()
+                .whenCompleteAsync((payloadType, throwable) -> executionCall.stop());
 
         //TODO: replace by interface and hide debugProcessingVertexGraphState
         return new Execution<>(
@@ -759,19 +755,18 @@ public class CompletableReactor implements AutoCloseable {
 
     private <PayloadType> String dumpExecutionState(ReactorGraphExecution<PayloadType> execution) {
         Collection state = execution.getDebugProcessingVertexGraphState();
-        if(state.isEmpty()){
+        if (state.isEmpty()) {
             return "(no vertices)";
         }
-        if(state.iterator().next() instanceof ExecutionBuilder.ProcessingVertex){
+        Object next = state.iterator().next();
+        if (next instanceof ExecutionBuilder.ProcessingVertex) {
             return glExecutionBuilder.dumpExecutionState(execution);
-
-        } else if (state.iterator().next() instanceof ReactorGraphExecutionBuilder.ProcessingVertex){
+        } else if (next instanceof ReactorGraphExecutionBuilder.ProcessingVertex) {
             return executionBuilder.dumpExecutionState(execution);
-
-        } else return "(invalid type of debug state)";
+        } else {
+            return "(invalid type of debug state)";
+        }
     }
-
-
 
     /**
      * Blocks until all pending request is complete or {@link #getCloseTimeoutMs()} time elapsed

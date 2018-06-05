@@ -1033,6 +1033,7 @@ public class ReactorGraphExecutionBuilder {
             log.error(exc.getMessage(), exc);
             executionResultFuture.completeExceptionally(exc);
             processingVertex.getProcessorFuture().complete(new HandlePayloadContext().setTerminal(true));
+            handleCall.stop();
             return;
         }
 
@@ -1048,6 +1049,7 @@ public class ReactorGraphExecutionBuilder {
             log.error(exc.getMessage(), exc);
             executionResultFuture.completeExceptionally(exc);
             processingVertex.getProcessorFuture().complete(new HandlePayloadContext().setTerminal(true));
+            handleCall.stop();
             return;
         }
 
