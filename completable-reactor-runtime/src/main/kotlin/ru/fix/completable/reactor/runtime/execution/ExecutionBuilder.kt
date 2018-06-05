@@ -3,8 +3,8 @@ package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
 import ru.fix.commons.profiler.Profiler
-import ru.fix.completable.reactor.graph.runtime.GlGraph
 import ru.fix.completable.reactor.graph.internal.GlTransition
+import ru.fix.completable.reactor.graph.runtime.GlGraph
 import ru.fix.completable.reactor.graph.runtime.GlVertex
 import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer
@@ -233,11 +233,11 @@ class ExecutionBuilder(
                                 }.exceptionally { exc ->
                                     log.error(exc) {
                                         """
-                                                Failed to activate handleBy transition.
-                                                Mark transition as dead.
-                                                Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
-                                                Transition: $transition
-                                                """
+                                        Failed to activate handleBy transition.
+                                        Mark transition as dead.
+                                        Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
+                                        Transition: $transition
+                                        """.trimIndent()
                                     }
 
                                     TransitionPayloadContext(isDeadTransition = true)
@@ -272,11 +272,11 @@ class ExecutionBuilder(
                                 }.exceptionally { exc ->
                                     log.error(exc) {
                                         """
-                                                        Failed to activate mergeBy transition.
-                                                        Mark transition as dead.
-                                                        Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
-                                                        Transition: $transition
-                                                        """
+                                        Failed to activate mergeBy transition.
+                                        Mark transition as dead.
+                                        Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
+                                        Transition: $transition
+                                        """.trimIndent()
                                     }
 
                                     MergePayloadContext(isDeadTransition = true)

@@ -37,7 +37,7 @@ class HandleByExecutionBuilder<PayloadType>(
                         Invalid graph configuration.
                         Vertex ${vx.name} does not have incoming handling flows.
                         Probably missing `.handleBy(${vx.name})` transition that targets this vertex in configuration.
-                        """)
+                        """.trimIndent())
             }
 
             /**
@@ -60,7 +60,7 @@ class HandleByExecutionBuilder<PayloadType>(
                                     val resultException = Exception("""
                                         Illegal graph execution state.
                                         Future is not completed. Vertex: ${vx.name}
-                                        """)
+                                        """.trimIndent())
 
                                     log.error(resultException) {}
                                     executionResultFuture.completeExceptionally(resultException)
@@ -73,7 +73,7 @@ class HandleByExecutionBuilder<PayloadType>(
                                 val resultException = Exception("""
                                         Failed to get incoming processor flow future result
                                         for vertex: ${vx.name}
-                                        """)
+                                        """.trimIndent())
                                 log.error(resultException) {}
                                 executionResultFuture.completeExceptionally(resultException)
 
@@ -123,7 +123,7 @@ class HandleByExecutionBuilder<PayloadType>(
                                     Reactor can not determinate from which of transitions to take payload.
                                     Possible loss of computation results.
                                     Possible concurrent modifications of payload.
-                                    """)
+                                    """.trimIndent())
 
                             executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc)
                             pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
@@ -162,7 +162,7 @@ class HandleByExecutionBuilder<PayloadType>(
                     """
                     Vertex ${pvx.vertex.name} is not handler or subgraph
                      but engine tries to execute handling method.
-                    """)
+                    """.trimIndent())
         }
     }
 
@@ -178,7 +178,7 @@ class HandleByExecutionBuilder<PayloadType>(
                             """
                             Exception during subgraph launching for vertex ${pvx.vertex.name}.
                             Payload: ${builder.debugSerializer.dumpObject(payload)}
-                            """,
+                            """.trimIndent(),
                             exc))
             result
         }
@@ -198,7 +198,7 @@ class HandleByExecutionBuilder<PayloadType>(
                             """
                             Exception during handler invocation for vertex ${pvx.vertex.name}.
                             Payload: ${builder.debugSerializer.dumpObject(payload)}
-                            """,
+                            """.trimIndent(),
                             exc))
         }
 
@@ -209,7 +209,7 @@ class HandleByExecutionBuilder<PayloadType>(
                             """
                             Handler returned NULL for vertex ${pvx.vertex.name}.
                             Payload: ${builder.debugSerializer.dumpObject(payload)}
-                            """))
+                            """.trimIndent()))
         }
 
         return result
@@ -242,8 +242,8 @@ class HandleByExecutionBuilder<PayloadType>(
                 } else {
                     null
                 }
-        var handlingResult: CompletableFuture<Any?>? = null
-        var payloadSnapshot: ImmutabilityChecker.Snapshot? = null
+        val handlingResult: CompletableFuture<Any?>?
+        val payloadSnapshot: ImmutabilityChecker.Snapshot?
         val controlLevel = builder.immutabilityControlLevel
 
         try {
@@ -268,12 +268,13 @@ class HandleByExecutionBuilder<PayloadType>(
                     """
                     Failed handling by veretx ${vx.name} for payload ${builder.debugSerializer.dumpObject(payload)}.
                     Handling method raised exception: $handlingException.
-                    """,
+                    """.trimIndent(),
                     handlingException)
 
             log.error(exc) {}
             executionResultFuture.completeExceptionally(exc)
             pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
+            handleCall.stop()
             return
         }
 
@@ -283,11 +284,12 @@ class HandleByExecutionBuilder<PayloadType>(
                     Failed handling by vertex ${vx.name} for payload ${builder.debugSerializer.dumpObject(payload)}.
                     Handling method returned NULL.
                     Instance of CompletableFuture expected.
-                    """)
+                    """.trimIndent())
 
             log.error(exc) {}
             executionResultFuture.completeExceptionally(exc)
             pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
+            handleCall.stop()
             return
         }
 
@@ -310,7 +312,7 @@ class HandleByExecutionBuilder<PayloadType>(
                         ${builder.debugSerializer.dumpObject(payload)}
                         Diff:
                         ${diff.get()}
-                        """
+                        """.trimIndent()
 
                     when (controlLevel) {
                         ImmutabilityControlLevel.LOG_ERROR -> log.error { message }
@@ -324,7 +326,7 @@ class HandleByExecutionBuilder<PayloadType>(
                                     """
                                     Overwriting execution exception $throwable
                                     by immutability check exception $immutabilityException.
-                                    """
+                                    """.trimIndent()
                                 }
                             }
                             throwable = immutabilityException
@@ -337,7 +339,7 @@ class HandleByExecutionBuilder<PayloadType>(
                 val exc = RuntimeException(
                         """
                         Failed handling by vertex ${vx.name} for payload ${builder.debugSerializer.dumpObject(payload)}
-                        """,
+                        """.trimIndent(),
                         throwable)
 
                 log.error(exc) {}

@@ -49,7 +49,7 @@ class GraphBuilder {
                         """
                         Graph validation failed.
                         ${result.message}
-                        """
+                        """.trimIndent()
                 )
                 is ValidationSucceed -> Unit
             }
