@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.fix.commons.profiler.ProfiledCall;
 import ru.fix.commons.profiler.impl.SimpleProfiler;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
@@ -13,18 +14,22 @@ import ru.fix.completable.reactor.runtime.CompletableReactor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Kamil Asfandiyarov
@@ -329,7 +334,7 @@ class GlCompletableReactorTest {
     @Test
     public void use_interface_mock_as_processor_with_mockito() throws Exception {
 
-        IdProcessorInterface processorInterface = Mockito.mock(IdProcessorInterface.class);
+        IdProcessorInterface processorInterface = mock(IdProcessorInterface.class);
         Mockito.when(processorInterface.handle()).thenReturn(CompletableFuture.completedFuture(42));
 
         SingleInterfaceProcessorGraph graph = new SingleInterfaceProcessorGraph();
@@ -367,7 +372,7 @@ class GlCompletableReactorTest {
     @Test
     public void use_class_mock_as_processor_with_mockito() throws Exception {
 
-        IdProcessor processor = Mockito.mock(IdProcessor.class);
+        IdProcessor processor = mock(IdProcessor.class);
         Mockito.when(processor.handle()).thenReturn(CompletableFuture.completedFuture(78));
 
         SingleClassProcessorMockGraph graph = new SingleClassProcessorMockGraph();
@@ -1065,5 +1070,136 @@ class GlCompletableReactorTest {
             assertTrue(exc.getMessage().contains("handlingFuture={isDone=true,isExc=false}"));
             assertTrue(exc.getMessage().contains("handlingFuture={isDone=false,isExc=false}"));
         }
+    }
+
+    /**
+     * Handler throws exception.
+     */
+    static class HandlerThrowsExceptionGraph extends Graph<IdListPayload> {
+        Vertex handler1 =
+                handler(
+                        // throws exception
+                        pld -> {
+                            throw new RuntimeException();
+                        }
+                ).withMerger((pld, result) -> {
+                    // do nothing
+                });
+
+        {
+            payload()
+                    .handleBy(handler1);
+
+            handler1.onAny().complete();
+        }
+    }
+
+    @Test
+    void reactor_profiler_stops_on_any_handler_exception() throws Exception {
+        List<ProfiledCall> profilers = Collections.synchronizedList(new ArrayList<>());
+        Supplier<ProfiledCall> profiledCallSupp = () -> {
+            ProfiledCall profiledCall = getProfiledCall();
+            profilers.add(profiledCall);
+            return profiledCall;
+        };
+
+        SimpleProfiler profiler = mock(SimpleProfiler.class);
+        when(profiler.profiledCall(anyString())).thenAnswer(inv -> profiledCallSupp.get());
+
+        HandlerThrowsExceptionGraph graph = new HandlerThrowsExceptionGraph();
+        CompletableReactor reactor = new CompletableReactor(profiler);
+        reactor.registerGraph(graph);
+
+        try {
+            reactor.submit(new IdListPayload()).getResultFuture().get();
+            fail("Execution should complete with exception");
+        } catch (Exception exc) {
+            // waiting some time until async features complete
+            Thread.sleep(1000);
+            assertTrue(profilers.stream().allMatch(ProfiledCall::isStopped));
+        }
+    }
+
+    /**
+     * Merger throws exception.
+     */
+    static class MergerThrowsExceptionGraph extends Graph<IdListPayload> {
+        Vertex handler1 =
+                handler(
+                        pld -> null
+                ).withMerger((pld, result) -> {
+                    throw new RuntimeException();
+                });
+
+        {
+            payload()
+                    .handleBy(handler1);
+
+            handler1.onAny().complete();
+        }
+    }
+
+    @Test
+    void reactor_profiler_stops_on_any_merger_exception() throws Exception {
+        List<ProfiledCall> profilers = Collections.synchronizedList(new ArrayList<>());
+        Supplier<ProfiledCall> profiledCallSupp = () -> {
+            ProfiledCall profiledCall = getProfiledCall();
+            profilers.add(profiledCall);
+            return profiledCall;
+        };
+
+        SimpleProfiler profiler = mock(SimpleProfiler.class);
+        when(profiler.profiledCall(anyString())).thenAnswer(inv -> profiledCallSupp.get());
+
+        MergerThrowsExceptionGraph graph = new MergerThrowsExceptionGraph();
+        CompletableReactor reactor = new CompletableReactor(profiler);
+        reactor.registerGraph(graph);
+
+        try {
+            reactor.submit(new IdListPayload()).getResultFuture().get();
+            fail("Execution should complete with exception");
+        } catch (Exception exc) {
+            // waiting some time until async features complete
+            Thread.sleep(1000);
+            assertTrue(profilers.stream().allMatch(ProfiledCall::isStopped));
+        }
+    }
+
+    private static ProfiledCall getProfiledCall() {
+        return new ProfiledCall() {
+            private AtomicInteger state = new AtomicInteger();
+
+            @Override
+            public void call() {
+                System.err.println("call!!!");
+            }
+
+            @Override
+            public ProfiledCall start() {
+                if (!state.compareAndSet(0, 1)) {
+                    fail("start called in improper state");
+                }
+                return this;
+            }
+
+            @Override
+            public void stop() {
+                if (!state.compareAndSet(1, 2)) {
+                    fail("stop called in improper state");
+                }
+            }
+
+            @Override
+            public void stop(long l) {
+                if (!state.compareAndSet(1, 2)) {
+                    fail("stop called in improper state");
+                }
+            }
+
+            @Override
+            public boolean isStopped() {
+                return state.get() == 2;
+            }
+        };
     }
 }

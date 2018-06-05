@@ -33,7 +33,7 @@ class MergeByExecutionBuilder<PayloadType>(
                     throw IllegalStateException("""
                         Invalid graph configuration:
                         Vertex ${vx.name} does not have merger, but has outgoing transitions
-                        """)
+                        """.trimIndent())
                 }
 
                 pvx.handlingFeature.handleAsync { context, thr ->
@@ -85,10 +85,10 @@ class MergeByExecutionBuilder<PayloadType>(
                                         if (!feature.isDone) {
                                             val resultException = RuntimeException(
                                                     """
-                                            Illegal graph execution state.
-                                            Handling feature is not completed.
-                                            Vertex: ${vx.name}
-                                            """)
+                                                    Illegal graph execution state.
+                                                    Handling feature is not completed.
+                                                    Vertex: ${vx.name}
+                                                    """.trimIndent())
                                             log.error(resultException) {}
                                             executionResultFuture.completeExceptionally(resultException)
 
@@ -97,11 +97,8 @@ class MergeByExecutionBuilder<PayloadType>(
                                             return@map feature.get()
                                         }
                                     } catch (exc: Exception) {
-                                        val resultException = RuntimeException(
-                                                """
-                                        Failed to get vertex handling feature result for vertex: ${vx.name}
-                                        """,
-                                                exc)
+                                        val resultException = RuntimeException("Failed to get vertex handling feature" +
+                                                " result for vertex: ${vx.name}", exc)
 
                                         log.error(resultException) {}
                                         executionResultFuture.completeExceptionally(resultException)
@@ -151,10 +148,10 @@ class MergeByExecutionBuilder<PayloadType>(
 
                                             val resultException = RuntimeException(
                                                     """
-                                Illegal graph execution state.
-                                Incoming merge feature is not complete.
-                                Vertex: ${vx.name}
-                                """)
+                                                    Illegal graph execution state.
+                                                    Incoming merge feature is not complete.
+                                                    Vertex: ${vx.name}
+                                                    """.trimIndent())
                                             log.error(resultException) {}
                                             executionResultFuture.completeExceptionally(resultException)
                                             return@map INVALID_MERGE_PAYLOAD_CONTEXT
@@ -162,11 +159,8 @@ class MergeByExecutionBuilder<PayloadType>(
                                             return@map feature.feature.get()
                                         }
                                     } catch (exc: Exception) {
-                                        val resultException = RuntimeException(
-                                                """
-                                                Failed to get incoming merge flow feature result for vertex: ${vx.name}
-                                                """,
-                                                exc)
+                                        val resultException = RuntimeException("Failed to get incoming merge flow" +
+                                                " feature result for vertex: ${vx.name}", exc)
 
                                         log.error(resultException) {}
                                         executionResultFuture.completeExceptionally(resultException)
@@ -265,7 +259,7 @@ class MergeByExecutionBuilder<PayloadType>(
                                                     Reactor can not determinate from which of transitions take payload.
                                                     Possible loss of computation results.
                                                     Possible concurrent modifications of payload.
-                                                    """)
+                                                    """.trimIndent())
 
                                             executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc)
                                             pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
@@ -404,7 +398,7 @@ class MergeByExecutionBuilder<PayloadType>(
                         Already completed with result ${builder.debugSerializer.dumpObject(previousResult)}
                         New completion result: ${builder.debugSerializer.dumpObject(payload)}
                         in merger/router for vertex ${pvx.vertex.name}
-                        """
+                        """.trimIndent()
                     }
                 }
 
@@ -432,7 +426,7 @@ class MergeByExecutionBuilder<PayloadType>(
                 Failed to merge payload ${builder.debugSerializer.dumpObject(payload)}
                 by vertex ${pvx.vertex.name}
                 with result ${builder.debugSerializer.dumpObject(handlingResult)}
-                """
+                """.trimIndent()
             }
 
             executionResultFuture.completeExceptionally(exc)
