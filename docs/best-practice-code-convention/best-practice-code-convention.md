@@ -180,7 +180,30 @@ But some times it is better not to increase complexity by adding new branches to
  and instead to use `T?/Optional<T>` data in graph payload. 
 Then we simply implement `if (data == null/isPresent) A else B` logic inside vertex without any exceptions.
 
+## Code formatting
+(1) Separate vertex field declaration and handler block with new line '\n'  
+(2) Separate handler block and merger block with new line '\n'  
+(3) Separate documentation comment with new line '\n'
 
+```java
+public class PurchaseGraph extends Graph<PurchasePayload> {
+  Vertex writeUserLog =  //(1)
+      handler(
+          //# log ussd purchase details //(3)
+          payload -> {
+              <purchase logging code>
+          }
+      ).withMerger((payload, result) -> { //(2)
+            ...
+      });
+
+  Vertex fireSubscribeAction =
+      handler( payload -> { //(3)
+                <statistc event firing code>
+            }
+      ).withEmptyMerger();
+}
+```
 
 <!--
 ```
