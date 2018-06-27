@@ -493,3 +493,37 @@ other Vertices of the graph like we did in Detached Handler without Merger scena
 Also we have to use Merger to bring Handler6 result back to main flow.
 
 ![](res/detached-with-merger.png?raw=true)
+
+### Conditional execution
+
+* Handlers, Routers and Mutators works as logical OR `||`.
+Vertex waits for all incoming transition to complete. 
+If some transitions marked as dead and there is at least one alive transition - vertex will run
+and send paylaod through outgoing transitions. 
+Otherwise if all transitions are dead - vertex will not run.
+* Mergers works as logical AND `&&`. 
+Vertex waits for all incoming transition to complete. 
+If at least one transition mareked as daed - vertex will not run. 
+All outgoing transitions will be marked as dead. 
+Otherwise if all incoming transition are alive - then vertex will run
+and send payload through outgoing transitions.  
+
+![](res/conditional-execution-or-and.xml?raw=true)
+
+Lets discuss an example where we have two cases in our graph.
+First one: when we execute handler A, handler B and handler C in parallel.  
+Second one: when we execute handler A, handler B and we do not need to run C at all.
+We can implement this behaviour through three approaches:
+
+* Use conditional transition with optional handling and merging
+
+![](res/conditional-execution-1.xml?raw=true)
+
+* Use conditional transition with vertex cloning
+
+![](res/conditional-execution-2.xml?raw=true)
+
+* Always run vertex C. Use if-else logic inside handler `C` 
+and simply do nothing in handler itself.
+
+![](res/conditional-execution-3.xml?raw=true)
