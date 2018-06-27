@@ -14,8 +14,8 @@ to support more suitable DSL-like API. Currently supported DSLs are for `Java` a
   * [Table of contents](#table-of-contents)
   * [Motivation](#motivation)
   * [Getting Started](#getting-started)
-  * [Handler-Merger model](#handler-merger-model)
   * [Completable Reactor model](#completable-reactor-model)
+    + [Guide](docs/completable-reactor-model/completable-reactor-model.md)
   * [Validation](#validation)
   * [Intellij Idea Plugin](#intellij-idea-plugin)
   * [Examples](#examples)
@@ -56,22 +56,10 @@ The second is to install plugin into your IDE
 
 The third step is to write the **Hello Graph** program:
 
-## Handler-Merger model
-Briefly describes concept behind CompletbleReactor.
-Explains how we can decompose concurrent conditional execution into base graph components.
-
-[Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md)
-
-
 ## Completable Reactor model
-It is essential to read
-[Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md)
-first.
-
+Describes concept behind CompletbleReactor.  
+Explains how we can decompose concurrent conditional execution into base graph components.  
 Describes how reactor components could be described in code and how they visualized.
-Adds new components and determinate execution of
-[Handler-Merger execution model](docs/handler-merger-model/handler-merger-model.md)
-on JVM.
 
 [Completable Reactor model](docs/completable-reactor-model/completable-reactor-model.md)
 
