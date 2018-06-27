@@ -8,3 +8,4 @@ completable-reactor-runtime/*.rg
 completable-reactor-example/*.rg
 completable-reactor-graph-viewer-app/dependency-reduced-pom.xml
 classes/
+node_modules/
