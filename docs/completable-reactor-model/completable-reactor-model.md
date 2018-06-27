@@ -26,6 +26,7 @@
     + [Parallel execution](#parallel-execution)
     + [Detached Handler without Merger](#detached--handler-without-merger)
     + [Detached Handler with Merger](#detached-handler-with-merger)
+    + [Conditional execution](#conditional-execution)
 
 
 #  Handler-Merger concurrent execution concept
