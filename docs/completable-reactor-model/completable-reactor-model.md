@@ -725,7 +725,7 @@ All outgoing transitions will be marked as dead.
 Otherwise if all incoming transition are alive - then vertex will run
 and send payload through outgoing transitions.  
 
-![](res/conditional-execution-or-and.xml?raw=true)
+![](res/conditional-execution-or-and.png?raw=true)
 
 Lets discuss an example where we have two cases in our graph.
 First one: when we execute handler A, handler B and handler C in parallel.  
@@ -734,13 +734,13 @@ We can implement this behaviour through three approaches:
 
 * Use conditional transition with optional handling and merging
 
-![](res/conditional-execution-1.xml?raw=true)
+![](res/conditional-execution-1.png?raw=true)
 
 * Use conditional transition with vertex cloning
 
-![](res/conditional-execution-2.xml?raw=true)
+![](res/conditional-execution-2.png?raw=true)
 
 * Always run vertex C. Use if-else logic inside handler `C` 
 and simply do nothing in handler itself.
 
-![](res/conditional-execution-3.xml?raw=true)
+![](res/conditional-execution-3.png?raw=true)
