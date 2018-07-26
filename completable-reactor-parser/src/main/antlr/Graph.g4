@@ -46,12 +46,14 @@ payloadType
     ;
 
 vertexAssignmentBlock
-    :   (VERTEX | 'val' | 'var') vertexName ASSIGN vertexBuilder SEMI?
+    :   (VERTEX | 'val' | 'var') vertexName ASSIGN (vertexBuilder | vertexBuilderFunctionInvocation) SEMI?
     ;
 
 vertexCloningBlock
     :   (VERTEX | 'val' | 'var') vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI?
     ;
+
+
 
 vertexName
     :   anyGraphKeyword
@@ -78,6 +80,15 @@ builderRouter
     :   (ROUTER | MUTATOR)
         ((LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE))
     ;
+
+vertexBuilderFunctionInvocation
+    :   Identifier LPAREN anythingBeforeRParen RPAREN
+    ;
+
+vertexBuilderFunctionDeclaration
+    :   Identifier LPAREN anythingBeforeRParen RPAREN LBRACE vertexBuilder RBRACE
+    ;
+
 
 builderHandler
     :   handler
