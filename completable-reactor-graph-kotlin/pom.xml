@@ -5,7 +5,7 @@
   <parent>
     <artifactId>completable-reactor</artifactId>
     <groupId>ru.fix</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.2.9</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -16,7 +16,7 @@
     <dependency>
       <groupId>ru.fix</groupId>
       <artifactId>completable-reactor-graph</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.2.9</version>
     </dependency>
 
 
@@ -39,7 +39,7 @@
     <dependency>
       <groupId>ru.fix</groupId>
       <artifactId>completable-reactor-runtime</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.2.9</version>
       <scope>test</scope>
     </dependency>
 
