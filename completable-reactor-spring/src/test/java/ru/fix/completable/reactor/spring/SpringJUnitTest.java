@@ -13,7 +13,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.support.DirtiesContextTestExecutionListener;
-import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 
 import java.util.concurrent.TimeUnit;
@@ -39,7 +39,7 @@ public class SpringJUnitTest {
 
         @Bean
         public CompletableReactor completableReactor(){
-            return new CompletableReactor(new SimpleProfiler());
+            return new CompletableReactor(new AggregatingProfiler());
         }
     }
 

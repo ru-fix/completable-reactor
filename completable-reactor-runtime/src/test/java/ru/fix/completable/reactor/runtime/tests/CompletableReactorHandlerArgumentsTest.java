@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
-import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
@@ -22,14 +22,14 @@ import static org.junit.Assert.assertEquals;
  */
 public class CompletableReactorHandlerArgumentsTest {
 
-    private SimpleProfiler profiler;
+    private AggregatingProfiler profiler;
     private CompletableReactor reactor;
 
     enum Status {OK}
 
     @Before
     public void before() throws Exception {
-        profiler = new SimpleProfiler();
+        profiler = new AggregatingProfiler();
         reactor = new CompletableReactor(profiler)
                 .setDebugProcessingVertexGraphState(true);
 
