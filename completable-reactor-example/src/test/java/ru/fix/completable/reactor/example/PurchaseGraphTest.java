@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.example.services.*;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 
@@ -68,7 +68,7 @@ public class PurchaseGraphTest {
 
         @Bean
         CompletableReactor reactor() {
-            return new CompletableReactor(new SimpleProfiler());
+            return new CompletableReactor(new AggregatingProfiler());
         }
     }
 

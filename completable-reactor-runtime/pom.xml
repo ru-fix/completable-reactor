@@ -68,8 +68,8 @@
 
     <dependency>
       <groupId>ru.fix</groupId>
-      <artifactId>commons-profiler-api</artifactId>
-      <version>1.1.5</version>
+      <artifactId>aggregating-profiler</artifactId>
+      <version>1.4.7</version>
     </dependency>
 
     <dependency>
