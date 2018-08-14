@@ -1,12 +1,12 @@
 class GlCompletableReactorTest {
 
-    private SimpleProfiler profiler;
+    private AggregatingProfiler profiler;
     private CompletableReactor reactor;
 
 
     @BeforeEach
     void before() {
-        profiler = new SimpleProfiler();
+        profiler = new AggregatingProfiler();
         reactor = new CompletableReactor(profiler)
                 .setDebugProcessingVertexGraphState(true);
     }

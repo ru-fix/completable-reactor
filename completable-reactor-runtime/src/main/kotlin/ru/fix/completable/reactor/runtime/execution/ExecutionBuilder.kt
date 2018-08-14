@@ -2,7 +2,7 @@ package ru.fix.completable.reactor.runtime.execution
 
 
 import mu.KotlinLogging
-import ru.fix.commons.profiler.Profiler
+import ru.fix.aggregating.profiler.Profiler
 import ru.fix.completable.reactor.graph.internal.GlTransition
 import ru.fix.completable.reactor.graph.runtime.GlGraph
 import ru.fix.completable.reactor.graph.runtime.GlVertex

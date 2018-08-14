@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import ru.fix.commons.profiler.impl.SimpleProfiler
+import ru.fix.aggregating.profiler.AggregatingProfiler
 import ru.fix.completable.reactor.example.services.*
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.concurrent.TimeUnit
@@ -56,7 +56,7 @@ open class SubscribeGraphTest {
 
         @Bean
         open fun reactor(): CompletableReactor {
-            val reactor = CompletableReactor(SimpleProfiler())
+            val reactor = CompletableReactor(AggregatingProfiler())
 
             //For debug purpose to resolve blocked vertices that does not completed correctly
             reactor.setDebugProcessingVertexGraphState(true)

@@ -6,7 +6,7 @@ import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import ru.fix.commons.profiler.impl.SimpleProfiler
+import ru.fix.aggregating.profiler.AggregatingProfiler
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.*
 import java.util.concurrent.CompletableFuture.completedFuture
@@ -27,7 +27,7 @@ class KotlinGraphTest {
 
     @Before
     fun before() {
-        reactor = CompletableReactor(SimpleProfiler())
+        reactor = CompletableReactor(AggregatingProfiler())
                 .setDebugProcessingVertexGraphState(true)
     }
 

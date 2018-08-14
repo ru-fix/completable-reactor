@@ -5,8 +5,8 @@ import lombok.experimental.Accessors;
 import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
-import ru.fix.commons.profiler.Profiler;
-import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.aggregating.profiler.Profiler;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
@@ -47,7 +47,7 @@ public class MockSubgraphTest {
         }
     }
 
-    final Profiler profiler = new SimpleProfiler();
+    final Profiler profiler = new AggregatingProfiler();
 
     CompletableReactor reactor;
 
