@@ -307,9 +307,9 @@ class JavaSourceParserTest {
 
         assertEquals(-98, singleProcessorGraph.startPoint.coordinates!!.y)
 
-        assertEquals(Source(sourceFilePath, 43, 13, 1169), singleProcessorGraph.coordinatesStart)
-        assertEquals(Source(sourceFilePath, 47, 55, 1381), singleProcessorGraph.coordinatesEnd)
-        assertEquals(Source(sourceFilePath, 47, 55, 1381), singleProcessorGraph.endOfLastCodeBlocksWithinGraph)
+        assertEquals(Source(sourceFilePath, 43, 13, 1179), singleProcessorGraph.coordinatesStart)
+        assertEquals(Source(sourceFilePath, 47, 55, 1391), singleProcessorGraph.coordinatesEnd)
+        assertEquals(Source(sourceFilePath, 47, 55, 1391), singleProcessorGraph.endOfLastCodeBlocksWithinGraph)
 
         val twoProcesssorSequenceGraph = models
                 .find { it.graphClass == "TwoProcessorSequentialMergeGraph" }
@@ -320,7 +320,7 @@ class JavaSourceParserTest {
 
         assertNull(twoProcesssorSequenceGraph.coordinatesStart)
         assertNull(twoProcesssorSequenceGraph.coordinatesEnd)
-        assertEquals(Source(sourceFilePath, 87, 45, 2624), twoProcesssorSequenceGraph.endOfLastCodeBlocksWithinGraph)
+        assertEquals(Source(sourceFilePath, 87, 45, 2634), twoProcesssorSequenceGraph.endOfLastCodeBlocksWithinGraph)
     }
 
 
