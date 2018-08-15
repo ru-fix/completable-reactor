@@ -77,6 +77,7 @@ class Vertex {
             it.vx.router = this.vx.router
             it.vx.subgraphPayloadBuilder = this.vx.subgraphPayloadBuilder
             it.vx.subgraphPayloadType = this.vx.subgraphPayloadType
+            it.vx.isTransitionableMerger = this.vx.isTransitionableMerger
 
             BuilderContext.get().getGraph()?.vertices?.add(it.vx) ?: throw IllegalStateException("" +
                     "Vertex created not inside class that extends Graph. " +

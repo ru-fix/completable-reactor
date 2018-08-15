@@ -9,7 +9,7 @@ import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 import ru.fix.completable.reactor.runtime.ReactorGraph;
@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 @Slf4j
 public class CompletableReactorTest {
 
-    private SimpleProfiler profiler;
+    private AggregatingProfiler profiler;
     private CompletableReactor reactor;
 
 
@@ -54,7 +54,7 @@ public class CompletableReactorTest {
 
     @Before
     public void before() throws Exception {
-        profiler = new SimpleProfiler();
+        profiler = new AggregatingProfiler();
         reactor = new CompletableReactor(profiler)
                 .setDebugProcessingVertexGraphState(true);
     }
@@ -1216,7 +1216,7 @@ public class CompletableReactorTest {
         val graph = new Config().graph();
         printGraph(graph);
 
-        CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
+        CompletableReactor reactor = new CompletableReactor(new AggregatingProfiler());
         reactor.setExecutionTimeoutMs(500);
 
         reactor.registerReactorGraph(graph);
