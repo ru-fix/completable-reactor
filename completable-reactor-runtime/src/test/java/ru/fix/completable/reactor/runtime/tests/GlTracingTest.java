@@ -4,8 +4,8 @@ package ru.fix.completable.reactor.runtime.tests;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.fix.commons.profiler.ProfilerReporter;
-import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.aggregating.profiler.ProfilerReporter;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
@@ -40,7 +40,7 @@ public class GlTracingTest {
 
     enum Status {OK}
 
-    private final SimpleProfiler profiler = new SimpleProfiler();
+    private final AggregatingProfiler profiler = new AggregatingProfiler();
     final CompletableReactor completableReactor = new CompletableReactor(profiler);
 
 

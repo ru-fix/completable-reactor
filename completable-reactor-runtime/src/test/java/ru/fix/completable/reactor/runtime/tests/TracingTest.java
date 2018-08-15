@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.val;
 import org.junit.Test;
-import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.api.Reactored;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 import ru.fix.completable.reactor.runtime.LogTracer;
@@ -36,7 +36,7 @@ public class TracingTest {
 
     enum Status {OK}
 
-    final CompletableReactor completableReactor = new CompletableReactor(new SimpleProfiler());
+    final CompletableReactor completableReactor = new CompletableReactor(new AggregatingProfiler());
 
     @Test
     public void trace_payload_if_payload_contain_special_id() throws Exception {

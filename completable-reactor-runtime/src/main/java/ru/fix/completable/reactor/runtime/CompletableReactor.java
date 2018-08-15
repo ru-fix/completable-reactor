@@ -2,9 +2,9 @@ package ru.fix.completable.reactor.runtime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.fix.commons.profiler.PrefixedProfiler;
-import ru.fix.commons.profiler.ProfiledCall;
-import ru.fix.commons.profiler.Profiler;
+import ru.fix.aggregating.profiler.PrefixedProfiler;
+import ru.fix.aggregating.profiler.ProfiledCall;
+import ru.fix.aggregating.profiler.Profiler;
 import ru.fix.completable.reactor.graph.Graphable;
 import ru.fix.completable.reactor.graph.runtime.GlGraph;
 import ru.fix.completable.reactor.runtime.cloning.CopierThreadsafeCopyMaker;
