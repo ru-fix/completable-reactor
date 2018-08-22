@@ -111,27 +111,14 @@ class HandleByExecutionBuilder<PayloadType>(
                         pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isDeadTransition = true))
 
                     } else {
-                        if (activeIncomingFlows.size > 1) {
 
-                            /**
-                             * Illegal graph state. Too many active incoming flows.
-                             * Mark as terminal all outgoing flows
-                             * Complete graph with exception
-                             */
-                            val tooManyActiveIncomingFlowsExc = Exception("""
-                                    There is more than one active incoming flow for vertex ${vx.name}.
-                                    Reactor can not determinate from which of transitions to take payload.
-                                    Possible loss of computation results.
-                                    Possible concurrent modifications of payload.
-                                    """.trimIndent())
-
-                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc)
-                            pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
-
-                        } else {
-
-                            handle(pvx, activeIncomingFlows[0], executionResultFuture)
-                        }
+                        /**
+                         * If there is a single active incoming flow - use transition payload context from this flow.
+                         * If there are many active incoming flows - select any of them:
+                         * we are using single payload instance for whole graph execution, no matter from which of
+                         * active transition we will select it.
+                         */
+                        handle(pvx, activeIncomingFlows[0], executionResultFuture)
                     }
                 }
             }
@@ -148,14 +135,14 @@ class HandleByExecutionBuilder<PayloadType>(
             payload: Any?): CompletableFuture<Any?> {
 
         return when {
-        // Handler
+            // Handler
             pvx.vertex.handler != null -> invokeHandlerHandlingMethod(pvx, payload)
 
-        // Subgraph
+            // Subgraph
             pvx.vertex.subgraphPayloadBuilder != null -> invokeSubgraphHandlingMethod(pvx, payload)
 
-        // Router route method is invoked in MergeBy section in a way Merger merge method works.
-        // To pass execution down to mergerFeature for Router we use fake empty handling
+            // Router route method is invoked in MergeBy section in a way Merger merge method works.
+            // To pass execution down to mergerFeature for Router we use fake empty handling
             pvx.vertex.router != null -> CompletableFuture.completedFuture(null)
 
             else -> throw IllegalStateException(
