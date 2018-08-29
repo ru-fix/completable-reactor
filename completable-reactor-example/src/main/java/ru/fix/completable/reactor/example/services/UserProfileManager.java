@@ -1,7 +1,5 @@
 package ru.fix.completable.reactor.example.services;
 
-import ru.fix.completable.reactor.api.Reactored;
-
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -14,11 +12,6 @@ import static ru.fix.completable.reactor.example.services.UserProfileManager.Sta
  * @author Kamil Asfandiyarov
  */
 
-@Reactored({
-        "Loads information about user from remote database.",
-        "User profile contains information whether user is blocked or not."
-
-})
 public class UserProfileManager {
 
     public static final Long USER_ID_JOHN = 1L;

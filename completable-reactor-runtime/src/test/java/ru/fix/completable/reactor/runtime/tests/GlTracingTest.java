@@ -19,13 +19,12 @@ import static org.junit.Assert.assertTrue;
  * @author Kamil Asfandiyarov
  */
 public class GlTracingTest {
-    Logger log = LoggerFactory.getLogger(GlTracingTest.class);
 
     /**
      * If tracable payload contain number that match particular condition
      * this payload will be traced by tracer
      */
-    static class TracablePayload extends CompletableReactorTest.IdListPayload {
+    static class TracablePayload extends GlCompletableReactorTest.IdListPayload {
         int number;
 
         public int getNumber() {
