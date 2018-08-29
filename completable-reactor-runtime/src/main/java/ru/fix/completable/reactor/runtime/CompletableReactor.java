@@ -13,11 +13,9 @@ import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
-import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecutionBuilder;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
 import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
-import ru.fix.completable.reactor.runtime.internal.CRReactorGraph;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
 import java.lang.reflect.Constructor;
@@ -42,7 +40,6 @@ public class CompletableReactor implements AutoCloseable {
 
     private final DebugSerializer debugSerializer = new ToStringDebugSerializer();
 
-    private final ReactorGraphExecutionBuilder executionBuilder;
     private final ExecutionBuilder glExecutionBuilder;
 
     /**
@@ -54,8 +51,6 @@ public class CompletableReactor implements AutoCloseable {
      * By default this flag is disabled.
      */
     private boolean debugProcessingVertexGraphState = false;
-
-    private final Map<Class<?>, CRReactorGraph> payloadGraphs = new ConcurrentHashMap<>();
 
     /**
      * {@code Function<PayloadType, CompletableFuture<PayloadType>>}
@@ -321,21 +316,6 @@ public class CompletableReactor implements AutoCloseable {
 
     public CompletableReactor(Profiler profiler) {
         this.profiler = new PrefixedProfiler(profiler, ProfilerNames.PROFILER + ".");
-        this.executionBuilder = new ReactorGraphExecutionBuilder(
-                this.profiler,
-                immutabilityChecker,
-                threadsafeCopyMaker,
-                payload -> {
-                    try {
-                        return this.internalSubmit(payload, executionTimeoutMs).getResultFuture();
-                    } catch (Exception exc) {
-                        CompletableFuture result = new CompletableFuture();
-                        result.completeExceptionally(exc);
-                        return result;
-                    }
-                },
-                debugSerializer,
-                reactorTracer);
 
         this.glExecutionBuilder = new ExecutionBuilder(
                 this.profiler,
@@ -421,43 +401,10 @@ public class CompletableReactor implements AutoCloseable {
         this.reactorTracer.tracer = null;
     }
 
-    /**
-     * Register reactor graph
-     *
-     * @param reactorGraph
-     */
-    public void registerReactorGraph(ReactorGraph reactorGraph) {
-        CRReactorGraph crReactorGraph = (CRReactorGraph) reactorGraph;
-        payloadGraphs.put(crReactorGraph.getPayloadClass(), crReactorGraph);
-        inlinePayloadGraphs.remove(crReactorGraph.getPayloadClass());
-    }
-
-    /**
-     * //TODO remove
-     * Register functional graph implementation.
-     * For test subgraph mocking purpose.
-     * If graph with same payload already registered by {@link #registerReactorGraph(ReactorGraph)}
-     * it will be unregistered.
-     *
-     * @param payloadType
-     * @param payloadProcessingFunction
-     * @param <PayloadType>
-     */
-    @Deprecated
-    public <PayloadType> void registerReactorGraph(
-            Class<PayloadType> payloadType,
-            Function<PayloadType, CompletableFuture<PayloadType>> payloadProcessingFunction) {
-
-        inlinePayloadGraphs.put(payloadType, payloadProcessingFunction);
-        payloadGraphs.remove(payloadType);
-    }
-
 
     /**
      * Register functional graph implementation.
      * For test subgraph mocking purpose.
-     * If graph with same payload already registered by {@link #registerReactorGraph(ReactorGraph)}
-     * it will be unregistered.
      *
      * @param payloadType
      * @param payloadProcessingFunction
@@ -468,14 +415,11 @@ public class CompletableReactor implements AutoCloseable {
             Function<PayloadType, CompletableFuture<PayloadType>> payloadProcessingFunction) {
 
         inlinePayloadGraphs.put(payloadType, payloadProcessingFunction);
-        payloadGraphs.remove(payloadType);
     }
 
     /**
      * Register functional graph implementation.
      * For test subgraph mocking purpose.
-     * If graph with same payload already registered by {@link #registerReactorGraph(ReactorGraph)}
-     * it will be unregistered.
      *
      * @param payloadType
      * @param payloadProcessingFunction
@@ -656,17 +600,12 @@ public class CompletableReactor implements AutoCloseable {
          */
         ReactorGraphExecution<PayloadType> execution;
 
-        ReactorGraph<PayloadType> graph = payloadGraphs.get(payload.getClass());
-        if (graph != null) {
-            execution = executionBuilder.build(graph);
-        } else {
-            GlGraph glGraph = glPayloadGraphs.get(payload.getClass());
-            if (glGraph != null) {
-                execution = glExecutionBuilder.build(glGraph);
+        GlGraph glGraph = glPayloadGraphs.get(payload.getClass());
+        if (glGraph != null) {
+            execution = glExecutionBuilder.build(glGraph);
 
-            } else {
-                throw new IllegalArgumentException("Rector graph not found for payload " + payload.getClass());
-            }
+        } else {
+            throw new IllegalArgumentException("Rector graph not found for payload " + payload.getClass());
         }
 
 
@@ -761,8 +700,6 @@ public class CompletableReactor implements AutoCloseable {
         Object next = state.iterator().next();
         if (next instanceof ExecutionBuilder.ProcessingVertex) {
             return glExecutionBuilder.dumpExecutionState(execution);
-        } else if (next instanceof ReactorGraphExecutionBuilder.ProcessingVertex) {
-            return executionBuilder.dumpExecutionState(execution);
         } else {
             return "(invalid type of debug state)";
         }

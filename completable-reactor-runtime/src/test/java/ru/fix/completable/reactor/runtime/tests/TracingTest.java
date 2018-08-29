@@ -6,12 +6,10 @@ import lombok.experimental.Accessors;
 import lombok.val;
 import org.junit.Test;
 import ru.fix.aggregating.profiler.AggregatingProfiler;
-import ru.fix.completable.reactor.api.Reactored;
+import ru.fix.completable.reactor.graph.Graph;
+import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 import ru.fix.completable.reactor.runtime.LogTracer;
-import ru.fix.completable.reactor.runtime.ReactorGraph;
-import ru.fix.completable.reactor.runtime.ReactorGraphBuilder;
-import ru.fix.completable.reactor.runtime.dsl.Processor;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,14 +21,11 @@ import static org.junit.Assert.assertTrue;
 public class TracingTest {
 
 
-    @Reactored({
-            "If tracable payload contain number that match particular condition",
-            "this payload will be traced by tracer."
-    })
+
     @Data
     @EqualsAndHashCode(callSuper = true)
     @Accessors(chain = true)
-    static class TracablePayload extends CompletableReactorTest.IdListPayload {
+    static class TracablePayload extends GlCompletableReactorTest.IdListPayload {
         int number;
     }
 
@@ -41,49 +36,45 @@ public class TracingTest {
     @Test
     public void trace_payload_if_payload_contain_special_id() throws Exception {
 
-        class Config {
-            ReactorGraphBuilder graphBuilder = new ReactorGraphBuilder(this);
+        /**
+         * If traceable payload contains number that matches particular condition
+         * payload will be traced by tracer.
+         */
+        class Config extends Graph<TracablePayload> {
 
-            Processor<TracablePayload> processor1 = graphBuilder.processor()
-                    .forPayload(TracablePayload.class)
-                    .withHandler(new IdProcessor(1)::handle)
-                    .withMerger((payload, any) -> Status.OK)
-                    .buildProcessor();
+            Vertex processor1 =
+                    handler(new IdProcessor(1)::handle)
+                    .withRoutingMerger((payload, any) -> Status.OK);
 
-            Processor<TracablePayload> processor2 = graphBuilder.processor()
-                    .forPayload(TracablePayload.class)
-                    .withHandler(new IdProcessor(2)::handle)
-                    .withMerger((payload, any) -> Status.OK)
-                    .buildProcessor();
+            Vertex processor2 =
+                    handler(new IdProcessor(2)::handle)
+                    .withRoutingMerger((payload, any) -> Status.OK);
 
-            Processor<TracablePayload> processor3 = graphBuilder.processor()
-                    .forPayload(TracablePayload.class)
-                    .withHandler(new IdProcessor(3)::handle)
-                    .withMerger((payload, any) -> Status.OK)
-                    .buildProcessor();
+            Vertex processor3 =
+                    handler(new IdProcessor(3)::handle)
+                    .withRoutingMerger((payload, any) -> Status.OK);
 
-            ReactorGraph<TracablePayload> graph() {
-                return graphBuilder.payload(TracablePayload.class)
-                        .handle(processor1)
-                        .handle(processor2)
+            {
+                payload()
+                        .handleBy(processor1)
+                        .handleBy(processor2);
 
-                        .mergePoint(processor1)
-                        .onAny().merge(processor2)
+                processor1
+                        .onAny().mergeBy(processor2);
 
-                        .mergePoint(processor2)
-                        .onAny().handle(processor3)
+                        processor2
+                        .onAny().handleBy(processor3);
 
-                        .mergePoint(processor3)
-                        .onAny().complete()
+                processor3
+                        .onAny().complete();
 
-                        .coordinates()
-                        .buildGraph();
+                        coordinates();
             }
 
         }
 
-        val graph = new Config().graph();
-        completableReactor.registerReactorGraph(graph);
+        val graph = new Config();
+        completableReactor.registerGraph(graph);
 
         val beforeHandle = new AtomicBoolean();
         val beforeMerge = new AtomicBoolean();

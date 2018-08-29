@@ -1,7 +1,5 @@
 package ru.fix.completable.reactor.example.services;
 
-import ru.fix.completable.reactor.api.Reactored;
-
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -12,10 +10,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author Kamil Asfandiyarov
  */
-@Reactored({
-        "Withdraw money from Bank account ",
-        "for given user."
-})
 public class Bank {
 
 
@@ -70,11 +64,6 @@ public class Bank {
     }
 
 
-    @Reactored({
-            "Withdraw money from account and print it to stdout",
-            "If there is no money on account no withdrawing would be applied",
-            "so account balance will always stay positive."
-    })
     public CompletableFuture<Withdraw> withdrawMoney(UserProfile userProfile, ServiceInfo serviceInfo) {
 
         return CompletableFuture
@@ -101,11 +90,6 @@ public class Bank {
                 });
     }
 
-    @Reactored({
-            "Withdraw money from account and print it to stdout",
-            "If there is no money on account then withdrawing would be applied anyway",
-            "and account balance became negative"
-    })
     public CompletableFuture<Withdraw> withdrawMoneyWithMinus(UserProfile userProfile, ServiceInfo serviceInfo) {
 
         return CompletableFuture

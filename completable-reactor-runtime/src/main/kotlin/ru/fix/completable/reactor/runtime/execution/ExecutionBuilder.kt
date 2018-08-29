@@ -361,6 +361,8 @@ class ExecutionBuilder(
 
     fun <PayloadType> dumpExecutionState(execution: ReactorGraphExecution<PayloadType>): String {
         try {
+
+            //TODO make pretty dump, current version hard to read
             return (execution.debugProcessingVertexGraphState as Collection<ProcessingVertex>).asSequence()
                     .joinToString(",\n", "\n", "\n") {
                         "${it.vertex.name}={\n" +
