@@ -7,6 +7,8 @@ object Vers {
 
     val aggregatingProfiler = "1.4.7"
     val dynamicProperty = "1.0.5"
+
+    val spring = "5.0.8.RELEASE"
 }
 
 object Libs {
@@ -29,7 +31,10 @@ object Libs {
     val junit_engine = "org.junit.jupiter:junit-jupiter-engine:${Vers.junit}"
 
 
-    val aggregatingProfiler = "ru.fix:commons-profiler-api:${Vers.aggregatingProfiler}"
+    val aggregatingProfiler = "ru.fix:aggregating-profiler:${Vers.aggregatingProfiler}"
     val dynamicProperty = "ru.fix:dynamic-property-api:${Vers.dynamicProperty}"
 
+    val springTest = "org.springframework:spring-test:${Vers.spring}"
+    val springBeans = "org.springframework:spring-beans:${Vers.spring}"
+    val springContext = "org.springframework:context:${Vers.spring}"
 }
