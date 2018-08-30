@@ -6,8 +6,9 @@ plugins {
 }
 
 dependencies {
-    compile(Libs.springTest)
+    compile(Libs.springBeans)
     compile(Libs.springContext)
+    testCompile(Libs.springTest)
 
     compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_stdlib)
