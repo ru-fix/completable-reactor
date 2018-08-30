@@ -86,7 +86,7 @@ subprojects {
         from("src/main/kotlin")
     }
 
-    val dokkaTask by tasks.creating(DokkaTask::class){
+    val dokkaTask by tasks.creating(DokkaTask::class) {
         outputFormat = "javadoc"
         outputDirectory = "$buildDir/dokka"
     }
@@ -120,8 +120,13 @@ subprojects {
 
                 pom {
                     name.set("${project.group}:${project.name}")
-                    description.set("jfix-stdlib provides common functionality that enhance usability of standard jvm. ")
-                    url.set("https://github.com/ru-fix/jfix-stdlib")
+                    description.set("""
+                        CompletableReactor framework makes it easier to create business flows
+                        that have concurrently running parts and complex execution branching.
+                        CompletableReactor provides DSL-like Builder-style API to describe business flows.
+                        Framework built on top of Fork Join Pool and CompletableFuture API.
+                        """.trimIndent())
+                    url.set("https://github.com/ru-fix/completable-reactor")
                     licenses {
                         license {
                             name.set("The Apache License, Version 2.0")
@@ -136,9 +141,9 @@ subprojects {
                         }
                     }
                     scm {
-                        url.set("https://github.com/ru-fix/jfix-stdlib")
-                        connection.set("https://github.com/ru-fix/jfix-stdlib.git")
-                        developerConnection.set("https://github.com/ru-fix/jfix-stdlib.git")
+                        url.set("https://github.com/ru-fix/completable-reactor")
+                        connection.set("https://github.com/ru-fix/completable-reactor.git")
+                        developerConnection.set("https://github.com/ru-fix/completable-reactor.git")
                     }
                 }
             }
