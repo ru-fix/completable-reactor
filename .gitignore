@@ -1,11 +1,4 @@
 .idea/
 *.iml
-target/
-completable-reactor-runtime/*.html
-completable-reactor-api/*.html
-completable-reactor-example/*.html
-completable-reactor-runtime/*.rg
-completable-reactor-example/*.rg
-completable-reactor-graph-viewer-app/dependency-reduced-pom.xml
-classes/
-node_modules/
+build/
+.gradle
