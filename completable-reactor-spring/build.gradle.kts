@@ -6,6 +6,9 @@ plugins {
 }
 
 dependencies {
+    compile(project(":completable-reactor-runtime"))
+    compile(Libs.aggregatingProfiler)
+
     compile(Libs.springBeans)
     compile(Libs.springContext)
     testCompile(Libs.springTest)
