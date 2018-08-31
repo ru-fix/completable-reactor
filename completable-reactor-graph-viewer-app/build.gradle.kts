@@ -1,8 +1,12 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.kotlin.dsl.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
     kotlin("jvm")
+    id("com.github.johnrengelman.shadow")
+
 }
 
 dependencies {
@@ -18,5 +22,14 @@ dependencies {
 
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
-    testRuntimeOnly(Libs.slf4j_simple)
+
+    compile(Libs.slf4j_simple)
+}
+
+tasks {
+    withType<ShadowJar> {
+        manifest{
+            attributes["Main-Class"] = "ru.fix.completable.reactor.graph.viewer.app.Main"
+        }
+    }
 }
