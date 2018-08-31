@@ -9,6 +9,8 @@ object Vers {
     val dynamicProperty = "1.0.5"
 
     val spring = "5.0.8.RELEASE"
+
+    val kotlinCoroutines = "0.25.0"
 }
 
 object Libs {
@@ -36,5 +38,9 @@ object Libs {
 
     val springTest = "org.springframework:spring-test:${Vers.spring}"
     val springBeans = "org.springframework:spring-beans:${Vers.spring}"
-    val springContext = "org.springframework:context:${Vers.spring}"
+    val springContext = "org.springframework:spring-context:${Vers.spring}"
+
+
+    val kotlinCoroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlinCoroutines}"
+    val kotlinCoroutinesJdk = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Vers.kotlinCoroutines}"
 }
