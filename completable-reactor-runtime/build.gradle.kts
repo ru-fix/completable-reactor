@@ -6,6 +6,11 @@ plugins {
 }
 
 dependencies {
+    compile(project(":completable-reactor-model"))
+    compile(project(":completable-reactor-graph"))
+
+
+
     compile(Libs.dynamicProperty)
     compile(Libs.aggregatingProfiler)
 

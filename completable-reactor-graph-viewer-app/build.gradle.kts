@@ -6,8 +6,10 @@ plugins {
 }
 
 dependencies {
-    compile(Libs.dynamicProperty)
-    compile(Libs.aggregatingProfiler)
+    compile(project(":completable-reactor-graph-viewer"))
+    compile(project(":completable-reactor-parser"))
+
+    compile(Libs.kotlin_logging)
 
     compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_stdlib)

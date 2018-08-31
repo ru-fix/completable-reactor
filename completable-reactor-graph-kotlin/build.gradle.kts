@@ -6,12 +6,15 @@ plugins {
 }
 
 dependencies {
-    compile(Libs.dynamicProperty)
-    compile(Libs.aggregatingProfiler)
+
+    compile(project(":completable-reactor-graph"))
+    compile(project(":completable-reactor-runtime"))
 
     compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_stdlib)
     compile(Libs.kotlin_reflect)
+    compile(Libs.kotlinCoroutinesCore)
+    compile(Libs.kotlinCoroutinesJdk)
 
 
     testImplementation(Libs.junit_api)
