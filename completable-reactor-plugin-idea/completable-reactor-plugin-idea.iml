@@ -9,5 +9,10 @@
     </content>
     <orderEntry type="jdk" jdkName="IntelliJ IDEA IU-181.5087.20" jdkType="IDEA JDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="completable-reactor-graph-kotlin_main" />
+    <orderEntry type="module" module-name="completable-reactor-graph-viewer-app_main" />
+    <orderEntry type="module" module-name="completable-reactor-graph-viewer_main" />
+    <orderEntry type="module" module-name="completable-reactor-model_main" />
+    <orderEntry type="module" module-name="completable-reactor-parser_main" />
   </component>
 </module>
