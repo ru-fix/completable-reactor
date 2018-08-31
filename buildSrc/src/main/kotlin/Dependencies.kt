@@ -20,12 +20,15 @@ object Libs {
 
     val gradleReleasePlugin = "ru.fix:gradle-release-plugin:${Vers.gradleReleasePlugin}"
     val dokkaGradlePlugin = "org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokkav}"
+    val shadowPlugin = "com.github.jengelman.gradle.plugins:shadow:2.0.4"
 
     val slf4j_api = "org.slf4j:slf4j-api:${Vers.sl4j}"
     val slf4j_simple = "org.slf4j:slf4j-simple:${Vers.sl4j}"
 
     val mockito_kotiln = "com.nhaarman:mockito-kotlin-kt1.1:1.6.0"
     val kotlin_logging = "io.github.microutils:kotlin-logging:1.5.9"
+
+    val log4j = "org.apache.logging.log4j:log4j-core:2.11.1"
 
     val junit_api = "org.junit.jupiter:junit-jupiter-api:${Vers.junit}"
     val junit_parametri = "org.junit.jupiter:junit-jupiter-params:${Vers.junit}"
