@@ -6,10 +6,7 @@ import ru.fix.aggregating.profiler.Profiler
 import ru.fix.completable.reactor.graph.internal.GlTransition
 import ru.fix.completable.reactor.graph.runtime.GlGraph
 import ru.fix.completable.reactor.graph.runtime.GlVertex
-import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel
 import ru.fix.completable.reactor.runtime.tracing.Tracer
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -20,17 +17,9 @@ private val log = KotlinLogging.logger {}
 
 class ExecutionBuilder(
         val profiler: Profiler,
-        val immutabilityChecker: ImmutabilityChecker,
-        val threadsafeCopyMaker: ThreadsafeCopyMaker,
         val subgraphRunner: SubgraphRunner,
         val debugSerializer: DebugSerializer,
         val tracer: Tracer) {
-
-    /**
-     * Immutability check ensures that there is no payload modification during handling.
-     */
-    @Volatile
-    var immutabilityControlLevel = ImmutabilityControlLevel.NO_CONTROL
 
 
     data class MergePayloadContext(
