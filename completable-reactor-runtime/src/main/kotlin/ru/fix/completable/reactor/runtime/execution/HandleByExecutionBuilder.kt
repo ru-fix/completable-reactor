@@ -6,8 +6,6 @@ import ru.fix.completable.reactor.runtime.ProfilerNames
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_TRANSITION_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.HandlePayloadContext
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.ProcessingVertex
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
@@ -230,26 +228,10 @@ class HandleByExecutionBuilder<PayloadType>(
                     null
                 }
         val handlingResult: CompletableFuture<Any?>?
-        val payloadSnapshot: ImmutabilityChecker.Snapshot?
-        val controlLevel = builder.immutabilityControlLevel
 
         try {
-            if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
-                /**
-                 * Invoke handling with immutability check.
-                 */
-                payloadSnapshot = builder.immutabilityChecker.takeSnapshot(payload)
+            handlingResult = invokeHandlingMethod(pvx, payload)
 
-                handlingResult = invokeHandlingMethod(pvx, payload)
-
-            } else {
-                /**
-                 * Invoke handling without immutability check.
-                 */
-                payloadSnapshot = null
-
-                handlingResult = invokeHandlingMethod(pvx, payload)
-            }
         } catch (handlingException: Exception) {
             val exc = RuntimeException(
                     """
@@ -288,38 +270,6 @@ class HandleByExecutionBuilder<PayloadType>(
 
             if (isTraceablePayload) {
                 builder.tracer.afterHandle(handleTracingMarker, handleTracingIdentity, result, throwable)
-            }
-
-            if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
-
-                val diff = builder.immutabilityChecker.diff(payloadSnapshot, payload)
-                if (diff.isPresent) {
-                    val message = """"
-                        Concurrent modification detected for payload:
-                        ${builder.debugSerializer.dumpObject(payload)}
-                        Diff:
-                        ${diff.get()}
-                        """.trimIndent()
-
-                    when (controlLevel) {
-                        ImmutabilityControlLevel.LOG_ERROR -> log.error { message }
-                        ImmutabilityControlLevel.LOG_WARN -> log.warn { message }
-                        ImmutabilityControlLevel.EXCEPTION -> {
-                            val immutabilityException = RuntimeException(message)
-                            log.error(immutabilityException) { message }
-
-                            if (throwable != null) {
-                                log.error(throwable) {
-                                    """
-                                    Overwriting execution exception $throwable
-                                    by immutability check exception $immutabilityException.
-                                    """.trimIndent()
-                                }
-                            }
-                            throwable = immutabilityException
-                        }
-                    }
-                }
             }
 
             if (throwable != null) {

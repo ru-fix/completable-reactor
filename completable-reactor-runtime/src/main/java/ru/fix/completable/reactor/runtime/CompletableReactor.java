@@ -7,15 +7,10 @@ import ru.fix.aggregating.profiler.ProfiledCall;
 import ru.fix.aggregating.profiler.Profiler;
 import ru.fix.completable.reactor.graph.Graphable;
 import ru.fix.completable.reactor.graph.runtime.GlGraph;
-import ru.fix.completable.reactor.runtime.cloning.CopierThreadsafeCopyMaker;
-import ru.fix.completable.reactor.runtime.cloning.ThreadsafeCopyMaker;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker;
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel;
-import ru.fix.completable.reactor.runtime.immutability.ReflectionImmutabilityChecker;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
 import java.lang.reflect.Constructor;
@@ -33,10 +28,6 @@ public class CompletableReactor implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(CompletableReactor.class);
 
     private final Profiler profiler;
-
-    private final ImmutabilityChecker immutabilityChecker = new ReflectionImmutabilityChecker();
-
-    private final ThreadsafeCopyMaker threadsafeCopyMaker = new CopierThreadsafeCopyMaker();
 
     private final DebugSerializer debugSerializer = new ToStringDebugSerializer();
 
@@ -319,8 +310,6 @@ public class CompletableReactor implements AutoCloseable {
 
         this.glExecutionBuilder = new ExecutionBuilder(
                 this.profiler,
-                immutabilityChecker,
-                threadsafeCopyMaker,
                 payload -> {
                     try {
                         return this.internalSubmit(payload, executionTimeoutMs).getResultFuture();
@@ -468,14 +457,6 @@ public class CompletableReactor implements AutoCloseable {
         scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
         return scheduledThreadPoolExecutor;
     }
-
-
-    public void setImmutabilityControlLevel(ImmutabilityControlLevel immutabilityControlLevel) {
-        this.immutabilityControlLevel.set(immutabilityControlLevel);
-    }
-
-    final AtomicReference<ImmutabilityControlLevel> immutabilityControlLevel =
-            new AtomicReference<>(ImmutabilityControlLevel.NO_CONTROL);
 
     public StatisticsReport buildStatisticsReport() {
         StatisticsReport report = new StatisticsReport();
