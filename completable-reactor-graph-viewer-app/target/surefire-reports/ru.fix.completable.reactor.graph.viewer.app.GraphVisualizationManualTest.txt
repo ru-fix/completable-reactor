@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: ru.fix.completable.reactor.graph.viewer.app.GraphVisualizationManualTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 3, Time elapsed: 0.039 sec - in ru.fix.completable.reactor.graph.viewer.app.GraphVisualizationManualTest

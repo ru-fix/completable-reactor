@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: ru.fix.completable.reactor.graph.kotlin.KotlinGraphTest
+-------------------------------------------------------------------------------
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.209 sec - in ru.fix.completable.reactor.graph.kotlin.KotlinGraphTest

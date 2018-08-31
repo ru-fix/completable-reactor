@@ -1,0 +1,26 @@
+Invoking Maven for the goals: [org.apache.maven.plugins:maven-javadoc-plugin:3.0.0:javadoc] with no properties
+
+M2_HOME=/usr/share/maven
+MAVEN_OPTS=null
+JAVA_HOME=/usr/lib/jvm/java-8-oracle
+JAVA_OPTS=null
+
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Building completable-reactor-graph-kotlin 1.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] >>> maven-javadoc-plugin:3.0.0:javadoc (default-cli) > generate-sources @ completable-reactor-graph-kotlin >>>
+[INFO] 
+[INFO] <<< maven-javadoc-plugin:3.0.0:javadoc (default-cli) < generate-sources @ completable-reactor-graph-kotlin <<<
+[INFO] 
+[INFO] 
+[INFO] --- maven-javadoc-plugin:3.0.0:javadoc (default-cli) @ completable-reactor-graph-kotlin ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 0.741 s
+[INFO] Finished at: 2018-08-31T10:05:32+03:00
+[INFO] Final Memory: 16M/303M
+[INFO] ------------------------------------------------------------------------

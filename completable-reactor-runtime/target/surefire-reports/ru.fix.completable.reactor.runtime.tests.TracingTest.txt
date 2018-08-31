@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: ru.fix.completable.reactor.runtime.tests.TracingTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.546 sec - in ru.fix.completable.reactor.runtime.tests.TracingTest

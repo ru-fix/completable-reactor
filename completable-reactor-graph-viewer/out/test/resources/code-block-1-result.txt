@@ -1,0 +1,9 @@
+                .coordinates()
+                .start(500, -200)
+                .proc(serviceFetchProcessor, 320, 1141)
+                .proc(smsRequestConstructProcessor4, 910, 901)
+                .proc(smsRequestConstructProcessor5, 1170, 1270)
+                .merge(serviceFetchProcessor5, 1210, 401)
+                .complete(smsRequestConstructProcessor6, 1500, 511)
+
+                .buildGraph();
