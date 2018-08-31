@@ -1,10 +1,7 @@
 package ru.fix.completable.reactor.runtime.tests;
 
 
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.fix.aggregating.profiler.ProfilerReporter;
+import org.junit.jupiter.api.Test;
 import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
@@ -13,7 +10,7 @@ import ru.fix.completable.reactor.runtime.LogTracer;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Kamil Asfandiyarov

@@ -26,9 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -192,13 +190,13 @@ class GlCompletableReactorTest {
 
         assertEquals(Arrays.asList(1, 2), result.getResultFuture().get(5, TimeUnit.SECONDS).idSequence);
 
-        assertTrue("result future is complete", result.getResultFuture().isDone());
-        assertFalse("execution chain is not complete since detached processor still working", result.getChainExecutionFuture().isDone());
+        assertTrue(result.getResultFuture().isDone(), "result future is complete");
+        assertFalse(result.getChainExecutionFuture().isDone(), "execution chain is not complete since detached processor still working");
 
         graph.detachedProcessor.launch();
 
         result.getChainExecutionFuture().get(5, TimeUnit.SECONDS);
-        assertTrue("execution chain is complete when detached processor is finished", result.getChainExecutionFuture().isDone());
+        assertTrue(result.getChainExecutionFuture().isDone(), "execution chain is complete when detached processor is finished");
 
         //TODO add case when we have to wait for returning from handling method of detached processor before continue
         // with mergers, so detached handlers could have time to read payload before merger modifies it.

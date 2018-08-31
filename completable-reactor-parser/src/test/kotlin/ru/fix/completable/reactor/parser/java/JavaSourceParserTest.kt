@@ -1,7 +1,8 @@
 package ru.fix.completable.reactor.parser.java
 
 import mu.KotlinLogging
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.EndPoint
 import ru.fix.completable.reactor.model.Source
@@ -9,7 +10,6 @@ import ru.fix.completable.reactor.model.VertexFigure
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant
-import kotlin.test.*
 
 private val log = KotlinLogging.logger {}
 
@@ -35,7 +35,7 @@ class JavaSourceParserTest {
         val models = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 log.error { msg }
-                fail(msg)
+                fail<Nothing>(msg)
             }
         }).parse(body, sourceFilePath)
 
@@ -291,7 +291,7 @@ class JavaSourceParserTest {
         val models = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 log.error { msg }
-                fail(msg)
+                fail<Nothing>(msg)
             }
         }).parse(body, sourceFilePath)
 
@@ -337,7 +337,7 @@ class JavaSourceParserTest {
         val models = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 log.error { msg }
-                fail(msg)
+                fail<Nothing>(msg)
             }
         }).parse(body, sourceFilePath)
 

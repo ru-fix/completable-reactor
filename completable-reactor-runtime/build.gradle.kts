@@ -17,6 +17,11 @@ dependencies {
     compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_stdlib)
     compile(Libs.kotlin_reflect)
+    compile(Libs.kotlin_logging)
+
+    compile(Libs.lombok)
+    testCompile(Libs.mockito)
+    testCompile(Libs.mockito_kotiln)
 
 
     testImplementation(Libs.junit_api)
