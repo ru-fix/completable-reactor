@@ -16,6 +16,7 @@ dependencies {
     compile(Libs.kotlinCoroutinesCore)
     compile(Libs.kotlinCoroutinesJdk)
 
+    testCompile(Libs.apacheCommonsLang)
 
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)

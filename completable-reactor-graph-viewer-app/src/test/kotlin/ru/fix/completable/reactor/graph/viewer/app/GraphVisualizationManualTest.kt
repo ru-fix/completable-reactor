@@ -4,12 +4,11 @@ import javafx.application.Application
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
 import mu.KotlinLogging
-import org.junit.Ignore
-import org.junit.Test
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
 import ru.fix.completable.reactor.graph.viewer.gl.Shortcut
 import ru.fix.completable.reactor.graph.viewer.gl.ShortcutType
-import ru.fix.completable.reactor.graph.viewer.gl.code.CodeUpdater
 import ru.fix.completable.reactor.model.GraphModel
 import ru.fix.completable.reactor.model.Source
 import ru.fix.completable.reactor.parser.java.JavaSourceParser
@@ -80,7 +79,7 @@ class GraphVisualizationManualTest : Application() {
      * Manual UI Test
      * Opens given java source file and display graph
      */
-    @Ignore
+    @Disabled
     @Test
     fun `open graph for purchase payload`() {
         Application.launch("/viewer-test-PurchaseGraphConfig.java.txt")
@@ -90,7 +89,7 @@ class GraphVisualizationManualTest : Application() {
      * Manual UI Test
      * Opens given java source file and display graph
      */
-    @Ignore
+    @Disabled
     @Test
     fun `open graph for purchase payload without coordinates`() {
         Application.launch("/viewer-test-PurchaseGraph-no-coordinates.java.txt")
@@ -100,7 +99,7 @@ class GraphVisualizationManualTest : Application() {
      * Manual UI Test
      * Opens given java source file and display graph
      */
-    @Ignore
+    @Disabled
     @Test
     fun `open source with two graphs`() {
         Application.launch("/viewer-test-two-test-graphs-in-one-source.java.txt")

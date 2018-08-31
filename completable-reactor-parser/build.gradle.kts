@@ -6,9 +6,15 @@ plugins {
 }
 
 dependencies {
+
+    compile(project(":completable-reactor-model"))
+
     compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_stdlib)
     compile(Libs.kotlin_reflect)
+    compile(Libs.kotlin_logging)
+
+    compile(Libs.antlr)
 
 
     testImplementation(Libs.junit_api)

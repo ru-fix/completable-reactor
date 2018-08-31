@@ -24,13 +24,13 @@ object Libs {
     val slf4j_api = "org.slf4j:slf4j-api:${Vers.sl4j}"
     val slf4j_simple = "org.slf4j:slf4j-simple:${Vers.sl4j}"
 
-    val mockito = "org.mockito:mockito-all:1.10.19"
     val mockito_kotiln = "com.nhaarman:mockito-kotlin-kt1.1:1.6.0"
     val kotlin_logging = "io.github.microutils:kotlin-logging:1.5.9"
 
     val junit_api = "org.junit.jupiter:junit-jupiter-api:${Vers.junit}"
     val junit_parametri = "org.junit.jupiter:junit-jupiter-params:${Vers.junit}"
     val junit_engine = "org.junit.jupiter:junit-jupiter-engine:${Vers.junit}"
+    val mockito = "org.mockito:mockito-core:2.21.0"
 
 
     val aggregatingProfiler = "ru.fix:aggregating-profiler:${Vers.aggregatingProfiler}"
@@ -43,4 +43,8 @@ object Libs {
 
     val kotlinCoroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlinCoroutines}"
     val kotlinCoroutinesJdk = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Vers.kotlinCoroutines}"
+
+    val lombok = "org.projectlombok:lombok:1.18.2"
+    val apacheCommonsLang = "org.apache.commons:commons-lang3:3.5"
+    val antlr = "org.antlr:antlr4-runtime:4.7.1"
 }
