@@ -213,6 +213,9 @@ class ExecutionBuilder(
 
                                         TransitionPayloadContext(payload = context.payload)
 
+                                        //TODO: тут context.mergeResult нужно сравить с существущими исходами
+                                    } else if (transition.isOrElse) {
+                                        TransitionPayloadContext(payload = context.payload)
                                     } else {
                                         TransitionPayloadContext(
                                                 payload = context.payload,
