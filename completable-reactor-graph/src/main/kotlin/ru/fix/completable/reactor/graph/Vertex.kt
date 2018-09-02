@@ -52,6 +52,23 @@ class Vertex {
         )
     }
 
+    fun orElse(): TransitionBuilder {
+        //TODO: правильная валидация!!!
+        if(vx.merger == null && vx.router == null){
+            throw IllegalArgumentException("" +
+                    "Vertex ${vx.name} is used as source of orElse() transition but does not have merger or router.")
+        }
+
+        val transition = GlTransition()
+        transition.isOrElse = true
+
+        return GlTransitionBuilder(
+                this,
+                transition,
+                vx.transitions
+        )
+    }
+
     /**
      * Create new instance of Vertex with same handler, merger, router or subgraph.
      * Position on the graph and transitions are not copied, they should be defined by using

@@ -7,6 +7,7 @@ class GlTransition(
         var mergeStatuses: Set<Enum<*>> = emptySet(),
 
         var isOnAny: Boolean = false,
+        var isOrElse: Boolean = false,
         var isComplete: Boolean = false,
 
         var mergeBy: GlVertex? = null,
@@ -17,6 +18,7 @@ class GlTransition(
 
         return when {
             isOnAny -> "{onAny}"
+            isOrElse -> "{orElse}"
             mergeStatuses.isNotEmpty() -> mergeStatuses.joinToString(",", "{", "}") { it.name }
             else -> "{INVALID}"
         }
