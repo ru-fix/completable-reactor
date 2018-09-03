@@ -13,7 +13,7 @@ graphBlock
     |   vertexCloningBlock
     |   coordinatesBlock
     |   graphDeclarationBlock
-    |   vertexBuilderFunctionDefinition
+    |   vertexTemplateFunctionDefinition
     ;
 
 graphDeclarationBlock
@@ -47,7 +47,7 @@ payloadType
     ;
 
 vertexAssignmentBlock
-    :   (VERTEX | 'val' | 'var') vertexName ASSIGN (vertexBuilder | vertexBuilderFunctionInvocation) SEMI?
+    :   (VERTEX | 'val' | 'var') vertexName ASSIGN (vertexBuilder | vertexTemplateFunctionInvocation) SEMI?
     ;
 
 vertexCloningBlock
@@ -82,18 +82,18 @@ builderRouter
         ((LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE))
     ;
 
-vertexBuilderFunctionInvocation
+vertexTemplateFunctionInvocation
     :   Identifier LPAREN anythingBeforeRParen RPAREN
     ;
 
-vertexBuilderFunctionDefinition
+vertexTemplateFunctionDefinition
     :   (VERTEX | 'fun')? Identifier LPAREN anythingBeforeRParen RPAREN
-        vertexBuilderFuncitonDefinitionBody
+        vertexTemplateFuncitonDefinitionBody
     ;
 
-vertexBuilderFuncitonDefinitionBody
+vertexTemplateFuncitonDefinitionBody
     :   LBRACE
-        ( vertexBuilder | vertexBuilderFuncitonDefinitionBody | ~RBRACE )*
+        ( vertexBuilder | vertexTemplateFuncitonDefinitionBody | ~RBRACE )*
         RBRACE
     ;
 
@@ -126,11 +126,11 @@ builderWithEmptyMerger
     ;
 
 anythingBeforeRParen
-    :   (ignoreParenthesesBlock | ignoreBracesBlock | ~(LPAREN|RPAREN))*
+    :   (ignoreParenthesesBlock | ~(LPAREN|RPAREN))*
     ;
 
 anythingBeforeRBrace
-    :   (ignoreBracesBlock | ignoreParenthesesBlock | ~(LBRACE|RBRACE))*
+    :   (ignoreBracesBlock | ~(LBRACE|RBRACE))*
     ;
 
 ignoreBracesBlock
