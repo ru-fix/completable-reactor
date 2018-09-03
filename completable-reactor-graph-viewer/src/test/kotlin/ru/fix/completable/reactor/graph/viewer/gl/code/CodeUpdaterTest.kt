@@ -1,8 +1,8 @@
 package ru.fix.completable.reactor.graph.viewer.gl.code
 
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import ru.fix.completable.reactor.graph.viewer.gl.code.CoordinateCodePhrase.*
 
 /**
@@ -19,7 +19,7 @@ class CodeUpdaterTest {
                 .replace("\n\n", "\n")
     }
 
-    @Before
+    @BeforeEach
     fun create_test_coordiate_items() {
 
         codeCoordinates = listOf(
@@ -39,7 +39,7 @@ class CodeUpdaterTest {
         val expectedOutput = resourceAsText("/gl-code-block/code-block-1-result.txt")
 
         val output = CodeUpdater(CodeUpdater.CodeType.JAVA).updateCoordinates(input, codeCoordinates)
-        Assert.assertEquals(normalize(expectedOutput), normalize(output))
+        assertEquals(normalize(expectedOutput), normalize(output))
     }
 
 }

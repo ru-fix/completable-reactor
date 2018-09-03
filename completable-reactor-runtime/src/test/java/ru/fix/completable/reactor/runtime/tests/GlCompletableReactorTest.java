@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.fix.commons.profiler.ProfiledCall;
-import ru.fix.commons.profiler.impl.SimpleProfiler;
+import ru.fix.aggregating.profiler.NoopProfiler;
+import ru.fix.aggregating.profiler.ProfiledCall;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
+import ru.fix.aggregating.profiler.ThrowableSupplier;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
@@ -24,9 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -39,13 +39,13 @@ class GlCompletableReactorTest {
 
     static final Logger log = LoggerFactory.getLogger(GlCompletableReactorTest.class);
 
-    private SimpleProfiler profiler;
+    private AggregatingProfiler profiler;
     private CompletableReactor reactor;
 
 
     @BeforeEach
     void before() {
-        profiler = new SimpleProfiler();
+        profiler = new AggregatingProfiler();
         reactor = new CompletableReactor(profiler)
                 .setDebugProcessingVertexGraphState(true);
     }
@@ -190,13 +190,13 @@ class GlCompletableReactorTest {
 
         assertEquals(Arrays.asList(1, 2), result.getResultFuture().get(5, TimeUnit.SECONDS).idSequence);
 
-        assertTrue("result future is complete", result.getResultFuture().isDone());
-        assertFalse("execution chain is not complete since detached processor still working", result.getChainExecutionFuture().isDone());
+        assertTrue(result.getResultFuture().isDone(), "result future is complete");
+        assertFalse(result.getChainExecutionFuture().isDone(), "execution chain is not complete since detached processor still working");
 
         graph.detachedProcessor.launch();
 
         result.getChainExecutionFuture().get(5, TimeUnit.SECONDS);
-        assertTrue("execution chain is complete when detached processor is finished", result.getChainExecutionFuture().isDone());
+        assertTrue(result.getChainExecutionFuture().isDone(), "execution chain is complete when detached processor is finished");
 
         //TODO add case when we have to wait for returning from handling method of detached processor before continue
         // with mergers, so detached handlers could have time to read payload before merger modifies it.
@@ -1058,7 +1058,7 @@ class GlCompletableReactorTest {
     void reactor_dump_vertices_steate_when_does_not_complete_on_timeout() throws Exception {
 
         DumpStateOnTimeoutGraph graph = new DumpStateOnTimeoutGraph();
-        CompletableReactor reactor = new CompletableReactor(new SimpleProfiler());
+        CompletableReactor reactor = new CompletableReactor(new AggregatingProfiler());
         reactor.registerGraph(graph);
         reactor.setExecutionTimeoutMs(500);
 
@@ -1096,14 +1096,14 @@ class GlCompletableReactorTest {
 
     @Test
     void reactor_profiler_stops_on_any_handler_exception() throws Exception {
-        List<ProfiledCall> profilers = Collections.synchronizedList(new ArrayList<>());
-        Supplier<ProfiledCall> profiledCallSupp = () -> {
-            ProfiledCall profiledCall = getProfiledCall();
+        List<TrackedProfiledCall> profilers = Collections.synchronizedList(new ArrayList<>());
+        Supplier<TrackedProfiledCall> profiledCallSupp = () -> {
+            TrackedProfiledCall profiledCall = getProfiledCall();
             profilers.add(profiledCall);
             return profiledCall;
         };
 
-        SimpleProfiler profiler = mock(SimpleProfiler.class);
+        AggregatingProfiler profiler = mock(AggregatingProfiler.class);
         when(profiler.profiledCall(anyString())).thenAnswer(inv -> profiledCallSupp.get());
 
         HandlerThrowsExceptionGraph graph = new HandlerThrowsExceptionGraph();
@@ -1116,7 +1116,7 @@ class GlCompletableReactorTest {
         } catch (Exception exc) {
             // waiting some time until async features complete
             Thread.sleep(1000);
-            assertTrue(profilers.stream().allMatch(ProfiledCall::isStopped));
+            assertTrue(profilers.stream().allMatch(TrackedProfiledCall::isStopped));
         }
     }
 
@@ -1141,14 +1141,14 @@ class GlCompletableReactorTest {
 
     @Test
     void reactor_profiler_stops_on_any_merger_exception() throws Exception {
-        List<ProfiledCall> profilers = Collections.synchronizedList(new ArrayList<>());
-        Supplier<ProfiledCall> profiledCallSupp = () -> {
-            ProfiledCall profiledCall = getProfiledCall();
+        List<TrackedProfiledCall> profilers = Collections.synchronizedList(new ArrayList<>());
+        Supplier<TrackedProfiledCall> profiledCallSupp = () -> {
+            TrackedProfiledCall profiledCall = getProfiledCall();
             profilers.add(profiledCall);
             return profiledCall;
         };
 
-        SimpleProfiler profiler = mock(SimpleProfiler.class);
+        AggregatingProfiler profiler = mock(AggregatingProfiler.class);
         when(profiler.profiledCall(anyString())).thenAnswer(inv -> profiledCallSupp.get());
 
         MergerThrowsExceptionGraph graph = new MergerThrowsExceptionGraph();
@@ -1161,45 +1161,42 @@ class GlCompletableReactorTest {
         } catch (Exception exc) {
             // waiting some time until async features complete
             Thread.sleep(1000);
-            assertTrue(profilers.stream().allMatch(ProfiledCall::isStopped));
+            assertTrue(profilers.stream().allMatch(TrackedProfiledCall::isStopped));
         }
     }
 
-    private static ProfiledCall getProfiledCall() {
-        return new ProfiledCall() {
-            private AtomicInteger state = new AtomicInteger();
+    static class TrackedProfiledCall extends NoopProfiler.NoopProfiledCall{
+        private AtomicInteger state = new AtomicInteger();
 
-            @Override
-            public void call() {
-                System.err.println("call!!!");
+        @Override
+        public ProfiledCall start() {
+            if (!state.compareAndSet(0, 1)) {
+                fail("start called in improper state");
             }
+            return this;
+        }
 
-            @Override
-            public ProfiledCall start() {
-                if (!state.compareAndSet(0, 1)) {
-                    fail("start called in improper state");
-                }
-                return this;
+        @Override
+        public void stop() {
+            if (!state.compareAndSet(1, 2)) {
+                fail("stop called in improper state");
             }
+        }
 
-            @Override
-            public void stop() {
-                if (!state.compareAndSet(1, 2)) {
-                    fail("stop called in improper state");
-                }
+        @Override
+        public void stop(long l) {
+            if (!state.compareAndSet(1, 2)) {
+                fail("stop called in improper state");
             }
+        }
 
-            @Override
-            public void stop(long l) {
-                if (!state.compareAndSet(1, 2)) {
-                    fail("stop called in improper state");
-                }
-            }
+        public boolean isStopped() {
+            return state.get() == 2;
+        }
+    }
 
-            @Override
-            public boolean isStopped() {
-                return state.get() == 2;
-            }
-        };
+    private static TrackedProfiledCall getProfiledCall() {
+        return new TrackedProfiledCall();
+
     }
 }

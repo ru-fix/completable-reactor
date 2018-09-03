@@ -6,8 +6,6 @@ import ru.fix.completable.reactor.runtime.ProfilerNames
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_TRANSITION_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.HandlePayloadContext
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.ProcessingVertex
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityChecker
-import ru.fix.completable.reactor.runtime.immutability.ImmutabilityControlLevel
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
@@ -111,27 +109,14 @@ class HandleByExecutionBuilder<PayloadType>(
                         pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isDeadTransition = true))
 
                     } else {
-                        if (activeIncomingFlows.size > 1) {
 
-                            /**
-                             * Illegal graph state. Too many active incoming flows.
-                             * Mark as terminal all outgoing flows
-                             * Complete graph with exception
-                             */
-                            val tooManyActiveIncomingFlowsExc = Exception("""
-                                    There is more than one active incoming flow for vertex ${vx.name}.
-                                    Reactor can not determinate from which of transitions to take payload.
-                                    Possible loss of computation results.
-                                    Possible concurrent modifications of payload.
-                                    """.trimIndent())
-
-                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc)
-                            pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
-
-                        } else {
-
-                            handle(pvx, activeIncomingFlows[0], executionResultFuture)
-                        }
+                        /**
+                         * If there is a single active incoming flow - use transition payload context from this flow.
+                         * If there are many active incoming flows - select any of them:
+                         * we are using single payload instance for whole graph execution, no matter from which of
+                         * active transition we will select it.
+                         */
+                        handle(pvx, activeIncomingFlows[0], executionResultFuture)
                     }
                 }
             }
@@ -148,14 +133,14 @@ class HandleByExecutionBuilder<PayloadType>(
             payload: Any?): CompletableFuture<Any?> {
 
         return when {
-        // Handler
+            // Handler
             pvx.vertex.handler != null -> invokeHandlerHandlingMethod(pvx, payload)
 
-        // Subgraph
+            // Subgraph
             pvx.vertex.subgraphPayloadBuilder != null -> invokeSubgraphHandlingMethod(pvx, payload)
 
-        // Router route method is invoked in MergeBy section in a way Merger merge method works.
-        // To pass execution down to mergerFeature for Router we use fake empty handling
+            // Router route method is invoked in MergeBy section in a way Merger merge method works.
+            // To pass execution down to mergerFeature for Router we use fake empty handling
             pvx.vertex.router != null -> CompletableFuture.completedFuture(null)
 
             else -> throw IllegalStateException(
@@ -243,26 +228,10 @@ class HandleByExecutionBuilder<PayloadType>(
                     null
                 }
         val handlingResult: CompletableFuture<Any?>?
-        val payloadSnapshot: ImmutabilityChecker.Snapshot?
-        val controlLevel = builder.immutabilityControlLevel
 
         try {
-            if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
-                /**
-                 * Invoke handling with immutability check.
-                 */
-                payloadSnapshot = builder.immutabilityChecker.takeSnapshot(payload)
+            handlingResult = invokeHandlingMethod(pvx, payload)
 
-                handlingResult = invokeHandlingMethod(pvx, payload)
-
-            } else {
-                /**
-                 * Invoke handling without immutability check.
-                 */
-                payloadSnapshot = null
-
-                handlingResult = invokeHandlingMethod(pvx, payload)
-            }
         } catch (handlingException: Exception) {
             val exc = RuntimeException(
                     """
@@ -301,38 +270,6 @@ class HandleByExecutionBuilder<PayloadType>(
 
             if (isTraceablePayload) {
                 builder.tracer.afterHandle(handleTracingMarker, handleTracingIdentity, result, throwable)
-            }
-
-            if (controlLevel != ImmutabilityControlLevel.NO_CONTROL) {
-
-                val diff = builder.immutabilityChecker.diff(payloadSnapshot, payload)
-                if (diff.isPresent) {
-                    val message = """"
-                        Concurrent modification detected for payload:
-                        ${builder.debugSerializer.dumpObject(payload)}
-                        Diff:
-                        ${diff.get()}
-                        """.trimIndent()
-
-                    when (controlLevel) {
-                        ImmutabilityControlLevel.LOG_ERROR -> log.error { message }
-                        ImmutabilityControlLevel.LOG_WARN -> log.warn { message }
-                        ImmutabilityControlLevel.EXCEPTION -> {
-                            val immutabilityException = RuntimeException(message)
-                            log.error(immutabilityException) { message }
-
-                            if (throwable != null) {
-                                log.error(throwable) {
-                                    """
-                                    Overwriting execution exception $throwable
-                                    by immutability check exception $immutabilityException.
-                                    """.trimIndent()
-                                }
-                            }
-                            throwable = immutabilityException
-                        }
-                    }
-                }
             }
 
             if (throwable != null) {

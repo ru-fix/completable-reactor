@@ -1,7 +1,8 @@
 package ru.fix.completable.reactor.parser.java
 
 import mu.KotlinLogging
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.EndPoint
 import ru.fix.completable.reactor.model.Source
@@ -9,7 +10,6 @@ import ru.fix.completable.reactor.model.VertexFigure
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant
-import kotlin.test.*
 
 private val log = KotlinLogging.logger {}
 
@@ -35,7 +35,7 @@ class JavaSourceParserTest {
         val models = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 log.error { msg }
-                fail(msg)
+                fail<Nothing>(msg)
             }
         }).parse(body, sourceFilePath)
 
@@ -291,7 +291,7 @@ class JavaSourceParserTest {
         val models = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 log.error { msg }
-                fail(msg)
+                fail<Nothing>(msg)
             }
         }).parse(body, sourceFilePath)
 
@@ -307,9 +307,9 @@ class JavaSourceParserTest {
 
         assertEquals(-98, singleProcessorGraph.startPoint.coordinates!!.y)
 
-        assertEquals(Source(sourceFilePath, 43, 13, 1169), singleProcessorGraph.coordinatesStart)
-        assertEquals(Source(sourceFilePath, 47, 55, 1381), singleProcessorGraph.coordinatesEnd)
-        assertEquals(Source(sourceFilePath, 47, 55, 1381), singleProcessorGraph.endOfLastCodeBlocksWithinGraph)
+        assertEquals(Source(sourceFilePath, 43, 13, 1179), singleProcessorGraph.coordinatesStart)
+        assertEquals(Source(sourceFilePath, 47, 55, 1391), singleProcessorGraph.coordinatesEnd)
+        assertEquals(Source(sourceFilePath, 47, 55, 1391), singleProcessorGraph.endOfLastCodeBlocksWithinGraph)
 
         val twoProcesssorSequenceGraph = models
                 .find { it.graphClass == "TwoProcessorSequentialMergeGraph" }
@@ -320,7 +320,7 @@ class JavaSourceParserTest {
 
         assertNull(twoProcesssorSequenceGraph.coordinatesStart)
         assertNull(twoProcesssorSequenceGraph.coordinatesEnd)
-        assertEquals(Source(sourceFilePath, 87, 45, 2624), twoProcesssorSequenceGraph.endOfLastCodeBlocksWithinGraph)
+        assertEquals(Source(sourceFilePath, 87, 45, 2634), twoProcesssorSequenceGraph.endOfLastCodeBlocksWithinGraph)
     }
 
 
@@ -337,7 +337,7 @@ class JavaSourceParserTest {
         val models = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
                 log.error { msg }
-                fail(msg)
+                fail<Nothing>(msg)
             }
         }).parse(body, sourceFilePath)
 

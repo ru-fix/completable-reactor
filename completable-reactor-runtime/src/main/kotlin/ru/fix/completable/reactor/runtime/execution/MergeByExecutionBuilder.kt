@@ -203,7 +203,6 @@ class MergeByExecutionBuilder<PayloadType>(
                             pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
 
                         } else {
-
                             /**
                              * Handler, Router or Subgraph completed handlingFeature successfully.
                              */
@@ -236,7 +235,6 @@ class MergeByExecutionBuilder<PayloadType>(
                                      * In case of Handler or Subgraph there could be single incoming merging flow.
                                      * This merging flow can be marked as dead or as active.
                                      */
-
                                     if (incomingMergingFlows.any { it.isDeadTransition }) {
                                         /**
                                          * There is incoming transition in status
@@ -245,35 +243,18 @@ class MergeByExecutionBuilder<PayloadType>(
                                         pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
 
                                     } else {
-
-                                        if (incomingMergingFlows.size > 1) {
-                                            /**
-                                             * Illegal graph state. Too many active incoming flows.
-                                             * Mark as terminal all outgoing flows from merge point
-                                             * Complete graph with exception
-                                             */
-                                            val tooManyActiveIncomingFlowsExc = Exception(
-                                                    """
-                                                    There is more than one active incoming merging flow
-                                                     for vertex ${pvx.vertex.name}
-                                                    Reactor can not determinate from which of transitions take payload.
-                                                    Possible loss of computation results.
-                                                    Possible concurrent modifications of payload.
-                                                    """.trimIndent())
-
-                                            executionResultFuture.completeExceptionally(tooManyActiveIncomingFlowsExc)
-                                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
-
-                                        } else {
-                                            /**
-                                             * Single active incoming merging flow
-                                             */
-                                            merge(
-                                                    pvx,
-                                                    handlePayloadContext.handlingResult,
-                                                    incomingMergingFlows[0].payload,
-                                                    executionResultFuture)
-                                        }
+                                        /**
+                                         * If there is a single active incoming flow - use transition payload context
+                                         * from this flow.
+                                         * If there are many active incoming flows - select any of them:
+                                         * we are using single payload instance for whole graph execution,
+                                         * no matter from which of active transition we will select it.
+                                         */
+                                        merge(
+                                                pvx,
+                                                handlePayloadContext.handlingResult,
+                                                incomingMergingFlows[0].payload,
+                                                executionResultFuture)
                                     }
                                 }
                             }

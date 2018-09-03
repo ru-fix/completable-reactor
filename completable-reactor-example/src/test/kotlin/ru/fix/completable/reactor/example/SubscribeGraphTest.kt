@@ -1,16 +1,16 @@
 package ru.fix.completable.reactor.example
 
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import ru.fix.commons.profiler.impl.SimpleProfiler
+import org.springframework.test.context.junit.jupiter.SpringExtension
+import ru.fix.aggregating.profiler.AggregatingProfiler
 import ru.fix.completable.reactor.example.services.*
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.concurrent.TimeUnit
@@ -18,15 +18,12 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Kamil Asfandiyarov
  */
-@RunWith(SpringJUnit4ClassRunner::class)
+@ExtendWith(SpringExtension::class)
 @ContextConfiguration(classes = [SubscribeGraphTest.ServicesConfig::class, SubscribeGraph::class])
 open class SubscribeGraphTest {
 
     @Configuration
     open class ServicesConfig {
-
-        @Autowired
-        lateinit var applicationContext: ApplicationContext
 
         @Bean
         open fun bank() = Bank()
@@ -56,7 +53,7 @@ open class SubscribeGraphTest {
 
         @Bean
         open fun reactor(): CompletableReactor {
-            val reactor = CompletableReactor(SimpleProfiler())
+            val reactor = CompletableReactor(AggregatingProfiler())
 
             //For debug purpose to resolve blocked vertices that does not completed correctly
             reactor.setDebugProcessingVertexGraphState(true)
@@ -68,7 +65,7 @@ open class SubscribeGraphTest {
     @Autowired
     lateinit var reactor: CompletableReactor
 
-    @Before
+    @BeforeEach
     fun before(){
         reactor.registerGraphSync(PurchasePayload::class.java){
             it.apply{
