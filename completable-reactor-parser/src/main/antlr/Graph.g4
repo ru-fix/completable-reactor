@@ -13,6 +13,7 @@ graphBlock
     |   vertexCloningBlock
     |   coordinatesBlock
     |   graphDeclarationBlock
+    |   vertexBuilderFunctionDefinition
     ;
 
 graphDeclarationBlock
@@ -85,10 +86,9 @@ vertexBuilderFunctionInvocation
     :   Identifier LPAREN anythingBeforeRParen RPAREN
     ;
 
-vertexBuilderFunctionDeclaration
-    :   Identifier LPAREN anythingBeforeRParen RPAREN LBRACE vertexBuilder RBRACE
+vertexBuilderFunctionDefinition
+    :   (VERTEX | 'fun')? Identifier LPAREN anythingBeforeRParen RPAREN LBRACE ignoredToken* vertexBuilder ignoredToken* RBRACE
     ;
-
 
 builderHandler
     :   handler
