@@ -96,5 +96,7 @@ class ReactorGraphAction : AnAction() {
                         " Ignore opening subgraph action for $subgraphPayloadType.")
             }
         })
+
+        viewer.show()
     }
 }

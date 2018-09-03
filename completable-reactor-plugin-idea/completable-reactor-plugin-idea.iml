@@ -7,11 +7,26 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
     </content>
-    <orderEntry type="jdk" jdkName="IntelliJ IDEA IU-181.4203.550" jdkType="IDEA JDK" />
+    <orderEntry type="jdk" jdkName="IntelliJ IDEA IU-182.4129.33" jdkType="IDEA JDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="completable-reactor-graph" />
+    <orderEntry type="module" module-name="completable-reactor-graph-kotlin_main" />
+    <orderEntry type="module" module-name="completable-reactor-graph-viewer-app_main" />
+    <orderEntry type="module" module-name="completable-reactor-graph-viewer_main" />
+    <orderEntry type="module" module-name="completable-reactor-model_main" />
+    <orderEntry type="module" module-name="completable-reactor-parser_main" />
     <orderEntry type="module" module-name="completable-reactor-graph-viewer" />
     <orderEntry type="module" module-name="completable-reactor-model" />
     <orderEntry type="module" module-name="completable-reactor-parser" />
+    <orderEntry type="module" module-name="completable-reactor-graph" />
+    <orderEntry type="module" module-name="completable-reactor-graph-kotlin" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../completable-reactor-graph-viewer/build/resources/main" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

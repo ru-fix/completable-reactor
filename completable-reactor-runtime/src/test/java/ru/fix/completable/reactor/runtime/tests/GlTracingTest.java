@@ -1,11 +1,8 @@
 package ru.fix.completable.reactor.runtime.tests;
 
 
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.fix.commons.profiler.ProfilerReporter;
-import ru.fix.commons.profiler.impl.SimpleProfiler;
+import org.junit.jupiter.api.Test;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
@@ -13,19 +10,18 @@ import ru.fix.completable.reactor.runtime.LogTracer;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Kamil Asfandiyarov
  */
 public class GlTracingTest {
-    Logger log = LoggerFactory.getLogger(GlTracingTest.class);
 
     /**
      * If tracable payload contain number that match particular condition
      * this payload will be traced by tracer
      */
-    static class TracablePayload extends CompletableReactorTest.IdListPayload {
+    static class TracablePayload extends GlCompletableReactorTest.IdListPayload {
         int number;
 
         public int getNumber() {
@@ -40,7 +36,7 @@ public class GlTracingTest {
 
     enum Status {OK}
 
-    private final SimpleProfiler profiler = new SimpleProfiler();
+    private final AggregatingProfiler profiler = new AggregatingProfiler();
     final CompletableReactor completableReactor = new CompletableReactor(profiler);
 
 

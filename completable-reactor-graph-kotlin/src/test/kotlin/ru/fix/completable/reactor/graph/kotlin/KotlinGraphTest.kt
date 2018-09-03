@@ -2,11 +2,11 @@ package ru.fix.completable.reactor.graph.kotlin
 
 import mu.KotlinLogging
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.junit.After
-import org.junit.Assert.*
-import org.junit.Before
-import org.junit.Test
-import ru.fix.commons.profiler.impl.SimpleProfiler
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import ru.fix.aggregating.profiler.AggregatingProfiler
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.*
 import java.util.concurrent.CompletableFuture.completedFuture
@@ -25,13 +25,13 @@ class KotlinGraphTest {
     private lateinit var reactor: CompletableReactor
 
 
-    @Before
+    @BeforeEach
     fun before() {
-        reactor = CompletableReactor(SimpleProfiler())
+        reactor = CompletableReactor(AggregatingProfiler())
                 .setDebugProcessingVertexGraphState(true)
     }
 
-    @After
+    @AfterEach
     fun after() {
         reactor.close()
     }
@@ -183,13 +183,13 @@ class KotlinGraphTest {
 
         assertEquals(Arrays.asList(1, 2), result.resultFuture.get(5, TimeUnit.SECONDS).idSequence)
 
-        assertTrue("result future is complete", result.resultFuture.isDone)
-        assertFalse("execution chain is not complete since detached processor still working", result.chainExecutionFuture.isDone)
+        assertTrue(result.resultFuture.isDone, "result future is complete")
+        assertFalse(result.chainExecutionFuture.isDone, "execution chain is not complete since detached processor still working")
 
         graph.detachedProcessor.launch()
 
         result.chainExecutionFuture.get(5, TimeUnit.SECONDS)
-        assertTrue("execution chain is complete when detached processor is finished", result.chainExecutionFuture.isDone)
+        assertTrue(result.chainExecutionFuture.isDone, "execution chain is complete when detached processor is finished")
 
         //TODO add case when we have to wait for returning from handling method of detached processor before continue
         // with mergers, so detached handlers could have time to read payload before merger modifies it.
@@ -701,7 +701,7 @@ class KotlinGraphTest {
 
         try {
             resultFuture.get(1, TimeUnit.SECONDS)
-            fail("Failed to wait for mergePoint2")
+            fail<Any>("Failed to wait for mergePoint2")
         } catch (exc: TimeoutException) {
             //ignore timeout exception
         }
@@ -816,7 +816,7 @@ class KotlinGraphTest {
         try {
             log.info("wait for 2 seconds to test if graph executes merge points number 2 or 3")
             val result = resultFuture.get(2, TimeUnit.SECONDS)
-            fail("Failed to wait graph execution. $result")
+            fail<Any>("Failed to wait graph execution. $result")
         } catch (exc: TimeoutException) {
             //ignore timeout exception
         }
@@ -875,7 +875,7 @@ class KotlinGraphTest {
                     nullResultHandler.handleWithNullResult()
 
                 }.withMerger {
-                            fail("Merger should not be invoked when handler returned NULL")
+                            fail<Any>("Merger should not be invoked when handler returned NULL")
                             idSequence.add(1)
                             Status.OK
                         }
@@ -898,7 +898,7 @@ class KotlinGraphTest {
                     .resultFuture
                     .get(10, TimeUnit.SECONDS)
 
-            fail("When handler returns NULL result future should complete exceptionally.")
+            fail<Nothing>("When handler returns NULL result future should complete exceptionally.")
 
         } catch (exc: Exception) {
             log.info(exc) { "When handler returns NULL result future completed with NPE" }
@@ -924,7 +924,7 @@ class KotlinGraphTest {
     fun vertex_with_empty_merger_rise_exception_when_used_in_on_transition(){
         try {
             reactor.registerGraphIfAbsent(RiseExceptionForEmptyMergerGraph::class.java)
-            fail("should rise exception")
+            fail<Nothing>("should rise exception")
 
         }catch (exc: Exception){
             ExceptionUtils.getStackTrace(exc).let{

@@ -1,8 +1,6 @@
 package ru.fix.completable.reactor.example.services;
 
 
-import ru.fix.completable.reactor.api.Reactored;
-
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -14,10 +12,6 @@ import java.util.stream.Stream;
 /**
  * @author Kamil Asfandiyarov
  */
-@Reactored({
-        "Service registry load data for given service from database.",
-        "Service could be not active. In that case purchase request will be denied.",
-})
 public class ServiceRegistry {
     public static final long SERVICE_ID_CAR_WASH = 1L;
     public static final long SERVICE_ID_HAIR_CUT = 2L;

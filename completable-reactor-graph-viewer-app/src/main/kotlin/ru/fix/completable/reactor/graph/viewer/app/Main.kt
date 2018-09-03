@@ -4,7 +4,6 @@ import javafx.application.Application
 import javafx.application.Platform
 import javafx.stage.Stage
 import mu.KotlinLogging
-import ru.fix.completable.reactor.graph.viewer.GraphViewer
 import ru.fix.completable.reactor.parser.java.JavaSourceParser
 import ru.fix.crudility.engine.FileWatcher
 
@@ -27,23 +26,9 @@ class Main : Application() {
         }
 
         try {
-            //TODO remove support of rg files after upgrade
             val filePath = parameters.raw[0]
 
-            if (filePath.endsWith(".rg")) {
-
-                val viewer = GraphViewer()
-
-                val fileContent = String(Files.readAllBytes(
-                        Paths.get(filePath)),
-                        StandardCharsets.UTF_8)
-
-                viewer.openGraph(fileContent)
-                stage.scene = viewer.scene
-
-                stage.show()
-
-            } else if (filePath.endsWith(".java")) {
+            if (filePath.endsWith(".java")) {
 
                 log.info { "Open CR2 graph: $filePath" }
 

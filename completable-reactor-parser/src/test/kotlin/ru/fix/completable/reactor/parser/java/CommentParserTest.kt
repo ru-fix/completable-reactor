@@ -1,7 +1,7 @@
 package ru.fix.completable.reactor.parser.java
 
-import org.junit.Test
-import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 class CommentParserTest {
 

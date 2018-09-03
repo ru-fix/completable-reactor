@@ -84,9 +84,9 @@ Paragraph explains handy rules that will keep your code clear
 
 [Best Practice and Code Convention](docs/best-practice-code-convention/best-practice-code-convention.md)  
 
-
 # How to build this project
 Intellij plugin located at `completable-reactor-plugin-idea` directory.  
 In order to include plugin module into Intellij Idea you have to manually add line   
 `<module fileurl="file://$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" filepath="$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" />`      
 into `.idea/modules.xml` configuration file.  
+

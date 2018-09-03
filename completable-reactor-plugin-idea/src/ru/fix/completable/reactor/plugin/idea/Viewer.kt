@@ -55,7 +55,7 @@ class Viewer(
     @Volatile
     lateinit var displayedModel: GraphModel
 
-    init {
+    fun show() {
         graphViewer.setShortcut(ShortcutType.GOTO_GRAPH, Shortcut(true, KeyCode.B))
 
         //Because of https://bugs.openjdk.java.net/browse/JDK-8090517, it is important to disable implicit exit.
