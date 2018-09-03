@@ -87,7 +87,14 @@ vertexBuilderFunctionInvocation
     ;
 
 vertexBuilderFunctionDefinition
-    :   (VERTEX | 'fun')? Identifier LPAREN anythingBeforeRParen RPAREN LBRACE ignoredToken* vertexBuilder ignoredToken* RBRACE
+    :   (VERTEX | 'fun')? Identifier LPAREN anythingBeforeRParen RPAREN
+        vertexBuilderFuncitonDefinitionBody
+    ;
+
+vertexBuilderFuncitonDefinitionBody
+    :   LBRACE
+        ( vertexBuilder | vertexBuilderFuncitonDefinitionBody | ~RBRACE )*
+        RBRACE
     ;
 
 builderHandler
@@ -123,7 +130,7 @@ anythingBeforeRParen
     ;
 
 anythingBeforeRBrace
-    :   (ignoreBracesBlock | ignoreBracesBlock | ~(LBRACE|RBRACE))*
+    :   (ignoreBracesBlock | ignoreParenthesesBlock | ~(LBRACE|RBRACE))*
     ;
 
 ignoreBracesBlock
