@@ -33,6 +33,15 @@ classModifier
     |   'sealed'
     ;
 
+functionModifier
+    :   'public'
+    |   'protected'
+    |   'private'
+    |   'static'
+    |   'final'
+    |   'open'
+    ;
+
 
 classAnnotation
     :   AT Identifier (LPAREN anythingBeforeRParen RPAREN)?
@@ -87,9 +96,9 @@ vertexTemplateFunctionInvocation
     ;
 
 vertexTemplateFunctionDefinition
-    :   (VERTEX Identifier LPAREN anythingBeforeRParen RPAREN vertexTemplateFuncitonDefinitionBody)
-    |   ('fun' Identifier LPAREN anythingBeforeRParen RPAREN (':' VERTEX)? vertexTemplateFuncitonDefinitionBody)
-    |   ('fun' Identifier LPAREN anythingBeforeRParen RPAREN (':' VERTEX)? ASSIGN vertexBuilder)
+    :   (functionModifier? VERTEX Identifier LPAREN anythingBeforeRParen RPAREN vertexTemplateFuncitonDefinitionBody)
+    |   (functionModifier? 'fun' Identifier LPAREN anythingBeforeRParen RPAREN (':' VERTEX)? vertexTemplateFuncitonDefinitionBody)
+    |   (functionModifier? 'fun' Identifier LPAREN anythingBeforeRParen RPAREN (':' VERTEX)? ASSIGN vertexBuilder)
     ;
 
 vertexTemplateFuncitonDefinitionBody
