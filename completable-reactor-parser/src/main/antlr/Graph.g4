@@ -87,8 +87,9 @@ vertexTemplateFunctionInvocation
     ;
 
 vertexTemplateFunctionDefinition
-    :   (VERTEX | 'fun')? Identifier LPAREN anythingBeforeRParen RPAREN
-        vertexTemplateFuncitonDefinitionBody
+    :   (VERTEX Identifier LPAREN anythingBeforeRParen RPAREN vertexTemplateFuncitonDefinitionBody)
+    |   ('fun' Identifier LPAREN anythingBeforeRParen RPAREN (':' VERTEX)? vertexTemplateFuncitonDefinitionBody)
+    |   ('fun' Identifier LPAREN anythingBeforeRParen RPAREN (':' VERTEX)? ASSIGN vertexBuilder)
     ;
 
 vertexTemplateFuncitonDefinitionBody
