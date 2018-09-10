@@ -10,6 +10,7 @@ import ru.fix.completable.reactor.runtime.debug.DebugSerializer
 import ru.fix.completable.reactor.runtime.tracing.Tracer
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import kotlin.collections.ArrayList
 
 typealias SubgraphRunner = (Any?) -> CompletableFuture<Any?>
 
@@ -213,8 +214,11 @@ class ExecutionBuilder(
 
                                         TransitionPayloadContext(payload = context.payload)
 
-                                        //TODO: тут context.mergeResult нужно сравить с существущими исходами
-                                    } else if (transition.isOrElse) {
+                                        //TODO: так тут не оставишь, нечитабельно
+                                    } else if (transition.isOrElse
+                                            && mergerablePvx.outgoingTransitions.all {
+                                                !it.mergeStatuses.contains(context.mergeResult)
+                                            }) {
                                         TransitionPayloadContext(payload = context.payload)
                                     } else {
                                         TransitionPayloadContext(
@@ -258,6 +262,15 @@ class ExecutionBuilder(
                                         MergePayloadContext(
                                                 payload = context.payload,
                                                 mergeResult = context.mergeResult)
+                                        //TODO: сделать более читаемо
+                                    } else if (transition.isOrElse
+                                            && mergerablePvx.outgoingTransitions.all {
+                                                !it.mergeStatuses.contains(context.mergeResult)
+                                            }) {
+
+                                      MergePayloadContext(
+                                              payload = context.payload,
+                                              mergeResult = context.mergeResult)
                                     } else {
                                         MergePayloadContext(isDeadTransition = true)
                                     }
@@ -345,6 +358,15 @@ class ExecutionBuilder(
                 executionResultFuture,
                 chainExecutionFuture,
                 processingVertices.values)
+    }
+
+
+    private fun isOrElseAndAllOtherTransitionsIsDead(
+            mergeResult: Any?,
+            transition: GlTransition,
+            outgoingTransitions: ArrayList<GlTransition>
+    ) {
+        outgoingTransitions.asSequence().all { !it.mergeStatuses.contains(mergeResult) }
     }
 
     private fun dumpFutureState(future: CompletableFuture<*>): String {

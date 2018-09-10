@@ -22,12 +22,7 @@ class OrElseGraphTest {
 
         @Bean
         open fun reactor(): CompletableReactor {
-            val reactor = CompletableReactor(AggregatingProfiler())
-
-            //For debug purpose to resolve blocked vertices that does not completed correctly
-            reactor.setDebugProcessingVertexGraphState(true)
-
-            return reactor
+            return CompletableReactor(AggregatingProfiler())
         }
     }
 
@@ -35,17 +30,34 @@ class OrElseGraphTest {
     lateinit var reactor: CompletableReactor
 
     @Test
-    fun orElseTestNoElse() {
-        val payload = reactor.submit(OrElsePayload(OrElsePayload.Flow.FIRST)).resultFuture.get(10, TimeUnit.SECONDS)
+    fun firstTransition() {
+        val payload = submit(OrElsePayload(OrElsePayload.Flow.FIRST))
 
-        Assertions.assertNotNull(payload)
-
+        Assertions.assertEquals(OrElsePayload.Flow.FIRST, payload.response.result)
     }
 
     @Test
-    fun orElseReallyOrElse() {
-        val payload = reactor.submit(OrElsePayload(OrElsePayload.Flow.SECOND)).resultFuture.get(10, TimeUnit.SECONDS)
+    fun secondTransition() {
+        val payload = submit(OrElsePayload(OrElsePayload.Flow.SECOND))
 
-        Assertions.assertNotNull(payload)
+        Assertions.assertEquals(OrElsePayload.Flow.SECOND, payload.response.result)
+    }
+
+    @Test
+    fun thirdTransition() {
+        val payload = submit(OrElsePayload(OrElsePayload.Flow.THIRD))
+
+        Assertions.assertEquals(OrElsePayload.Flow.THIRD, payload.response.result)
+    }
+
+    @Test
+    fun fourthTransition() {
+        val payload = submit(OrElsePayload(OrElsePayload.Flow.FOURTH))
+
+        Assertions.assertEquals(OrElsePayload.Flow.FOURTH, payload.response.result)
+    }
+
+    private fun submit(payload: OrElsePayload): OrElsePayload {
+        return reactor.submit(payload).resultFuture.get(10, TimeUnit.SECONDS)
     }
 }
