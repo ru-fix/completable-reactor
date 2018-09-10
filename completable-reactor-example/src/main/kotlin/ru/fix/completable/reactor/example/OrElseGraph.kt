@@ -26,13 +26,22 @@ open class OrElseGraph : Graph<OrElsePayload>() {
             }
 
     private val first =
-            mutator { println("First vertex, real: $flow") }
+            mutator {
+                response.result = OrElsePayload.Flow.FIRST
+                println("First vertex, real: $flow")
+            }
 
     private val second =
-            mutator { println("Second vertex, real: $flow") }
+            mutator {
+                response.result = OrElsePayload.Flow.SECOND
+                println("Second vertex, real: $flow")
+            }
 
     private val orElse =
-            mutator { println("Or else vertex, real: $flow") }
+            mutator {
+                response.result = flow
+                println("Or else vertex, real: $flow")
+            }
 
     init {
         payload()
