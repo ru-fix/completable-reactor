@@ -28,7 +28,7 @@ class SubgraphNode(
 
         this.setOnMouseClicked { event ->
             if (event.clickCount == 2) {
-                actionListener.goToSubgraph(subgraph.payloadClass)
+                subgraph.source?.let(actionListener::goToSource)
             }
         }
 
