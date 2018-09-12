@@ -49,5 +49,6 @@ object Libs {
 
     val lombok = "org.projectlombok:lombok:1.18.2"
     val apacheCommonsLang = "org.apache.commons:commons-lang3:3.5"
-    val antlr = "org.antlr:antlr4-runtime:4.7.1"
+    val antlrRuntime = "org.antlr:antlr4-runtime:4.7.1"
+    val antlrAll = "org.antlr:antlr4:4.7.1"
 }
