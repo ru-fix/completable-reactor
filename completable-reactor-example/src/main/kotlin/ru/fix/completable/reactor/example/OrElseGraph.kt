@@ -60,8 +60,10 @@ open class OrElseGraph : Graph<OrElsePayload>() {
 
                 coordinates()
                     .vx(first, 1, 262)
+                    .vx(orElse, 152, 233)
                     .vx(resolveFlow, 10, 90, 45, 177)
                     .ct(first, 51, 362)
+                    .ct(orElse, 254, 283)
 
         orElse
                 .onAny().complete()
