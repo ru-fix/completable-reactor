@@ -155,6 +155,11 @@ class JavaSourceParser(private val listener: Listener) {
 
                                     transitionAction()
 
+                                } ?: it.vertexTransitionOnElse().run {
+                                    transition.isOnElse = true
+                                    transition.onAnySource = sourceFromEndOfToken(this.start, filePath)
+                                    transitionAction()
+
                                 }).run {
                                     if (transitionActionComplete() != null) {
                                         transition.isComplete = true
