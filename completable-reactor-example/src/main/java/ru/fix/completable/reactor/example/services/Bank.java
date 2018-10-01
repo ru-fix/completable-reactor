@@ -28,7 +28,7 @@ public class Bank {
         public enum Status {
             OK,
             USER_IS_BLOCKED,
-            WALLET_NOT_FOUND;
+            WALLET_NOT_FOUND
         }
 
         Long userId;

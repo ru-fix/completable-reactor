@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
@@ -102,5 +101,20 @@ open class SubscribeGraphTest {
         val result = execution.resultFuture.get(5, TimeUnit.SECONDS)
 
         assertEquals(Bank.Withdraw.Status.OK, result.response.status)
+    }
+
+    @Test
+    fun bob_wallet_not_found() {
+
+        val payload = SubscribePayload(SubscribePayload.Request(
+                userId = UserProfileManager.USER_WITH_NO_WALLET,
+                serviceId = ServiceRegistry.SERVICE_ID_CAR_WASH
+        ))
+
+        val execution = reactor.submit(payload)
+
+        val result = execution.resultFuture.get(5, TimeUnit.SECONDS)
+
+        assertEquals(Bank.Withdraw.Status.WALLET_NOT_FOUND, result.response.status)
     }
 }

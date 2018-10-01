@@ -7,6 +7,7 @@ import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.concurrent.CompletableFuture
 import javax.annotation.PostConstruct
 
+//TODO: тесты на все возможные кейсы с onElse
 @Configuration
 open class OrElseGraph : Graph<OrElsePayload>() {
 
@@ -26,22 +27,37 @@ open class OrElseGraph : Graph<OrElsePayload>() {
             }
 
     private val first =
-            mutator {
-                response.result = OrElsePayload.Flow.FIRST
+            handler {
                 println("First vertex, real: $flow")
+                response.result = OrElsePayload.Flow.FIRST
+                CompletableFuture.completedFuture(OrElsePayload.Flow.FIRST)
+            }.withRoutingMerger { resut ->
+                return@withRoutingMerger resut
             }
 
     private val second =
-            mutator {
-                response.result = OrElsePayload.Flow.SECOND
+            handler {
                 println("Second vertex, real: $flow")
+                response.result = OrElsePayload.Flow.SECOND
+                CompletableFuture.completedFuture(OrElsePayload.Flow.SECOND)
+            }.withRoutingMerger { result ->
+                return@withRoutingMerger result
             }
 
     private val orElse =
-            mutator {
-                response.result = flow
+            handler {
                 println("Or else vertex, real: $flow")
+                response.result = flow
+                return@handler CompletableFuture.completedFuture(flow)
+            }.withRoutingMerger { result ->
+                return@withRoutingMerger result
             }
+
+    private val endVertex =
+            handler {
+                println("this is the end...")
+                CompletableFuture.completedFuture(response.result)
+            }.withEmptyMerger()
 
     init {
         payload()
@@ -50,22 +66,25 @@ open class OrElseGraph : Graph<OrElsePayload>() {
         resolveFlow
                 .on(OrElsePayload.Flow.FIRST).handleBy(first)
                 .on(OrElsePayload.Flow.SECOND).handleBy(second)
-                .orElse().handleBy(orElse)
+                .onElse().handleBy(orElse)
 
         first
-                .onAny().complete()
+                .onAny().handleBy(endVertex)
 
         second
+                .onAny().handleBy(endVertex)
+
+        orElse
+                .onAny().handleBy(endVertex)
+
+        endVertex
                 .onAny().complete()
 
                 coordinates()
-                    .vx(first, 1, 262)
-                    .vx(orElse, 152, 233)
-                    .vx(resolveFlow, 10, 90, 45, 177)
-                    .ct(first, 51, 362)
-                    .ct(orElse, 254, 283)
-
-        orElse
-                .onAny().complete()
+                    .vx(endVertex, 44, 568)
+                    .vx(orElse, 237, 302)
+                    .vx(second, -186, 293)
+                    .vx(first, 44, 310, 51, 450)
+                    .vx(resolveFlow, 10, 90, 45, 177);
     }
 }
