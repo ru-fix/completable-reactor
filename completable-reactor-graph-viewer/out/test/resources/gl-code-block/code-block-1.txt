@@ -1,5 +1,0 @@
-coordinates()
-        .payload(226, 98)
-        .handler(idProcessor1, 261, 163)
-        .merger(idProcessor1, 300, 251)
-        .complete(idProcessor1, 308, 336);

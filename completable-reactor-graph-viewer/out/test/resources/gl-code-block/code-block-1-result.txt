@@ -1,5 +1,0 @@
-coordinates()
-        .pd(500, -200)
-        .vx(plainVertex, 910, 901)
-        .vx(complexVertex, 1170, 1270, 123, 213)
-        .ct(endPoint, 1500, 511);
