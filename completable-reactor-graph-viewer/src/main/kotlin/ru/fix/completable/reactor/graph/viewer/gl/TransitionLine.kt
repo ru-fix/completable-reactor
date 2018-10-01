@@ -88,6 +88,22 @@ class TransitionLine(
                 }
             }
 
+        } else if (transitionItem.isOnElse) {
+            val statusLabel = Label("<Else>")
+            labelsPane.getChildren().add(statusLabel)
+
+            if (transitionItem.onAnySource != null) {
+                statusLabel.setOnMouseClicked { mouseEvent ->
+                    if (mouseEvent.clickCount == 2) {
+                        transitionItem.onAnySource?.let { actionListener.goToSource(it) }
+                    }
+                }
+                menuArea.setOnMouseClicked { mouseEvent ->
+                    if (mouseEvent.clickCount == 2) {
+                        transitionItem.onAnySource?.let { actionListener.goToSource(it) }
+                    }
+                }
+            }
         } else {
             transitionItem.mergeStatuses?.forEach { status ->
 
@@ -305,6 +321,21 @@ class TransitionLine(
                 //menu item content
                 content.children.add(Text(status))
                 content.children.add(Text(statusDoc))
+            }
+
+            if (transition.isOnElse) {
+                val onEnyMenuItem = MenuItem()
+
+                val content = VBox()
+                onEnyMenuItem.graphic = content
+                content.children.add(Text("<Else>"))
+                content.children.add(Text("Transition is activated if other are not activated"))
+                contextMenu.items.add(onEnyMenuItem)
+
+                val source = transition.onAnySource
+                if (source != null) {
+                    onEnyMenuItem.setOnAction { _ -> actionListener.goToSource(source) }
+                }
             }
 
             if (transition.isOnAny) {

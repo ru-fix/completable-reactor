@@ -52,15 +52,14 @@ class Vertex {
         )
     }
 
-    fun orElse(): TransitionBuilder {
-        //TODO: правильная валидация!!!
+    fun onElse(): TransitionBuilder {
         if(vx.merger == null && vx.router == null){
             throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} is used as source of orElse() transition but does not have merger or router.")
+                    "Vertex ${vx.name} is used as source of onElse() transition but does not have merger or router.")
         }
 
         val transition = GlTransition()
-        transition.isOrElse = true
+        transition.isOnElse = true
 
         return GlTransitionBuilder(
                 this,

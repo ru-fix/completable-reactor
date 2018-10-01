@@ -214,12 +214,9 @@ class ExecutionBuilder(
 
                                         TransitionPayloadContext(payload = context.payload)
 
-                                        //TODO: так тут не оставишь, нечитабельно
-                                    } else if (transition.isOrElse
-                                            && mergerablePvx.outgoingTransitions.all {
-                                                !it.mergeStatuses.contains(context.mergeResult)
-                                            }) {
+                                    } else if (isOnElse(transition, mergerablePvx, context)) {
                                         TransitionPayloadContext(payload = context.payload)
+
                                     } else {
                                         TransitionPayloadContext(
                                                 payload = context.payload,
@@ -262,12 +259,8 @@ class ExecutionBuilder(
                                         MergePayloadContext(
                                                 payload = context.payload,
                                                 mergeResult = context.mergeResult)
-                                        //TODO: сделать более читаемо
-                                    } else if (transition.isOrElse
-                                            && mergerablePvx.outgoingTransitions.all {
-                                                !it.mergeStatuses.contains(context.mergeResult)
-                                            }) {
 
+                                    } else if (isOnElse(transition, mergerablePvx, context)) {
                                       MergePayloadContext(
                                               payload = context.payload,
                                               mergeResult = context.mergeResult)
@@ -360,14 +353,19 @@ class ExecutionBuilder(
                 processingVertices.values)
     }
 
-
-    private fun isOrElseAndAllOtherTransitionsIsDead(
-            mergeResult: Any?,
+    /**
+     * Check if transition is marked as `onElse`
+     * and merge results are not satisfied by another existing transitions
+     */
+    private fun isOnElse(
             transition: GlTransition,
-            outgoingTransitions: ArrayList<GlTransition>
-    ) {
-        outgoingTransitions.asSequence().all { !it.mergeStatuses.contains(mergeResult) }
+            mergerablePvx: ProcessingVertex,
+            context: ExecutionBuilder.MergePayloadContext
+    ): Boolean {
+        return transition.isOnElse &&
+                mergerablePvx.outgoingTransitions.all { !it.mergeStatuses.contains(context.mergeResult) }
     }
+
 
     private fun dumpFutureState(future: CompletableFuture<*>): String {
         return "{isDone=${future.isDone},isExc=${future.isCompletedExceptionally}}"

@@ -334,7 +334,7 @@ class MergeByExecutionBuilder<PayloadType>(
             val activeTransitions = pvx.outgoingTransitions
                     .stream()
                     .filter { transition ->
-                        transition.isOnAny || transition.isOrElse || transition.mergeStatuses.contains(mergeStatus)
+                        transition.isOnAny || transition.isOnElse || transition.mergeStatuses.contains(mergeStatus)
                     }
                     .collect(Collectors.toList())
 
