@@ -76,7 +76,7 @@ class JavaSourceParser(private val listener: Listener) {
 
                 //vertex assignment
                 //map<vertex name, template function name>
-                val vertexTemplateMethod = mutableMapOf<String, String>()
+                val templateMethodVertices = mutableMapOf<String, MutableSet<String>>()
 
                 graphBlocks.asSequence()
                         .mapNotNull { it.vertexAssignmentBlock() }
@@ -89,8 +89,10 @@ class JavaSourceParser(private val listener: Listener) {
 
                             } else if (it.vertexTemplateFunctionInvocation() != null) {
                                 //vertex assignment via template function
-                                vertexTemplateMethod[vertexName] =
-                                        it.vertexTemplateFunctionInvocation().Identifier().text
+                                templateMethodVertices.computeIfAbsent(
+                                        it.vertexTemplateFunctionInvocation().Identifier().text,
+                                        { mutableSetOf() }
+                                ).add(vertexName)
                             }
                         }
 
@@ -107,37 +109,11 @@ class JavaSourceParser(private val listener: Listener) {
                                 definitionBody = definitionBody.vertexTemplateFuncitonDefinitionBody()?.firstOrNull()
                             }
                             if (builder != null) {
+                                val vertexNames = templateMethodVertices[functionDefinition.Identifier().text]
 
-
-                                val vertexName = vertexTemplateMethod functionDefinition.Identifier().text
-
-
-
-                                createVertexFromVertexBuilder(, builder)
-                            }
-                        }
-
-                graphBlocks.asSequence()
-                        .mapNotNull { it.vertexCloningBlock() }
-                        .forEach {
-                            val targetVertexName = it.vertexName(0).text!!
-                            val sourceVertexName = it.vertexName(1).text!!
-
-                            when {
-                                handlers.containsKey(sourceVertexName) ->
-                                    cloneHanlder(model, handlers[sourceVertexName]!!, targetVertexName)
-
-                                subgraphs.containsKey(sourceVertexName) ->
-                                    cloneSubgraph(model, subgraphs[sourceVertexName]!!, targetVertexName)
-
-                                routers.containsKey(sourceVertexName) ->
-                                    cloneRouter(model, routers[sourceVertexName]!!, targetVertexName)
-
-                                else ->
-                                    listener.error("" +
-                                            "Can not clone vertex $sourceVertexName to $targetVertexName." +
-                                            " Vertex $sourceVertexName does not have " +
-                                            " neither handler, router or subgraph.")
+                                vertexNames?.takeIf { it.isNotEmpty() }?.forEach { name ->
+                                    createVertexFromVertexBuilder(name, builder)
+                                }
                             }
                         }
 
@@ -348,49 +324,6 @@ class JavaSourceParser(private val listener: Listener) {
         }
 
         return result
-    }
-
-    private fun cloneHanlder(model: GraphModel, handler: Handler, targetVertexName: String) {
-        model.handlers[targetVertexName] = Handler(targetVertexName).also { target ->
-            target.doc = handler.doc
-            target.title = handler.title
-            target.source = handler.source
-        }
-
-        cloneMergerIfExist(model, handler.name, targetVertexName)
-    }
-
-    private fun cloneMergerIfExist(model: GraphModel, mergerName: String, targetVertexName: String) {
-        if (model.mergers.containsKey(mergerName)) {
-            model.mergers[targetVertexName] = Merger(targetVertexName).also { target ->
-                model.mergers[mergerName]!!.let { source ->
-                    target.doc = source.doc
-                    target.title = source.title
-                    target.source = source.source
-                }
-            }
-        }
-    }
-
-
-    private fun cloneRouter(model: GraphModel, router: Router, targetVertexName: String) {
-        model.routers[targetVertexName] = Router(targetVertexName).also {
-            it.doc = router.doc
-            it.title = router.title
-            it.source = router.source
-        }
-
-        cloneMergerIfExist(model, router.name, targetVertexName)
-    }
-
-    private fun cloneSubgraph(model: GraphModel, subgraph: Subgraph, targetVertexName: String) {
-        model.subgraphs[targetVertexName] = Subgraph(targetVertexName, subgraph.payloadClass).also {
-            it.doc = subgraph.doc
-            it.title = subgraph.title
-            it.source = subgraph.source
-        }
-
-        cloneMergerIfExist(model, subgraph.name, targetVertexName)
     }
 
     private fun mergeTransitions(transition: Transition, transitions: MutableList<Transition>) {
