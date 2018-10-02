@@ -71,13 +71,14 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 }
             }
 
-    val logTransaction =
+    private fun logTransaction() =
             handler {
                 txLog.logTransactioin(request.userId)
-
             }.withEmptyMerger()
 
-    val logTransaction2 = logTransaction.clone()
+    val logTransaction = logTransaction()
+
+    val logTransaction2 = logTransaction()
 
     val logActionToUserJournal =
             handler {
