@@ -25,6 +25,8 @@ dependencies {
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
     testRuntimeOnly(Libs.slf4j_simple)
+
+    testCompile(Libs.hamcrest)
 }
 
 val antlrDestinationDir = "src/main/java/ru/fix/completable/reactor/parser/java/antlr"
