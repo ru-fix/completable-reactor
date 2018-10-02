@@ -261,11 +261,32 @@ class JavaSourceParserTest {
         }
 
 
-        assertEquals(Coordinates(627, 46), model.startPoint.coordinates)
-        assertEquals(Coordinates(349, 377), model.handleable[BANK]!!.coordinates)
-        assertEquals(Coordinates(926, 333), model.handleable[WEB_NOTIFICATION]!!.coordinates)
-        assertEquals(Coordinates(378, 441), model.mergers[BANK]!!.coordinates)
-        assertEquals(Coordinates(497, 293), model.endpoints[SERVICE_INFO]!!.coordinates)
+        """\.payload\((\d+), (\d+)\)""".toRegex().find(body)!!.let {
+            assertEquals(
+                    Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
+                    model.startPoint.coordinates)
+        }
+
+        """\.vx\($BANK, (\d+), (\d+), (\d+), (\d+)\)""".toRegex().find(body)!!.let {
+            assertEquals(
+                    Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
+                    model.handleable[BANK]!!.coordinates)
+            assertEquals(
+                    Coordinates(it.groupValues[3].toInt(), it.groupValues[4].toInt()),
+                    model.mergers[BANK]!!.coordinates)
+        }
+
+        """\.vx\($WEB_NOTIFICATION, (\d+), (\d+)\)""".toRegex().find(body)!!.let {
+            assertEquals(
+                    Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
+                    model.handleable[WEB_NOTIFICATION]!!.coordinates)
+        }
+
+        """\.complete\($SERVICE_INFO, (\d+), (\d+)\)""".toRegex().find(body)!!.let {
+            assertEquals(
+                    Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
+                    model.endpoints[SERVICE_INFO]!!.coordinates)
+        }
 
         model.startPoint.source!!.let {
             assertEquals(sourceFilePath, it.filePath)
@@ -330,7 +351,7 @@ class JavaSourceParserTest {
     @Test
     fun build_compilation_model_for_single_subscribe_graph_in_kotlin() {
         val sourceFilePath = "completable-reactor-example/src/main/kotlin/ru/fix/completable/reactor/example/SubscribeGraph.kt"
-        val body = readResource(sourceFilePath)
+        val body = ProjectFileResolver().read(sourceFilePath)
 
         val startTime = Instant.now()
 
