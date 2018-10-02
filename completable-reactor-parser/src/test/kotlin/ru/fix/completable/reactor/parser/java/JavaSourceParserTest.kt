@@ -8,6 +8,8 @@ import ru.fix.completable.reactor.model.EndPoint
 import ru.fix.completable.reactor.model.Source
 import ru.fix.completable.reactor.model.VertexFigure
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 
@@ -26,9 +28,9 @@ class JavaSourceParserTest {
 
     @Test
     fun build_compilation_model_for_single_purchase_graph_in_java() {
-        val sourceFilePath = "/single-purchase-graph.java.txt"
 
-        val body = readResource(sourceFilePath)
+        val sourceFilePath = "completable-reactor-example/src/main/java/ru/fix/completable/reactor/example/PurchaseGraph.java"
+        val body = ProjectFileResolver().read(sourceFilePath)
 
         val startTime = Instant.now()
 
@@ -262,7 +264,7 @@ class JavaSourceParserTest {
         assertEquals(Coordinates(627, 46), model.startPoint.coordinates)
         assertEquals(Coordinates(349, 377), model.handleable[BANK]!!.coordinates)
         assertEquals(Coordinates(926, 333), model.handleable[WEB_NOTIFICATION]!!.coordinates)
-        assertEquals(Coordinates( 378, 441), model.mergers[BANK]!!.coordinates)
+        assertEquals(Coordinates(378, 441), model.mergers[BANK]!!.coordinates)
         assertEquals(Coordinates(497, 293), model.endpoints[SERVICE_INFO]!!.coordinates)
 
         model.startPoint.source!!.let {
@@ -283,7 +285,7 @@ class JavaSourceParserTest {
 
     @Test
     fun two_test_graphs_in_single_source() {
-        val sourceFilePath = "/two-test-graphs-in-one-source.java.txt"
+        val sourceFilePath = "completable-reactor-runtime/src/test/java/ru/fix/completable/reactor/runtime/tests/GlCompletableReactorTest.java"
         val body = readResource(sourceFilePath)
 
         val startTime = Instant.now()
@@ -324,12 +326,10 @@ class JavaSourceParserTest {
     }
 
 
-
     //TODO check why kotlin parsed in 240ms and java parssed in 66ms, in same time antlr viewer shows same result ~20ms
     @Test
     fun build_compilation_model_for_single_subscribe_graph_in_kotlin() {
-        val sourceFilePath = "/single-subscribe-graph.kt.txt"
-
+        val sourceFilePath = "completable-reactor-example/src/main/kotlin/ru/fix/completable/reactor/example/SubscribeGraph.kt"
         val body = readResource(sourceFilePath)
 
         val startTime = Instant.now()

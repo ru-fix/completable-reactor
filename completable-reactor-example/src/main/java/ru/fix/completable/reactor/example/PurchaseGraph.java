@@ -73,12 +73,15 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                         throw new IllegalArgumentException("result.status = " + result.status);
                     });
 
-    Vertex logTransaction =
-            handler(
-                    pld -> transactionLog.logTransactioin(pld.request.getUserId())
-            ).withEmptyMerger();
+    Vertex logTransaction() {
+        return handler(
+                pld -> transactionLog.logTransactioin(pld.request.getUserId())
+        ).withEmptyMerger();
+    }
 
-    Vertex logTransaction2 = logTransaction.clone();
+    Vertex logTransaction = logTransaction();
+
+    Vertex logTransaction2 = logTransaction();
 
     Vertex logActionToUserJournal =
             handler(
