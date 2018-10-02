@@ -10,7 +10,6 @@ graphBlock
     :   payloadTransitionBlock
     |   vertexTransitionBlock
     |   vertexAssignmentBlock
-    |   vertexCloningBlock
     |   coordinatesBlock
     |   graphDeclarationBlock
     |   vertexTemplateFunctionDefinition
@@ -57,10 +56,6 @@ payloadType
 
 vertexAssignmentBlock
     :   (VERTEX | 'val' | 'var') vertexName ASSIGN (vertexBuilder | vertexTemplateFunctionInvocation) SEMI?
-    ;
-
-vertexCloningBlock
-    :   (VERTEX | 'val' | 'var') vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI?
     ;
 
 
@@ -237,7 +232,6 @@ PAYLOAD : 'payload';
 COMPLETE : 'complete';
 ROUTER : 'router';
 MUTATOR : 'mutator';
-CLONE : 'clone';
 VERTEX : 'Vertex';
 
 anyGraphKeyword

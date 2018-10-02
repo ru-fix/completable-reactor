@@ -27,6 +27,7 @@ class JavaSourceParser(private val listener: Listener) {
         val tokens = CommonTokenStream(lexer)
         val parser = GraphParser(tokens)
 
+
         val sourceBlocks = parser.sourceFile().graphBlock()
 
         if (sourceBlocks.isEmpty()) {
@@ -45,6 +46,9 @@ class JavaSourceParser(private val listener: Listener) {
         for (borderStart in 0 until declarationBlockIndexes.size) {
 
             val model = GraphModel()
+
+            fun createVertexFromVertexBuilder(vertexName: String, vertexBuilder: VertexBuilderContext) =
+                    createVertexFromVertexBuilder(tokens, model, vertexName, vertexBuilder, filePath)
 
             val graphBlocks = sourceBlocks.slice(
                     declarationBlockIndexes[borderStart]
@@ -70,17 +74,49 @@ class JavaSourceParser(private val listener: Listener) {
                             graphDeclarationLocation = sourceFromToken(it.start, filePath)
                         }
 
-
                 //vertex assignment
+                //map<vertex name, template function name>
+                val vertexTemplateMethod = mutableMapOf<String, String>()
+
                 graphBlocks.asSequence()
                         .mapNotNull { it.vertexAssignmentBlock() }
                         .forEach {
                             val vertexName = it.vertexName().text!!
 
-                            createVertexFromVertexBuilder(tokens, model, vertexName, it.vertexBuilder(), filePath)
+                            if (it.vertexBuilder() != null) {
+                                //direct vertex builder
+                                createVertexFromVertexBuilder(vertexName, it.vertexBuilder())
+
+                            } else if (it.vertexTemplateFunctionInvocation() != null) {
+                                //vertex assignment via template function
+                                vertexTemplateMethod[vertexName] =
+                                        it.vertexTemplateFunctionInvocation().Identifier().text
+                            }
                         }
 
-                //vertex cloning
+
+                //vertex template method
+                graphBlocks.asSequence()
+                        .mapNotNull { it.vertexTemplateFunctionDefinition() }
+                        .forEach { functionDefinition ->
+                            //recursively search for vertex builder template within function body
+                            var definitionBody = functionDefinition.vertexTemplateFuncitonDefinitionBody()
+                            var builder = functionDefinition.vertexBuilder()
+                            while (builder == null && definitionBody != null) {
+                                builder = definitionBody.vertexBuilder()?.firstOrNull()
+                                definitionBody = definitionBody.vertexTemplateFuncitonDefinitionBody()?.firstOrNull()
+                            }
+                            if (builder != null) {
+
+
+                                val vertexName = vertexTemplateMethod functionDefinition.Identifier().text
+
+
+
+                                createVertexFromVertexBuilder(, builder)
+                            }
+                        }
+
                 graphBlocks.asSequence()
                         .mapNotNull { it.vertexCloningBlock() }
                         .forEach {
