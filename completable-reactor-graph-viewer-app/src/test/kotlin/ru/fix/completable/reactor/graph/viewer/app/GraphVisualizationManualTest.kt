@@ -84,10 +84,24 @@ class GraphVisualizationManualTest : Application() {
      */
     @Disabled
     @Test
-    fun `open graph for purchase payload`() {
+    fun `open java graph for purchase payload`() {
         Application.launch(
                 ProjectFileResolver().resolvePath(
                         "completable-reactor-example/src/main/java/ru/fix/completable/reactor/example/PurchaseGraph.java"
+                ).toString()
+        )
+    }
+
+    /**
+     * Manual UI Test
+     * Opens given java source file and display graph
+     */
+    @Disabled
+    @Test
+    fun `open kotlin graph for subscribe payload`() {
+        Application.launch(
+                ProjectFileResolver().resolvePath(
+                        "completable-reactor-example/src/main/kotlin/ru/fix/completable/reactor/example/SubscribeGraph.kt"
                 ).toString()
         )
     }
