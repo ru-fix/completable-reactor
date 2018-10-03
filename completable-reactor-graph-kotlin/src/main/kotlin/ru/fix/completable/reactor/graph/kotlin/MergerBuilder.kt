@@ -11,6 +11,4 @@ interface MergerBuilder<Payload, HandlerResult> {
     fun withMerger(merger: Payload.(handlerResult: HandlerResult) -> Unit): Vertex
 
     fun withoutMerger(): Vertex
-
-    fun withEmptyMerger(): Vertex
 }
