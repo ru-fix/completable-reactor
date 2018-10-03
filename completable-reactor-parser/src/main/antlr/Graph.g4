@@ -250,7 +250,6 @@ anyGraphKeyword
     |   'ct'
     |   ROUTER
     |   MUTATOR
-    |   CLONE
     ;
 
 DecimalNumeral : [0-9_]+;
