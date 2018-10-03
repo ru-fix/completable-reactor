@@ -42,6 +42,8 @@ class Vertex {
         if(vx.handler != null && vx.merger == null){
             vx.merger = GlEmptyMerger()
         }
+
+        //Check that vertex have merger or router
         if(vx.merger == null && vx.router == null){
             throw IllegalArgumentException("" +
                     "Vertex ${vx.name} is used as source of onAny() transition but does not have merger or router.")
