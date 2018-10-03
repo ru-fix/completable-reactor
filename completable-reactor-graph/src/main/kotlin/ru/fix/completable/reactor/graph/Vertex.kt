@@ -67,38 +67,4 @@ class Vertex {
                 vx.transitions
         )
     }
-
-    /**
-     * Create new instance of Vertex with same handler, merger, router or subgraph.
-     * Position on the graph and transitions are not copied, they should be defined by using
-     * transition api separately for each vertices.
-     */
-    fun clone(): Vertex {
-
-        BuilderContext.get().getGraph()?.let { graph ->
-            if (vx.name == null) {
-                vx.name = BuilderContext.get().resolveVertexName(this)
-            }
-        }
-
-        if (vx.handler == null && vx.router == null && vx.subgraphPayloadBuilder == null) {
-            throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} could not be cloned." +
-                    " It does not have neither handler, router or subgraph.")
-        }
-
-        return Vertex().also {
-            it.vx.handler = this.vx.handler
-            it.vx.merger = this.vx.merger
-            it.vx.router = this.vx.router
-            it.vx.subgraphPayloadBuilder = this.vx.subgraphPayloadBuilder
-            it.vx.subgraphPayloadType = this.vx.subgraphPayloadType
-            it.vx.isTransitionableMerger = this.vx.isTransitionableMerger
-
-            BuilderContext.get().getGraph()?.vertices?.add(it.vx) ?: throw IllegalStateException("" +
-                    "Vertex created not inside class that extends Graph. " +
-                    "Or vertex created in different thread from Graph class. " +
-                    "Builder context is not set.")
-        }
-    }
 }
