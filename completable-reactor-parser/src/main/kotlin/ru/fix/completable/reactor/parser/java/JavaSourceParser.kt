@@ -199,6 +199,9 @@ class JavaSourceParser(private val listener: Listener) {
                                 }
 
                                 mergeTransitions(transition, vertex.transitions)
+
+                                //TODO: transitionable now could be handler with empty merger...
+
                             }
                         }
 
