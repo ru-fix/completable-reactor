@@ -27,7 +27,7 @@
     + [Detached Handler without Merger](#detached--handler-without-merger)
     + [Detached Handler with Merger](#detached-handler-with-merger)
     + [Conditional execution](#conditional-execution)
-
+  * [Vertex template function](#vertex-template-function)
 
 #  Handler-Merger concurrent execution concept
 
@@ -745,3 +745,52 @@ We can implement this behaviour through three approaches:
 and simply do nothing in handler itself.
 
 ![](res/conditional-execution-3.png?raw=true)
+
+
+## Vertex template function
+It is possible to use a function as a vertex builder to create vertices with similar functionality.  
+Builder function can have arguments and must be defined in same source file as graph itself.   
+
+Instead of creating two similar logging vertices buy copy-pasting code: 
+```java
+val successLog = 
+    handler(
+        paylaod -> {
+            if(paylaod.getAction().isTraceable()){
+                logEvent("success", payload.getAction(), paylaod.getUserInfo())
+            }
+        }
+    ).withoutMerger();
+
+val failureLog = 
+    handler(
+        paylaod -> {
+            if(paylaod.getAction().isTraceable()){
+                logEvent("failure", payload.getAction(), paylaod.getUserInfo())
+            }
+        }
+    ).withoutMerger();
+...
+.on(SUCCESS).handleBy(successLog)
+.on(FAILURE).handleBy(failureLog)
+
+```
+you can use vertex template function instead:
+```java
+Vertex loggingVertex(String message){
+    return handler(
+            paylaod -> {
+                if(paylaod.getAction().isTraceable()){
+                    logEvent(message, payload.getAction(), paylaod.getUserInfo())
+                }
+            }
+        ).withoutMerger();
+}
+
+val successLog = loggingVertex("success"); 
+val failureLog = loggingVertex("failure");
+...
+.on(SUCCESS).handleBy(successLog)
+.on(FAILURE).handleBy(failureLog)
+
+```
