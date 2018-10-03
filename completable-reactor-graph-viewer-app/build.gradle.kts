@@ -22,6 +22,7 @@ dependencies {
 
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
+    testCompile(project(":completable-reactor-test-utils"))
 
     compile(Libs.slf4j_simple)
 }

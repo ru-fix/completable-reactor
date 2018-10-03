@@ -12,6 +12,9 @@ import ru.fix.completable.reactor.graph.viewer.gl.ShortcutType
 import ru.fix.completable.reactor.model.GraphModel
 import ru.fix.completable.reactor.model.Source
 import ru.fix.completable.reactor.parser.java.JavaSourceParser
+import ru.fix.completable.reactor.test.utils.ProjectFileResolver
+import java.nio.file.Files
+import java.nio.file.Paths
 
 
 private val log = KotlinLogging.logger {}
@@ -54,7 +57,7 @@ class GraphVisualizationManualTest : Application() {
 
     override fun start(stage: Stage?) {
         val filePath = parameters.raw[0]
-        val javaSourceContext = javaClass.getResource(filePath).readText()
+        val javaSourceContext = Files.newBufferedReader(Paths.get(filePath)).use { it.readText() }
 
         val parser = JavaSourceParser(object : JavaSourceParser.Listener {
             override fun error(msg: String) {
@@ -82,7 +85,11 @@ class GraphVisualizationManualTest : Application() {
     @Disabled
     @Test
     fun `open graph for purchase payload`() {
-        Application.launch("/viewer-test-PurchaseGraphConfig.java.txt")
+        Application.launch(
+                ProjectFileResolver().resolvePath(
+                        "completable-reactor-example/src/main/java/ru/fix/completable/reactor/example/PurchaseGraph.java"
+                ).toString()
+        )
     }
 
     /**
@@ -91,18 +98,12 @@ class GraphVisualizationManualTest : Application() {
      */
     @Disabled
     @Test
-    fun `open graph for purchase payload without coordinates`() {
-        Application.launch("/viewer-test-PurchaseGraph-no-coordinates.java.txt")
-    }
-
-    /**
-     * Manual UI Test
-     * Opens given java source file and display graph
-     */
-    @Disabled
-    @Test
-    fun `open source with two graphs`() {
-        Application.launch("/viewer-test-two-test-graphs-in-one-source.java.txt")
+    fun `open source with several graphs`() {
+        Application.launch(
+                ProjectFileResolver().resolvePath(
+                        "completable-reactor-runtime/src/test/java/ru/fix/completable/reactor/runtime/tests/GlCompletableReactorTest.java"
+                ).toString()
+        )
     }
 
     //TODO Fix documentation and titles on all nodes and popup menues

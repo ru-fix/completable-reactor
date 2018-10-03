@@ -1,13 +1,14 @@
 package ru.fix.completable.reactor.parser.java
 
 import mu.KotlinLogging
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.greaterThanOrEqualTo
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.EndPoint
-import ru.fix.completable.reactor.model.Source
 import ru.fix.completable.reactor.model.VertexFigure
-import java.nio.charset.StandardCharsets
+import ru.fix.completable.reactor.test.utils.ProjectFileResolver
 import java.time.Duration
 import java.time.Instant
 
@@ -18,17 +19,11 @@ private val log = KotlinLogging.logger {}
  */
 class JavaSourceParserTest {
 
-    private fun readResource(resource: String): String {
-        return JavaSourceParserTest::class.java.getResourceAsStream(resource)
-                .reader(StandardCharsets.UTF_8)
-                .use { it.readText() }
-    }
-
     @Test
     fun build_compilation_model_for_single_purchase_graph_in_java() {
-        val sourceFilePath = "/single-purchase-graph.java.txt"
 
-        val body = readResource(sourceFilePath)
+        val sourceFilePath = "completable-reactor-example/src/main/java/ru/fix/completable/reactor/example/PurchaseGraph.java"
+        val body = ProjectFileResolver().read(sourceFilePath)
 
         val startTime = Instant.now()
 
@@ -259,11 +254,32 @@ class JavaSourceParserTest {
         }
 
 
-        assertEquals(Coordinates(627, 46), model.startPoint.coordinates)
-        assertEquals(Coordinates(349, 377), model.handleable[BANK]!!.coordinates)
-        assertEquals(Coordinates(926, 333), model.handleable[WEB_NOTIFICATION]!!.coordinates)
-        assertEquals(Coordinates( 378, 441), model.mergers[BANK]!!.coordinates)
-        assertEquals(Coordinates(497, 293), model.endpoints[SERVICE_INFO]!!.coordinates)
+        """\.payload\((\d+), (\d+)\)""".toRegex().find(body)!!.let {
+            assertEquals(
+                    Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
+                    model.startPoint.coordinates)
+        }
+
+        """\.vx\($BANK, (\d+), (\d+), (\d+), (\d+)\)""".toRegex().find(body)!!.let {
+            assertEquals(
+                    Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
+                    model.handleable[BANK]!!.coordinates)
+            assertEquals(
+                    Coordinates(it.groupValues[3].toInt(), it.groupValues[4].toInt()),
+                    model.mergers[BANK]!!.coordinates)
+        }
+
+        """\.vx\($WEB_NOTIFICATION, (\d+), (\d+)\)""".toRegex().find(body)!!.let {
+            assertEquals(
+                    Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
+                    model.handleable[WEB_NOTIFICATION]!!.coordinates)
+        }
+
+        """\.complete\($SERVICE_INFO, (\d+), (\d+)\)""".toRegex().find(body)!!.let {
+            assertEquals(
+                    Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
+                    model.endpoints[SERVICE_INFO]!!.coordinates)
+        }
 
         model.startPoint.source!!.let {
             assertEquals(sourceFilePath, it.filePath)
@@ -283,8 +299,8 @@ class JavaSourceParserTest {
 
     @Test
     fun two_test_graphs_in_single_source() {
-        val sourceFilePath = "/two-test-graphs-in-one-source.java.txt"
-        val body = readResource(sourceFilePath)
+        val sourceFilePath = "completable-reactor-runtime/src/test/java/ru/fix/completable/reactor/runtime/tests/GlCompletableReactorTest.java"
+        val body = ProjectFileResolver().read(sourceFilePath)
 
         val startTime = Instant.now()
 
@@ -297,19 +313,13 @@ class JavaSourceParserTest {
 
         log.info { "Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms" }
 
-        assertEquals(2, models.size)
+        assertThat (models.size, greaterThanOrEqualTo(2))
 
         val singleProcessorGraph = models
                 .find { it.graphClass == "SingleProcessorGraph" }
                 ?: fail()
 
         assertNotNull(singleProcessorGraph.handlers["idProcessor1"])
-
-        assertEquals(-98, singleProcessorGraph.startPoint.coordinates!!.y)
-
-        assertEquals(Source(sourceFilePath, 43, 13, 1179), singleProcessorGraph.coordinatesStart)
-        assertEquals(Source(sourceFilePath, 47, 55, 1391), singleProcessorGraph.coordinatesEnd)
-        assertEquals(Source(sourceFilePath, 47, 55, 1391), singleProcessorGraph.endOfLastCodeBlocksWithinGraph)
 
         val twoProcesssorSequenceGraph = models
                 .find { it.graphClass == "TwoProcessorSequentialMergeGraph" }
@@ -320,17 +330,14 @@ class JavaSourceParserTest {
 
         assertNull(twoProcesssorSequenceGraph.coordinatesStart)
         assertNull(twoProcesssorSequenceGraph.coordinatesEnd)
-        assertEquals(Source(sourceFilePath, 87, 45, 2634), twoProcesssorSequenceGraph.endOfLastCodeBlocksWithinGraph)
     }
-
 
 
     //TODO check why kotlin parsed in 240ms and java parssed in 66ms, in same time antlr viewer shows same result ~20ms
     @Test
     fun build_compilation_model_for_single_subscribe_graph_in_kotlin() {
-        val sourceFilePath = "/single-subscribe-graph.kt.txt"
-
-        val body = readResource(sourceFilePath)
+        val sourceFilePath = "completable-reactor-example/src/main/kotlin/ru/fix/completable/reactor/example/SubscribeGraph.kt"
+        val body = ProjectFileResolver().read(sourceFilePath)
 
         val startTime = Instant.now()
 

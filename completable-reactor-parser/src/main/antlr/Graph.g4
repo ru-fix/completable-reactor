@@ -10,9 +10,9 @@ graphBlock
     :   payloadTransitionBlock
     |   vertexTransitionBlock
     |   vertexAssignmentBlock
-    |   vertexCloningBlock
     |   coordinatesBlock
     |   graphDeclarationBlock
+    |   vertexTemplateFunctionDefinition
     ;
 
 graphDeclarationBlock
@@ -32,6 +32,15 @@ classModifier
     |   'sealed'
     ;
 
+functionModifier
+    :   'public'
+    |   'protected'
+    |   'private'
+    |   'static'
+    |   'final'
+    |   'open'
+    ;
+
 
 classAnnotation
     :   AT Identifier (LPAREN anythingBeforeRParen RPAREN)?
@@ -46,12 +55,10 @@ payloadType
     ;
 
 vertexAssignmentBlock
-    :   (VERTEX | 'val' | 'var') vertexName ASSIGN vertexBuilder SEMI?
+    :   (VERTEX | 'val' | 'var') vertexName ASSIGN (vertexBuilder | vertexTemplateFunctionInvocation) SEMI?
     ;
 
-vertexCloningBlock
-    :   (VERTEX | 'val' | 'var') vertexName ASSIGN vertexName DOT CLONE LPAREN RPAREN SEMI?
-    ;
+
 
 vertexName
     :   anyGraphKeyword
@@ -77,6 +84,22 @@ subgraphPayloadClass
 builderRouter
     :   (ROUTER | MUTATOR)
         ((LPAREN anythingBeforeRParen RPAREN) | (LBRACE anythingBeforeRBrace RBRACE))
+    ;
+
+vertexTemplateFunctionInvocation
+    :   Identifier LPAREN anythingBeforeRParen RPAREN
+    ;
+
+vertexTemplateFunctionDefinition
+    :   (functionModifier? VERTEX Identifier LPAREN anythingBeforeRParen RPAREN vertexTemplateFuncitonDefinitionBody)
+    |   (functionModifier? 'fun' Identifier LPAREN anythingBeforeRParen RPAREN (':' VERTEX)? vertexTemplateFuncitonDefinitionBody)
+    |   (functionModifier? 'fun' Identifier LPAREN anythingBeforeRParen RPAREN (':' VERTEX)? ASSIGN vertexBuilder)
+    ;
+
+vertexTemplateFuncitonDefinitionBody
+    :   LBRACE
+        ( vertexBuilder | vertexTemplateFuncitonDefinitionBody | ~RBRACE )*
+        RBRACE
     ;
 
 builderHandler
@@ -108,11 +131,11 @@ builderWithEmptyMerger
     ;
 
 anythingBeforeRParen
-    :   (ignoreParenthesesBlock | ignoreBracesBlock | ~(LPAREN|RPAREN))*
+    :   (ignoreParenthesesBlock | ~(LPAREN|RPAREN))*
     ;
 
 anythingBeforeRBrace
-    :   (ignoreBracesBlock | ignoreBracesBlock | ~(LBRACE|RBRACE))*
+    :   (ignoreBracesBlock | ~(LBRACE|RBRACE))*
     ;
 
 ignoreBracesBlock
@@ -214,7 +237,6 @@ PAYLOAD : 'payload';
 COMPLETE : 'complete';
 ROUTER : 'router';
 MUTATOR : 'mutator';
-CLONE : 'clone';
 VERTEX : 'Vertex';
 
 anyGraphKeyword

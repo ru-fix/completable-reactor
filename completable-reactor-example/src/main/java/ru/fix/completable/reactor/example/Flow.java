@@ -10,7 +10,7 @@ public enum Flow {
 
     WITHDRAWAL,
 
-    //TODO add javadoc comments to UI
+    //TODO add javadoc comments resolving through IDE to GraphViewer
     /**
      * There is extra service available to user as a bonus
      */

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import ru.fix.aggregating.profiler.NoopProfiler;
 import ru.fix.aggregating.profiler.ProfiledCall;
 import ru.fix.aggregating.profiler.AggregatingProfiler;
-import ru.fix.aggregating.profiler.ThrowableSupplier;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
@@ -643,13 +642,18 @@ class GlCompletableReactorTest {
     */
     static class DeadTransitionBreaksFlowGraph extends Graph<DeadTransitionBreaksFlowPayload> {
 
-        Vertex idProcessor1 = handler(new IdProcessor(1)::handle)
-                .withRoutingMerger((pld, id) -> {
-                    pld.idSequence.add(id);
-                    return pld.flowDecision;
-                });
+        Vertex idProcessor1Template() {
+            return handler(new IdProcessor(1)::handle)
+                    .withRoutingMerger((pld, id) -> {
+                        pld.idSequence.add(id);
+                        return pld.flowDecision;
+                    });
+        }
 
-        Vertex idProcessor1b = idProcessor1.clone();
+        Vertex idProcessor1 = idProcessor1Template();
+
+        Vertex idProcessor1b = idProcessor1Template();
+
 
         Vertex idProcessor2 = handler(new IdProcessor(2)::handle)
                 .withRoutingMerger((pld, id) -> {
@@ -657,13 +661,17 @@ class GlCompletableReactorTest {
                     return Status.OK;
                 });
 
-        Vertex idProcessor3 = handler(new IdProcessor(3)::handle)
-                .withRoutingMerger((pld, id) -> {
-                    pld.idSequence.add(id);
-                    return Status.OK;
-                });
+        Vertex idProcessor3Template() {
+            return handler(new IdProcessor(3)::handle)
+                    .withRoutingMerger((pld, id) -> {
+                        pld.idSequence.add(id);
+                        return Status.OK;
+                    });
+        }
 
-        Vertex idProcessor3b = idProcessor3.clone();
+        Vertex idProcessor3 = idProcessor3Template();
+
+        Vertex idProcessor3b = idProcessor3Template();
 
 
         Vertex idProcessor4 = handler(new IdProcessor(4)::handle)
@@ -1165,7 +1173,7 @@ class GlCompletableReactorTest {
         }
     }
 
-    static class TrackedProfiledCall extends NoopProfiler.NoopProfiledCall{
+    static class TrackedProfiledCall extends NoopProfiler.NoopProfiledCall {
         private AtomicInteger state = new AtomicInteger();
 
         @Override
