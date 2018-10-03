@@ -1,19 +1,14 @@
 package ru.fix.completable.reactor.parser.java
 
 import mu.KotlinLogging
-import org.hamcrest.MatcherAssert
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.greaterThanOrEqualTo
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.EndPoint
-import ru.fix.completable.reactor.model.Source
 import ru.fix.completable.reactor.model.VertexFigure
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Paths
+import ru.fix.completable.reactor.test.utils.ProjectFileResolver
 import java.time.Duration
 import java.time.Instant
 
