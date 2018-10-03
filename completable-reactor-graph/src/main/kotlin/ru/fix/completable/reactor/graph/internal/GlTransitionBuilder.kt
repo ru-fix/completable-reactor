@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.graph.internal
 import ru.fix.completable.reactor.graph.TransitionBuilder
 import ru.fix.completable.reactor.graph.Vertex
 import ru.fix.completable.reactor.graph.runtime.GlVertex
-
+//TODO: remove GL prefix: old version of reactor already gone.
 class GlTransitionBuilder(
         val vertex: Vertex,
         val transition: GlTransition,
