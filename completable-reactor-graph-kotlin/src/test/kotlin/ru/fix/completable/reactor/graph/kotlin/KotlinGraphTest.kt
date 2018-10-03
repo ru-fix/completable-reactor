@@ -528,12 +528,14 @@ class KotlinGraphTest {
     */
     class DeadTransitionBreaksFlowGraph : Graph<DeadTransitionBreaksFlowPayload>() {
 
-        var idProcessor1 = handler { IdProcessor(1).handle() }
+        fun idProcessor1Tempalte() = handler { IdProcessor(1).handle() }
                 .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
-        var idProcessor1b = idProcessor1.clone()
+
+        var idProcessor1 = idProcessor1Tempalte()
+        var idProcessor1b = idProcessor1Tempalte()
 
         var idProcessor2 = handler { IdProcessor(2).handle() }
                 .withMerger {
@@ -541,13 +543,15 @@ class KotlinGraphTest {
                     Status.OK
                 }
 
-        var idProcessor3 = handler { IdProcessor(3).handle() }
+        fun idProcessor3Template() = handler { IdProcessor(3).handle() }
                 .withMerger {
                     idSequence.add(it)
                     Status.OK
                 }
 
-        var idProcessor3b = idProcessor3.clone()
+        var idProcessor3 = idProcessor3Template()
+
+        var idProcessor3b = idProcessor3Template()
 
 
         var idProcessor4 = handler { IdProcessor(4).handle() }
