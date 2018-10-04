@@ -30,16 +30,8 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vertex: Verte
             throw IllegalStateException("withMerger/withEmptyMerger/withRoutingMerger method used twice on same vertex")
         }
         vx.merger = merger as RoutingMerger<Any?, Any?>
-        vx.isTransitionableMerger = true
+        vx.isRoutable = true
 
-        return vertex
-    }
-
-    override fun withEmptyMerger(): Vertex {
-        if (vx.merger != null) {
-            throw IllegalStateException("withMerger method used twice on same vertex")
-        }
-        vx.merger = GlEmptyMerger()
         return vertex
     }
 

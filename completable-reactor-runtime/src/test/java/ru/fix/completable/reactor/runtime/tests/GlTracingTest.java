@@ -45,15 +45,15 @@ public class GlTracingTest {
         Vertex processor1 =
                 handler(
                         new IdProcessor(1)::handle
-                ).withEmptyMerger();
+                ).withoutMerger();
 
         Vertex processor2 =
                 handler(new IdProcessor(2)::handle
-                ).withEmptyMerger();
+                ).withoutMerger();
 
         Vertex processor3 =
                 handler(new IdProcessor(3)::handle
-                ).withEmptyMerger();
+                ).withoutMerger();
 
         {
             payload()

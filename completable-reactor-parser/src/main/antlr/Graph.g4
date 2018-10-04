@@ -114,7 +114,7 @@ handler
    ;
 
 builderMerger
-    :   builderWithMerger | builderWithoutMerger | builderWithEmptyMerger
+    :   builderWithMerger | builderWithoutMerger
     ;
 
 builderWithMerger
@@ -124,10 +124,6 @@ builderWithMerger
 
 builderWithoutMerger
     :   'withoutMerger' LPAREN RPAREN
-    ;
-
-builderWithEmptyMerger
-    :   'withEmptyMerger' LPAREN RPAREN
     ;
 
 anythingBeforeRParen

@@ -16,11 +16,11 @@ class GlVertex{
     var merger: RoutingMerger<Any?, Any?>? = null
 
     /**
-     * Merger or EmptyMerger are non transitionable, they could participate only in onAny() transition
-     * RoutingMerger are transitionable
+     * Merger or EmptyMerger or Mutator are non routable, they could participate only in onAny() transition
+     * RoutingMerger and Router are routable, they could participate in on(state) transition
      */
     @JvmField
-    var isTransitionableMerger: Boolean = false
+    var isRoutable: Boolean = false
 
     @JvmField
     var router: Router<Any?>? = null
