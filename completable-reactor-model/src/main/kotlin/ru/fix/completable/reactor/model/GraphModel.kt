@@ -84,7 +84,7 @@ class EndPoint(var name: String,
 
 class Handler(name: String) : HandleableVertexFigure(name)
 
-class Merger(name: String) : VertexFigure(name), TransitionableFigure {
+class Merger(name: String, val isImplicit:Boolean = false) : VertexFigure(name), TransitionableFigure {
     override val transitions: ArrayList<Transition> = ArrayList()
 }
 
@@ -135,6 +135,15 @@ class GraphModel {
      * @return VertexFigure that can serve as a target of handleBy transition
      */
     val handleable = HandeableAccessor()
+
+
+    inner class HandlersOrSubgraphsAccessor {
+        operator fun get(name: String): HandleableVertexFigure? = handlers[name] ?: subgraphs[name]
+        val values: List<HandleableVertexFigure>
+            get() = handlers.values + subgraphs.values
+    }
+
+    val handlersOrSubgraphs = HandlersOrSubgraphsAccessor()
 
 
     inner class TransitionableAccessor {

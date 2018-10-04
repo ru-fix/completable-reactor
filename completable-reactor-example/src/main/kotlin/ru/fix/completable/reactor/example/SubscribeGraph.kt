@@ -74,7 +74,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
     private fun logTransaction() =
             handler {
                 txLog.logTransactioin(request.userId)
-            }.withEmptyMerger()
+            }.withoutMerger()
 
     val logTransaction = logTransaction()
 
@@ -85,7 +85,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 userJournal.logAction(
                         request.userId,
                         "Request type: ${javaClass.simpleName}")
-            }.withEmptyMerger()
+            }.withoutMerger()
 
 
     val webNotification =

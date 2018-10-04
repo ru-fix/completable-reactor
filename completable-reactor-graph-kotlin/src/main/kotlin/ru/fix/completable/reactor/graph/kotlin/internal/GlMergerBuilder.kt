@@ -21,7 +21,7 @@ internal class GlMergerBuilder<Payload, HandlerResult>(private val vertex: Verte
             }
 
         } as RoutingMerger<Any?, Any?>
-        vx.isTransitionableMerger = true
+        vx.isRoutable = true
 
         return vertex
     }
