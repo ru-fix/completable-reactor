@@ -944,8 +944,13 @@ class KotlinGraphTest {
 
     class ImplicitEmptyMergerWithOnAnyTransitionGraph : Graph<IdListPayload>() {
 
-        val vertex = handler {
-            idSequence.add(1)
+        val vertex11 = handler {
+            idSequence.add(11)
+            completedFuture("data")
+        }.withoutMerger()
+
+        val vertex12 = handler {
+            idSequence.add(12)
             completedFuture("data")
         }.withoutMerger()
 
@@ -955,8 +960,16 @@ class KotlinGraphTest {
         }.withoutMerger()
 
         init {
-            payload().handleBy(vertex)
-            vertex.onAny().handleBy(vertex2)
+            payload()
+                    .handleBy(vertex11)
+                    .handleBy(vertex12)
+
+            vertex11
+                    .onAny().mergeBy(vertex12)
+
+            vertex12
+                    .onAny().handleBy(vertex2)
+
             vertex2.onAny().complete()
         }
     }
@@ -965,6 +978,12 @@ class KotlinGraphTest {
     fun vertex_with_implicit_empty_merger_works_with_onAny_transition() = runBlocking {
         reactor.registerGraph(ImplicitEmptyMergerWithOnAnyTransitionGraph::class.java)
 
-        assertEquals(listOf(1, 2), reactor.submit(IdListPayload()).resultFuture.await().idSequence)
+        reactor.submit(IdListPayload()).resultFuture.await().idSequence.also {
+            assertTrue(it.contains(11))
+            assertTrue(it.contains(12))
+            assertTrue(it.contains(2))
+        }
+
+        return@runBlocking
     }
 }
