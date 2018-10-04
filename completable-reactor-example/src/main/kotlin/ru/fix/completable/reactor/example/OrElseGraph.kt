@@ -57,7 +57,7 @@ open class OrElseGraph : Graph<OrElsePayload>() {
             handler {
                 println("this is the end...")
                 CompletableFuture.completedFuture(response.result)
-            }.withEmptyMerger()
+            }.withoutMerger()
 
     init {
         payload()
