@@ -45,7 +45,7 @@ class Vertex {
     fun onAny(): TransitionBuilder {
         //When user doesn't provide any merger but vertex participate in onAny transition
         //then vertex is effectively generates default empty merger
-        if(vx.handler != null && vx.merger == null){
+        if((vx.handler != null || vx.subgraphPayloadBuilder != null) && vx.merger == null){
             vx.merger = GlEmptyMerger()
         }
 
