@@ -19,9 +19,15 @@ class Vertex {
                     "Vertex ${vx.name} is used as source of on() transition but does not have merger or router.")
         }
 
-        if(vx.merger != null && !vx.isTransitionableMerger){
+        if(vx.merger != null && !vx.isRoutable){
             throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} have non transition merger." +
+                    "Vertex ${vx.name} have non routable merger or implicit non routable empty merger." +
+                    " That vertex could participate only in .onAny() transition.")
+        }
+
+        if(vx.router != null && !vx.isRoutable){
+            throw IllegalArgumentException("" +
+                    "Vertex ${vx.name} have non routable mutator." +
                     " That vertex could participate only in .onAny() transition.")
         }
 

@@ -12,6 +12,7 @@ import ru.fix.completable.reactor.test.utils.ProjectFileResolver
 import java.time.Duration
 import java.time.Instant
 
+
 private val log = KotlinLogging.logger {}
 
 /**
@@ -414,5 +415,45 @@ class JavaSourceParserTest {
 
     }
 
+    @Test
+    fun `several kotlin graphs from tests`() {
+        val sourceFilePath = "completable-reactor-graph-kotlin/src/test/kotlin/ru/fix/completable/reactor/graph/kotlin/KotlinGraphTest.kt"
+        val body = ProjectFileResolver().read(sourceFilePath)
+
+        val startTime = Instant.now()
+
+        val models = JavaSourceParser(object : JavaSourceParser.Listener {
+            override fun error(msg: String) {
+                log.error { msg }
+            }
+        }).parse(body, sourceFilePath)
+
+        log.info { "Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms" }
+
+        assertThat (models.size, greaterThanOrEqualTo(2))
+
+        val implicitMergerGraph = models.find { it.graphClass == "ImplicitEmptyMergerWithOnAnyTransitionGraph" }?: fail()
+
+        assertNotNull(implicitMergerGraph.handlers["vertex"])
+        assertNotNull(implicitMergerGraph.mergers["vertex"])
+        assertNotNull(implicitMergerGraph.handlers["vertex2"])
+        assertNotNull(implicitMergerGraph.mergers["vertex2"])
+
+
+        assertEquals("vertex", implicitMergerGraph.startPoint.handleBy.single().name)
+
+        implicitMergerGraph.mergers["vertex"]!!.transitions.single().let {
+            assertEquals(true, it.isOnAny)
+            assertEquals(false, it.isComplete)
+            assertEquals("vertex2", (it.target as VertexFigure).name)
+        }
+
+
+        implicitMergerGraph.mergers["vertex2"]!!.transitions.single().let {
+            assertEquals(true, it.isOnAny)
+            assertEquals(true, it.isComplete)
+            assertTrue { it.target is EndPoint }
+        }
+    }
 }
 

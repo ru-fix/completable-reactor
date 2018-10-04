@@ -1,5 +1,7 @@
 package ru.fix.completable.reactor.graph.kotlin
 
+import kotlinx.coroutines.experimental.future.await
+import kotlinx.coroutines.experimental.runBlocking
 import mu.KotlinLogging
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.junit.jupiter.api.AfterEach
@@ -879,10 +881,10 @@ class KotlinGraphTest {
                     nullResultHandler.handleWithNullResult()
 
                 }.withMerger {
-                            fail<Any>("Merger should not be invoked when handler returned NULL")
-                            idSequence.add(1)
-                            Status.OK
-                        }
+                    fail<Any>("Merger should not be invoked when handler returned NULL")
+                    idSequence.add(1)
+                    Status.OK
+                }
 
         init {
             payload()
@@ -910,14 +912,14 @@ class KotlinGraphTest {
 
     }
 
-    class RiseExceptionForEmptyMergerGraph : Graph<IdListPayload>(){
+    class RiseExceptionForImplicitEmptyMergerWithOnTransitionGraph : Graph<IdListPayload>() {
 
-        enum class STATUS {OK}
+        enum class STATUS { OK }
 
-        val vertex = handler { completedFuture("data") }.withEmptyMerger()
-        val vertex2 = handler { completedFuture("data2") }.withEmptyMerger()
+        val vertex = handler { completedFuture("data") }.withoutMerger()
+        val vertex2 = handler { completedFuture("data2") }.withoutMerger()
 
-        init{
+        init {
             payload().handleBy(vertex)
             vertex.on(STATUS.OK).handleBy(vertex2)
             vertex2.onAny().complete()
@@ -925,16 +927,44 @@ class KotlinGraphTest {
     }
 
     @Test
-    fun vertex_with_empty_merger_rise_exception_when_used_in_on_transition(){
+    fun vertex_with_implicit_empty_merger_rise_exception_when_used_in_on_transition() {
         try {
-            reactor.registerGraphIfAbsent(RiseExceptionForEmptyMergerGraph::class.java)
+            reactor.registerGraph(RiseExceptionForImplicitEmptyMergerWithOnTransitionGraph::class.java)
             fail<Nothing>("should rise exception")
 
-        }catch (exc: Exception){
-            ExceptionUtils.getStackTrace(exc).let{
-                assertTrue(it.contains("non transition merger"))
-                assertTrue(it.contains("could participate only in .onAny() transition"))
+        } catch (exc: Exception) {
+            log.info(exc) { "Expected exception" }
+
+            ExceptionUtils.getStackTrace(exc).let {
+                assertTrue(it.contains("on() transition"))
+                assertTrue(it.contains("does not have merger or router"))
             }
         }
+    }
+
+    class ImplicitEmptyMergerWithOnAnyTransitionGraph : Graph<IdListPayload>() {
+
+        val vertex = handler {
+            idSequence.add(1)
+            completedFuture("data")
+        }.withoutMerger()
+
+        val vertex2 = handler {
+            idSequence.add(2)
+            completedFuture("data2")
+        }.withoutMerger()
+
+        init {
+            payload().handleBy(vertex)
+            vertex.onAny().handleBy(vertex2)
+            vertex2.onAny().complete()
+        }
+    }
+
+    @Test
+    fun vertex_with_implicit_empty_merger_works_with_onAny_transition() = runBlocking {
+        reactor.registerGraph(ImplicitEmptyMergerWithOnAnyTransitionGraph::class.java)
+
+        assertEquals(listOf(1, 2), reactor.submit(IdListPayload()).resultFuture.await().idSequence)
     }
 }
