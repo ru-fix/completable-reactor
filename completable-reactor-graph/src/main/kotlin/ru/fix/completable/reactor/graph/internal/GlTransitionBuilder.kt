@@ -37,33 +37,13 @@ class GlTransitionBuilder(
             targetGlVertex.name = BuilderContext.get().resolveVertexName(vertex)
         }
 
-        if (targetGlVertex.merger == null) {
-
-            val vertexTypeMessage =
-                    if (targetGlVertex.router != null) {
-                        "Vertex ${targetGlVertex.name} is of type Router." +
-                                " Routers allowed to participate only in handleBy transitions."
-                    } else if (targetGlVertex.handler != null) {
-                        "Vertex ${targetGlVertex.name} is of type Handler without Merger." +
-                                " It can participate only in handleBy transitions."
-                    } else if (targetGlVertex.subgraphPayloadBuilder != null) {
-                        "Vertex ${targetGlVertex.name} is of type Subgrpah without Merger." +
-                                " It can participate only in handleBy transitions."
-                    } else {
-                        ""
-                    }
-
-
+        if (targetGlVertex.router != null) {
             throw IllegalArgumentException(
                     """
-                        MergeBy transition is targeting vertex ${targetGlVertex.name} that does not have merger.
-                        $vertexTypeMessage
-                        MergeBy can only transition to vertexes with mergers.
-                        You can build such vertexes in two manners:
-                            handler(...).withMerger(...)
-                            subgraph(...).withMerger(...)
-                        Other vertices that built without mergers can not be targeted by mergeBy transition.
-                        You probably have to use HandleBy transition instead.
+                        MergeBy transition is targeting vertex ${targetGlVertex.name}.
+                        Vertex ${targetGlVertex.name} is of type Router or Mutator.
+                        Routers and Mutators are allowed to participate only in handleBy transitions.
+                        Maybe you want to use HandleBy transition instead.
                         """.trimIndent())
         }
 
