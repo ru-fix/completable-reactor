@@ -1,10 +1,8 @@
 package ru.fix.completable.reactor.parser.java
 
-import com.sun.scenario.effect.Merge
 import mu.KotlinLogging
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.greaterThanOrEqualTo
-import org.hamcrest.Matchers.isA
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import ru.fix.completable.reactor.model.Coordinates
