@@ -184,9 +184,9 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
         System.out.println("Result: " + resultPayload.response.operationResult);
     }
 }
-//
-//  Simple implementation of external async services that being used by the graph.
-//
+```
+Simple implementation of external async services that being used by the graph.
+```
 class SalesDepartment {
     CompletableFuture<BigDecimal> calculateCurrentPrice(String destination) {
         return CompletableFuture.supplyAsync(() -> {
