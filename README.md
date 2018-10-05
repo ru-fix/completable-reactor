@@ -58,12 +58,9 @@ For Kotlin:
 
 
 #### Write simple graph application
-
+In given example flight ticket purchase process implemented as a reactor graph.  
+Payload contains request, response and intermediate data for computation.  
 ```java
-//
-// In given example flight ticket purchase process implemented as a reactor graph.
-// Payload contains request, response and intermediate data for computation.
-//
 class BuyFightTicketPayload {
     class Request {
         String destination;
@@ -80,9 +77,9 @@ class BuyFightTicketPayload {
     final IntermediateData intermediateData = new IntermediateData();
     final Response response = new Response();
 }
-//
-// All graph classes extends base Graph<Payload>
-//
+``` 
+All graph classes extends base `Graph<Payload>`
+```java
 public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     //
     // During execution graph uses external async services as a building blocks to create complex business process.
@@ -162,30 +159,30 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
         sendDenyEmail
                 .onAny().complete();
     }
-    //
-    //  Single instance of completable reactor created for application.
-    //  Graph registered withing reactor.
-    //  Payload submitted to reactor and received as a result of computation.
-    //
-    public static void main(String[] args) {
-        CompletableReactor completableReactor = new CompletableReactor(new AggregatingProfiler());
-        completableReactor.registerGraph(new BuyFlightTicketGraph());
-
-        BuyFightTicketPayload payload = new BuyFightTicketPayload();
-        payload.request
-                .setAge(30)
-                .setName("John Smith")
-                .setDestination("New York");
-
-        CompletableFuture<BuyFightTicketPayload> future = completableReactor.submit(payload).getResultFuture();
-
-        BuyFightTicketPayload resultPayload = future.join();
-
-        System.out.println("Result: " + resultPayload.response.operationResult);
-    }
 }
 ```
-Simple implementation of external async services that being used by the graph.
+Single instance of completable reactor created for application.
+Graph registered withing reactor.
+Payload submitted to reactor and received as a result of computation.
+```
+public static void main(String[] args) {
+    CompletableReactor completableReactor = new CompletableReactor(new AggregatingProfiler());
+    completableReactor.registerGraph(new BuyFlightTicketGraph());
+
+    BuyFightTicketPayload payload = new BuyFightTicketPayload();
+    payload.request
+            .setAge(30)
+            .setName("John Smith")
+            .setDestination("New York");
+
+    CompletableFuture<BuyFightTicketPayload> future = completableReactor.submit(payload).getResultFuture();
+
+    BuyFightTicketPayload resultPayload = future.join();
+
+    System.out.println("Result: " + resultPayload.response.operationResult);
+}
+```
+Simple implementation of external async services that being used by the graph:
 ```
 class SalesDepartment {
     CompletableFuture<BigDecimal> calculateCurrentPrice(String destination) {
