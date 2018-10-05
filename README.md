@@ -178,7 +178,8 @@ public static void main(String[] args) {
             .setName("John Smith")
             .setDestination("New York");
 
-    CompletableFuture<BuyFightTicketPayload> future = completableReactor.submit(payload).getResultFuture();
+    CompletableFuture<BuyFightTicketPayload> future = completableReactor.submit(payload)
+            .getResultFuture();
 
     BuyFightTicketPayload resultPayload = future.join();
 
