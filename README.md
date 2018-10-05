@@ -57,10 +57,14 @@ For Kotlin:
 * Standalone application completable-reactor-graph-viewer-app [![](https://img.shields.io/maven-central/v/ru.fix/completable-reactor-runtime.svg)](https://search.maven.org/search?q=g:ru.fix%20AND%20a:completable-reactor-graph-viewer-app)
 
 
-#### Write Hello Graph program
+#### Write simple graph application
 
 ```java
-
+//
+// In given example flight ticket purchase process implemented as a reactor graph.
+// Payload contains request, response and intermediate data for computation.
+//
+@Data
 class BuyFightTicketPayload {
     class Request {
         String destination;
@@ -73,25 +77,35 @@ class BuyFightTicketPayload {
     class Response {
         String operationResult;
     }
-
     final Request request = new Request();
     final IntermediateData intermediateData = new IntermediateData();
     final Response response = new Response();
 }
 
+//
+// All graph classes extends base Graph<Payload>
+//
 public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
-
+    //
+    // During execution graph uses external async services as a building blocks to create complex business process.
+    //
     SalesDepartment salesDepartment = new SalesDepartment();
     Bank bank = new Bank();
     EmailClient emailClient = new EmailClient();
     TransactionJournal transactionJournal = new TransactionJournal();
 
-    enum Flow{
+    //
+    //  Enum values identifies transitions in graph
+    //
+    enum Flow {
         DENY_PURCHASE,
-        CONTINUE
+        SUCCESS_WITHDRAW
     }
 
-
+    //
+    //  Vertex represent step in business process.
+    //  Vertex encapsulates async method invocation and merging result of invocation into payload.
+    //
     Vertex askForPrice =
             handler(
                     payload -> salesDepartment.calculateCurrentPrice(payload.request.destination)
@@ -101,16 +115,19 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
 
     Vertex withdrawMoney =
             handler(
+                    // Withdraw money from user account to purchase flight ticket
                     payload -> bank.withdrawMoney(payload.intermediateData.price)
-            ).withRoutingMerger((payload, reserveSuccessful) -> {
-                if(reserveSuccessful){
-                    payload.response.operationResult = "Successful purchase for " + payload.intermediateData.price;
-                    return Flow.CONTINUE;
-                } else {
-                    payload.response.operationResult = "Money withdraw failed";
-                    return Flow.DENY_PURCHASE;
-                }
-            });
+            ).withRoutingMerger(
+                    //# Is withdraw successful?
+                    (payload, withdrawSuccessful) -> {
+                        if (withdrawSuccessful) {
+                            payload.response.operationResult = "Successful purchase for " + payload.intermediateData.price;
+                            return Flow.SUCCESS_WITHDRAW;
+                        } else {
+                            payload.response.operationResult = "Money withdraw failed";
+                            return Flow.DENY_PURCHASE;
+                        }
+                    });
 
     Vertex sendDenyEmail =
             handler(
@@ -126,26 +143,44 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
             handler(
                     payload -> transactionJournal.logTransaction(
                             payload.request.name + " purchased a ticket, price: " + payload.intermediateData.price))
-            .withoutMerger();
+                    .withoutMerger();
 
+    //
+    // To build graph we join vertices with transitions.
+    // Some transitions could be conditional.
+    //
     {
         payload()
                 .handleBy(askForPrice);
+
         askForPrice
                 .onAny().handleBy(withdrawMoney);
 
         withdrawMoney
-                .on(Flow.CONTINUE).handleBy(sendSuccessEmail)
-                .on(Flow.CONTINUE).handleBy(logTransaction)
+                .on(Flow.SUCCESS_WITHDRAW).handleBy(sendSuccessEmail)
+                .on(Flow.SUCCESS_WITHDRAW).handleBy(logTransaction)
                 .on(Flow.DENY_PURCHASE).handleBy(sendDenyEmail);
 
-        logTransaction.onAny().complete();
+        logTransaction
+                .onAny().complete();
 
-        sendDenyEmail.onAny().complete();
+        sendDenyEmail
+                .onAny().complete();
 
+        coordinates()
+                .pd(50, 0)
+                .vx(logTransaction, 375, 315)
+                .vx(sendDenyEmail, -183, 344)
+                .vx(sendSuccessEmail, 183, 352)
+                .vx(askForPrice, 96, 49, 133, 112)
+                .vx(withdrawMoney, 82, 164, 80, 239);
     }
 
-
+    //
+    //  Single instance of completable reactor created for application.
+    //  Graph registered withing reactor.
+    //  Payload submitted to reactor and received as a result of computation.
+    //
     public static void main(String[] args) {
         CompletableReactor completableReactor = new CompletableReactor(new AggregatingProfiler());
         completableReactor.registerGraph(new BuyFlightTicketGraph());
@@ -165,6 +200,9 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
 
 }
 
+//
+//  Simple implementation of external async services that being used by the graph.
+//
 class SalesDepartment {
     CompletableFuture<BigDecimal> calculateCurrentPrice(String destination) {
         return CompletableFuture.supplyAsync(() -> {
@@ -194,8 +232,13 @@ class TransactionJournal {
         return CompletableFuture.runAsync(() -> System.out.println("TransactionJournal: " + message));
     }
 }
-
 ```
+#### View visual representation of the Graph
+* Display visual graph directly from code by `Ctrl+R` shortcut `(Tools->ReactorGraph)` 
+* Navigate from graph to code by double-clicking on the nodes
+* Read graph description in nodes menu generated directly from code comments 
+
+#### Trace graph execution and monitor Graph and Vertices performance 
 
 
 
