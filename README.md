@@ -64,7 +64,6 @@ For Kotlin:
 // In given example flight ticket purchase process implemented as a reactor graph.
 // Payload contains request, response and intermediate data for computation.
 //
-@Data
 class BuyFightTicketPayload {
     class Request {
         String destination;
