@@ -161,14 +161,6 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
 
         sendDenyEmail
                 .onAny().complete();
-
-        coordinates()
-                .pd(50, 0)
-                .vx(logTransaction, 375, 315)
-                .vx(sendDenyEmail, -183, 344)
-                .vx(sendSuccessEmail, 183, 352)
-                .vx(askForPrice, 96, 49, 133, 112)
-                .vx(withdrawMoney, 82, 164, 80, 239);
     }
     //
     //  Single instance of completable reactor created for application.
