@@ -81,7 +81,6 @@ class BuyFightTicketPayload {
     final IntermediateData intermediateData = new IntermediateData();
     final Response response = new Response();
 }
-
 //
 // All graph classes extends base Graph<Payload>
 //
@@ -93,7 +92,6 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     Bank bank = new Bank();
     EmailClient emailClient = new EmailClient();
     TransactionJournal transactionJournal = new TransactionJournal();
-
     //
     //  Enum values identifies transitions in graph
     //
@@ -101,7 +99,6 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
         DENY_PURCHASE,
         SUCCESS_WITHDRAW
     }
-
     //
     //  Vertex represent step in business process.
     //  Vertex encapsulates async method invocation and merging result of invocation into payload.
@@ -144,7 +141,6 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                     payload -> transactionJournal.logTransaction(
                             payload.request.name + " purchased a ticket, price: " + payload.intermediateData.price))
                     .withoutMerger();
-
     //
     // To build graph we join vertices with transitions.
     // Some transitions could be conditional.
@@ -175,7 +171,6 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                 .vx(askForPrice, 96, 49, 133, 112)
                 .vx(withdrawMoney, 82, 164, 80, 239);
     }
-
     //
     //  Single instance of completable reactor created for application.
     //  Graph registered withing reactor.
@@ -197,9 +192,7 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
 
         System.out.println("Result: " + resultPayload.response.operationResult);
     }
-
 }
-
 //
 //  Simple implementation of external async services that being used by the graph.
 //
@@ -211,7 +204,6 @@ class SalesDepartment {
         });
     }
 }
-
 class Bank {
     CompletableFuture<Boolean> withdrawMoney(BigDecimal amount) {
         return CompletableFuture.supplyAsync(() -> {
@@ -220,13 +212,11 @@ class Bank {
         });
     }
 }
-
 class EmailClient {
     CompletableFuture<Void> sendEmail(String message) {
         return CompletableFuture.runAsync(() -> System.out.println("EmailClient: " + message));
     }
 }
-
 class TransactionJournal {
     CompletableFuture<Void> logTransaction(String message) {
         return CompletableFuture.runAsync(() -> System.out.println("TransactionJournal: " + message));
