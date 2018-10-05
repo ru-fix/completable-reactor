@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.EndPoint
+import ru.fix.completable.reactor.model.Merger
 import ru.fix.completable.reactor.model.VertexFigure
 import ru.fix.completable.reactor.test.utils.ProjectFileResolver
 import java.time.Duration
@@ -314,7 +315,7 @@ class JavaSourceParserTest {
 
         log.info { "Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms" }
 
-        assertThat (models.size, greaterThanOrEqualTo(2))
+        assertThat(models.size, greaterThanOrEqualTo(2))
 
         val singleProcessorGraph = models
                 .find { it.graphClass == "SingleProcessorGraph" }
@@ -430,21 +431,32 @@ class JavaSourceParserTest {
 
         log.info { "Parsing took ${Duration.between(startTime, Instant.now()).toMillis()}ms" }
 
-        assertThat (models.size, greaterThanOrEqualTo(2))
+        assertThat(models.size, greaterThanOrEqualTo(2))
 
-        val implicitMergerGraph = models.find { it.graphClass == "ImplicitEmptyMergerWithOnAnyTransitionGraph" }?: fail()
+        val implicitMergerGraph = models.find { it.graphClass == "ImplicitEmptyMergerWithOnAnyTransitionGraph" }
+                ?: fail()
 
-        assertNotNull(implicitMergerGraph.handlers["vertex"])
-        assertNotNull(implicitMergerGraph.mergers["vertex"])
+        assertNotNull(implicitMergerGraph.handlers["vertex11"])
+        assertNotNull(implicitMergerGraph.mergers["vertex11"])
+        assertNotNull(implicitMergerGraph.handlers["vertex12"])
+        assertNotNull(implicitMergerGraph.mergers["vertex12"])
         assertNotNull(implicitMergerGraph.handlers["vertex2"])
         assertNotNull(implicitMergerGraph.mergers["vertex2"])
 
+        assertEquals(
+                setOf("vertex11", "vertex12"),
+                implicitMergerGraph.startPoint.handleBy.asSequence().map { it.name }.toSet())
 
-        assertEquals("vertex", implicitMergerGraph.startPoint.handleBy.single().name)
+        implicitMergerGraph.mergers["vertex11"]!!.transitions.single().let {
+            assertTrue(it.isOnAny)
+            assertTrue(it.target is Merger)
+            assertEquals ("vertex12", (it.target as Merger).name)
+        }
 
-        implicitMergerGraph.mergers["vertex"]!!.transitions.single().let {
-            assertEquals(true, it.isOnAny)
-            assertEquals(false, it.isComplete)
+
+        implicitMergerGraph.mergers["vertex12"]!!.transitions.single().let {
+            assertTrue(it.isOnAny)
+            assertFalse(it.isComplete)
             assertEquals("vertex2", (it.target as VertexFigure).name)
         }
 
@@ -454,6 +466,8 @@ class JavaSourceParserTest {
             assertEquals(true, it.isComplete)
             assertTrue { it.target is EndPoint }
         }
+
+
     }
 }
 
