@@ -82,7 +82,8 @@ All graph classes extends base `Graph<Payload>`
 ```java
 public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     //
-    // During execution graph uses external async services as a building blocks to create complex business process.
+    // During execution graph uses external async services as a building blocks 
+    // to create complex business process.
     //
     SalesDepartment salesDepartment = new SalesDepartment();
     Bank bank = new Bank();
@@ -114,7 +115,8 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                     //# Is withdraw successful?
                     (payload, withdrawSuccessful) -> {
                         if (withdrawSuccessful) {
-                            payload.response.operationResult = "Successful purchase for " + payload.intermediateData.price;
+                            payload.response.operationResult = 
+                                "Successful purchase for " + payload.intermediateData.price;
                             return Flow.SUCCESS_WITHDRAW;
                         } else {
                             payload.response.operationResult = "Money withdraw failed";
@@ -135,7 +137,8 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     Vertex logTransaction =
             handler(
                     payload -> transactionJournal.logTransaction(
-                            payload.request.name + " purchased a ticket, price: " + payload.intermediateData.price)
+                            payload.request.name + " purchased a ticket, price: " + 
+                                payload.intermediateData.price)
             ).withoutMerger();
     //
     // To build graph we join vertices with transitions.
