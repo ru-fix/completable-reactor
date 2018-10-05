@@ -138,8 +138,8 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     Vertex logTransaction =
             handler(
                     payload -> transactionJournal.logTransaction(
-                            payload.request.name + " purchased a ticket, price: " + payload.intermediateData.price))
-                    .withoutMerger();
+                            payload.request.name + " purchased a ticket, price: " + payload.intermediateData.price)
+            ).withoutMerger();
     //
     // To build graph we join vertices with transitions.
     // Some transitions could be conditional.
