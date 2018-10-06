@@ -77,25 +77,27 @@ class BuyFightTicketPayload {
     final IntermediateData intermediateData = new IntermediateData();
     final Response response = new Response();
 }
-``` 
+```
 All graph classes extends base `Graph<Payload>`
 ```java
 public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     //
-    // During execution graph uses external async services as a building blocks 
-    // to create complex business process.
+    // During execution graph uses external async services as a building blocks to create complex business process.
     //
     SalesDepartment salesDepartment = new SalesDepartment();
     Bank bank = new Bank();
     EmailClient emailClient = new EmailClient();
-    TransactionJournal transactionJournal = new TransactionJournal();
+    FlightPlanner flightPlanner = new FlightPlanner();
+
     //
     //  Enum values identifies transitions in graph
     //
     enum Flow {
         DENY_PURCHASE,
+        SEAT_RESERVED,
         SUCCESS_WITHDRAW
     }
+
     //
     //  Vertex represent step in business process.
     //  Vertex encapsulates async method invocation and merging result of invocation into payload.
@@ -107,6 +109,18 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                 payload.intermediateData.price = currentPrice;
             });
 
+    Vertex reserveSeat =
+            handler(
+                    payload -> flightPlanner.reserveSeat()
+            ).withRoutingMerger((payload, isSeatReserved) -> {
+                if(!isSeatReserved){
+                    payload.response.operationResult = "Seat reservation failed";
+                    return Flow.DENY_PURCHASE;
+                } else {
+                    return Flow.SEAT_RESERVED;
+                }
+            });
+
     Vertex withdrawMoney =
             handler(
                     // Withdraw money from user account to purchase flight ticket
@@ -115,8 +129,7 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                     //# Is withdraw successful?
                     (payload, withdrawSuccessful) -> {
                         if (withdrawSuccessful) {
-                            payload.response.operationResult = 
-                                "Successful purchase for " + payload.intermediateData.price;
+                            payload.response.operationResult = "Successful purchase for " + payload.intermediateData.price;
                             return Flow.SUCCESS_WITHDRAW;
                         } else {
                             payload.response.operationResult = "Money withdraw failed";
@@ -134,29 +147,27 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                     payload -> emailClient.sendEmail("Congratulations, you have purchased a ticket.")
             ).withoutMerger();
 
-    Vertex logTransaction =
-            handler(
-                    payload -> transactionJournal.logTransaction(
-                            payload.request.name + " purchased a ticket, price: " + 
-                                payload.intermediateData.price)
-            ).withoutMerger();
     //
     // To build graph we join vertices with transitions.
     // Some transitions could be conditional.
     //
     {
         payload()
-                .handleBy(askForPrice);
+                .handleBy(askForPrice)
+                .handleBy(reserveSeat);
+
+        reserveSeat
+                .on(Flow.DENY_PURCHASE).complete()
+                .on(Flow.SEAT_RESERVED).mergeBy(askForPrice);
 
         askForPrice
                 .onAny().handleBy(withdrawMoney);
 
         withdrawMoney
                 .on(Flow.SUCCESS_WITHDRAW).handleBy(sendSuccessEmail)
-                .on(Flow.SUCCESS_WITHDRAW).handleBy(logTransaction)
                 .on(Flow.DENY_PURCHASE).handleBy(sendDenyEmail);
 
-        logTransaction
+        sendSuccessEmail
                 .onAny().complete();
 
         sendDenyEmail
@@ -167,7 +178,7 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
 Single instance of completable reactor created for application.
 Graph registered withing reactor.
 Payload submitted to reactor and received as a result of computation.
-```
+```java
 public static void main(String[] args) {
     CompletableReactor completableReactor = new CompletableReactor(new AggregatingProfiler());
     completableReactor.registerGraph(new BuyFlightTicketGraph());
@@ -178,20 +189,19 @@ public static void main(String[] args) {
             .setName("John Smith")
             .setDestination("New York");
 
-    CompletableFuture<BuyFightTicketPayload> future = completableReactor.submit(payload)
-            .getResultFuture();
+    CompletableFuture<BuyFightTicketPayload> future = completableReactor.submit(payload).getResultFuture();
 
     BuyFightTicketPayload resultPayload = future.join();
 
     System.out.println("Result: " + resultPayload.response.operationResult);
 }
-```
-Simple implementation of external async services that being used by the graph:
-```
+``` 
+Simple implementation of external async services that being used by the graph.
+```java
 class SalesDepartment {
     CompletableFuture<BigDecimal> calculateCurrentPrice(String destination) {
         return CompletableFuture.supplyAsync(() -> {
-            System.out.println("SalesDepartment: calculateCurrentPrice for " + destination);
+            System.out.println("SalesDepartment: calculate current price for " + destination);
             return BigDecimal.valueOf(12.0);
         });
     }
@@ -199,7 +209,7 @@ class SalesDepartment {
 class Bank {
     CompletableFuture<Boolean> withdrawMoney(BigDecimal amount) {
         return CompletableFuture.supplyAsync(() -> {
-            System.out.println("Bank: withdrawMoney " + amount);
+            System.out.println("Bank: withdraw money: " + amount);
             return true;
         });
     }
@@ -209,16 +219,29 @@ class EmailClient {
         return CompletableFuture.runAsync(() -> System.out.println("EmailClient: " + message));
     }
 }
-class TransactionJournal {
-    CompletableFuture<Void> logTransaction(String message) {
-        return CompletableFuture.runAsync(() -> System.out.println("TransactionJournal: " + message));
+class FlightPlanner {
+    CompletableFuture<Boolean> reserveSeat() {
+        return CompletableFuture.supplyAsync(() -> {
+            System.out.println("FlightPlanner: reserve seat");
+            return true;
+        });
     }
 }
 ```
+Console output: 
+```
+SalesDepartment: calculate current price for New York
+FlightPlanner: reserve seat
+Bank: withdraw money: 12.0
+EmailClient: Congratulations, you have purchased a ticket.
+Result: Successful purchase for 12.0
+```
+
 #### View visual representation of the Graph
 * Display visual graph directly from code by `Ctrl+R` shortcut `(Tools->ReactorGraph)` 
 * Navigate from graph to code by double-clicking on the nodes
 * Read graph description in nodes menu generated directly from code comments 
+![](docs/flight-graph.png?raw=true)
 
 #### Trace graph execution and monitor Graph and Vertices performance 
 
@@ -242,7 +265,6 @@ https://plugins.jetbrains.com/plugin/9599-completable-reactor
 
 Completable Reactor Intellij Idea plugin provides graph visualization and source code navigation within IDE.  
 You can jump to code using double click on graph item or context menu.
-![Alt idea-plugin-graph-example.png](docs/idea-plugin-graph-example.png?raw=true "Graph View")
 
 ## Examples
 

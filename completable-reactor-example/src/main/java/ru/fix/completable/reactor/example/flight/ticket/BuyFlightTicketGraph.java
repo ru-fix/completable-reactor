@@ -50,7 +50,6 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     SalesDepartment salesDepartment = new SalesDepartment();
     Bank bank = new Bank();
     EmailClient emailClient = new EmailClient();
-    TransactionJournal transactionJournal = new TransactionJournal();
     FlightPlanner flightPlanner = new FlightPlanner();
 
     //
@@ -77,7 +76,7 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
             handler(
                     payload -> flightPlanner.reserveSeat()
             ).withRoutingMerger((payload, isSeatReserved) -> {
-                if(isSeatReserved){
+                if(!isSeatReserved){
                     payload.response.operationResult = "Seat reservation failed";
                     return Flow.DENY_PURCHASE;
                 } else {
@@ -146,7 +145,7 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                 .vx(withdrawMoney, 116, 145, 113, 218)
                 .ct(reserveSeat, -67, 66)
                 .ct(sendDenyEmail, 47, 420)
-                .ct(sendSuccessEmail, 308, 419);08, 419);
+                .ct(sendSuccessEmail, 308, 419);
     }
 
     //
@@ -179,7 +178,7 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
 class SalesDepartment {
     CompletableFuture<BigDecimal> calculateCurrentPrice(String destination) {
         return CompletableFuture.supplyAsync(() -> {
-            System.out.println("SalesDepartment: calculateCurrentPrice for " + destination);
+            System.out.println("SalesDepartment: calculate current price for " + destination);
             return BigDecimal.valueOf(12.0);
         });
     }
@@ -188,7 +187,7 @@ class SalesDepartment {
 class Bank {
     CompletableFuture<Boolean> withdrawMoney(BigDecimal amount) {
         return CompletableFuture.supplyAsync(() -> {
-            System.out.println("Bank: withdrawMoney " + amount);
+            System.out.println("Bank: withdraw money: " + amount);
             return true;
         });
     }
@@ -197,12 +196,6 @@ class Bank {
 class EmailClient {
     CompletableFuture<Void> sendEmail(String message) {
         return CompletableFuture.runAsync(() -> System.out.println("EmailClient: " + message));
-    }
-}
-
-class TransactionJournal {
-    CompletableFuture<Void> logTransaction(String message) {
-        return CompletableFuture.runAsync(() -> System.out.println("TransactionJournal: " + message));
     }
 }
 
