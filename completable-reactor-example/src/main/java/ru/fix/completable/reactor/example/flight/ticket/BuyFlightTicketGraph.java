@@ -51,12 +51,14 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     Bank bank = new Bank();
     EmailClient emailClient = new EmailClient();
     TransactionJournal transactionJournal = new TransactionJournal();
+    FlightPlanner flightPlanner = new FlightPlanner();
 
     //
     //  Enum values identifies transitions in graph
     //
     enum Flow {
         DENY_PURCHASE,
+        SEAT_RESERVED,
         SUCCESS_WITHDRAW
     }
 
@@ -69,6 +71,18 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                     payload -> salesDepartment.calculateCurrentPrice(payload.request.destination)
             ).withMerger((payload, currentPrice) -> {
                 payload.intermediateData.price = currentPrice;
+            });
+
+    Vertex reserveSeat =
+            handler(
+                    payload -> flightPlanner.reserveSeat()
+            ).withRoutingMerger((payload, isSeatReserved) -> {
+                if(isSeatReserved){
+                    payload.response.operationResult = "Seat reservation failed";
+                    return Flow.DENY_PURCHASE;
+                } else {
+                    return Flow.SEAT_RESERVED;
+                }
             });
 
     Vertex withdrawMoney =
@@ -97,41 +111,42 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                     payload -> emailClient.sendEmail("Congratulations, you have purchased a ticket.")
             ).withoutMerger();
 
-    Vertex logTransaction =
-            handler(
-                    payload -> transactionJournal.logTransaction(
-                            payload.request.name + " purchased a ticket, price: " + payload.intermediateData.price))
-                    .withoutMerger();
-
     //
     // To build graph we join vertices with transitions.
     // Some transitions could be conditional.
     //
     {
         payload()
-                .handleBy(askForPrice);
+                .handleBy(askForPrice)
+                .handleBy(reserveSeat);
+
+        reserveSeat
+                .on(Flow.DENY_PURCHASE).complete()
+                .on(Flow.SEAT_RESERVED).mergeBy(askForPrice);
 
         askForPrice
                 .onAny().handleBy(withdrawMoney);
 
         withdrawMoney
                 .on(Flow.SUCCESS_WITHDRAW).handleBy(sendSuccessEmail)
-                .on(Flow.SUCCESS_WITHDRAW).handleBy(logTransaction)
                 .on(Flow.DENY_PURCHASE).handleBy(sendDenyEmail);
 
-        logTransaction
+        sendSuccessEmail
                 .onAny().complete();
 
         sendDenyEmail
                 .onAny().complete();
 
         coordinates()
-                .pd(50, 0)
-                .vx(logTransaction, 375, 315)
-                .vx(sendDenyEmail, -183, 344)
-                .vx(sendSuccessEmail, 183, 352)
-                .vx(askForPrice, 96, 49, 133, 112)
-                .vx(withdrawMoney, 82, 164, 80, 239);
+                .pd(89, -126)
+                .vx(askForPrice, 219, -60, 205, 45)
+                .vx(reserveSeat, 18, -60, 90, 12)
+                .vx(sendDenyEmail, 6, 304, 54, 368)
+                .vx(sendSuccessEmail, 248, 309, 312, 369)
+                .vx(withdrawMoney, 116, 145, 113, 218)
+                .ct(reserveSeat, -67, 66)
+                .ct(sendDenyEmail, 47, 420)
+                .ct(sendSuccessEmail, 308, 419);08, 419);
     }
 
     //
@@ -188,5 +203,14 @@ class EmailClient {
 class TransactionJournal {
     CompletableFuture<Void> logTransaction(String message) {
         return CompletableFuture.runAsync(() -> System.out.println("TransactionJournal: " + message));
+    }
+}
+
+class FlightPlanner {
+    CompletableFuture<Boolean> reserveSeat() {
+        return CompletableFuture.supplyAsync(() -> {
+            System.out.println("FlightPlanner: reserve seat");
+            return true;
+        });
     }
 }
