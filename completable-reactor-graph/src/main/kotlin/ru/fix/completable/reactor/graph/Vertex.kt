@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.graph
 
 import ru.fix.completable.reactor.graph.internal.GlEmptyMerger
-import ru.fix.completable.reactor.graph.internal.BuilderContext
 import ru.fix.completable.reactor.graph.internal.GlTransition
 import ru.fix.completable.reactor.graph.internal.GlTransitionBuilder
 import ru.fix.completable.reactor.graph.runtime.GlVertex
@@ -44,22 +43,12 @@ class Vertex {
     }
 
     fun onAny(): TransitionBuilder {
-        //When user doesn't provide any merger but vertex participate in onAny transition
-        //then vertex is effectively generates default empty merger
-        if((vx.handler != null || vx.subgraphPayloadBuilder != null) && vx.merger == null){
-            vx.merger = GlEmptyMerger()
-        }
-
-        //Check that vertex have merger or router
-        if(vx.merger == null && vx.router == null){
-            throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} is used as source of onAny() transition but does not have merger or router.")
-        }
+        addEmptyMergerIfNotExists()
 
         val transition = GlTransition()
         transition.isOnAny = true
 
-        checkForIncompatibleTransitions(vx, transition)
+        checkForIncompatibleTransitions(transition)
 
         return GlTransitionBuilder(
                 this,
@@ -69,10 +58,12 @@ class Vertex {
     }
 
     fun onElse(): TransitionBuilder {
+        addEmptyMergerIfNotExists()
+
         val transition = GlTransition()
         transition.isOnElse = true
 
-        checkForIncompatibleTransitions(vx, transition)
+        checkForIncompatibleTransitions(transition)
 
         return GlTransitionBuilder(
                 this,
@@ -82,10 +73,21 @@ class Vertex {
     }
 
     /**
+     * When user doesn't provide any merger but vertex participate in onAny transition
+     * then vertex is effectively generates default empty merger
+     */
+    private fun addEmptyMergerIfNotExists() {
+        if((vx.handler != null || vx.subgraphPayloadBuilder != null) && vx.merger == null){
+            vx.merger = GlEmptyMerger()
+        }
+    }
+
+    /**
+     * -
      * -check that vertex is transition onElse or onAny has merger or router
      * -check that vertex doesn't have two transitions onAny and onElse
      */
-    private fun checkForIncompatibleTransitions(vx: GlVertex, newTransition: GlTransition) {
+    private fun checkForIncompatibleTransitions(newTransition: GlTransition) {
         if(vx.merger == null && vx.router == null) {
             val name = if (newTransition.isOnAny) "onAny()" else "onElse()"
             throw IllegalArgumentException("" +
