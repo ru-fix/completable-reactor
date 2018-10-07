@@ -426,13 +426,12 @@ Vertex sendNotification =
 ```
 ![Alt merger](res/merger.png?raw=true)
 
-### With Empty Merger
+### Implicit Empty Merger
 
 Some times we even do not care about saving result of asynchronous operation in payload.
-In that case we can use EmptyMerger.
-EmptyMerger does not do anything.
-It simply waits for handler to complete and the by pass execution down the flow though outgoing transition.
-
+But we need to wait for async operation to complete and only after that we want to continue.
+In such case we can declare that our vertex contains handler `withoutMerger()`.   
+And in the same time we declare `onAny()` transition that gives reactor a hint to wait for async operation completeness.   
 ```java
 Vertex trySendEmail =
         handler(
@@ -440,18 +439,19 @@ Vertex trySendEmail =
                     payload.getUserId(),
                     "You purchased " + payload.getServiceTitle())
 
-        ).withEmptyMerger();
-}
+        ).withoutMerger();
+...
+businessAction
+    .on(REQUIRES_EMAIL).handleBy(trySendEmail);
+trySendEmail
+    .onAny().handleBy(afterEmailSentProcessing);
+
 ```
 ![Alt empty-merger](res/empty-merger.png?raw=true)
 
 ### Without Merger
-
-Last option with mergers is not to use them at all!
-The differences with EmptyMerger is that handler will be executed in parallel with other vertices but will
-not trigger any outgoing transitions because such vertex does not have any.  
-
-
+Last option with mergers is not to use them at all and not to wait for async operation completeness.
+Handler will be executed in parallel with other vertices but will not trigger any outgoing transitions because such vertex does not have any.  
 ```java
 Vertex fireStatisticEvent =
         handler(
@@ -463,6 +463,10 @@ Vertex fireStatisticEvent =
 
         ).withoutMerger();
 }
+...
+businessAction
+    .onAny().handleBy(fireStatisticEvent); 
+//no outgoing transitions for fireStatisticEvent
 ```
 ![Alt without-merger](res/without-merger.png?raw=true)
 

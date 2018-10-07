@@ -96,6 +96,7 @@ abstract class Graph<Payload> : Graphable {
         graphBuilderValidator.validateRouter(vx)
 
         vx.router = router as Router<Any?>
+        vx.isRoutable = true
         return vertex
     }
 

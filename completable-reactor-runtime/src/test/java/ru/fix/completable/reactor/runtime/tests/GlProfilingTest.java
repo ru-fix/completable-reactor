@@ -44,15 +44,15 @@ public class GlProfilingTest {
 
         Vertex processor1 =
                 handler(p -> completedFuture(null)
-                ).withEmptyMerger();
+                ).withoutMerger();
 
         Vertex processor2 =
                 handler(p -> completedFuture(null)
-                ).withEmptyMerger();
+                ).withoutMerger();
 
         Vertex processor3 =
                 handler(p -> completedFuture(null)
-                ).withEmptyMerger();
+                ).withoutMerger();
 
         {
             payload()

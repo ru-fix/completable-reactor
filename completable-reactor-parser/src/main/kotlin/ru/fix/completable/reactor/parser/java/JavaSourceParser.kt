@@ -136,10 +136,12 @@ class JavaSourceParser(private val listener: Listener) {
                         .mapNotNull { it.vertexTransitionBlock() }
                         .forEach {
                             val transitionSourceVertex = it.vertexName().text
-                            val vertex = transitionable[transitionSourceVertex] ?: return@forEach listener.error(
-                                    "Outgoing transition detected for vertex $transitionSourceVertex" +
-                                            " at ${tokenPosition(it.start)}." +
-                                            " But declaration of $transitionSourceVertex not found.")
+                            val vertex = getExistingTransitionableOrCreateImplicitMerger(model, transitionSourceVertex)
+                                    ?: return@forEach listener.error(
+                                            "Outgoing transition detected for vertex $transitionSourceVertex" +
+                                                    " at ${tokenPosition(it.start)}." +
+                                                    " But declaration or implicit merger of $transitionSourceVertex not found.")
+
 
                             it.vertexTransition().forEach transitionIteration@{
 
@@ -192,11 +194,11 @@ class JavaSourceParser(private val listener: Listener) {
                                                     "But declaration of handleable $text not found.")
 
                                         } ?: transitionActionMergeBy()?.vertexName()?.run {
-                                            transition.target = transitionable[text] as? Figure
+                                            transition.target = getExistingTransitionableOrCreateImplicitMerger(model, text) as? Figure
                                                     ?: return@transitionIteration listener.error("" +
                                                     "MergeBy transition targets vertex $text " +
                                                     "at ${tokenPosition(start)}. " +
-                                                    "But declaration of transitionable $text not found. " +
+                                                    "But declaration of transitionable $text or implicit merger not found. " +
                                                     "Probably vertex $text does not have merger but used in " +
                                                     "mergeBy transition.")
                                         }
@@ -204,6 +206,22 @@ class JavaSourceParser(private val listener: Listener) {
                                 }
 
                                 mergeTransitions(transition, vertex.transitions)
+
+                                //Handler withoutMerger but with outgoing transitions is actually get's
+                                //implicit empty merger
+                                //Implicit empty merger could not participate in on() transitions.
+                                //Implicit empty merger could participate only in onAny() transitions.
+                                if (!transition.isOnAny
+                                        && handlersOrSubgraphs[vertex.name] != null
+                                        && mergers[vertex.name] != null
+                                        && mergers[vertex.name]!!.isImplicit
+                                ) {
+                                    return@forEach listener.error(
+                                            "Implicit merger could participate only in onAny transitions. " +
+                                                    " Vertex $transitionSourceVertex" +
+                                                    " at ${tokenPosition(it.start)}.")
+
+                                }
                             }
                         }
 
@@ -395,17 +413,6 @@ class JavaSourceParser(private val listener: Listener) {
                     }
                 }
             }
-            //withEmptyMerger
-            builderMerger().builderWithEmptyMerger()?.apply {
-                mergers[vertexName] = Merger(vertexName).also {
-                    it.source = sourceFromToken(start, fileName)
-
-                    tokens.checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
-                        it.title = title
-                        it.doc = doc
-                    }
-                }
-            }
 
         } ?: vertexBuilder.builderSubgraph()?.apply {
             //subgraph
@@ -432,18 +439,7 @@ class JavaSourceParser(private val listener: Listener) {
 
                 }
             }
-            //withEmptyMerger
-            builderMerger().builderWithEmptyMerger()?.apply {
-                mergers[vertexName] = Merger(vertexName).also {
-                    it.source = sourceFromToken(start, fileName)
 
-                    tokens.checkCommentsToRight((LPAREN() ?: LBRACE()).symbol.tokenIndex)?.run {
-                        it.title = title
-                        it.doc = doc
-                    }
-
-                }
-            }
         } ?: vertexBuilder.builderRouter()?.apply {
             //router
             routers[vertexName] = Router(vertexName).also {
@@ -456,6 +452,27 @@ class JavaSourceParser(private val listener: Listener) {
             }
         }
     }
+
+    private fun getExistingTransitionableOrCreateImplicitMerger(model: GraphModel, transitionSourceVertex: String): TransitionableFigure? {
+        //look for regular merger or router
+        return with(model) {
+            transitionable[transitionSourceVertex]
+                    ?: run {
+                        //try to create implicit empty merger for handlers or subgraphs if they exist
+                        val handleable = handlersOrSubgraphs[transitionSourceVertex]
+                        if (handleable != null) {
+                            Merger(handleable.name, isImplicit = true).also { implicitMerger ->
+                                implicitMerger.source = handleable.source
+                                //implicit empty merger does not have title or docs
+                                mergers[implicitMerger.name] = implicitMerger
+                            }
+                        } else {
+                            null
+                        }
+                    }
+        }
+    }
+
 
     private fun tokenPosition(token: Token) = "${token.line}:${token.charPositionInLine}"
 

@@ -76,7 +76,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     Vertex logTransaction() {
         return handler(
                 pld -> transactionLog.logTransactioin(pld.request.getUserId())
-        ).withEmptyMerger();
+        ).withoutMerger();
     }
 
     Vertex logTransaction = logTransaction();
@@ -88,7 +88,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                     pld -> userJournal.logAction(
                             pld.request.getUserId(),
                             String.format("Request type: %s", pld.getClass().getSimpleName()))
-            ).withEmptyMerger();
+            ).withoutMerger();
 
     Vertex sendWebNotification =
             handler(pld -> notifier.sendHttpPurchaseNotification(pld.request.getUserId()))

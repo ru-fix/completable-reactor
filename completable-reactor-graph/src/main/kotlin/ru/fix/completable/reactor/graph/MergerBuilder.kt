@@ -8,7 +8,6 @@ interface MergerBuilder<Payload, HandlerResult> {
     fun withRoutingMerger(merger: RoutingMerger<Payload, HandlerResult>): Vertex
 
     //TODO: specialize Vertices: router, merger, so handleBy and mergeBy will not conflict for router
-    fun withEmptyMerger(): Vertex
 
     fun withoutMerger(): Vertex
 }

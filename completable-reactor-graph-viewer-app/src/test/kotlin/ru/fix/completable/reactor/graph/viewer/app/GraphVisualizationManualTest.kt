@@ -120,6 +120,20 @@ class GraphVisualizationManualTest : Application() {
         )
     }
 
+    /**
+     * Manual UI Test
+     * Opens given java source file and display graph
+     */
+    @Disabled
+    @Test
+    fun `open kotlin source with several graphs`() {
+        Application.launch(
+                ProjectFileResolver().resolvePath(
+                        "completable-reactor-graph-kotlin/src/test/kotlin/ru/fix/completable/reactor/graph/kotlin/KotlinGraphTest.kt"
+                ).toString()
+        )
+    }
+
     //TODO Fix documentation and titles on all nodes and popup menues
 
     //TODO add source file dump if there is parsing or visualization error

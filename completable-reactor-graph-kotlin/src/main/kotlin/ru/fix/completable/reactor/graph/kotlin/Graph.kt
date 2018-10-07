@@ -78,6 +78,8 @@ open class Graph<Payload> : Graphable {
             }
         } as Router<Any?>
 
+        vx.isRoutable = true
+
         return vertex
     }
 

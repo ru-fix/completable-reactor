@@ -66,7 +66,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
               //# fire purchase statistic event
               payload -> fireSubscribeAction(payload)
 
-        ).withEmptyMerger();
+        ).withoutMerger();
 
     private CompletableFuture<Reullt> writeUserLog(PurchasePayload p) {
         <purchase logging code>
@@ -100,7 +100,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                 <statistc event firing code>
             }
 
-      ).withEmptyMerger();
+      ).withoutMerger();
 
 }
 
@@ -201,7 +201,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
       handler( payload -> { //(3)
                 <statistc event firing code>
             }
-      ).withEmptyMerger();
+      ).withoutMerger();
 }
 ```
 
