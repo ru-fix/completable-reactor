@@ -1,6 +1,5 @@
 package ru.fix.completable.reactor.graph
 
-import ru.fix.completable.reactor.graph.internal.BuilderContext
 import ru.fix.completable.reactor.graph.internal.GlTransition
 import ru.fix.completable.reactor.graph.internal.GlTransitionBuilder
 import ru.fix.completable.reactor.graph.runtime.GlVertex
@@ -37,13 +36,10 @@ class Vertex {
     }
 
     fun onAny(): TransitionBuilder {
-        if(vx.merger == null && vx.router == null){
-            throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} is used as source of onAny() transition but does not have merger or router.")
-        }
-
         val transition = GlTransition()
         transition.isOnAny = true
+
+        checkForIncompatibleTransitions(vx, transition)
 
         return GlTransitionBuilder(
                 this,
@@ -53,18 +49,41 @@ class Vertex {
     }
 
     fun onElse(): TransitionBuilder {
-        if(vx.merger == null && vx.router == null){
-            throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} is used as source of onElse() transition but does not have merger or router.")
-        }
-
         val transition = GlTransition()
         transition.isOnElse = true
+
+        checkForIncompatibleTransitions(vx, transition)
 
         return GlTransitionBuilder(
                 this,
                 transition,
                 vx.transitions
         )
+    }
+
+    /**
+     * -check that vertex is transition onElse or onAny has merger or router
+     * -check that vertex doesn't have two transitions onAny and onElse
+     */
+    private fun checkForIncompatibleTransitions(vx: GlVertex, newTransition: GlTransition) {
+        if(vx.merger == null && vx.router == null) {
+            val name = if (newTransition.isOnAny) "onAny()" else "onElse()"
+            throw IllegalArgumentException("" +
+                    "Vertex ${vx.name} is used as source of $name transition but does not have merger or router.")
+        }
+
+
+        var hasIncompatibleTransition = false
+        vx.transitions.forEach { transition ->
+            if (transition.isOnAny && newTransition.isOnElse) {
+               hasIncompatibleTransition = true
+            } else if (transition.isOnElse && newTransition.isOnAny) {
+                hasIncompatibleTransition = true
+            }
+        }
+        if (hasIncompatibleTransition)  {
+            throw IllegalArgumentException(
+                    "Vertex ${vx.name} is used together incompatible transitions onElse and onAny.")
+        }
     }
 }

@@ -329,7 +329,7 @@ class TransitionLine(
                 val content = VBox()
                 onEnyMenuItem.graphic = content
                 content.children.add(Text("<Else>"))
-                content.children.add(Text("Transition is activated if other are not activated"))
+                content.children.add(Text("Transition is activated if other are not"))
                 contextMenu.items.add(onEnyMenuItem)
 
                 val source = transition.onAnySource
