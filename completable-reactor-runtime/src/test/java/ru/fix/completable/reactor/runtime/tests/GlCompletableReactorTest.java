@@ -1,14 +1,15 @@
 package ru.fix.completable.reactor.runtime.tests;
 
+import lombok.Data;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.aggregating.profiler.NoopProfiler;
 import ru.fix.aggregating.profiler.ProfiledCall;
-import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
@@ -922,6 +923,204 @@ class GlCompletableReactorTest {
                     .complete(idProcessor3, 820, 514)
                     .complete(idProcessor4, 396, 475);
         }
+    }
+
+
+    @Data
+    static class OrElsePayload {
+        private Status request;
+        private List<Status> result = new ArrayList<>();
+
+        public OrElsePayload(Status request) {
+            this.request = request;
+        }
+
+        public enum Status {
+            FIRST, SECOND, THIRD, FOURTH
+        }
+    }
+
+    static class OrElseTransitionGraph extends Graph<OrElsePayload> {
+
+        Vertex resolveFlow = router(OrElsePayload::getRequest);
+
+        Vertex first =
+                handler(p ->
+                        CompletableFuture.completedFuture(OrElsePayload.Status.FIRST)
+                ).withRoutingMerger((p, status) -> {
+                    p.getResult().add(OrElsePayload.Status.FIRST);
+                    return status;
+                });
+
+        Vertex second =
+                handler(p ->
+                        CompletableFuture.completedFuture(OrElsePayload.Status.SECOND)
+                ).withRoutingMerger((p, status) -> {
+                    p.getResult().add(status);
+                    return status;
+                });
+
+        Vertex onElse =
+                handler(p ->
+                        CompletableFuture.completedFuture(p.getRequest())
+                ).withRoutingMerger((p, status) -> {
+                    p.getResult().add(status);
+                    return status;
+                });
+
+        Vertex end = mutator(p -> {});
+
+        {
+            payload()
+                    .handleBy(resolveFlow);
+
+            resolveFlow
+                    .on(OrElsePayload.Status.FIRST).handleBy(first)
+                    .onElse().handleBy(onElse)
+                    .on(OrElsePayload.Status.SECOND).handleBy(second);
+
+            first.onAny().handleBy(end);
+            second.onAny().handleBy(end);
+            onElse.onAny().handleBy(end);
+
+            end.onAny().complete();
+
+            coordinates()
+                .vx(end, 100, 320)
+                .vx(second, 276, 123, 183, 244);
+        }
+    }
+
+    @Test
+    public void orElseFlow_firstTransition_noOnElseTransition() throws Exception {
+        OrElseTransitionGraph graph= new OrElseTransitionGraph();
+        reactor.registerGraphIfAbsent(graph);
+
+        CompletableFuture<OrElsePayload> resultFuture =
+                reactor.submit(new OrElsePayload(OrElsePayload.Status.FIRST)).getResultFuture();
+
+        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+
+        assertEquals(1, payload.getResult().size());
+        assertEquals(payload.getResult().get(0), OrElsePayload.Status.FIRST);
+    }
+
+    @Test
+    public void orElseFlow_secondTransition_noOnElseTransition() throws Exception {
+        OrElseTransitionGraph graph= new OrElseTransitionGraph();
+        reactor.registerGraphIfAbsent(graph);
+
+        CompletableFuture<OrElsePayload> resultFuture =
+                reactor.submit(new OrElsePayload(OrElsePayload.Status.SECOND)).getResultFuture();
+
+        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+
+        assertEquals(1, payload.getResult().size());
+        assertEquals(payload.getResult().get(0), OrElsePayload.Status.SECOND);
+    }
+
+    @Test
+    public void orElseFlow_thirdTransition_mustMakeOnElseTransition() throws Exception {
+        OrElseTransitionGraph graph= new OrElseTransitionGraph();
+        reactor.registerGraphIfAbsent(graph);
+
+        CompletableFuture<OrElsePayload> resultFuture =
+                reactor.submit(new OrElsePayload(OrElsePayload.Status.THIRD)).getResultFuture();
+
+        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+
+        assertEquals(1, payload.getResult().size());
+        assertEquals(payload.getResult().get(0), OrElsePayload.Status.THIRD);
+    }
+
+    @Test
+    public void orElseFlow_fourthTransition_mustMakeOnElseTransition() throws Exception {
+        OrElseTransitionGraph graph= new OrElseTransitionGraph();
+        reactor.registerGraphIfAbsent(graph);
+
+        CompletableFuture<OrElsePayload> resultFuture =
+                reactor.submit(new OrElsePayload(OrElsePayload.Status.FOURTH)).getResultFuture();
+
+        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+
+        assertEquals(1, payload.getResult().size());
+        assertEquals(payload.getResult().get(0), OrElsePayload.Status.FOURTH);
+    }
+
+    @Test
+    public void orElseFlow_nullTransitionStatus_mustMakeOnElseTransition() throws Exception {
+        OrElseTransitionGraph graph= new OrElseTransitionGraph();
+        reactor.registerGraphIfAbsent(graph);
+
+        CompletableFuture<OrElsePayload> resultFuture =
+                reactor.submit(new OrElsePayload(null)).getResultFuture();
+
+        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+
+        assertEquals(1, payload.getResult().size());
+        assertNull(payload.getResult().get(0));
+    }
+
+    static class SingleOrElseGraph extends Graph<OrElsePayload> {
+
+        Vertex resolveFlow = router(OrElsePayload::getRequest);
+
+        Vertex onElse =
+                handler(p ->
+                        CompletableFuture.completedFuture(p.getRequest())
+                ).withRoutingMerger((p, status) -> {
+                    p.getResult().add(status);
+                    return status;
+                });
+
+        {
+            payload()
+                    .handleBy(resolveFlow);
+
+            resolveFlow
+                    .onElse().handleBy(onElse);
+
+            onElse.onAny().complete();
+        }
+    }
+
+    @Test
+    public void singleOnElseTransition_mustMakeTransitionCorrectly() throws Exception {
+        SingleOrElseGraph graph = new SingleOrElseGraph();
+        reactor.registerGraphIfAbsent(graph);
+
+        CompletableFuture<OrElsePayload> resultFuture =
+                reactor.submit(new OrElsePayload(OrElsePayload.Status.FOURTH)).getResultFuture();
+
+        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+
+        assertEquals(1, payload.getResult().size());
+        assertEquals(payload.getResult().get(0), OrElsePayload.Status.FOURTH);
+    }
+
+    static class OnElseErrorFlow extends Graph<OrElsePayload> {
+        Vertex resolveFlow = router(OrElsePayload::getRequest);
+
+        Vertex onElse = mutator(p -> {});
+
+        Vertex onAny = mutator(p -> {});
+
+        {
+            payload()
+                    .handleBy(resolveFlow);
+
+            resolveFlow
+                    .onElse().handleBy(onElse)
+                    .onAny();
+
+            onElse.onAny().complete();
+            onAny.onAny().complete();
+        }
+    }
+
+    @Test
+    public void defineOnAnyAndOnElseFlow_mustCompleteWithException() {
+        assertThrows(IllegalArgumentException.class, OnElseErrorFlow::new);
     }
 
     @Test

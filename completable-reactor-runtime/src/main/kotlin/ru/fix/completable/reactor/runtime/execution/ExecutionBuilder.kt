@@ -363,7 +363,9 @@ class ExecutionBuilder(
             context: ExecutionBuilder.MergePayloadContext
     ): Boolean {
         return transition.isOnElse &&
-                mergerablePvx.outgoingTransitions.all { !it.mergeStatuses.contains(context.mergeResult) }
+                mergerablePvx.outgoingTransitions.asSequence()
+                        .filter { !it.isOnElse }
+                        .all { !it.mergeStatuses.contains(context.mergeResult) }
     }
 
 
