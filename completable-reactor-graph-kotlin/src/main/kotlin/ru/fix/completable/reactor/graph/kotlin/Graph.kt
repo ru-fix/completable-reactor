@@ -1,12 +1,12 @@
 package ru.fix.completable.reactor.graph.kotlin
 
+import kotlinx.coroutines.experimental.future.future
 import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.kotlin.internal.GlMergerBuilder
+import ru.fix.completable.reactor.graph.runtime.GlGraph
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
-import kotlinx.coroutines.experimental.future.future
-import ru.fix.completable.reactor.graph.runtime.GlGraph
 
 open class Graph<Payload> : Graphable {
 
