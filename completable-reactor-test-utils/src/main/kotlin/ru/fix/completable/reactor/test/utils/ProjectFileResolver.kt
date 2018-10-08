@@ -12,9 +12,9 @@ private val log = KotlinLogging.logger {}
 class ProjectFileResolver {
 
     companion object {
-        val ROOT_PROJECT_FOLDER_SUB_PATH = FileSystems.getDefault().separator + "completable-reactor" + FileSystems.getDefault().separator
-    }
+        val RESOLVER_PROJECT_FOLDER_SUB_PATH = FileSystems.getDefault().separator + "completable-reactor-"
 
+    }
 
     /**
      * @param path unix style path
@@ -26,7 +26,7 @@ class ProjectFileResolver {
                 .let { File(it).absolutePath }
                 .let {
                     Paths.get(
-                            it.substring(0, it.lastIndexOf(ROOT_PROJECT_FOLDER_SUB_PATH) + ROOT_PROJECT_FOLDER_SUB_PATH.length),
+                            it.substring(0, it.lastIndexOf(RESOLVER_PROJECT_FOLDER_SUB_PATH)),
                             path.replace("/", FileSystems.getDefault().separator)
                     )
                 }
