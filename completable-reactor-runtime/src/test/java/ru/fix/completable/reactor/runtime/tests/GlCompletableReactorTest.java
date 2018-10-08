@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.aggregating.profiler.NoopProfiler;
 import ru.fix.aggregating.profiler.ProfiledCall;
-import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
@@ -1075,8 +1075,8 @@ class GlCompletableReactorTest {
             fail("Execution should complete by timeout");
         } catch (Exception exc) {
             assertTrue(exc.getMessage().contains("TimeoutException"));
-            assertTrue(exc.getMessage().contains("handlingFuture={isDone=true,isExc=false}"));
-            assertTrue(exc.getMessage().contains("handlingFuture={isDone=false,isExc=false}"));
+            assertTrue(exc.getMessage().contains("\"handlingFuture\":\"(done:true, excptn:false)\""));
+            assertTrue(exc.getMessage().contains("\"handlingFuture\":\"(done:false, excptn:false)\""));
         }
     }
 
