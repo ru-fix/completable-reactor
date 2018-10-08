@@ -58,8 +58,6 @@ class Vertex {
     }
 
     fun onElse(): TransitionBuilder {
-        addEmptyMergerIfNotExists()
-
         val transition = GlTransition()
         transition.isOnElse = true
 
