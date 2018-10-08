@@ -18,6 +18,9 @@ dependencies {
 
     compile(Libs.springBeans)
     compile(Libs.springContext)
+
+    compile(Libs.lombok)
+
     testCompile(Libs.springTest)
 
 
