@@ -31,6 +31,7 @@ data class TransitionDocumentation(
 data class Transition(
         var mergeStatuses: Set<String> = emptySet(),
         var isOnAny: Boolean = false,
+        var isOnElse: Boolean = false,
         var isComplete: Boolean = false,
 
         val transitionDocs: MutableList<TransitionDocumentation> = ArrayList(),

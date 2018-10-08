@@ -17,6 +17,7 @@ public class UserProfileManager {
     public static final Long USER_ID_JOHN = 1L;
     public static final Long USER_ID_JACK = 2L;
     public static final Long USER_ID_INVALID = 3L;
+    public static final Long USER_WITH_NO_WALLET = 4L;
 
 
     /**
@@ -30,7 +31,11 @@ public class UserProfileManager {
             new UserProfile()
                     .setUserId(USER_ID_JACK)
                     .setName("Jack")
-                    .setBlocked(true))
+                    .setBlocked(true),
+            new UserProfile()
+                    .setUserId(USER_WITH_NO_WALLET)
+                    .setName("Bob")
+                    .setBlocked(false))
             .collect(Collectors.toMap(info -> info.userId, info -> info));
 
 

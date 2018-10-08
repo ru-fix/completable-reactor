@@ -10,6 +10,7 @@ import ru.fix.completable.reactor.runtime.debug.DebugSerializer
 import ru.fix.completable.reactor.runtime.tracing.Tracer
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import kotlin.collections.ArrayList
 
 typealias SubgraphRunner = (Any?) -> CompletableFuture<Any?>
 
@@ -213,6 +214,9 @@ class ExecutionBuilder(
 
                                         TransitionPayloadContext(payload = context.payload)
 
+                                    } else if (isOnElse(transition, mergerablePvx, context)) {
+                                        TransitionPayloadContext(payload = context.payload)
+
                                     } else {
                                         TransitionPayloadContext(
                                                 payload = context.payload,
@@ -255,6 +259,11 @@ class ExecutionBuilder(
                                         MergePayloadContext(
                                                 payload = context.payload,
                                                 mergeResult = context.mergeResult)
+
+                                    } else if (isOnElse(transition, mergerablePvx, context)) {
+                                      MergePayloadContext(
+                                              payload = context.payload,
+                                              mergeResult = context.mergeResult)
                                     } else {
                                         MergePayloadContext(isDeadTransition = true)
                                     }
@@ -344,6 +353,20 @@ class ExecutionBuilder(
                 processingVertices.values)
     }
 
+    /**
+     * Check if transition is marked as `onElse`
+     * and merge results are not satisfied by another existing transitions
+     */
+    private fun isOnElse(
+            transition: GlTransition,
+            mergerablePvx: ProcessingVertex,
+            context: ExecutionBuilder.MergePayloadContext
+    ): Boolean {
+        return transition.isOnElse &&
+                mergerablePvx.outgoingTransitions.asSequence()
+                        .filter { !it.isOnElse }
+                        .all { !it.mergeStatuses.contains(context.mergeResult) }
+    }
 
     fun <PayloadType> dumpExecutionState(execution: ReactorGraphExecution<PayloadType>): String {
         try {

@@ -160,6 +160,7 @@ vertexTransitionBlock
 vertexTransition
     :   vertexTransitionOn
     |   vertexTransitionOnAny
+    |   vertexTransitionOnElse
     ;
 
 vertexTransitionOn
@@ -167,6 +168,10 @@ vertexTransitionOn
     ;
 vertexTransitionOnAny
     :   DOT 'onAny' LPAREN RPAREN transitionAction
+    ;
+
+vertexTransitionOnElse
+    :   DOT 'onElse' LPAREN RPAREN transitionAction
     ;
 
 transitionAction
@@ -241,7 +246,6 @@ anyGraphKeyword
     |   'ct'
     |   ROUTER
     |   MUTATOR
-    |   CLONE
     ;
 
 DecimalNumeral : [0-9_]+;
