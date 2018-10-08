@@ -43,25 +43,67 @@ class Vertex {
     }
 
     fun onAny(): TransitionBuilder {
-        //When user doesn't provide any merger but vertex participate in onAny transition
-        //then vertex is effectively generates default empty merger
-        if((vx.handler != null || vx.subgraphPayloadBuilder != null) && vx.merger == null){
-            vx.merger = GlEmptyMerger()
-        }
-
-        //Check that vertex have merger or router
-        if(vx.merger == null && vx.router == null){
-            throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} is used as source of onAny() transition but does not have merger or router.")
-        }
+        addEmptyMergerIfNotExists()
 
         val transition = GlTransition()
         transition.isOnAny = true
+
+        checkForIncompatibleTransitions(transition)
 
         return GlTransitionBuilder(
                 this,
                 transition,
                 vx.transitions
         )
+    }
+
+    fun onElse(): TransitionBuilder {
+        val transition = GlTransition()
+        transition.isOnElse = true
+
+        checkForIncompatibleTransitions(transition)
+
+        return GlTransitionBuilder(
+                this,
+                transition,
+                vx.transitions
+        )
+    }
+
+    /**
+     * When user doesn't provide any merger but vertex participate in onAny transition
+     * then vertex is effectively generates default empty merger
+     */
+    private fun addEmptyMergerIfNotExists() {
+        if((vx.handler != null || vx.subgraphPayloadBuilder != null) && vx.merger == null){
+            vx.merger = GlEmptyMerger()
+        }
+    }
+
+    /**
+     * -
+     * -check that vertex is transition onElse or onAny has merger or router
+     * -check that vertex doesn't have two transitions onAny and onElse
+     */
+    private fun checkForIncompatibleTransitions(newTransition: GlTransition) {
+        if(vx.merger == null && vx.router == null) {
+            val name = if (newTransition.isOnAny) "onAny()" else "onElse()"
+            throw IllegalArgumentException("" +
+                    "Vertex ${vx.name} is used as source of $name transition but does not have merger or router.")
+        }
+
+
+        var hasIncompatibleTransition = false
+        vx.transitions.forEach { transition ->
+            if (transition.isOnAny && newTransition.isOnElse) {
+               hasIncompatibleTransition = true
+            } else if (transition.isOnElse && newTransition.isOnAny) {
+                hasIncompatibleTransition = true
+            }
+        }
+        if (hasIncompatibleTransition)  {
+            throw IllegalArgumentException(
+                    "Vertex ${vx.name} is used together incompatible transitions onElse and onAny.")
+        }
     }
 }

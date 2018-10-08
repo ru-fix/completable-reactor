@@ -152,6 +152,11 @@ class JavaSourceParser(private val listener: Listener) {
                                     transition.onAnySource = sourceFromToken(this.start, filePath)
                                     transitionAction()
 
+                                } ?: it.vertexTransitionOnElse()?.run {
+                                    transition.isOnElse = true
+                                    transition.onAnySource = sourceFromEndOfToken(this.start, filePath)
+                                    transitionAction()
+
                                 } ?: it.vertexTransitionOn().run {
                                     val status = transitionCondition().Identifier().last().text
                                     transition.mergeStatuses = setOf(status)

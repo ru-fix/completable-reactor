@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import ru.fix.completable.reactor.example.services.*
 import ru.fix.completable.reactor.example.services.UserProfileManager.Status
-import ru.fix.completable.reactor.graph.kotlin.*
+import ru.fix.completable.reactor.graph.kotlin.Graph
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import javax.annotation.PostConstruct
 
@@ -102,6 +102,15 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 response.remoteServiceNotificationResult = it
             }
 
+    val notifyRemotePartnerAboutWithdrawProblem =
+            suspendHandler {
+                remotePartnerNotificator.notifyRemotePartner(
+                        "withdraw problem with user ${request.userId}, status ${response.status}"
+                )
+            }.withMerger {
+                response.remoteServiceNotificationResult = it
+            }
+
     val withdrawMoney =
             handler {
                 bank.withdrawMoney(
@@ -111,20 +120,14 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
             }.withRoutingMerger {
                 //update new amount
                 withdraw ->
-                when (withdraw.getStatus()) {
-                    Bank.Withdraw.Status.WALLET_NOT_FOUND,
-                    Bank.Withdraw.Status.USER_IS_BLOCKED -> {
-                        response.status = withdraw.status
-                        Flow.STOP
-                    }
-                    Bank.Withdraw.Status.OK -> {
-                        response.newAmount = withdraw.getNewAmount()
-                        response.status = Bank.Withdraw.Status.OK
-                        Flow.CONTINUE
-                    }
 
-                    else -> throw IllegalArgumentException("Status: " + withdraw.status)
+                response.status = withdraw.status
+                if (withdraw.status == Bank.Withdraw.Status.OK) {
+                    response.newAmount = withdraw.newAmount
+                    response.status = Bank.Withdraw.Status.OK
                 }
+
+                return@withRoutingMerger withdraw.status
             }
 
     val loadServiceInfo =
@@ -208,7 +211,11 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 .onAny().mergeBy(withdrawMoney)
 
         withdrawMoney
-                .onAny().handleBy(logTransaction)
+                .on(Bank.Withdraw.Status.OK).handleBy(logTransaction)
+                .onElse().handleBy(notifyRemotePartnerAboutWithdrawProblem)
+
+        notifyRemotePartnerAboutWithdrawProblem
+                .onAny().handleBy(logActionToUserJournal)
 
         logTransaction
                 .onAny().handleBy(logActionToUserJournal)
@@ -223,28 +230,20 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                 .onAny().complete()
 
         coordinates()
-                .payload(554, 59)
-                .handler(loadServiceInfo, 548, 122)
-                .handler(loadUserProfile, 811, 118)
-                .handler(logActionToUserJournal, 787, 749)
-                .handler(logTransaction, 536, 622)
-                .handler(logTransaction2, 962, 592)
-                .handler(notifyRemotePartner, 340, 460)
-                .handler(webNotification, 1115, 511)
-                .handler(withdrawMoney, 576, 477)
-                .subgraph(bonusPurchaseSubgraph, 698, 889)
-                .router(checkTrialPeriod, 711, 326)
-                .merger(bonusPurchaseSubgraph, 866, 951)
-                .merger(loadServiceInfo, 693, 252)
-                .merger(loadUserProfile, 814, 189)
-                .merger(logActionToUserJournal, 867, 828)
-                .merger(logTransaction, 585, 697)
-                .merger(logTransaction2, 1023, 661)
-                .merger(notifyRemotePartner, 455, 520)
-                .merger(withdrawMoney, 582, 557)
-                .complete(bonusPurchaseSubgraph, 863, 1015)
-                .complete(loadServiceInfo, 565, 281)
-                .complete(loadUserProfile, 924, 257);
-
+                .pd(556, 19)
+                .vx(checkTrialPeriod, 711, 326)
+                .vx(webNotification, 1115, 511)
+                .vx(bonusPurchaseSubgraph, 698, 889, 866, 951)
+                .vx(loadServiceInfo, 548, 122, 693, 252)
+                .vx(loadUserProfile, 811, 118, 814, 189)
+                .vx(logActionToUserJournal, 787, 749, 867, 828)
+                .vx(logTransaction, 701, 590, 807, 677)
+                .vx(logTransaction2, 962, 592, 1023, 661)
+                .vx(notifyRemotePartner, 340, 460, 455, 520)
+                .vx(notifyRemotePartnerAboutWithdrawProblem, 191, 618, 363, 766)
+                .vx(withdrawMoney, 576, 477, 582, 557)
+                .ct(bonusPurchaseSubgraph, 863, 1015)
+                .ct(loadServiceInfo, 565, 281)
+                .ct(loadUserProfile, 924, 257)
     }
 }
