@@ -243,8 +243,10 @@ Result: Successful purchase for 12.0
 * Read graph description in nodes menu generated directly from code comments 
 ![](docs/flight-graph.png?raw=true)
 
-#### Trace graph execution and monitor Graph and Vertices performance 
-
+#### Monitor graph execution
+* Monitor graph and individual vertex performance   
+* Trace how graph execute through individual vertex by enabling tracing for particular payloads 
+* Check reactor reports about vertices that executed too long, did not complete on timeout or hang
 
 
 ## Completable Reactor model
