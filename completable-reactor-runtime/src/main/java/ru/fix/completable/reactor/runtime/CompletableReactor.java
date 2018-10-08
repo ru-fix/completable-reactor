@@ -18,7 +18,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
 /**
@@ -632,14 +635,14 @@ public class CompletableReactor implements AutoCloseable {
                                 new TimeoutException("" +
                                         "Response for payload " + payload +
                                         " took more than " + timeoutMs + " ms.\n" +
-                                        "Execution state: " + dumpExecutionState(execution)));
+                                        dumpExecutionState(execution)));
                     }
                     if (!execution.getChainExecutionFuture().isDone()) {
                         execution.getChainExecutionFuture().completeExceptionally(
                                 new TimeoutException("" +
                                         "Execution of payload " + payload +
                                         " took more than " + timeoutMs + " ms.\n" +
-                                        "Execution state: " + dumpExecutionState(execution)));
+                                        dumpExecutionState(execution)));
                     }
                 },
                 timeoutMs,

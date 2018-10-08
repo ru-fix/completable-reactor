@@ -368,24 +368,49 @@ class ExecutionBuilder(
                         .all { !it.mergeStatuses.contains(context.mergeResult) }
     }
 
-
-    private fun dumpFutureState(future: CompletableFuture<*>): String {
-        return "{isDone=${future.isDone},isExc=${future.isCompletedExceptionally}}"
-    }
-
     fun <PayloadType> dumpExecutionState(execution: ReactorGraphExecution<PayloadType>): String {
         try {
 
-            //TODO make pretty dump, current version hard to read
-            return (execution.debugProcessingVertexGraphState as Collection<ProcessingVertex>).asSequence()
-                    .joinToString(",\n", "\n", "\n") {
-                        "${it.vertex.name}={\n" +
-                                "handlingFuture=${dumpFutureState(it.handlingFeature)},\n" +
-                                "mergingFuture=${dumpFutureState(it.mergingFeature)},\n" +
-                                "incomingHandlingFLows={${it.incomingHandlingFlows.joinToString { dumpFutureState(it.feature) }}},\n" +
-                                "incomingMergingFLows={${it.incomingMergingFlows.joinToString { dumpFutureState(it.feature) }}}\n" +
-                                "}"
-                    }
+            val possiblyExecuting = mutableListOf<ProcessingVertex>()
+            val completed = mutableListOf<ProcessingVertex>()
+            val others = mutableListOf<ProcessingVertex>()
+
+            val state = execution.debugProcessingVertexGraphState as Collection<ProcessingVertex>
+
+            state.forEach { vx ->
+                when {
+                    vx.handlingFeature.isDone
+                            && vx.mergingFeature.isDone -> completed.add(vx)
+
+                    vx.incomingHandlingFlows.all { it.feature.isDone }
+                            && vx.incomingMergingFlows.all { it.feature.isDone } -> possiblyExecuting.add(vx)
+
+                    else ->
+                        others.add(vx)
+                }
+            }
+
+            fun dump(future: CompletableFuture<*>) =
+                    "\"(done:${future.isDone}, excptn:${future.isCompletedExceptionally})\""
+
+
+            fun dump(vertices: Collection<ProcessingVertex>): String {
+                return vertices.joinToString(",\n", "\n", "\n") { vx ->
+                    "\"${vx.vertex.name}\":{\n" +
+                            "\"handlingFuture\":${dump(vx.handlingFeature)},\n" +
+                            "\"mergingFuture\":${dump(vx.mergingFeature)},\n" +
+                            "\"incomingHandlingFlows\":[${vx.incomingHandlingFlows.joinToString { dump(it.feature) }}],\n" +
+                            "\"incomingMergingFlows\":[${vx.incomingMergingFlows.joinToString { dump(it.feature) }}]\n" +
+                            "}"
+                }
+            }
+
+            return "{\n" +
+                    "\"possiblyExecuting\": {${dump(possiblyExecuting)}},\n" +
+                    "\"completed\": {${dump(completed)}},\n" +
+                    "\"others\": {${dump(others)}}\n" +
+                    "}"
+
         } catch (exc: Exception) {
             log.error(exc) { "Failed to dump state." }
             return "(failed to dump state)"
