@@ -1274,8 +1274,8 @@ class GlCompletableReactorTest {
             fail("Execution should complete by timeout");
         } catch (Exception exc) {
             assertTrue(exc.getMessage().contains("TimeoutException"));
-            assertTrue(exc.getMessage().contains("handlingFuture={isDone=true,isExc=false}"));
-            assertTrue(exc.getMessage().contains("handlingFuture={isDone=false,isExc=false}"));
+            assertTrue(exc.getMessage().contains("\"handlingFuture\":\"(done:true, excptn:false)\""));
+            assertTrue(exc.getMessage().contains("\"handlingFuture\":\"(done:false, excptn:false)\""));
         }
     }
 
