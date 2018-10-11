@@ -27,6 +27,8 @@ dependencies {
     compile(Libs.slf4j_simple)
 }
 
+//TODO: deploy to maven central uberjar with included dependencies
+
 tasks {
     withType<ShadowJar> {
         manifest{
