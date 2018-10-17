@@ -11,7 +11,7 @@ import ru.fix.completable.reactor.graph.runtime.GlVertex
 class Vertex {
 
     // Field accessed via reflection by field name
-    private var vx = GlVertex()
+    private var vx = GlVertex(this)
 
     fun on(mergeStatus: Enum<*>): TransitionBuilder {
         if(vx.merger == null && vx.router == null){

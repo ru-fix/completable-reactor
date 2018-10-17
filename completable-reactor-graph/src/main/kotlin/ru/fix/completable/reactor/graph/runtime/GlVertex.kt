@@ -1,14 +1,16 @@
 package ru.fix.completable.reactor.graph.runtime
 
-import ru.fix.completable.reactor.graph.Handler
-import ru.fix.completable.reactor.graph.Router
-import ru.fix.completable.reactor.graph.RoutingMerger
-import ru.fix.completable.reactor.graph.Subgraph
+import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.GlTransition
 import java.util.*
 
-class GlVertex{
+class GlVertex (val sourceVertex: Vertex){
 
+    /**
+     * Name is assigned when vertex participates in incoming transition.
+     * If Name is NULL this means that there were no incoming transition to vertex.
+     * That could happen if vertex was initialized, but never used in any incoming transitions.
+     */
     @JvmField
     var name: String? = null
 
