@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.runtime
 
 import mu.KotlinLogging
 import ru.fix.completable.reactor.graph.Graphable
+import ru.fix.completable.reactor.graph.internal.BuilderContext
 import ru.fix.completable.reactor.graph.internal.InternalGlAccessor
 import ru.fix.completable.reactor.graph.internal.ModelBuilder
 import ru.fix.completable.reactor.graph.runtime.GlGraph
@@ -19,8 +20,15 @@ class GraphBuilder {
 
         val glGraph = InternalGlAccessor.graph(graph)
 
-        if (glGraph.vertices.any { it.name == null }) {
-            throw IllegalArgumentException("Detected illegal vertex that does not have name.")
+        glGraph.vertices.filter { it.name == null }.takeIf { it.isNotEmpty() }?.let { unusedVertices ->
+
+            val contex = BuilderContext().apply { setGraph(graph, glGraph) }
+            val verticesNames = unusedVertices.map { contex.resolveVertexName(it.sourceVertex) }.joinToString()
+
+            throw IllegalArgumentException("" +
+                    "Detected illegal vertices that does not have names and probably was not properly initialized." +
+                    " Could you please check if this vertices participates in any transitions of the graph:" +
+                    " $verticesNames")
         }
 
         glGraph.vertices

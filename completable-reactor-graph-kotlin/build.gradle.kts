@@ -21,4 +21,5 @@ dependencies {
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
     testRuntimeOnly(Libs.slf4j_simple)
+    testImplementation(Libs.hamcrest)
 }
