@@ -1,11 +1,7 @@
 package ru.fix.completable.reactor.example.flight.ticket;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
-import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.graph.Graph;
 import ru.fix.completable.reactor.graph.Vertex;
-import ru.fix.completable.reactor.runtime.CompletableReactor;
 
 import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
@@ -158,3 +154,4 @@ class FlightPlanner {
     }
 }
 // end::services[]
+
