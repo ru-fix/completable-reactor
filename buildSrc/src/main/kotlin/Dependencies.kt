@@ -9,8 +9,8 @@ object Vers {
     val dynamicProperty = "1.0.5"
 
     val spring = "5.1.0.RELEASE"
-
     val kotlinCoroutines = "0.30.0"
+    val asciidoctor = "1.5.9.1"
 }
 
 object Libs {
@@ -53,4 +53,7 @@ object Libs {
     val antlrAll = "org.antlr:antlr4:4.7.1"
 
     val hamcrest = "org.hamcrest:hamcrest-all:1.3"
+
+    val asciidoctor = "org.asciidoctor:asciidoctor-gradle-plugin:${Vers.asciidoctor}"
+
 }
