@@ -10,36 +10,7 @@ import ru.fix.completable.reactor.runtime.CompletableReactor;
 import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
 
-// tag::payload[]
-//
-// In given example flight ticket purchase process implemented as a reactor graph.
-// Payload contains request, response and intermediate data for computation.
-//
-@Data
-class BuyFightTicketPayload {
-    @Data
-    @Accessors(chain = true)
-    class Request {
-        String destination;
-        String name;
-        Integer age;
-    }
-
-    @Data
-    class IntermediateData {
-        BigDecimal price;
-    }
-
-    @Data
-    class Response {
-        String operationResult;
-    }
-
-    final Request request = new Request();
-    final IntermediateData intermediateData = new IntermediateData();
-    final Response response = new Response();
-}
-// end::payload[]
+// tag::graph[]
 //
 // All graph classes extends base Graph<Payload>
 //
@@ -76,7 +47,7 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
             handler(
                     payload -> flightPlanner.reserveSeat()
             ).withRoutingMerger((payload, isSeatReserved) -> {
-                if(!isSeatReserved){
+                if (!isSeatReserved) {
                     payload.response.operationResult = "Seat reservation failed";
                     return Flow.DENY_PURCHASE;
                 } else {
@@ -147,31 +118,10 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                 .ct(sendDenyEmail, 47, 420)
                 .ct(sendSuccessEmail, 308, 419);
     }
-
-    //
-    //  Single instance of completable reactor created for application.
-    //  Graph registered withing reactor.
-    //  Payload submitted to reactor and received as a result of computation.
-    //
-    public static void main(String[] args) {
-        CompletableReactor completableReactor = new CompletableReactor(new AggregatingProfiler());
-        completableReactor.registerGraph(new BuyFlightTicketGraph());
-
-        BuyFightTicketPayload payload = new BuyFightTicketPayload();
-        payload.request
-                .setAge(30)
-                .setName("John Smith")
-                .setDestination("New York");
-
-        CompletableFuture<BuyFightTicketPayload> future = completableReactor.submit(payload).getResultFuture();
-
-        BuyFightTicketPayload resultPayload = future.join();
-
-        System.out.println("Result: " + resultPayload.response.operationResult);
-    }
-
 }
+// end::graph[]
 
+// tag::services[]
 //
 //  Simple implementation of external async services that being used by the graph.
 //
@@ -207,3 +157,4 @@ class FlightPlanner {
         });
     }
 }
+// end::services[]

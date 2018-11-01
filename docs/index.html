@@ -640,42 +640,15 @@ same time provides ability for fast code parsing and visualization as a graph of
 <h3 id="_write_simple_graph_application">Write simple graph application</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">//</span>
-<span class="comment">// In given example flight ticket purchase process implemented as a reactor graph.</span>
-<span class="comment">// Payload contains request, response and intermediate data for computation.</span>
-<span class="comment">//</span>
-<span class="annotation">@Data</span>
-<span class="type">class</span> <span class="class">BuyFightTicketPayload</span> {
-    <span class="annotation">@Data</span>
-    <span class="annotation">@Accessors</span>(chain = <span class="predefined-constant">true</span>)
-    <span class="type">class</span> <span class="class">Request</span> {
-        <span class="predefined-type">String</span> destination;
-        <span class="predefined-type">String</span> name;
-        <span class="predefined-type">Integer</span> age;
-    }
-
-    <span class="annotation">@Data</span>
-    <span class="type">class</span> <span class="class">IntermediateData</span> {
-        <span class="predefined-type">BigDecimal</span> price;
-    }
-
-    <span class="annotation">@Data</span>
-    <span class="type">class</span> <span class="class">Response</span> {
-        <span class="predefined-type">String</span> operationResult;
-    }
-
-    <span class="directive">final</span> Request request = <span class="keyword">new</span> Request();
-    <span class="directive">final</span> IntermediateData intermediateData = <span class="keyword">new</span> IntermediateData();
-    <span class="directive">final</span> Response response = <span class="keyword">new</span> Response();
-}</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java">Unresolved directive in index.adoc - include::../completable-reactor-example/src/main/java/ru/fix/completable/reactor/example/flight/ticket/BuyFlightTicketPayload.java[tags=payload]</code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>All graph classes extends base <code>Graph&lt;Payload&gt;</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">class</span> <span class="class">BuyFlightTicketGraph</span> <span class="directive">extends</span> Graph&lt;BuyFightTicketPayload&gt; {
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">//</span>
+<span class="comment">// All graph classes extends base Graph&lt;Payload&gt;</span>
+<span class="comment">//</span>
+<span class="directive">public</span> <span class="type">class</span> <span class="class">BuyFlightTicketGraph</span> <span class="directive">extends</span> Graph&lt;BuyFightTicketPayload&gt; {
     <span class="comment">//</span>
     <span class="comment">// During execution graph uses external async services as a building blocks to create complex business process.</span>
     <span class="comment">//</span>
@@ -708,7 +681,7 @@ same time provides ability for fast code parsing and visualization as a graph of
             handler(
                     payload -&gt; flightPlanner.reserveSeat()
             ).withRoutingMerger((payload, isSeatReserved) -&gt; {
-                <span class="keyword">if</span>(!isSeatReserved){
+                <span class="keyword">if</span> (!isSeatReserved) {
                     payload.response.operationResult = <span class="string"><span class="delimiter">&quot;</span><span class="content">Seat reservation failed</span><span class="delimiter">&quot;</span></span>;
                     <span class="keyword">return</span> Flow.DENY_PURCHASE;
                 } <span class="keyword">else</span> {
@@ -767,41 +740,52 @@ same time provides ability for fast code parsing and visualization as a graph of
 
         sendDenyEmail
                 .onAny().complete();
+
+        coordinates()
+                .pd(<span class="integer">89</span>, -<span class="integer">126</span>)
+                .vx(askForPrice, <span class="integer">219</span>, -<span class="integer">60</span>, <span class="integer">205</span>, <span class="integer">45</span>)
+                .vx(reserveSeat, <span class="integer">18</span>, -<span class="integer">60</span>, <span class="integer">90</span>, <span class="integer">12</span>)
+                .vx(sendDenyEmail, <span class="integer">6</span>, <span class="integer">304</span>, <span class="integer">54</span>, <span class="integer">368</span>)
+                .vx(sendSuccessEmail, <span class="integer">248</span>, <span class="integer">309</span>, <span class="integer">312</span>, <span class="integer">369</span>)
+                .vx(withdrawMoney, <span class="integer">116</span>, <span class="integer">145</span>, <span class="integer">113</span>, <span class="integer">218</span>)
+                .ct(reserveSeat, -<span class="integer">67</span>, <span class="integer">66</span>)
+                .ct(sendDenyEmail, <span class="integer">47</span>, <span class="integer">420</span>)
+                .ct(sendSuccessEmail, <span class="integer">308</span>, <span class="integer">419</span>);
     }
 }</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>Single instance of completable reactor created for application.
-Graph registered withing reactor.
-Payload submitted to reactor and received as a result of computation.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">    <span class="comment">//</span>
+    <span class="comment">//  Single instance of completable reactor created for application.</span>
+    <span class="comment">//  Graph registered withing reactor.</span>
+    <span class="comment">//  Payload submitted to reactor and received as a result of computation.</span>
+    <span class="comment">//</span>
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        CompletableReactor completableReactor = <span class="keyword">new</span> CompletableReactor(<span class="keyword">new</span> AggregatingProfiler());
+        completableReactor.registerGraph(<span class="keyword">new</span> BuyFlightTicketGraph());
+
+        BuyFightTicketPayload payload = <span class="keyword">new</span> BuyFightTicketPayload();
+        payload.request
+                .setAge(<span class="integer">30</span>)
+                .setName(<span class="string"><span class="delimiter">&quot;</span><span class="content">John Smith</span><span class="delimiter">&quot;</span></span>)
+                .setDestination(<span class="string"><span class="delimiter">&quot;</span><span class="content">New York</span><span class="delimiter">&quot;</span></span>);
+
+        CompletableFuture&lt;BuyFightTicketPayload&gt; future = completableReactor.submit(payload).getResultFuture();
+
+        BuyFightTicketPayload resultPayload = future.join();
+
+        <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Result: </span><span class="delimiter">&quot;</span></span> + resultPayload.response.operationResult);
+    }</code></pre>
+</div>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-    CompletableReactor completableReactor = <span class="keyword">new</span> CompletableReactor(<span class="keyword">new</span> AggregatingProfiler());
-    completableReactor.registerGraph(<span class="keyword">new</span> BuyFlightTicketGraph());
-
-    BuyFightTicketPayload payload = <span class="keyword">new</span> BuyFightTicketPayload();
-    payload.request
-            .setAge(<span class="integer">30</span>)
-            .setName(<span class="string"><span class="delimiter">&quot;</span><span class="content">John Smith</span><span class="delimiter">&quot;</span></span>)
-            .setDestination(<span class="string"><span class="delimiter">&quot;</span><span class="content">New York</span><span class="delimiter">&quot;</span></span>);
-
-    CompletableFuture&lt;BuyFightTicketPayload&gt; future = completableReactor.submit(payload).getResultFuture();
-
-    BuyFightTicketPayload resultPayload = future.join();
-
-    <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Result: </span><span class="delimiter">&quot;</span></span> + resultPayload.response.operationResult);
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Simple implementation of external async services that being used by the graph.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">SalesDepartment</span> {
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">//</span>
+<span class="comment">//  Simple implementation of external async services that being used by the graph.</span>
+<span class="comment">//</span>
+<span class="type">class</span> <span class="class">SalesDepartment</span> {
     CompletableFuture&lt;<span class="predefined-type">BigDecimal</span>&gt; calculateCurrentPrice(<span class="predefined-type">String</span> destination) {
         <span class="keyword">return</span> CompletableFuture.supplyAsync(() -&gt; {
             <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">SalesDepartment: calculate current price for </span><span class="delimiter">&quot;</span></span> + destination);
@@ -809,6 +793,7 @@ Payload submitted to reactor and received as a result of computation.</p>
         });
     }
 }
+
 <span class="type">class</span> <span class="class">Bank</span> {
     CompletableFuture&lt;<span class="predefined-type">Boolean</span>&gt; withdrawMoney(<span class="predefined-type">BigDecimal</span> amount) {
         <span class="keyword">return</span> CompletableFuture.supplyAsync(() -&gt; {
@@ -817,11 +802,13 @@ Payload submitted to reactor and received as a result of computation.</p>
         });
     }
 }
+
 <span class="type">class</span> <span class="class">EmailClient</span> {
     CompletableFuture&lt;<span class="predefined-type">Void</span>&gt; sendEmail(<span class="predefined-type">String</span> message) {
         <span class="keyword">return</span> CompletableFuture.runAsync(() -&gt; <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">EmailClient: </span><span class="delimiter">&quot;</span></span> + message));
     }
 }
+
 <span class="type">class</span> <span class="class">FlightPlanner</span> {
     CompletableFuture&lt;<span class="predefined-type">Boolean</span>&gt; reserveSeat() {
         <span class="keyword">return</span> CompletableFuture.supplyAsync(() -&gt; {
@@ -829,7 +816,8 @@ Payload submitted to reactor and received as a result of computation.</p>
             <span class="keyword">return</span> <span class="predefined-constant">true</span>;
         });
     }
-}</code></pre>
+}
+<span class="comment">// end::services[]</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -945,7 +933,7 @@ into <code>.idea/modules.xml</code> configuration file.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-01 21:58:07 MSK
+Last updated 2018-11-01 22:33:20 MSK
 </div>
 </div>
 </body>
