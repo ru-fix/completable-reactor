@@ -196,10 +196,18 @@ subprojects {
 
 tasks {
     withType<AsciidoctorTask> {
-        sourceDir = project.file("docs")
+        sourceDir = project.file("asciidoc")
         resources(closureOf<CopySpec> {
             from("docs")
             include("**/*.png")
         })
+
+        doLast {
+            copy {
+                from(outputDir.resolve("html5"))
+                into(project.file("docs"))
+                include("index.html", "*.png")
+            }
+        }
     }
 }
