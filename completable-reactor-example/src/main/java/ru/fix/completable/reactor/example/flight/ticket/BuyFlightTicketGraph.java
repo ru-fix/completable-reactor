@@ -12,7 +12,8 @@ import java.util.concurrent.CompletableFuture;
 //
 public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     //
-    // During execution graph uses external async services as a building blocks to create complex business process.
+    // During execution graph uses external async services as a building blocks
+    // to create complex business process.
     //
     SalesDepartment salesDepartment = new SalesDepartment();
     Bank bank = new Bank();
@@ -20,7 +21,7 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     FlightPlanner flightPlanner = new FlightPlanner();
 
     //
-    //  Enum values identifies transitions in graph
+    // Enum values identifies transitions in graph
     //
     enum Flow {
         DENY_PURCHASE,
@@ -29,8 +30,9 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
     }
 
     //
-    //  Vertex represent step in business process.
-    //  Vertex encapsulates async method invocation and merging result of invocation into payload.
+    // Vertex represent step in business process.
+    // Vertex encapsulates async method invocation and merging result of invocation
+    // into payload.
     //
     Vertex askForPrice =
             handler(
@@ -59,8 +61,10 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
                     //# Is withdraw successful?
                     (payload, withdrawSuccessful) -> {
                         if (withdrawSuccessful) {
-                            payload.response.operationResult = "Successful purchase for " + payload.intermediateData.price;
+                            payload.response.operationResult = "Successful purchase for " +
+                                    payload.intermediateData.price;
                             return Flow.SUCCESS_WITHDRAW;
+
                         } else {
                             payload.response.operationResult = "Money withdraw failed";
                             return Flow.DENY_PURCHASE;
@@ -119,7 +123,8 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
 
 // tag::services[]
 //
-//  Simple implementation of external async services that being used by the graph.
+// Simple implementation of external async services
+// that used by the graph.
 //
 class SalesDepartment {
     CompletableFuture<BigDecimal> calculateCurrentPrice(String destination) {
