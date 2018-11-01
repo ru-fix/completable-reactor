@@ -241,14 +241,14 @@ EmailClient: Congratulations, you have purchased a ticket.
 Result: Successful purchase for 12.0
 ----
 
-==== View visual representation of the Graph
+=== View visual representation of the Graph
 * Display visual graph directly from code by `Ctrl+R` shortcut `(Tools->ReactorGraph)`
 * Navigate from graph to code by double-clicking on the nodes
 * Read graph description in nodes menu generated directly from code comments
 
 image::flight-graph.png[]
 
-==== Monitor graph execution
+=== Monitor graph execution
 * Monitor graph and individual vertex performance
 * Trace how graph execute through individual vertex by enabling tracing for particular payloads
 * Check reactor reports about vertices that executed too long, did not complete on timeout or hang
