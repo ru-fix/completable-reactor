@@ -107,6 +107,9 @@ public class BuyFlightTicketGraph extends Graph<BuyFightTicketPayload> {
         sendDenyEmail
                 .onAny().complete();
 
+        //
+        // coordinates updated automatically by IDE plugin
+        //
         coordinates()
                 .pd(89, -126)
                 .vx(askForPrice, 219, -60, 205, 45)
