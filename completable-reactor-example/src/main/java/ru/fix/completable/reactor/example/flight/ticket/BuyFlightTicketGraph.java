@@ -10,7 +10,7 @@ import ru.fix.completable.reactor.runtime.CompletableReactor;
 import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
 
-
+// tag::payload[]
 //
 // In given example flight ticket purchase process implemented as a reactor graph.
 // Payload contains request, response and intermediate data for computation.
@@ -39,7 +39,7 @@ class BuyFightTicketPayload {
     final IntermediateData intermediateData = new IntermediateData();
     final Response response = new Response();
 }
-
+// end::payload[]
 //
 // All graph classes extends base Graph<Payload>
 //

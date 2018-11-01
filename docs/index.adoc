@@ -51,27 +51,11 @@ same time provides ability for fast code parsing and visualization as a graph of
 
 
 === Write simple graph application
-In given example flight ticket purchase process implemented as a reactor graph.
-Payload contains request, response and intermediate data for computation.
 [source,java]
 ----
-class BuyFightTicketPayload {
-    class Request {
-        String destination;
-        String name;
-        Integer age;
-    }
-    class IntermediateData {
-        BigDecimal price;
-    }
-    class Response {
-        String operationResult;
-    }
-    final Request request = new Request();
-    final IntermediateData intermediateData = new IntermediateData();
-    final Response response = new Response();
-}
+include::../completable-reactor-example/src/main/java/ru/fix/completable/reactor/example/flight/ticket/BuyFlightTicketGraph.java[tags=payload]
 ----
+
 
 All graph classes extends base `Graph<Payload>`
 
