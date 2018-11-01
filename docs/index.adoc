@@ -232,6 +232,8 @@ class FlightPlanner {
 }
 ----
 
+Application output:
+
 [source]
 ----
 SalesDepartment: calculate current price for New York
