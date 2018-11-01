@@ -1,3 +1,5 @@
+import org.asciidoctor.gradle.AsciidoctorExtension
+import org.asciidoctor.gradle.AsciidoctorTask
 import org.gradle.kotlin.dsl.kotlin
 import org.gradle.kotlin.dsl.maven
 import org.gradle.kotlin.dsl.repositories
@@ -31,6 +33,7 @@ buildscript {
         classpath(Libs.kotlin_jdk8)
         classpath(Libs.kotlin_reflect)
         classpath(Libs.shadowPlugin)
+        classpath(Libs.asciidoctor)
     }
 }
 
@@ -59,6 +62,7 @@ plugins {
     kotlin("jvm") version "${Vers.kotlin}" apply false
     signing
     `maven-publish`
+    id("org.asciidoctor.convert") version Vers.asciidoctor
 }
 
 apply {
@@ -185,5 +189,11 @@ subprojects {
                 exceptionFormat = TestExceptionFormat.FULL
             }
         }
+    }
+}
+
+tasks {
+    withType<AsciidoctorTask> {
+        sourceDir = project.file("docs")
     }
 }
