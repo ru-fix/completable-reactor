@@ -33,6 +33,8 @@ class SubscriptonGraph extends Graph<SubscriptonPayload.> {...}
 
 It is better to give graph a name that represent action. 
 
+Bad:
+
 [code,java]
 ----
 class SmsSenderPayload {...}
@@ -53,6 +55,7 @@ handler/merger lambda directly and give the Vertex same name as you would give
 to the function.
 
 Bad:
+
 [code,java]
 ----
 public class PurchaseGraph extends Graph<PurchasePayload> {
