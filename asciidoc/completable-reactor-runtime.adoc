@@ -16,7 +16,7 @@ Then vertex passes this Payload to the next Vertex.
 All Vertices linked in chain one after another. 
 Modification of Payload is optional for Vertex.
 
-image::res/simple-sequential-model.png[]
+image::completable-reactor-runtime/simple-sequential-model.png[]
 
 In given example we have two vertices and single payload object.
 Payload consists of two fields: x and result.
@@ -49,7 +49,7 @@ void merge(Payload paylaod, int result){
 
 Visual representation:
 
-image::res/sequential-async-handler-merger-model.png[]
+image::completable-reactor-runtime/sequential-async-handler-merger-model.png[]
 
 Visual representation of such computation contains several items:
 
@@ -63,14 +63,14 @@ Visual representation of such computation contains several items:
 
 Now we can simplify visual notation and hide implicit Payload and handler function result.
 
-image::res/sequential-async-handler-merger-model-simplified.png[]
+image::completable-reactor-runtime/sequential-async-handler-merger-model-simplified.png[]
 
 
 === Parallel handler-merger model
 Lets update Merger and allow it to have several outgoing transitions. When merger function
 completes merging process it will send reference to same Payload instance through all of outgoing transitions in parallel.
 
-image::res/parallel-handler-merger-multiple-outgoing.png[]
+image::completable-reactor-runtime/parallel-handler-merger-multiple-outgoing.png[]
 
 In given example origin Payload and vertex Result goes from Handler to Merger.
 Then Merger modifies Payload and puts result inside it.
@@ -81,7 +81,7 @@ When Merger have two incoming transitions: one from Vertex that carries Payload 
 with Payload only, Merger will chose Result from first transition and will merge it to Payload that it received from second transition.
 For activation Merger has to wait for both incoming transitions.
 
-image::res/parallel-handler-merger-join-flows.png[]
+image::completable-reactor-runtime/parallel-handler-merger-join-flows.png[]
 
 In given illustration there are two incoming transitions into Merger.
 First incoming transition carries Payload and computation result of Handler2 - value 42.
@@ -110,7 +110,7 @@ class Purchase{
 `userId` and `item` will identify customer and requested product. `moneyReserved` and `productReserved` fields will keep information about reservation status returned from BillingService and StorageFacility.
 Lets visualize execution graph and discuss execution steps in detail.
 
-image::res/parallel-handler-merger-computation-example.png[]
+image::completable-reactor-runtime/parallel-handler-merger-computation-example.png[]
 
 As a first step we create Purchase payload and populate `userid` and item.
 Suppose that first Merger at the top simply sends this Payload into two places in parallel:
@@ -161,14 +161,14 @@ Then StorageFacility Merger sends Payload with BillingService and StorageFacilit
 
 Now we can simplify visualisation:
 
-image::res/parallel-handler-merger-computation-example-simplified.png[]
+image::completable-reactor-runtime/parallel-handler-merger-computation-example-simplified.png[]
 
 
 === Handler-merger model with conditional transitions
 We almost there. Fasten seat belts.
 Lets enrich our Merger with last feature: conditional transitions:
 
-image::res/merger-conditional-outgoing-flows.png[]
+image::completable-reactor-runtime/merger-conditional-outgoing-flows.png[]
 
 Each outgoing transitions now have enum value associated with it. In graph this enum value illustrated as text label near arrows.
 Merger function signature is changed too. Now merger should return enum that will control which outgoing transition will be activated and which is not.
@@ -202,7 +202,7 @@ Merger in same manner waits result of all incoming transitions.
 But if any of incoming transitions dies - Merger dies too.
 To execute Merger should have all incoming transitions to be alive.
 
-image::res/merger-conditional-outgoing-example.png[]
+image::completable-reactor-runtime/merger-conditional-outgoing-example.png[]
 
 In given example if Merger returns FIRST then:
 
@@ -225,7 +225,7 @@ StartPoint specify position where Payload start it trip over graph. There is onl
 EndPoints defines places where execution of the graph is stops and current Payload is returned
 as a graph computation result.
 
-image::res/start-point-and-end-point.png[]
+image::completable-reactor-runtime/start-point-and-end-point.png[]
 
 In given illustration:
 
@@ -316,7 +316,7 @@ System.out.print( purchase.getResponse().getPurchaseStatus() );
 
 Start point visualization:
 
-image::res/start-point.png[]
+image::completable-reactor-runtime/start-point.png[]
 
 To attach vertices to StartPoint you can use `payload()` builder method of graph.
 
@@ -335,7 +335,7 @@ class PurchaseGraph extends Graph<Purchase>{
 }
 ----
 
-image::res/start-point-handle-by.png[]
+image::completable-reactor-runtime/start-point-handle-by.png[]
 
 === Vertices
 Vertex is a visual graph item that represent a handler and optional merger invocation.
@@ -426,7 +426,7 @@ Vertex reserveMoney =
 }
 ----
 
-image::res/routing-merger.png[]
+image::completable-reactor-runtime/routing-merger.png[]
 
 ==== With Merger
 
@@ -453,7 +453,7 @@ Vertex sendNotification =
 }
 ----
 
-image::res/merger.png[]
+image::completable-reactor-runtime/merger.png[]
 
 ==== Without Merger
 
@@ -478,7 +478,7 @@ businessAction
 //no outgoing transitions for fireStatisticEvent
 ----
 
-image::res/without-merger.png[]
+image::completable-reactor-runtime/without-merger.png[]
 
 === Connect vertices into graph
 
@@ -505,7 +505,7 @@ No we can connect described vertices into graph.
 }
 ----
 
-image::res/mergers-example.png[]
+image::completable-reactor-runtime/mergers-example.png[]
 
 === Transition
 
@@ -568,7 +568,7 @@ Yuy can attach EndPoint to any of transition withing reactor graph.
     vx3.onAny().complete()
 ----
 
-image::res/endpoint.png[]
+image::completable-reactor-runtime/endpoint.png[]
 
 
 === Subgraph
@@ -588,7 +588,7 @@ Vertex bonusPurchase =
         ).withMerger(...)
 ----
 
-image::res/subgraph.png[]
+image::completable-reactor-runtime/subgraph.png[]
 
 
 === Routers and Mutators
@@ -615,14 +615,14 @@ Vertex vx2 = mutator(
 
 ----
 
-image::res/routers-and-mutators.png[]
+image::completable-reactor-runtime/routers-and-mutators.png[]
 
 === Merger decision
 
 If all of outgoing transitions from Merger have distinct statuses
 then flow will continue to execute only one of transitions.
 
-image::res/merger-decision.png[]
+image::completable-reactor-runtime/merger-decision.png[]
 
 If Merger will return FAIL status then execution completes immediately.
 In case of FIRST status flow will continue and Handler2 will be invoked.
@@ -652,7 +652,7 @@ After that execution will continue along with one of transitions:
 
 If two transitions have same condition Status then flow will continue execution in parallel and both transitions will be activated.
 
-image::res/parallel-execution.png[]
+image::completable-reactor-runtime/parallel-execution.png[]
 
 
 In given example there could be three options:
@@ -696,7 +696,7 @@ We simply need to invoke async method and does not care about it's result.
 It could be Notification service that sends message to external system and
 current flow business is not depend on notification result.
 
-image::res/detached-without-merger.png[]
+image::completable-reactor-runtime/detached-without-merger.png[]
 
 We passing Payload to Hanlder6 by reference.
 In that case there could be concurrent reading data by Handler6
@@ -754,7 +754,7 @@ or use immutable arguments to prevent concurrent reading by Handler6  async func
 other Vertices of the graph like we did in Detached Handler without Merger scenario.
 Also we have to use Merger to bring Handler6 result back to main flow.
 
-image::res/detached-with-merger.png[]
+image::completable-reactor-runtime/detached-with-merger.png[]
 
 === Conditional execution
 
@@ -770,7 +770,7 @@ All outgoing transitions will be marked as dead.
 Otherwise if all incoming transition are alive - then vertex will run
 and send payload through outgoing transitions.
 
-image::res/conditional-execution-or-and.png[]
+image::completable-reactor-runtime/conditional-execution-or-and.png[]
 
 Lets discuss an example where we have two cases in our graph.
 First one: when we execute handler A, handler B and handler C in parallel.
@@ -780,19 +780,19 @@ We can implement this behaviour through several approaches.
 * Simple approach with concurrent Mergers
 ** Use conditional transition for vertex `C`.
 Mergers of `B` and `C` executed concurrently. +
-image:res/conditional-execution-4.png[]
+image:completable-reactor-runtime/conditional-execution-4.png[]
 
 * Complex approach with sequential Mergers
 
 ** Use conditional transition with optional handling and merging +
-image:res/conditional-execution-1.png[]
+image:completable-reactor-runtime/conditional-execution-1.png[]
 
 ** Use conditional transition with vertex cloning +
-image:res/conditional-execution-2.png[]
+image:completable-reactor-runtime/conditional-execution-2.png[]
 
 ** Always run vertex C. Use if-else logic inside handler `C`
 and simply do nothing in handler itself. +
-image:res/conditional-execution-3.png[]
+image:completable-reactor-runtime/conditional-execution-3.png[]
 
 
 
