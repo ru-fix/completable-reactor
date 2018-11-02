@@ -206,7 +206,7 @@ tasks {
             copy {
                 from(outputDir.resolve("html5"))
                 into(project.file("docs"))
-                include("index.html", "*.png")
+                include("index.html", "**/*.png")
             }
         }
     }
