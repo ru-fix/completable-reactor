@@ -87,7 +87,7 @@ Result: Successful purchase for 12.0
 * Navigate from graph to code by double-clicking on the nodes
 * Read graph description in nodes menu generated directly from code comments
 
-image::flight-graph.png[]
+image::res/flight-graph.png[]
 
 === Monitor graph execution
 * Monitor graph and individual vertex performance
@@ -95,36 +95,34 @@ image::flight-graph.png[]
 * Check reactor reports about vertices that executed too long, did not complete on timeout or hang
 
 
-== Completable Reactor model
-Describes concept behind CompletbleReactor.
-Explains how we can decompose concurrent conditional execution into base graph components.
-Describes how reactor components could be described in code and how they visualized.
-
-[Completable Reactor model](docs/completable-reactor-model/completable-reactor-model.md)
+include::completable-reactor-runtime/completable-reactor-runtime.adoc[]
 
 
-## Validation
+== Validation
 
-During ReactorGraph building process CompletableReactorBuilder apply validation procedures on ReactorGraph instance. Validators checks
-that graph is consistent, have complete nodes and correct transitions etc.
+It is possible to configure graph in a wrong way.
+For example we can forgot to specify endpoints for one of branches that could lead to situation when graph execution could not complete at all.
+To prevent this, during graph building process CompletableReactor apply validation procedures on Graph instance.
+Validators checks that graph is consistent, have correct configuration of nodes and transitions.
 
-## Intellij Idea Plugin
-https://plugins.jetbrains.com/plugin/9599-completable-reactor
+== Intellij Idea Plugin
+
+link:https://plugins.jetbrains.com/plugin/9599-completable-reactor[]
 
 Completable Reactor Intellij Idea plugin provides graph visualization and source code navigation within IDE.
-You can jump to code using double click on graph item or context menu.
+You can jump to code using double click on graph item or by using context menu.
 
-## Examples
 
-## Best Practice and Code Convention
+include::best-practice-code-convention/best-practice-code-convention.adoc[]
 
-Paragraph explains handy rules that will keep your code clear
 
-[Best Practice and Code Convention](docs/best-practice-code-convention/best-practice-code-convention.md)
 
 # How to build this project
 Intellij plugin located at `completable-reactor-plugin-idea` directory.
 In order to include plugin module into Intellij Idea you have to manually add line
-`<module fileurl="file://$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" filepath="$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" />`
-into `.idea/modules.xml` configuration file.
+[code,xml]
+----
+<module fileurl="file://$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" filepath="$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" />
+----
 
+into `.idea/modules.xml` configuration file.

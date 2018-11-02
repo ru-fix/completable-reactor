@@ -1,47 +1,51 @@
-# Best Practice and Code Convention
+== Best Practice and Code Convention
+[abstract]
+Paragraph explains handy rules that will keep your code clear.
 
-- [Best Practice and Code Convention](#best-practice-and-code-convention)
-  * [Give your payloads and graphs similar names](#give-your-payloads-and-graphs-similar-names)
-  * [Treat vertex declaration as a function](#treat-vertex-declaration-as-a-function)
-  * [Give vertex a name as if it is a function](#give-vertex-a-name-as-if-it-is-a-function)
-  * [In Spring project declare your graph as a Bean](#in-spring-project-declare-your-graph-as-a-bean)
-
-## Give your payloads and graphs similar names
+=== Give your payloads and graphs similar names
 It is good to follow same naming convention in the project. 
 This way it would be easy to find payloads that could be submitted to reactor 
 and graphs that implements their execution flows.  
 We can use `ActionNamePayload` and `ActionNameGraph` template for names. 
 
 Bad:
-```java
+[code,java]
+----
 class BuyData {...}
 class PurchaseConfiguration extends Graph<BuyData> {...}
 
 class SubscriptonAction {...}
 class SubscriptonGraphDeclaration extends Graph<SubscriptonAction> {...}
-```
+----
+
 Good:
-```java
+
+[code,java]
+----
 class PurchasePayload {...}
 class PurchaseGraph extends Graph<PurchasePayload> {...}
 
 class SubscriptonPayload {...}
 class SubscriptonGraph extends Graph<SubscriptonPayload.> {...}
-```
-## Give your payloads and graphs names that represent actions that graph implies
+----
+
+=== Give your payloads and graphs names that represent actions that graph implies
 
 It is better to give graph a name that represent action. 
 
-Bad:
-```java
-class SmsSenderPayload {...} 
-```
-Good: 
-```java
-class SendSmsPayload {...}
-```
+[code,java]
+----
+class SmsSenderPayload {...}
+----
 
-## Treat vertex declaration as a function
+Good:
+
+[code,java]
+----
+class SendSmsPayload {...}
+----
+
+=== Treat vertex declaration as a function
 Do not wrap your logic into function if the only purpose of the function is to
 be invoked inside handler/merger block of a Vertex.
 If you are not reusing this function in other places - simply put code inside
@@ -49,7 +53,8 @@ handler/merger lambda directly and give the Vertex same name as you would give
 to the function.
 
 Bad:
-```java
+[code,java]
+----
 public class PurchaseGraph extends Graph<PurchasePayload> {
 
     Vertex writeUserLog =
@@ -78,9 +83,12 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
 }
 
-```
+----
+
 Good:
-```java
+
+[code,java]
+----
 public class PurchaseGraph extends Graph<PurchasePayload> {
   Vertex writeUserLog =
       handler(
@@ -104,30 +112,37 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
 
 }
 
-```
-## Give vertex a name as if it is a function
+----
+
+=== Give vertex a name as if it is a function
 Vertex usually implies business logic that should be executed as a part of 
 use case scenario. 
 It would be better to give vertex a name 
 that describes what action this vertex implements.     
 
-
 Bad:
-```java
+
+[code,java]
+----
 Vertex userLogWriter = ...;
 Vertex statisticProcessor = ...;
-```
+----
+
 Good:
-```java
+
+[code,java]
+----
 Vertex writePurchaseToUserLog = ...;
 Vertex firePurchaseEventToStatistics = ...;
-```
-## In Spring project declare your graph as a Bean
+----
+
+=== In Spring project declare your graph as a Bean
 You can use different approaches in registering graphs in you application. 
 Main thing is to be consistent about it. 
 We suggest to use an approach when you declare graph as a Bean
 
-```java
+[code,java]
+----
 public class MyGraph extends Graph<MyPayload>{
     @Autowired
     MyService myService;
@@ -158,9 +173,9 @@ public class ApplicationConfiguration{
       return completableReactor;
     }
 }
-```
+----
 
-## Optional, lateinit vars for Graph context variable
+=== Optional, lateinit vars for Graph context variable
 
 Nullable types `T?` or `Optional<T>` force us to check value for null before we can use it.
 This is very handy for function arguments, class states, etc.
@@ -180,12 +195,13 @@ But some times it is better not to increase complexity by adding new branches to
  and instead to use `T?/Optional<T>` data in graph payload. 
 Then we simply implement `if (data == null/isPresent) A else B` logic inside vertex without any exceptions.
 
-## Code formatting
-(1) Separate vertex field declaration and handler block with new line '\n'  
-(2) Separate handler block and merger block with new line '\n'  
-(3) Separate documentation comment with new line '\n'
+=== Code formatting
+(1) Separate vertex field declaration and handler block with new line '\n' +
+(2) Separate handler block and merger block with new line '\n' +
+(3) Separate documentation comment with new line '\n' +
 
-```java
+[code,java]
+----
 public class PurchaseGraph extends Graph<PurchasePayload> {
   Vertex writeUserLog =  //(1)
       handler(
@@ -203,20 +219,4 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
             }
       ).withoutMerger();
 }
-```
-
-<!--
-```
-//TODO explain best practice block here
-Use Vertex clone instead of function reusing for similar logic
-Do not vertex templating via functions. use clone instead
-
-val vertex = handler{}.withMerger{}
----
-not:
-val vertex = foo(myState)
-fun foo(){
-    return handler{}.withMerger()
-}
-```
--->
+----
