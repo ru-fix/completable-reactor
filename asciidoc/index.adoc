@@ -87,7 +87,7 @@ Result: Successful purchase for 12.0
 * Navigate from graph to code by double-clicking on the nodes
 * Read graph description in nodes menu generated directly from code comments
 
-image::res/flight-graph.png[]
+image::index/flight-graph.png[]
 
 === Monitor graph execution
 * Monitor graph and individual vertex performance
@@ -95,7 +95,7 @@ image::res/flight-graph.png[]
 * Check reactor reports about vertices that executed too long, did not complete on timeout or hang
 
 
-include::completable-reactor-runtime/completable-reactor-runtime.adoc[]
+include::completable-reactor-runtime.adoc[]
 
 
 == Validation
@@ -113,7 +113,7 @@ Completable Reactor Intellij Idea plugin provides graph visualization and source
 You can jump to code using double click on graph item or by using context menu.
 
 
-include::best-practice-code-convention/best-practice-code-convention.adoc[]
+include::best-practice-code-convention.adoc[]
 
 
 

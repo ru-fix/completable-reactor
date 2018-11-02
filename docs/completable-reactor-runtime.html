@@ -460,7 +460,7 @@ Modification of Payload is optional for Vertex.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/simple-sequential-model.png" alt="simple sequential model">
+<img src="completable-reactor-runtime/simple-sequential-model.png" alt="simple sequential model">
 </div>
 </div>
 <div class="paragraph">
@@ -500,7 +500,7 @@ void merge(Payload paylaod, int result){
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/sequential-async-handler-merger-model.png" alt="sequential async handler merger model">
+<img src="completable-reactor-runtime/sequential-async-handler-merger-model.png" alt="sequential async handler merger model">
 </div>
 </div>
 <div class="paragraph">
@@ -534,7 +534,7 @@ of handler function.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/sequential-async-handler-merger-model-simplified.png" alt="sequential async handler merger model simplified">
+<img src="completable-reactor-runtime/sequential-async-handler-merger-model-simplified.png" alt="sequential async handler merger model simplified">
 </div>
 </div>
 </div>
@@ -546,7 +546,7 @@ completes merging process it will send reference to same Payload instance throug
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/parallel-handler-merger-multiple-outgoing.png" alt="parallel handler merger multiple outgoing">
+<img src="completable-reactor-runtime/parallel-handler-merger-multiple-outgoing.png" alt="parallel handler merger multiple outgoing">
 </div>
 </div>
 <div class="paragraph">
@@ -562,7 +562,7 @@ For activation Merger has to wait for both incoming transitions.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/parallel-handler-merger-join-flows.png" alt="parallel handler merger join flows">
+<img src="completable-reactor-runtime/parallel-handler-merger-join-flows.png" alt="parallel handler merger join flows">
 </div>
 </div>
 <div class="paragraph">
@@ -598,7 +598,7 @@ Lets visualize execution graph and discuss execution steps in detail.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/parallel-handler-merger-computation-example.png" alt="parallel handler merger computation example">
+<img src="completable-reactor-runtime/parallel-handler-merger-computation-example.png" alt="parallel handler merger computation example">
 </div>
 </div>
 <div class="paragraph">
@@ -656,7 +656,7 @@ void merge(Purchase paylaod, StorageFacilityStatus storageStatus){
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/parallel-handler-merger-computation-example-simplified.png" alt="parallel handler merger computation example simplified">
+<img src="completable-reactor-runtime/parallel-handler-merger-computation-example-simplified.png" alt="parallel handler merger computation example simplified">
 </div>
 </div>
 </div>
@@ -668,7 +668,7 @@ Lets enrich our Merger with last feature: conditional transitions:</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/merger-conditional-outgoing-flows.png" alt="merger conditional outgoing flows">
+<img src="completable-reactor-runtime/merger-conditional-outgoing-flows.png" alt="merger conditional outgoing flows">
 </div>
 </div>
 <div class="paragraph">
@@ -708,7 +708,7 @@ To execute Merger should have all incoming transitions to be alive.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/merger-conditional-outgoing-example.png" alt="merger conditional outgoing example">
+<img src="completable-reactor-runtime/merger-conditional-outgoing-example.png" alt="merger conditional outgoing example">
 </div>
 </div>
 <div class="paragraph">
@@ -763,7 +763,7 @@ as a graph computation result.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/start-point-and-end-point.png" alt="start point and end point">
+<img src="completable-reactor-runtime/start-point-and-end-point.png" alt="start point and end point">
 </div>
 </div>
 <div class="paragraph">
@@ -887,7 +887,7 @@ System.out.print( purchase.getResponse().getPurchaseStatus() );</pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/start-point.png" alt="start point">
+<img src="completable-reactor-runtime/start-point.png" alt="start point">
 </div>
 </div>
 <div class="paragraph">
@@ -910,7 +910,7 @@ System.out.print( purchase.getResponse().getPurchaseStatus() );</pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/start-point-handle-by.png" alt="start point handle by">
+<img src="completable-reactor-runtime/start-point-handle-by.png" alt="start point handle by">
 </div>
 </div>
 </div>
@@ -1027,7 +1027,7 @@ Graph will continue to execute by transition that will be selected based on enum
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/routing-merger.png" alt="routing merger">
+<img src="completable-reactor-runtime/routing-merger.png" alt="routing merger">
 </div>
 </div>
 </div>
@@ -1059,7 +1059,7 @@ But graph execution path does not depend on notification result.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/merger.png" alt="merger">
+<img src="completable-reactor-runtime/merger.png" alt="merger">
 </div>
 </div>
 </div>
@@ -1089,7 +1089,7 @@ businessAction
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/without-merger.png" alt="without merger">
+<img src="completable-reactor-runtime/without-merger.png" alt="without merger">
 </div>
 </div>
 </div>
@@ -1122,7 +1122,7 @@ businessAction
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/mergers-example.png" alt="mergers example">
+<img src="completable-reactor-runtime/mergers-example.png" alt="mergers example">
 </div>
 </div>
 </div>
@@ -1198,7 +1198,7 @@ execution.getResultFutureFuture()</pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/endpoint.png" alt="endpoint">
+<img src="completable-reactor-runtime/endpoint.png" alt="endpoint">
 </div>
 </div>
 </div>
@@ -1222,7 +1222,7 @@ Subgraphs allows us to reuse graphs.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/subgraph.png" alt="subgraph">
+<img src="completable-reactor-runtime/subgraph.png" alt="subgraph">
 </div>
 </div>
 </div>
@@ -1258,7 +1258,7 @@ Vertex vx2 = mutator(
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/routers-and-mutators.png" alt="routers and mutators">
+<img src="completable-reactor-runtime/routers-and-mutators.png" alt="routers and mutators">
 </div>
 </div>
 </div>
@@ -1270,7 +1270,7 @@ then flow will continue to execute only one of transitions.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/merger-decision.png" alt="merger decision">
+<img src="completable-reactor-runtime/merger-decision.png" alt="merger decision">
 </div>
 </div>
 <div class="paragraph">
@@ -1335,7 +1335,7 @@ Merger will check Handler1 result, modifies Payload if needed and returns one of
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/parallel-execution.png" alt="parallel execution">
+<img src="completable-reactor-runtime/parallel-execution.png" alt="parallel execution">
 </div>
 </div>
 <div class="paragraph">
@@ -1390,7 +1390,7 @@ current flow business is not depend on notification result.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/detached-without-merger.png" alt="detached without merger">
+<img src="completable-reactor-runtime/detached-without-merger.png" alt="detached without merger">
 </div>
 </div>
 <div class="paragraph">
@@ -1454,7 +1454,7 @@ Also we have to use Merger to bring Handler6 result back to main flow.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/detached-with-merger.png" alt="detached with merger">
+<img src="completable-reactor-runtime/detached-with-merger.png" alt="detached with merger">
 </div>
 </div>
 </div>
@@ -1481,7 +1481,7 @@ and send payload through outgoing transitions.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="res/conditional-execution-or-and.png" alt="conditional execution or and">
+<img src="completable-reactor-runtime/conditional-execution-or-and.png" alt="conditional execution or and">
 </div>
 </div>
 <div class="paragraph">
@@ -1499,7 +1499,7 @@ We can implement this behaviour through several approaches.</p>
 <li>
 <p>Use conditional transition for vertex <code>C</code>.
 Mergers of <code>B</code> and <code>C</code> executed concurrently.<br>
-<span class="image"><img src="res/conditional-execution-4.png" alt="conditional execution 4"></span></p>
+<span class="image"><img src="completable-reactor-runtime/conditional-execution-4.png" alt="conditional execution 4"></span></p>
 </li>
 </ul>
 </div>
@@ -1510,16 +1510,16 @@ Mergers of <code>B</code> and <code>C</code> executed concurrently.<br>
 <ul>
 <li>
 <p>Use conditional transition with optional handling and merging<br>
-<span class="image"><img src="res/conditional-execution-1.png" alt="conditional execution 1"></span></p>
+<span class="image"><img src="completable-reactor-runtime/conditional-execution-1.png" alt="conditional execution 1"></span></p>
 </li>
 <li>
 <p>Use conditional transition with vertex cloning<br>
-<span class="image"><img src="res/conditional-execution-2.png" alt="conditional execution 2"></span></p>
+<span class="image"><img src="completable-reactor-runtime/conditional-execution-2.png" alt="conditional execution 2"></span></p>
 </li>
 <li>
 <p>Always run vertex C. Use if-else logic inside handler <code>C</code>
 and simply do nothing in handler itself.<br>
-<span class="image"><img src="res/conditional-execution-3.png" alt="conditional execution 3"></span></p>
+<span class="image"><img src="completable-reactor-runtime/conditional-execution-3.png" alt="conditional execution 3"></span></p>
 </li>
 </ul>
 </div>
@@ -1588,7 +1588,7 @@ val failureLog = loggingVertex("failure");
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-02 09:45:10 MSK
+Last updated 2018-11-02 09:54:00 MSK
 </div>
 </div>
 </body>
