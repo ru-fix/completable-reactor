@@ -198,7 +198,7 @@ tasks {
     withType<AsciidoctorTask> {
         sourceDir = project.file("asciidoc")
         resources(closureOf<CopySpec> {
-            from("docs")
+            from("asciidoc")
             include("**/*.png")
         })
 
@@ -206,7 +206,7 @@ tasks {
             copy {
                 from(outputDir.resolve("html5"))
                 into(project.file("docs"))
-                include("index.html", "**/*.png")
+                include("**/*.html", "**/*.png")
             }
         }
     }
