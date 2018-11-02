@@ -681,7 +681,35 @@ same time provides ability for fast code parsing and visualization as a graph of
 <h3 id="_write_simple_graph_application">Write simple graph application</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">Unresolved directive in index.adoc - include::../completable-reactor-example/src/main/java/ru/fix/completable/reactor/example/flight/ticket/BuyFlightTicketPayload.java[tags=payload]</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">//</span>
+<span class="comment">// In given example flight ticket purchase process implemented as a reactor graph.</span>
+<span class="comment">// Payload contains request, response and intermediate data for computation.</span>
+<span class="comment">//</span>
+<span class="annotation">@Data</span>
+<span class="type">class</span> <span class="class">BuyFightTicketPayload</span> {
+    <span class="annotation">@Data</span>
+    <span class="annotation">@Accessors</span>(chain = <span class="predefined-constant">true</span>)
+    <span class="type">class</span> <span class="class">Request</span> {
+        <span class="predefined-type">String</span> destination;
+        <span class="predefined-type">String</span> name;
+        <span class="predefined-type">Integer</span> age;
+    }
+
+    <span class="annotation">@Data</span>
+    <span class="type">class</span> <span class="class">IntermediateData</span> {
+        <span class="predefined-type">BigDecimal</span> price;
+    }
+
+    <span class="annotation">@Data</span>
+    <span class="type">class</span> <span class="class">Response</span> {
+        <span class="predefined-type">String</span> operationResult;
+    }
+
+    <span class="directive">final</span> Request request = <span class="keyword">new</span> Request();
+    <span class="directive">final</span> IntermediateData intermediateData = <span class="keyword">new</span> IntermediateData();
+    <span class="directive">final</span> Response response = <span class="keyword">new</span> Response();
+}
+<span class="comment">// end::payload[]</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -691,7 +719,8 @@ same time provides ability for fast code parsing and visualization as a graph of
 <span class="comment">//</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">BuyFlightTicketGraph</span> <span class="directive">extends</span> Graph&lt;BuyFightTicketPayload&gt; {
     <span class="comment">//</span>
-    <span class="comment">// During execution graph uses external async services as a building blocks to create complex business process.</span>
+    <span class="comment">// During execution graph uses external async services as a building blocks</span>
+    <span class="comment">// to create complex business process.</span>
     <span class="comment">//</span>
     SalesDepartment salesDepartment = <span class="keyword">new</span> SalesDepartment();
     Bank bank = <span class="keyword">new</span> Bank();
@@ -699,7 +728,7 @@ same time provides ability for fast code parsing and visualization as a graph of
     FlightPlanner flightPlanner = <span class="keyword">new</span> FlightPlanner();
 
     <span class="comment">//</span>
-    <span class="comment">//  Enum values identifies transitions in graph</span>
+    <span class="comment">// Enum values identifies transitions in graph</span>
     <span class="comment">//</span>
     <span class="type">enum</span> Flow {
         DENY_PURCHASE,
@@ -708,8 +737,9 @@ same time provides ability for fast code parsing and visualization as a graph of
     }
 
     <span class="comment">//</span>
-    <span class="comment">//  Vertex represent step in business process.</span>
-    <span class="comment">//  Vertex encapsulates async method invocation and merging result of invocation into payload.</span>
+    <span class="comment">// Vertex represent step in business process.</span>
+    <span class="comment">// Vertex encapsulates async method invocation and merging result of invocation</span>
+    <span class="comment">// into payload.</span>
     <span class="comment">//</span>
     Vertex askForPrice =
             handler(
@@ -738,8 +768,10 @@ same time provides ability for fast code parsing and visualization as a graph of
                     <span class="comment">//# Is withdraw successful?</span>
                     (payload, withdrawSuccessful) -&gt; {
                         <span class="keyword">if</span> (withdrawSuccessful) {
-                            payload.response.operationResult = <span class="string"><span class="delimiter">&quot;</span><span class="content">Successful purchase for </span><span class="delimiter">&quot;</span></span> + payload.intermediateData.price;
+                            payload.response.operationResult = <span class="string"><span class="delimiter">&quot;</span><span class="content">Successful purchase for </span><span class="delimiter">&quot;</span></span> +
+                                    payload.intermediateData.price;
                             <span class="keyword">return</span> Flow.SUCCESS_WITHDRAW;
+
                         } <span class="keyword">else</span> {
                             payload.response.operationResult = <span class="string"><span class="delimiter">&quot;</span><span class="content">Money withdraw failed</span><span class="delimiter">&quot;</span></span>;
                             <span class="keyword">return</span> Flow.DENY_PURCHASE;
@@ -782,6 +814,9 @@ same time provides ability for fast code parsing and visualization as a graph of
         sendDenyEmail
                 .onAny().complete();
 
+        <span class="comment">//</span>
+        <span class="comment">// coordinates updated automatically by IDE plugin</span>
+        <span class="comment">//</span>
         coordinates()
                 .pd(<span class="integer">89</span>, -<span class="integer">126</span>)
                 .vx(askForPrice, <span class="integer">219</span>, -<span class="integer">60</span>, <span class="integer">205</span>, <span class="integer">45</span>)
@@ -824,7 +859,8 @@ same time provides ability for fast code parsing and visualization as a graph of
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="comment">//</span>
-<span class="comment">//  Simple implementation of external async services that being used by the graph.</span>
+<span class="comment">// Simple implementation of external async services</span>
+<span class="comment">// that used by the graph.</span>
 <span class="comment">//</span>
 <span class="type">class</span> <span class="class">SalesDepartment</span> {
     CompletableFuture&lt;<span class="predefined-type">BigDecimal</span>&gt; calculateCurrentPrice(<span class="predefined-type">String</span> destination) {
@@ -857,8 +893,7 @@ same time provides ability for fast code parsing and visualization as a graph of
             <span class="keyword">return</span> <span class="predefined-constant">true</span>;
         });
     }
-}
-<span class="comment">// end::services[]</span></code></pre>
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2360,7 +2395,7 @@ In order to include plugin module into Intellij Idea you have to manually add li
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-02 09:31:04 MSK
+Last updated 2018-11-02 09:46:10 MSK
 </div>
 </div>
 </body>
