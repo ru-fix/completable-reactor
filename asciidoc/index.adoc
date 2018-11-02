@@ -53,7 +53,7 @@ same time provides ability for fast code parsing and visualization as a graph of
 === Write simple graph application
 [source,java]
 ----
-include::../completable-reactor-example/src/main/java/ru/fix/completable/reactor/example/flight/ticket/BuyFlightTicketPayload.java[tags=payload]
+include::../completable-reactor-example/src/main/java/ru/fix/completable/reactor/example/flight/ticket/BuyFightTicketPayload.java[tags=payload]
 ----
 
 [source,java]
