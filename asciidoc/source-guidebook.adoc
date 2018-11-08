@@ -69,7 +69,7 @@ Compiled documentation stored at
 ----
 docs/*
 ----
-Compiled sources stored in git and served as a static content.
+Compiled documentation stored in git and served as a static content.
 To compile documentation run
 ----
 gradle asciidoctor
