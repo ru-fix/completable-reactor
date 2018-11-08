@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
 import ru.fix.aggregating.profiler.Profiler
-import ru.fix.completable.reactor.graph.internal.GlTransition
+import ru.fix.completable.reactor.graph.internal.RuntimeTransition
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer
@@ -109,7 +109,7 @@ class ExecutionBuilder(
          * If during merging process we will receive merge status that match any of terminal transitions
          * then we should complete mergingFeature with Terminal MergePayloadContext
          */
-        val outgoingTransitions = ArrayList<GlTransition>()
+        val outgoingTransitions = ArrayList<RuntimeTransition>()
 
         /**
          * This is Merger or Router
@@ -358,7 +358,7 @@ class ExecutionBuilder(
      * and merge results are not satisfied by another existing transitions
      */
     private fun isOnElse(
-            transition: GlTransition,
+            transition: RuntimeTransition,
             mergerablePvx: ProcessingVertex,
             context: ExecutionBuilder.MergePayloadContext
     ): Boolean {
