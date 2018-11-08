@@ -10,6 +10,7 @@ import ru.fix.completable.reactor.graph.runtime.RuntimeGraph;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder;
+import ru.fix.completable.reactor.runtime.execution.ProcessingVertex;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
@@ -682,7 +683,7 @@ public class CompletableReactor implements AutoCloseable {
             return "(no vertices)";
         }
         Object next = state.iterator().next();
-        if (next instanceof ExecutionBuilder.ProcessingVertex) {
+        if (next instanceof ProcessingVertex) {
             return glExecutionBuilder.dumpExecutionState(execution);
         } else {
             return "(invalid type of debug state)";
