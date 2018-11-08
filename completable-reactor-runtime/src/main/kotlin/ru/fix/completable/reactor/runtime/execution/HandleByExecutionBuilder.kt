@@ -84,14 +84,14 @@ class HandleByExecutionBuilder<PayloadType>(
                      * Invalid graph execution state
                      * Mark as terminal all outgoing flows from vertex
                      */
-                    pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
+                    pvx.handlingFuture.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
 
                 } else if (incomingFlows.stream().anyMatch(ExecutionBuilder.TransitionPayloadContext::isTerminal)) {
                     /**
                      * Terminal state reached.
                      * Mark as terminal all outgoing flows from vertex
                      */
-                    pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
+                    pvx.handlingFuture.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
 
                 } else {
                     val activeIncomingFlows: List<ExecutionBuilder.TransitionPayloadContext> = incomingFlows
@@ -105,7 +105,7 @@ class HandleByExecutionBuilder<PayloadType>(
                          * Vertex will not be invoked.
                          * All outgoing flows from vertex will be marked as dead.
                          */
-                        pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isDeadTransition = true))
+                        pvx.handlingFuture.complete(ExecutionBuilder.HandlePayloadContext(isDeadTransition = true))
 
                     } else {
 
@@ -170,7 +170,7 @@ class HandleByExecutionBuilder<PayloadType>(
 
             log.error(exc) {}
             executionResultFuture.completeExceptionally(exc)
-            pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
+            pvx.handlingFuture.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
             handleCall.stop()
             return
         }
@@ -195,9 +195,9 @@ class HandleByExecutionBuilder<PayloadType>(
                 log.error(exc) {}
                 executionResultFuture.completeExceptionally(exc)
 
-                pvx.handlingFeature.complete(HandlePayloadContext(isTerminal = true))
+                pvx.handlingFuture.complete(HandlePayloadContext(isTerminal = true))
             } else {
-                pvx.handlingFeature.complete(HandlePayloadContext(payload = payload, handlingResult = result))
+                pvx.handlingFuture.complete(HandlePayloadContext(payload = payload, handlingResult = result))
             }
 
             null
