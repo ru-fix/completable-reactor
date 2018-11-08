@@ -4,7 +4,7 @@ import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.GlTransition
 import java.util.*
 
-class GlVertex (val sourceVertex: Vertex){
+class RuntimeVertex (val sourceVertex: Vertex){
 
     /**
      * Name is assigned when vertex participates in incoming transition.

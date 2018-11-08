@@ -2,16 +2,16 @@ package ru.fix.completable.reactor.graph.internal
 
 import ru.fix.completable.reactor.graph.Graphable
 import ru.fix.completable.reactor.graph.Vertex
-import ru.fix.completable.reactor.graph.runtime.GlGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 
 class BuilderContext {
 
     private var fieldNameResolver: FieldNameResolver? = null
 
-    private var graph: GlGraph? = null
+    private var graph: RuntimeGraph? = null
 
-    fun setGraph(graph: Graphable, glGraph: GlGraph) {
-        this.graph = glGraph
+    fun setGraph(graph: Graphable, runtimeGraph: RuntimeGraph) {
+        this.graph = runtimeGraph
         this.fieldNameResolver = FieldNameResolver(graph, listOf(Vertex::class.java))
     }
 

@@ -2,7 +2,7 @@ package ru.fix.completable.reactor.graph.internal
 
 import ru.fix.completable.reactor.graph.TransitionBuilder
 import ru.fix.completable.reactor.graph.Vertex
-import ru.fix.completable.reactor.graph.runtime.GlVertex
+import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 //TODO: remove GL prefix: old version of reactor already gone.
 class GlTransitionBuilder(
         val vertex: Vertex,
@@ -60,7 +60,7 @@ class GlTransitionBuilder(
      * If transition does not exist add new transition to mergePoint.
      */
     fun mergeTransition(
-            sourceVertex: GlVertex,
+            sourceVertex: RuntimeVertex,
             newTransition: GlTransition,
             sourceVertexTransitions: MutableList<GlTransition>) {
 
@@ -78,7 +78,7 @@ class GlTransitionBuilder(
         } else {
             // not complete transition
 
-            val targetAccessor: (GlTransition) -> GlVertex?
+            val targetAccessor: (GlTransition) -> RuntimeVertex?
 
             when {
                 newTransition.handleBy != null -> targetAccessor = { transition: GlTransition -> transition.handleBy }

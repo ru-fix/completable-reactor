@@ -4,8 +4,8 @@ package ru.fix.completable.reactor.runtime.execution
 import mu.KotlinLogging
 import ru.fix.aggregating.profiler.Profiler
 import ru.fix.completable.reactor.graph.internal.GlTransition
-import ru.fix.completable.reactor.graph.runtime.GlGraph
-import ru.fix.completable.reactor.graph.runtime.GlVertex
+import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer
 import ru.fix.completable.reactor.runtime.tracing.Tracer
 import java.util.*
@@ -93,7 +93,7 @@ class ExecutionBuilder(
      *
      * <img src="./doc-files/ProcessingVertex.png" alt="">
      */
-    class ProcessingVertex(val vertex: GlVertex) {
+    class ProcessingVertex(val vertex: RuntimeVertex) {
 
         val incomingHandlingFlows = ArrayList<TransitionFuture<TransitionPayloadContext>>()
 
@@ -124,14 +124,14 @@ class ExecutionBuilder(
      * @param <PayloadType>
      * @return
      */
-    fun <PayloadType> build(glGraph: GlGraph): ReactorGraphExecution<PayloadType> {
+    fun <PayloadType> build(runtimeGraph: RuntimeGraph): ReactorGraphExecution<PayloadType> {
 
 
         /**
          * Internal representation of processing graph based on processing vertices.
          * //TODO: check, maybe we do not need map and simple list is enough fo rCR2
          */
-        val processingVertices = IdentityHashMap<GlVertex, ProcessingVertex>()
+        val processingVertices = IdentityHashMap<RuntimeVertex, ProcessingVertex>()
 
 
         val submitFuture = CompletableFuture<PayloadType>()
@@ -152,7 +152,7 @@ class ExecutionBuilder(
          * Init Processing Vertices based on graph model vertices
          *
          */
-        glGraph.vertices.forEach { vx ->
+        runtimeGraph.vertices.forEach { vx ->
             val pvx = ProcessingVertex(vertex = vx)
 
             /**
@@ -169,7 +169,7 @@ class ExecutionBuilder(
         /**
          * Populate start point transition
          */
-        for (vx in glGraph.startPoint) {
+        for (vx in runtimeGraph.startPoint) {
             val pvx = processingVertices[vx]!!
             pvx.incomingHandlingFlows.add(TransitionFuture(startPointTransitionFuture))
         }

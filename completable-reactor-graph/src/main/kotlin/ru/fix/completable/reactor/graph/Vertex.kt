@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.graph
 import ru.fix.completable.reactor.graph.internal.GlEmptyMerger
 import ru.fix.completable.reactor.graph.internal.GlTransition
 import ru.fix.completable.reactor.graph.internal.GlTransitionBuilder
-import ru.fix.completable.reactor.graph.runtime.GlVertex
+import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 
 /**
  * Graph node.
@@ -11,7 +11,7 @@ import ru.fix.completable.reactor.graph.runtime.GlVertex
 class Vertex {
 
     // Field accessed via reflection by field name
-    private var vx = GlVertex(this)
+    private var vx = RuntimeVertex(this)
 
     fun on(mergeStatus: Enum<*>): TransitionBuilder {
         if(vx.merger == null && vx.router == null){

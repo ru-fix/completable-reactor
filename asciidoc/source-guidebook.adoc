@@ -43,7 +43,7 @@ This model is displayed by viewer as visual representation.
 [code]
 ----
 ru.fix.completable.reactor.parser.java.JavaSourceParser
-ru.fix.completable.reactor.model.GraphModel
+ru.fix.completable.reactor.model.CompileTimeGraphModel
 ----
 image::source-guidebook/graph-representation-compiletime.png[]
 

@@ -1,11 +1,11 @@
 package ru.fix.completable.reactor.graph.internal
 
-import ru.fix.completable.reactor.graph.runtime.GlGraph
-import ru.fix.completable.reactor.model.GraphModel
+import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
+import ru.fix.completable.reactor.model.CompileTimeGraphModel
 
 class ModelBuilder{
 
-    fun build(graph: GlGraph): GraphModel {
+    fun build(graph: RuntimeGraph): CompileTimeGraphModel {
         graph.vertices.forEach { vertex ->
             if (vertex.name == null) {
                 throw IllegalArgumentException("Graph contains unnamed vertex.")
@@ -13,7 +13,7 @@ class ModelBuilder{
         }
 
         //TODO build model
-        return GraphModel()
+        return CompileTimeGraphModel()
 
         //TODO add Runtime Validation Steps
         //TODO add Compilte time validation steps in tests

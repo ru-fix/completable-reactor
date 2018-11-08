@@ -2,8 +2,8 @@ package ru.fix.completable.reactor.graph.internal
 
 import ru.fix.completable.reactor.graph.Graphable
 import ru.fix.completable.reactor.graph.Vertex
-import ru.fix.completable.reactor.graph.runtime.GlGraph
-import ru.fix.completable.reactor.graph.runtime.GlVertex
+import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 
 class InternalGlAccessor {
 
@@ -15,19 +15,19 @@ class InternalGlAccessor {
         }
 
         @JvmStatic
-        fun vx(vertex: Vertex): GlVertex = vxAccessor(vertex) as GlVertex
+        fun vx(vertex: Vertex): RuntimeVertex = vxAccessor(vertex) as RuntimeVertex
 
         @JvmStatic
-        fun graph(graph: Graphable): GlGraph {
+        fun graph(graph: Graphable): RuntimeGraph {
 
             var type: Class<*>? = graph.javaClass
 
             while (type != null) {
                 val field = type.declaredFields.find { it.name == "graph" }
 
-                if (field != null && field.type.isAssignableFrom(GlGraph::class.java)) {
+                if (field != null && field.type.isAssignableFrom(RuntimeGraph::class.java)) {
                     field.isAccessible = true
-                    return field.get(graph) as GlGraph
+                    return field.get(graph) as RuntimeGraph
                 }
 
                 type = type.superclass

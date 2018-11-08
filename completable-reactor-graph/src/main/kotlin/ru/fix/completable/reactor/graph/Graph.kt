@@ -1,7 +1,7 @@
 package ru.fix.completable.reactor.graph
 
 import ru.fix.completable.reactor.graph.internal.*
-import ru.fix.completable.reactor.graph.runtime.GlGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture
 abstract class Graph<Payload> : Graphable {
 
     // Field accessed via reflection by field name
-    private val graph = GlGraph()
+    private val graph = RuntimeGraph()
 
     init {
         // Deliberately leaking reference to ThreadLocal context.
