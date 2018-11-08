@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.graph.runtime
 
 import ru.fix.completable.reactor.graph.*
-import ru.fix.completable.reactor.graph.internal.GlTransition
 import java.util.*
 
 class RuntimeVertex (val sourceVertex: Vertex){
@@ -37,7 +36,7 @@ class RuntimeVertex (val sourceVertex: Vertex){
     var subgraphPayloadBuilder: Subgraph<Any?, Any?>? = null
 
     @JvmField
-    val transitions: MutableList<GlTransition> = ArrayList()
+    val transitions: MutableList<RuntimeTransition> = ArrayList()
 
     override fun toString(): String {
         val type = when {

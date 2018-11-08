@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.runtime
 import mu.KotlinLogging
 import ru.fix.completable.reactor.graph.Graphable
 import ru.fix.completable.reactor.graph.internal.BuilderContext
-import ru.fix.completable.reactor.graph.internal.InternalGlAccessor
+import ru.fix.completable.reactor.graph.internal.InternalDslAccessor
 import ru.fix.completable.reactor.graph.internal.ModelBuilder
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import ru.fix.completable.reactor.model.validation.ValidationFailed
@@ -18,7 +18,7 @@ class GraphBuilder {
 
     fun buildGraph(graph: Graphable): RuntimeGraph {
 
-        val glGraph = InternalGlAccessor.graph(graph)
+        val glGraph = InternalDslAccessor.graph(graph)
 
         glGraph.vertices.filter { it.name == null }.takeIf { it.isNotEmpty() }?.let { unusedVertices ->
 
