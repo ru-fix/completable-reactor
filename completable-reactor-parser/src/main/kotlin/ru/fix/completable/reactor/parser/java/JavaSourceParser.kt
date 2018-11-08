@@ -16,8 +16,8 @@ class JavaSourceParser(private val listener: Listener) {
         fun error(msg: String)
     }
 
-    fun parse(body: String, filePath: String): List<CompileTimeGraphModel> {
-        val result = ArrayList<CompileTimeGraphModel>()
+    fun parse(body: String, filePath: String): List<CompileTimeGraph> {
+        val result = ArrayList<CompileTimeGraph>()
 
         val lexer = GraphLexer(CharStreams.fromString(body))
 
@@ -45,7 +45,7 @@ class JavaSourceParser(private val listener: Listener) {
 
         for (borderStart in 0 until declarationBlockIndexes.size) {
 
-            val model = CompileTimeGraphModel()
+            val model = CompileTimeGraph()
 
             fun createVertexFromVertexBuilder(vertexName: String, vertexBuilder: VertexBuilderContext) =
                     createVertexFromVertexBuilder(tokens, model, vertexName, vertexBuilder, filePath)
@@ -387,7 +387,7 @@ class JavaSourceParser(private val listener: Listener) {
 
     private fun createVertexFromVertexBuilder(
             tokens: CommonTokenStream,
-            model: CompileTimeGraphModel,
+            model: CompileTimeGraph,
             vertexName: String,
             vertexBuilder: VertexBuilderContext,
             fileName: String) = with(model) {
@@ -453,7 +453,7 @@ class JavaSourceParser(private val listener: Listener) {
         }
     }
 
-    private fun getExistingTransitionableOrCreateImplicitMerger(model: CompileTimeGraphModel, transitionSourceVertex: String): TransitionableFigure? {
+    private fun getExistingTransitionableOrCreateImplicitMerger(model: CompileTimeGraph, transitionSourceVertex: String): TransitionableFigure? {
         //look for regular merger or router
         return with(model) {
             transitionable[transitionSourceVertex]

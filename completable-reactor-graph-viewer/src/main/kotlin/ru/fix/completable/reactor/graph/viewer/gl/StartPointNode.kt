@@ -6,7 +6,7 @@ import javafx.scene.control.MenuItem
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
 import javafx.scene.text.Text
-import ru.fix.completable.reactor.model.CompileTimeGraphModel
+import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.model.StartPoint
 
 /**
@@ -14,7 +14,7 @@ import ru.fix.completable.reactor.model.StartPoint
  */
 class StartPointNode(
         val startPoint: StartPoint,
-        val model: CompileTimeGraphModel,
+        val model: CompileTimeGraph,
         val actionListener: GraphViewer.ActionListener
 ) : GraphNode(startPoint) {
 

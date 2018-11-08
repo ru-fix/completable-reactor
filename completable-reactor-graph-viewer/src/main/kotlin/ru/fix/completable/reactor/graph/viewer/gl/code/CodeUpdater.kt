@@ -1,7 +1,7 @@
 package ru.fix.completable.reactor.graph.viewer.gl.code
 
 import ru.fix.completable.reactor.graph.viewer.gl.code.CoordinateCodePhrase.*
-import ru.fix.completable.reactor.model.CompileTimeGraphModel
+import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.model.Source
 
 /**
@@ -21,7 +21,7 @@ class CodeUpdater(private val codeType: CodeType) {
                 .toMap()
     }
 
-    private fun coordinateCodePhraseFromModel(graphModel: CompileTimeGraphModel): List<CoordinateCodePhrase> {
+    private fun coordinateCodePhraseFromModel(graphModel: CompileTimeGraph): List<CoordinateCodePhrase> {
         val result = ArrayList<CoordinateCodePhrase>()
 
         with(graphModel) {
@@ -157,7 +157,7 @@ class CodeUpdater(private val codeType: CodeType) {
     }
 
 
-    fun updateCoordinates(graphModel: CompileTimeGraphModel, editor: Editor) {
+    fun updateCoordinates(graphModel: CompileTimeGraph, editor: Editor) {
 
         val coordinates = coordinateCodePhraseFromModel(graphModel)
 
