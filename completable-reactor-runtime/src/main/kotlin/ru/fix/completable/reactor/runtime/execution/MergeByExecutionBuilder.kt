@@ -36,15 +36,15 @@ class MergeByExecutionBuilder<PayloadType>(
                         """.trimIndent())
                 }
 
-                pvx.handlingFeature.handleAsync { context, thr ->
+                pvx.handlingFuture.handleAsync { context, thr ->
                     if (thr != null) {
                         log.error(thr) { "Hanlding feature for vertex ${pvx.vertex.name} without merger failed." }
-                        pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                        pvx.mergingFuture.complete(MergePayloadContext(isTerminal = true))
                     } else {
                         /**
                          * This feature should be ignored in case of vertex without merger
                          */
-                        pvx.mergingFeature.complete(null)
+                        pvx.mergingFuture.complete(null)
                     }
                 }
                 continue
@@ -64,7 +64,7 @@ class MergeByExecutionBuilder<PayloadType>(
              * In case of router Handling future does not carry result, only the fact that all incoming handleBy
              * transitions is completed successfully.
              */
-            incomingFlows.add(pvx.handlingFeature)
+            incomingFlows.add(pvx.handlingFuture)
 
             CompletableFuture.allOf(*incomingFlows.toTypedArray())
                     .thenRunAsync {
@@ -79,7 +79,7 @@ class MergeByExecutionBuilder<PayloadType>(
                         /**
                          * This is Handler, Subgraph or Router
                          */
-                        handlePayloadContext = Optional.of(pvx.handlingFeature)
+                        handlePayloadContext = Optional.of(pvx.handlingFuture)
                                 .map { feature ->
                                     try {
                                         if (!feature.isDone) {
@@ -115,7 +115,7 @@ class MergeByExecutionBuilder<PayloadType>(
                              * All outgoing flows from merge point will be marked as terminal.
                              * executionResult completed by exception
                              */
-                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                            pvx.mergingFuture.complete(MergePayloadContext(isTerminal = true))
                             return@thenRunAsync
 
                         } else if (handlePayloadContext.isTerminal) {
@@ -124,7 +124,7 @@ class MergeByExecutionBuilder<PayloadType>(
                              * Merging will not be applied to payload.
                              * All outgoing flows from merge point will be marked as terminal.
                              */
-                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                            pvx.mergingFuture.complete(MergePayloadContext(isTerminal = true))
                             return@thenRunAsync
 
                         } else if (handlePayloadContext.isDeadTransition) {
@@ -133,7 +133,7 @@ class MergeByExecutionBuilder<PayloadType>(
                              * Merging will not be applied to payload.
                              * All outgoing flows from merge point will be marked as dead.
                              */
-                            pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
+                            pvx.mergingFuture.complete(MergePayloadContext(isDeadTransition = true))
                             return@thenRunAsync
                         }
 
@@ -193,18 +193,18 @@ class MergeByExecutionBuilder<PayloadType>(
                              * Exception during merging
                              * Mark as terminal all outgoing flows from merge point
                              */
-                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                            pvx.mergingFuture.complete(MergePayloadContext(isTerminal = true))
 
                         } else if (incomingMergingFlows.any(MergePayloadContext::isTerminal)) {
                             /**
                              * Terminal state reached.
                              * Mark as terminal all outgoing flows from merge point
                              */
-                            pvx.mergingFeature.complete(MergePayloadContext(isTerminal = true))
+                            pvx.mergingFuture.complete(MergePayloadContext(isTerminal = true))
 
                         } else {
                             /**
-                             * Handler, Router or Subgraph completed handlingFeature successfully.
+                             * Handler, Router or Subgraph completed handlingFuture successfully.
                              */
                             if (incomingMergingFlows.isEmpty()) {
                                 /**
@@ -240,7 +240,7 @@ class MergeByExecutionBuilder<PayloadType>(
                                          * There is incoming transition in status
                                          * Mark merge point as dead.
                                          */
-                                        pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
+                                        pvx.mergingFuture.complete(MergePayloadContext(isDeadTransition = true))
 
                                     } else {
                                         /**
@@ -367,7 +367,7 @@ class MergeByExecutionBuilder<PayloadType>(
                  * Terminal state reached. Execution result completed.
                  * Throw poison pill - terminal context. All following merge points should be deactivated.
                  */
-                pvx.mergingFeature.complete(MergePayloadContext(
+                pvx.mergingFuture.complete(MergePayloadContext(
                         payload = null,
                         mergeResult = mergeStatus,
                         isTerminal = true))
@@ -376,7 +376,7 @@ class MergeByExecutionBuilder<PayloadType>(
                 /**
                  * There is no terminal state reached after merging.
                  */
-                pvx.mergingFeature.complete(MergePayloadContext(
+                pvx.mergingFuture.complete(MergePayloadContext(
                         payload = payload,
                         mergeResult = mergeStatus))
             }
@@ -392,7 +392,7 @@ class MergeByExecutionBuilder<PayloadType>(
 
             executionResultFuture.completeExceptionally(exc)
 
-            pvx.mergingFeature.complete(MergePayloadContext(isDeadTransition = true))
+            pvx.mergingFuture.complete(MergePayloadContext(isDeadTransition = true))
 
         }
     }

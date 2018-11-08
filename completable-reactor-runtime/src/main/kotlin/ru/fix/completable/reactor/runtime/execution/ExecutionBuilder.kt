@@ -153,7 +153,7 @@ class ExecutionBuilder(
              * Completion of Mergerable feature triggers completion of outgoing transitions.
              */
 
-            val mergingFeature = mergerablePvx.mergingFeature
+            val mergingFeature = mergerablePvx.mergingFuture
 
             for (transition in mergerablePvx.outgoingTransitions) {
 
@@ -310,7 +310,7 @@ class ExecutionBuilder(
                 executionResultFuture,
                 * processingVertices.values
                         .asSequence()
-                        .flatMap { listOf(it.handlingFeature, it.mergingFeature).asSequence() }
+                        .flatMap { listOf(it.handlingFuture, it.mergingFuture).asSequence() }
                         .toList()
                         .toTypedArray()
         )
@@ -348,8 +348,8 @@ class ExecutionBuilder(
 
             state.forEach { vx ->
                 when {
-                    vx.handlingFeature.isDone
-                            && vx.mergingFeature.isDone -> completed.add(vx)
+                    vx.handlingFuture.isDone
+                            && vx.mergingFuture.isDone -> completed.add(vx)
 
                     vx.incomingHandlingFlows.all { it.feature.isDone }
                             && vx.incomingMergingFlows.all { it.feature.isDone } -> possiblyExecuting.add(vx)
@@ -366,8 +366,8 @@ class ExecutionBuilder(
             fun dump(vertices: Collection<ProcessingVertex>): String {
                 return vertices.joinToString(",\n", "\n", "\n") { vx ->
                     "\"${vx.vertex.name}\":{\n" +
-                            "\"handlingFuture\":${dump(vx.handlingFeature)},\n" +
-                            "\"mergingFuture\":${dump(vx.mergingFeature)},\n" +
+                            "\"handlingFuture\":${dump(vx.handlingFuture)},\n" +
+                            "\"mergingFuture\":${dump(vx.mergingFuture)},\n" +
                             "\"incomingHandlingFlows\":[${vx.incomingHandlingFlows.joinToString { dump(it.feature) }}],\n" +
                             "\"incomingMergingFlows\":[${vx.incomingMergingFlows.joinToString { dump(it.feature) }}]\n" +
                             "}"

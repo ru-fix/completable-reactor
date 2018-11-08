@@ -20,15 +20,14 @@ class ProcessingVertex(val vertex: RuntimeVertex,
 
     val incomingMergingFlows = ArrayList<ExecutionBuilder.TransitionFuture<ExecutionBuilder.MergePayloadContext>>()
 
-    //TODO: rename to Future
-    val handlingFeature = CompletableFuture<ExecutionBuilder.HandlePayloadContext>()
+    val handlingFuture = CompletableFuture<ExecutionBuilder.HandlePayloadContext>()
 
-    val mergingFeature = CompletableFuture<ExecutionBuilder.MergePayloadContext>()
+    val mergingFuture = CompletableFuture<ExecutionBuilder.MergePayloadContext>()
 
     /**
      * Holds information about outgoing transitions from this merge point.
      * If during merging process we will receive merge status that match any of terminal transitions
-     * then we should complete mergingFeature with Terminal MergePayloadContext
+     * then we should complete mergingFuture with Terminal MergePayloadContext
      */
     val outgoingTransitions = ArrayList<RuntimeTransition>()
 
