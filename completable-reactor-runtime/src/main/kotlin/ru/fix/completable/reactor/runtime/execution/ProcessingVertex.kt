@@ -32,12 +32,6 @@ class ProcessingVertex(val vertex: RuntimeVertex,
      */
     val outgoingTransitions = ArrayList<RuntimeTransition>()
 
-    /**
-     * This is Merger or Router
-     */
-    val isMergerable: Boolean
-        get() = vertex.merger != null || vertex.router != null
-
 
     fun invokeHandlingMethod(payload: Any?): CompletableFuture<Any?> {
 

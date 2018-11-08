@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.graph.runtime
 import ru.fix.completable.reactor.graph.*
 import java.util.*
 
-class RuntimeVertex (val sourceVertex: Vertex){
+class RuntimeVertex(val sourceVertex: Vertex) {
 
     /**
      * Name is assigned when vertex participates in incoming transition.
@@ -38,13 +38,19 @@ class RuntimeVertex (val sourceVertex: Vertex){
     @JvmField
     val transitions: MutableList<RuntimeTransition> = ArrayList()
 
-    override fun toString(): String {
-        val type = when {
-            handler != null -> "handler"
-            router != null -> "router"
-            subgraphPayloadBuilder != null -> "subgraph"
-            else -> "unknown: $name"
-        }
-        return "$type: $name"
+    val isMergerable: Boolean
+        get() = merger != null || router != null
+
+    enum class Type {
+        HandlerWithMerger,
+        HandlerWithRoutingMerger,
+        HandlerWithoutMerger,
+        Router,
+        Mutator,
+        Subgraph
     }
+
+    var type: Type? = null
+
+    override fun toString() = "$type: $name"
 }
