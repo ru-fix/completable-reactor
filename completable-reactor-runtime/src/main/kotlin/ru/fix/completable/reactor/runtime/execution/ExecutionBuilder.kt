@@ -10,7 +10,6 @@ import ru.fix.completable.reactor.runtime.debug.DebugSerializer
 import ru.fix.completable.reactor.runtime.tracing.Tracer
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import kotlin.collections.ArrayList
 
 typealias SubgraphRunner = (Any?) -> CompletableFuture<Any?>
 
@@ -85,39 +84,6 @@ class ExecutionBuilder(
             val feature: CompletableFuture<PayloadContextType>
     )
 
-    /**
-     * Each Processing Vertex (pvx) is mapped to Vertex (vx).
-     * Tree of vertexes (vx) represents graph model and it is immutable.
-     * Tree of Processing Vertexes (pvx) represents execution graph. Runtime build execution graph each time payload
-     * submitted to ReactorGraph.
-     *
-     * <img src="./doc-files/ProcessingVertex.png" alt="">
-     */
-    class ProcessingVertex(val vertex: RuntimeVertex) {
-
-        val incomingHandlingFlows = ArrayList<TransitionFuture<TransitionPayloadContext>>()
-
-        val incomingMergingFlows = ArrayList<TransitionFuture<MergePayloadContext>>()
-
-        //TODO: rename to Future
-        val handlingFeature = CompletableFuture<HandlePayloadContext>()
-
-        val mergingFeature = CompletableFuture<MergePayloadContext>()
-
-        /**
-         * Holds information about outgoing transitions from this merge point.
-         * If during merging process we will receive merge status that match any of terminal transitions
-         * then we should complete mergingFeature with Terminal MergePayloadContext
-         */
-        val outgoingTransitions = ArrayList<RuntimeTransition>()
-
-        /**
-         * This is Merger or Router
-         */
-        val isMergerable: Boolean
-            get() = vertex.merger != null || vertex.router != null
-    }
-
 
     /**
      * @param reactorGraph
@@ -153,7 +119,10 @@ class ExecutionBuilder(
          *
          */
         runtimeGraph.vertices.forEach { vx ->
-            val pvx = ProcessingVertex(vertex = vx)
+            val pvx = ProcessingVertex(
+                    vertex = vx,
+                    subgraphRunner = subgraphRunner,
+                    debugSerializer = debugSerializer)
 
             /**
              * Populate MergePoints transitions

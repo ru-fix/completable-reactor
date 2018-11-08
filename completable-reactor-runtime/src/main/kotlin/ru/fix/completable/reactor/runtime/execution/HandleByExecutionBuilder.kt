@@ -5,7 +5,6 @@ import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.ProfilerNames
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_TRANSITION_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.HandlePayloadContext
-import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.ProcessingVertex
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
@@ -128,77 +127,6 @@ class HandleByExecutionBuilder<PayloadType>(
         }//end of handleBy flows
     }
 
-    private fun invokeHandlingMethod(
-            pvx: ProcessingVertex,
-            payload: Any?): CompletableFuture<Any?> {
-
-        return when {
-            // Handler
-            pvx.vertex.handler != null -> invokeHandlerHandlingMethod(pvx, payload)
-
-            // Subgraph
-            pvx.vertex.subgraphPayloadBuilder != null -> invokeSubgraphHandlingMethod(pvx, payload)
-
-            // Router route method is invoked in MergeBy section in a way Merger merge method works.
-            // To pass execution down to mergerFeature for Router we use fake empty handling
-            pvx.vertex.router != null -> CompletableFuture.completedFuture(null)
-
-            else -> throw IllegalStateException(
-                    """
-                    Vertex ${pvx.vertex.name} is not handler or subgraph
-                     but engine tries to execute handling method.
-                    """.trimIndent())
-        }
-    }
-
-    private fun invokeSubgraphHandlingMethod(pvx: ProcessingVertex, payload: Any?): CompletableFuture<Any?> {
-        val subgraphPayload = pvx.vertex.subgraphPayloadBuilder!!.subgraph(payload)
-
-        return try {
-            builder.subgraphRunner(subgraphPayload)
-        } catch (exc: Exception) {
-            val result = CompletableFuture<Any?>()
-            result.completeExceptionally(
-                    IllegalArgumentException(
-                            """
-                            Exception during subgraph launching for vertex ${pvx.vertex.name}.
-                            Payload: ${builder.debugSerializer.dumpObject(payload)}
-                            """.trimIndent(),
-                            exc))
-            result
-        }
-    }
-
-    private fun invokeHandlerHandlingMethod(pvx: ProcessingVertex, payload: Any?): CompletableFuture<Any?> {
-
-        var result: CompletableFuture<Any?>?
-
-        try {
-            result = pvx.vertex.handler!!.handle(payload)
-
-        } catch (exc: Exception) {
-            result = CompletableFuture()
-            result.completeExceptionally(
-                    IllegalArgumentException(
-                            """
-                            Exception during handler invocation for vertex ${pvx.vertex.name}.
-                            Payload: ${builder.debugSerializer.dumpObject(payload)}
-                            """.trimIndent(),
-                            exc))
-        }
-
-        if (result == null) {
-            result = CompletableFuture()
-            result.completeExceptionally(
-                    NullPointerException(
-                            """
-                            Handler returned NULL for vertex ${pvx.vertex.name}.
-                            Payload: ${builder.debugSerializer.dumpObject(payload)}
-                            """.trimIndent()))
-        }
-
-        return result
-    }
 
     private fun <PayloadType> handle(
             pvx: ProcessingVertex,
@@ -227,33 +155,18 @@ class HandleByExecutionBuilder<PayloadType>(
                 } else {
                     null
                 }
-        val handlingResult: CompletableFuture<Any?>?
+        val handlingResult: CompletableFuture<Any?>
 
         try {
-            handlingResult = invokeHandlingMethod(pvx, payload)
+            handlingResult = pvx.invokeHandlingMethod(payload)
 
         } catch (handlingException: Exception) {
             val exc = RuntimeException(
                     """
-                    Failed handling by veretx ${vx.name} for payload ${builder.debugSerializer.dumpObject(payload)}.
-                    Handling method raised exception: $handlingException.
+                    Failed to run handling method by veretx ${vx.name} for payload ${builder.debugSerializer.dumpObject(payload)}.
+                    Handling method raised an exception: $handlingException.
                     """.trimIndent(),
                     handlingException)
-
-            log.error(exc) {}
-            executionResultFuture.completeExceptionally(exc)
-            pvx.handlingFeature.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
-            handleCall.stop()
-            return
-        }
-
-        if (handlingResult == null) {
-            val exc = RuntimeException(
-                    """
-                    Failed handling by vertex ${vx.name} for payload ${builder.debugSerializer.dumpObject(payload)}.
-                    Handling method returned NULL.
-                    Instance of CompletableFuture expected.
-                    """.trimIndent())
 
             log.error(exc) {}
             executionResultFuture.completeExceptionally(exc)
@@ -290,7 +203,7 @@ class HandleByExecutionBuilder<PayloadType>(
             null
 
         }.exceptionally { exc ->
-            log.error("Failed to execute afterHandle block for vertex ${pvx.vertex.name}")
+            log.error(exc) { "Failed to execute afterHandle block for vertex ${pvx.vertex.name}" }
             null
         }
     }

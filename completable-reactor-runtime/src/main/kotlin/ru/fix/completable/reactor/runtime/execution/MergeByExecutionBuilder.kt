@@ -282,28 +282,6 @@ class MergeByExecutionBuilder<PayloadType>(
             payload: Any?,
             executionResultFuture: CompletableFuture<PayloadType>) {
 
-
-        var mergerInvocation: () -> Enum<*>
-
-        when {
-            pvx.vertex.merger != null -> mergerInvocation = { pvx.vertex.merger!!.merge(payload, handlingResult) }
-            pvx.vertex.router != null -> {
-                if (handlingResult != null) {
-                    throw IllegalStateException("""
-                        Invalid runtime behavior.
-                        Router received non null handling result.
-                        Vertex: ${pvx.vertex.name}
-                        """.trimIndent())
-                }
-                mergerInvocation = { pvx.vertex.router!!.route(payload) }
-            }
-            else -> throw IllegalArgumentException("""
-                        Vertex does not have merger or router.
-                        And tries to participate in merging invocation.
-                        Vertex: ${pvx.vertex.name}
-                        """.trimIndent())
-        }
-
         try {
 
             val mergeCall = builder.profiler.profiledCall(
@@ -320,7 +298,7 @@ class MergeByExecutionBuilder<PayloadType>(
                         null
                     }
 
-            val mergeStatus = mergerInvocation()
+            val mergeStatus = pvx.invokeMergingMethod(payload, handlingResult)
 
             mergeCall.stop()
 

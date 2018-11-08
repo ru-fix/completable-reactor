@@ -47,6 +47,30 @@ ru.fix.completable.reactor.model.CompileTimeGraph
 ----
 image::source-guidebook/graph-representation-compiletime.png[]
 
+=== Execution Process
+Each invocation of Completable Reactor triggers execution process that consists of three parts.
+
+* Read graph runtime description `RuntimeGraph/RuntimeVertices`
+* Build CompletableFuture chain that implements given Graph
+* Execute CompletableFuture chain
+
+[code]
+----
+ru.fix.completable.reactor.runtime.execution.ExecutionBuilder
+----
+is responsible for building CompletableFuture chain.
+Intermediate representation of CompletableFuture chain is a graph of Processing Vertices.
+Processing Vertex Graph is a temporal structure that stores CompletableFutures.
+Each ProcessingVertex (pvx) in Processing Vertex Graph is linked with RuntimeVertex (vx).
+Tree of Runtime Vertices (vx) is build by DSL and represents graph structure.
+Tree of runtime graph is immutable.
+Tree of Processing Vertexes (pvx) represents execution graph.
+Runtime builds execution graph each time when payload submitted to ReactorGraph.
+
+Processing Vertex keeps references to CompletableFutures.
+CompletableFutures represent incoming or outgoing transitions and result of computation particular elements of a vertex: handlers.
+
+image::source-guidebook/processing-vertex.png[]
 
 === How to build
 There is no task that builds Intellij Idea plugin.
