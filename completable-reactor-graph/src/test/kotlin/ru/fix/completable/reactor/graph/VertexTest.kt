@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.graph
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import ru.fix.completable.reactor.graph.internal.InternalGlAccessor
+import ru.fix.completable.reactor.graph.internal.InternalDslAccessor
 
 private const val VERTEX_NAME = "vertex"
 
@@ -19,7 +19,7 @@ class VertexTest {
         val onAnyTransition = Vertex()
         val vertex = Vertex()
 
-        InternalGlAccessor.vx(vertex).apply {
+        InternalDslAccessor.vx(vertex).apply {
             name = VERTEX_NAME
             router = object: Router<Any?> {
                 override fun route(payload: Any?): Enum<*> {
@@ -42,7 +42,7 @@ class VertexTest {
         val onAnyTransition = Vertex()
         val vertex = Vertex()
 
-        InternalGlAccessor.vx(vertex).apply {
+        InternalDslAccessor.vx(vertex).apply {
             name = VERTEX_NAME
             router = object: Router<Any?> {
                 override fun route(payload: Any?): Enum<*> {
@@ -63,7 +63,7 @@ class VertexTest {
     fun onElse_withoutMergerAndRouter_mustThrowException() {
         val onElseTransition = Vertex()
         val vertex = Vertex()
-        InternalGlAccessor.vx(vertex).apply { name = VERTEX_NAME }
+        InternalDslAccessor.vx(vertex).apply { name = VERTEX_NAME }
 
         val ex = assertThrows<IllegalArgumentException> {
             vertex.onElse().handleBy(onElseTransition)
@@ -80,7 +80,7 @@ class VertexTest {
         val onElseTransition = Vertex()
         val vertex = Vertex()
 
-        InternalGlAccessor.vx(vertex).apply { name = VERTEX_NAME }
+        InternalDslAccessor.vx(vertex).apply { name = VERTEX_NAME }
 
         val ex = assertThrows<IllegalArgumentException> {
             vertex.onAny().handleBy(onElseTransition)
