@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
 import ru.fix.completable.reactor.graph.viewer.gl.Shortcut
 import ru.fix.completable.reactor.graph.viewer.gl.ShortcutType
-import ru.fix.completable.reactor.model.CompileTimeGraphModel
+import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.model.Source
 import ru.fix.completable.reactor.parser.java.JavaSourceParser
 import ru.fix.completable.reactor.test.utils.ProjectFileResolver
@@ -50,7 +50,7 @@ class GraphVisualizationManualTest : Application() {
             println("goToSubgraph: " + subgraphPayloadType)
         }
 
-        override fun coordinatesChanged(graphModel: CompileTimeGraphModel) {
+        override fun coordinatesChanged(graphModel: CompileTimeGraph) {
             println("coordinatesChanged")
         }
     }

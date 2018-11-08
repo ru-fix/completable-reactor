@@ -4,7 +4,7 @@ import javafx.scene.Scene
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.layout.Pane
-import ru.fix.completable.reactor.model.CompileTimeGraphModel
+import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.model.Source
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -33,7 +33,7 @@ class GraphViewer {
             }
         }
 
-        override fun coordinatesChanged(graphModel: CompileTimeGraphModel) {
+        override fun coordinatesChanged(graphModel: CompileTimeGraph) {
             for (listener in actionListeners) {
                 listener.coordinatesChanged(graphModel)
             }
@@ -47,7 +47,7 @@ class GraphViewer {
         scene.stylesheets.add(javaClass.getResource("/css/styles.css").toExternalForm())
     }
 
-    fun openGraph(graphs: List<CompileTimeGraphModel>, resetViewer: Boolean = true) {
+    fun openGraph(graphs: List<CompileTimeGraph>, resetViewer: Boolean = true) {
         if (graphs.isEmpty()) {
             return
         }
@@ -154,6 +154,6 @@ class GraphViewer {
          *
          * @param coordinateItems new coordinates
          */
-        fun coordinatesChanged(graphModel: CompileTimeGraphModel)
+        fun coordinatesChanged(graphModel: CompileTimeGraph)
     }
 }
