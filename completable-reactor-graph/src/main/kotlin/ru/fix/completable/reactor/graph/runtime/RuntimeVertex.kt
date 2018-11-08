@@ -5,6 +5,23 @@ import java.util.*
 
 class RuntimeVertex(val sourceVertex: Vertex) {
 
+    companion object {
+        private val ROUTABLE_TYPES = setOf(
+                Type.HandlerWithRoutingMerger,
+                Type.SubgraphWithRoutingMerger,
+                Type.Router)
+
+        private val MERGERABLE_TYPES = setOf(
+                Type.HandlerWithMerger,
+                Type.HandlerWithEmptyMerger,
+                Type.HandlerWithRoutingMerger,
+                Type.SubgraphWithMerger,
+                Type.SubgraphWithEmptyMerger,
+                Type.SubgraphWithRoutingMerger,
+                Type.Router,
+                Type.Mutator)
+    }
+
     /**
      * Name is assigned when vertex participates in incoming transition.
      * If Name is NULL this means that there were no incoming transition to vertex.
@@ -16,23 +33,13 @@ class RuntimeVertex(val sourceVertex: Vertex) {
     @JvmField
     var handler: Handler<Any?, Any?>? = null
 
-
     //TODO: rename to routing merger
     @JvmField
     var merger: RoutingMerger<Any?, Any?>? = null
 
-    /**
-     * Merger or EmptyMerger or Mutator are non routable, they could participate only in onAny() transition
-     * RoutingMerger and Router are routable, they could participate in on(state) transition
-     */
-    @JvmField
-    var isRoutable: Boolean = false
-
-    @JvmField
-    var router: Router<Any?>? = null
-
     @JvmField
     var subgraphPayloadType: Class<*>? = null
+
 
     @JvmField
     var subgraphPayloadBuilder: Subgraph<Any?, Any?>? = null
@@ -40,16 +47,27 @@ class RuntimeVertex(val sourceVertex: Vertex) {
     @JvmField
     val transitions: MutableList<RuntimeTransition> = ArrayList()
 
+
+    /**
+     * Merger or EmptyMerger or Mutator are non routable, they could participate only in onAny() transition
+     * RoutingMerger and Router are routable, they could participate in on(state) transition
+     */
+    val isRoutable: Boolean
+        get() = type in ROUTABLE_TYPES
+
+//TODO: rename and give same concept as compileTime graph
     val isMergerable: Boolean
-        get() = merger != null || router != null
+        get() = type in MERGERABLE_TYPES
 
     enum class Type {
         HandlerWithMerger,
         HandlerWithRoutingMerger,
         HandlerWithoutMerger,
+        SubgraphWithMerger,
+        SubgraphWithRoutingMerger,
+        SubgraphWithoutMerger,
         Router,
         Mutator,
-        Subgraph
     }
 
     var type: Type? = null

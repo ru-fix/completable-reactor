@@ -18,6 +18,13 @@ class GraphBuilderValidator {
         requireNull(vx.subgraphPayloadBuilder, "router method used after subgraph initialization for given vertex")
     }
 
+    fun validateMutator(vx: RuntimeVertex) {
+        requireNull(vx.handler, "mutator method used after handler initialization for given vertex")
+        requireNull(vx.merger, "mutator method used after merger initialization for given vertex")
+        requireNull(vx.router, "mutator method used twice on same vertex")
+        requireNull(vx.subgraphPayloadBuilder, "mutator method used after subgraph initialization for given vertex")
+    }
+
     fun validateSubgraph(vx: RuntimeVertex){
         requireNull(vx.handler, "subgraph method used after handler initialization for given vertex")
         requireNull(vx.merger, "subgraph method used after merger initialization for given vertex")
