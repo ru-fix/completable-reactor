@@ -115,7 +115,7 @@ class GraphVisualizationManualTest : Application() {
     fun `open source with several graphs`() {
         Application.launch(
                 ProjectFileResolver().resolvePath(
-                        "completable-reactor-runtime/src/test/java/ru/fix/completable/reactor/runtime/tests/GlCompletableReactorTest.java"
+                        "completable-reactor-runtime/src/test/java/ru/fix/completable/reactor/runtime/tests/CompletableReactorTest.java"
                 ).toString()
         )
     }
