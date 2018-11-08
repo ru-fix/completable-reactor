@@ -47,7 +47,7 @@ object Libs {
     val kotlinCoroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlinCoroutines}"
     val kotlinCoroutinesJdk = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Vers.kotlinCoroutines}"
 
-    val lombok = "org.projectlombok:lombok:1.18.2"
+    val lombok = "org.projectlombok:lombok:1.18.4"
     val apacheCommonsLang = "org.apache.commons:commons-lang3:3.5"
     val antlrRuntime = "org.antlr:antlr4-runtime:4.7.1"
     val antlrAll = "org.antlr:antlr4:4.7.1"
