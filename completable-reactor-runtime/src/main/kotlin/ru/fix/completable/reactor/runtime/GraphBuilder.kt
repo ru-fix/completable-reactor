@@ -5,7 +5,7 @@ import ru.fix.completable.reactor.graph.Graphable
 import ru.fix.completable.reactor.graph.internal.BuilderContext
 import ru.fix.completable.reactor.graph.internal.InternalGlAccessor
 import ru.fix.completable.reactor.graph.internal.ModelBuilder
-import ru.fix.completable.reactor.graph.runtime.GlGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import ru.fix.completable.reactor.model.validation.ValidationFailed
 import ru.fix.completable.reactor.model.validation.ValidationSucceed
 import ru.fix.completable.reactor.model.validation.Validators
@@ -16,7 +16,7 @@ class GraphBuilder {
 
     private val modelBuilder = ModelBuilder()
 
-    fun buildGraph(graph: Graphable): GlGraph {
+    fun buildGraph(graph: Graphable): RuntimeGraph {
 
         val glGraph = InternalGlAccessor.graph(graph)
 

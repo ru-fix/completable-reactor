@@ -19,7 +19,7 @@ import javafx.scene.input.KeyCode
 import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
 import ru.fix.completable.reactor.graph.viewer.gl.Shortcut
 import ru.fix.completable.reactor.graph.viewer.gl.ShortcutType
-import ru.fix.completable.reactor.model.GraphModel
+import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.parser.java.JavaSourceParser
 import java.awt.Dimension
 import java.awt.event.KeyEvent
@@ -53,7 +53,7 @@ class Viewer(
     lateinit var popup: JBPopup
 
     @Volatile
-    lateinit var displayedModel: GraphModel
+    lateinit var displayedModel: CompileTimeGraph
 
     fun show() {
         graphViewer.setShortcut(ShortcutType.GOTO_GRAPH, Shortcut(true, KeyCode.B))

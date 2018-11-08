@@ -1,7 +1,7 @@
 package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
-import ru.fix.completable.reactor.graph.runtime.GlVertex
+import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.ProfilerNames
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.*
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_HANDLE_PAYLOAD_CONTEXT
@@ -13,7 +13,7 @@ import java.util.stream.Collectors
 private val log = KotlinLogging.logger {}
 
 class MergeByExecutionBuilder<PayloadType>(
-        val processingVertices: IdentityHashMap<GlVertex, ProcessingVertex>,
+        val processingVertices: IdentityHashMap<RuntimeVertex, ProcessingVertex>,
         val executionResultFuture: CompletableFuture<PayloadType>,
         val builder: ExecutionBuilder) {
 

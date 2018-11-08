@@ -1,11 +1,11 @@
 package ru.fix.completable.reactor.model.validation
 
-import ru.fix.completable.reactor.model.GraphModel
+import ru.fix.completable.reactor.model.CompileTimeGraph
 
 
 class AtLeastOneEndPointExistValidator : Validator {
 
-    override fun validate(graph: GraphModel): ValidationResult {
+    override fun validate(graph: CompileTimeGraph): ValidationResult {
 
         return if (graph.transitionable
                         .values
