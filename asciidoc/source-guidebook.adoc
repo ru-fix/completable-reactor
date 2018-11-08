@@ -60,5 +60,18 @@ In order to open plugin module into Intellij Idea you have to manually add line
 
 into `.idea/modules.xml` configuration file.
 
-
+=== Generate documentation
+Documentation source located at
+----
+asciidoc/*
+----
+Compiled documentation stored at
+----
+docs/*
+----
+Compiled sources stored in git and served as a static content.
+To compile documentation run
+----
+gradle asciidoctor
+----
 
