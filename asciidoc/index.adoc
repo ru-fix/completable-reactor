@@ -31,7 +31,15 @@ Complex business logic with lots of branching and concurrently executing parts h
  approach without proper visualization. One of ways to represent that branching is a graph with nodes and
  transitions.
 CompletableReactor API tries to keep API as simple and possible, saves benefits of statically typed languages and in
-same time provides ability for fast code parsing and visualization as a graph of execution flows.
+same time provides ability for fast code parsing and visualization the execution flow.
+
+Project goals are:
+
+- Tool that can visualize complex concurrent code in simple and self-documented manner and can provide search and navigation capabilities.
+- Code first approach: write concurrent code and then visualize/navigate through it in your favorite IDE
+- Concise easy to learn DSL that enables fast source code parsing for visualization purpose
+- Tracing, profiling, performance monitoring, detailed information in exceptional cases out of the box.
+- Performance and lightweight
 
 == Getting Started
 

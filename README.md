@@ -9,7 +9,7 @@ that parse code and displays it as an execution graph. CompletableReactor follow
 writes code and IDE visualizes it in plugin window and provides ability to navigate from graph to code and backward.
 
 Framework built on top of Fork Join Pool and CompletableFuture API. Different JVM based languages use extension
-to support more suitable DSL-like API. Currently supported DSLs are for `Java` and `Kotlin` languages.  
+to support more suitable DSL-like API.  
 
 Visit CompletableReactor site for project documentation:   
 https://ru-fix.github.io/completable-reactor/
