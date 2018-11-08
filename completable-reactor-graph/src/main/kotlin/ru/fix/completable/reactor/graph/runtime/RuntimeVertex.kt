@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.graph.runtime
 
 import ru.fix.completable.reactor.graph.*
-import ru.fix.completable.reactor.graph.internal.RuntimeTransition
 import java.util.*
 
 class RuntimeVertex (val sourceVertex: Vertex){

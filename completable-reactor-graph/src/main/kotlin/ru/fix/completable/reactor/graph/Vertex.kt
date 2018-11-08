@@ -1,7 +1,7 @@
 package ru.fix.completable.reactor.graph
 
 import ru.fix.completable.reactor.graph.internal.RuntimeEmptyMerger
-import ru.fix.completable.reactor.graph.internal.RuntimeTransition
+import ru.fix.completable.reactor.graph.runtime.RuntimeTransition
 import ru.fix.completable.reactor.graph.internal.DslTransitionBuilder
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 

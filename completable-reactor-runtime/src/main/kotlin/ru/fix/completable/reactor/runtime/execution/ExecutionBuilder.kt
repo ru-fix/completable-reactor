@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
 import ru.fix.aggregating.profiler.Profiler
-import ru.fix.completable.reactor.graph.internal.RuntimeTransition
+import ru.fix.completable.reactor.graph.runtime.RuntimeTransition
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer
