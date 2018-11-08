@@ -38,7 +38,7 @@ class Main : Application() {
                     }
                 })
 
-                val viewer2 = ru.fix.completable.reactor.graph.viewer.gl.GraphViewer()
+                val viewer2 = ru.fix.completable.reactor.graph.viewer.GraphViewer()
                 stage.scene = viewer2.scene
 
                 //TODO: add drag&drop

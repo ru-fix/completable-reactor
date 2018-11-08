@@ -6,9 +6,9 @@ import javafx.stage.Stage
 import mu.KotlinLogging
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
-import ru.fix.completable.reactor.graph.viewer.gl.Shortcut
-import ru.fix.completable.reactor.graph.viewer.gl.ShortcutType
+import ru.fix.completable.reactor.graph.viewer.GraphViewer
+import ru.fix.completable.reactor.graph.viewer.Shortcut
+import ru.fix.completable.reactor.graph.viewer.ShortcutType
 import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.model.Source
 import ru.fix.completable.reactor.parser.java.JavaSourceParser

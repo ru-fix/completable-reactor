@@ -9,9 +9,9 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.LocalFileSystem
-import ru.fix.completable.reactor.graph.viewer.gl.code.CodeUpdater
-import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
-import ru.fix.completable.reactor.model.GraphModel
+import ru.fix.completable.reactor.graph.viewer.code.CodeUpdater
+import ru.fix.completable.reactor.graph.viewer.GraphViewer
+import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.model.Source
 
 /**
@@ -36,7 +36,7 @@ class ReactorGraphAction : AnAction() {
         )
 
         viewer.graphViewer.registerListener(object : GraphViewer.ActionListener {
-            override fun coordinatesChanged(graphModel: GraphModel) {
+            override fun coordinatesChanged(graphModel: CompileTimeGraph) {
 
                 ApplicationManager.getApplication().invokeLater {
                     ApplicationManager.getApplication().runReadAction {
