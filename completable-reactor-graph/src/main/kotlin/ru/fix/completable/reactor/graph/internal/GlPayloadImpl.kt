@@ -2,9 +2,9 @@ package ru.fix.completable.reactor.graph.internal
 
 import ru.fix.completable.reactor.graph.PayloadTransitionBuilder
 import ru.fix.completable.reactor.graph.Vertex
-import ru.fix.completable.reactor.graph.runtime.GlGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 
-class GlPayloadImpl<Payload>(val graph: GlGraph) : PayloadTransitionBuilder<Payload> {
+class GlPayloadImpl<Payload>(val graph: RuntimeGraph) : PayloadTransitionBuilder<Payload> {
 
     override fun handleBy(vertex: Vertex): PayloadTransitionBuilder<Payload> {
         val vx = InternalGlAccessor.vx(vertex)

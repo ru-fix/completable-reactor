@@ -4,14 +4,14 @@ import kotlinx.coroutines.experimental.future.future
 import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.kotlin.internal.GlMergerBuilder
-import ru.fix.completable.reactor.graph.runtime.GlGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
 
 open class Graph<Payload> : Graphable {
 
     // Field accessed via reflection by field name
-    private val graph = GlGraph()
+    private val graph = RuntimeGraph()
 
     init {
         // Deliberately leaking reference to ThreadLocal context.
