@@ -42,14 +42,14 @@ abstract class Graph<Payload> : Graphable {
      * Specifies StartPoint of the graph. Can be used to create transitions from StartPoint to Vertices.
      */
     protected fun payload(): PayloadTransitionBuilder<Payload> {
-        return GlPayloadImpl(graph)
+        return DslPayloadImpl(graph)
     }
 
     /**
      * Specifies position of graph nodes for visualization purpose.
      */
     protected fun coordinates(): CoordinatesBuilder {
-        return GlCoordinatesBuilder()
+        return DslCoordinatesBuilder()
     }
 
     /**
@@ -76,13 +76,13 @@ abstract class Graph<Payload> : Graphable {
             MergerBuilder<Payload, HandlerResult> {
 
         val vertex = Vertex()
-        val vx = InternalGlAccessor.vx(vertex)
+        val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
 
         graphBuilderValidator.validateHandler(vx)
 
         vx.handler = handler as Handler<Any?, Any?>
-        return GlMergerBuilder(vertex)
+        return DslMergerBuilder(vertex)
     }
 
     /**
@@ -90,7 +90,7 @@ abstract class Graph<Payload> : Graphable {
      */
     protected fun router(router: Router<Payload>): Vertex {
         val vertex = Vertex()
-        val vx = InternalGlAccessor.vx(vertex)
+        val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
 
         graphBuilderValidator.validateRouter(vx)
@@ -107,7 +107,7 @@ abstract class Graph<Payload> : Graphable {
         return router(object : Router<Payload> {
             override fun route(payload: Payload): Enum<*> {
                 mutator.mutate(payload)
-                return GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
+                return RuntimeEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
             }
         })
     }
@@ -120,13 +120,13 @@ abstract class Graph<Payload> : Graphable {
             subgraph: Subgraph<Payload, SubgraphPayload>): MergerBuilder<Payload, SubgraphPayload> {
 
         val vertex = Vertex()
-        val vx = InternalGlAccessor.vx(vertex)
+        val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
 
         graphBuilderValidator.validateSubgraph(vx)
 
         vx.subgraphPayloadType = subgraphPayloadType
         vx.subgraphPayloadBuilder = subgraph as Subgraph<Any?, Any?>
-        return GlMergerBuilder(vertex)
+        return DslMergerBuilder(vertex)
     }
 }
