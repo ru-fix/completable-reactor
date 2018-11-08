@@ -6,7 +6,7 @@ import ru.fix.aggregating.profiler.PrefixedProfiler;
 import ru.fix.aggregating.profiler.ProfiledCall;
 import ru.fix.aggregating.profiler.Profiler;
 import ru.fix.completable.reactor.graph.Graphable;
-import ru.fix.completable.reactor.graph.runtime.GlGraph;
+import ru.fix.completable.reactor.graph.runtime.RuntimeGraph;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder;
@@ -71,7 +71,7 @@ public class CompletableReactor implements AutoCloseable {
 
     private final AtomicLong closeTimeoutMs = new AtomicLong(120_000);
 
-    private final ConcurrentHashMap<Class<?>, GlGraph> glPayloadGraphs = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<?>, RuntimeGraph> glPayloadGraphs = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Class<? extends Graphable>, Boolean> glGraphConfigs = new ConcurrentHashMap<>();
 
     /**
@@ -88,7 +88,7 @@ public class CompletableReactor implements AutoCloseable {
         glGraphConfigs.computeIfAbsent(graphConfig.getClass(), type -> {
 
             Class payloadType = getPayloadTypeForGraphConfigBasedClass(graphConfig.getClass());
-            GlGraph graph = graphBuilder.buildGraph(graphConfig);
+            RuntimeGraph graph = graphBuilder.buildGraph(graphConfig);
 
             Object prevGraph = glPayloadGraphs.putIfAbsent(payloadType, graph);
             if (prevGraph != null) {
@@ -159,7 +159,7 @@ public class CompletableReactor implements AutoCloseable {
                             + " If it is inner class then it sould be static.",
                             exc);
                 }
-                GlGraph graph = graphBuilder.buildGraph(graphConfig);
+                RuntimeGraph graph = graphBuilder.buildGraph(graphConfig);
 
                 glPayloadGraphs.putIfAbsent(payloadType, graph);
                 isComputed.set(true);
@@ -584,9 +584,9 @@ public class CompletableReactor implements AutoCloseable {
          */
         ReactorGraphExecution<PayloadType> execution;
 
-        GlGraph glGraph = glPayloadGraphs.get(payload.getClass());
-        if (glGraph != null) {
-            execution = glExecutionBuilder.build(glGraph);
+        RuntimeGraph runtimeGraph = glPayloadGraphs.get(payload.getClass());
+        if (runtimeGraph != null) {
+            execution = glExecutionBuilder.build(runtimeGraph);
 
         } else {
             throw new IllegalArgumentException("Rector graph not found for payload " + payload.getClass());

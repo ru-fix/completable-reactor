@@ -99,7 +99,7 @@ class Subgraph(
 ) : HandleableVertexFigure(name)
 
 
-class GraphModel {
+class CompileTimeGraph {
     val startPoint = StartPoint()
     val handlers = HashMap<String, Handler>()
     val subgraphs = HashMap<String, Subgraph>()

@@ -7,7 +7,7 @@ interface AutoLayoutable {
 
     /**
      * User could specify graph vertices coordinate in graph configuration source class.
-     * This coordinates is stored in GraphModel.
+     * This coordinates is stored in CompileTimeGraph.
      * This Coordinates are logical. They being translated to JavaFx position (layoutX and layoutY property of
      * javaFx Nodes) during graph visualization.
      * If user coordinates is defined for particular node, AutoLayout should skip this node and not change

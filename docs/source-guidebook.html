@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.7.1">
-<title>Best Practice and Code Convention</title>
+<title>Source guidebook</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -435,260 +435,134 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_best_practice_and_code_convention">Best Practice and Code Convention</h2>
+<h2 id="_source_guidebook">Source guidebook</h2>
 <div class="sectionbody">
 <div class="quoteblock abstract">
 <blockquote>
-Paragraph explains handy rules that will keep your code clear.
+Completable Reactor implementation details
 </blockquote>
 </div>
 <div class="sect2">
-<h3 id="_give_your_payloads_and_graphs_similar_names">Give your payloads and graphs similar names</h3>
+<h3 id="_graph_representation">Graph representation</h3>
 <div class="paragraph">
-<p>It is good to follow same naming convention in the project.
-This way it would be easy to find payloads that could be submitted to reactor
-and graphs that implements their execution flows.
-We can use <code>ActionNamePayload</code> and <code>ActionNameGraph</code> template for names.</p>
+<p>There are four scopes of classes that express Graph:</p>
 </div>
-<div class="paragraph">
-<p>Bad:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>DSL - public language specific API that developers use to build Graphs.<br></p>
+</li>
+</ul>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>class BuyData {...}
-class PurchaseConfiguration extends Graph&lt;BuyData&gt; {...}
+<pre>ru.fix.completable.reactor.graph.Vertex +
+ru.fix.completable.reactor.graph.Graph
 
-class SubscriptonAction {...}
-class SubscriptonGraphDeclaration extends Graph&lt;SubscriptonAction&gt; {...}</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Good:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>class PurchasePayload {...}
-class PurchaseGraph extends Graph&lt;PurchasePayload&gt; {...}
-
-class SubscriptonPayload {...}
-class SubscriptonGraph extends Graph&lt;SubscriptonPayload.&gt; {...}</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_give_your_payloads_and_graphs_names_that_represent_actions_that_graph_implies">Give your payloads and graphs names that represent actions that graph implies</h3>
-<div class="paragraph">
-<p>It is better to give graph a name that represent action.</p>
-</div>
-<div class="paragraph">
-<p>Bad:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>class SmsSenderPayload {...}</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Good:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>class SendSmsPayload {...}</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_treat_vertex_declaration_as_a_function">Treat vertex declaration as a function</h3>
-<div class="paragraph">
-<p>Do not wrap your logic into function if the only purpose of the function is to
-be invoked inside handler/merger block of a Vertex.
-If you are not reusing this function in other places - simply put code inside
-handler/merger lambda directly and give the Vertex same name as you would give
-to the function.</p>
-</div>
-<div class="paragraph">
-<p>Bad:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>public class PurchaseGraph extends Graph&lt;PurchasePayload&gt; {
-
-    Vertex writeUserLog =
-        handler(
-            //# log ussd purchase
-            payload -&gt; writeUserLog(payload)
-
-        ).withMerger((payload, result) -&gt; {
-              ...
-        });
-
-    Vertex fireSubscribeAction =
-        handler(
-              //# fire purchase statistic event
-              payload -&gt; fireSubscribeAction(payload)
-
-        ).withoutMerger();
-
-    private CompletableFuture&lt;Reullt&gt; writeUserLog(PurchasePayload p) {
-        &lt;purchase logging code&gt;
-    }
-
-    private CompletableFuture&lt;Void&gt; fireSubscribeAction(PurchasePayload payload) {
-            &lt;statistc event firing code&gt;
-    }
-
-}</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Good:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>public class PurchaseGraph extends Graph&lt;PurchasePayload&gt; {
-  Vertex writeUserLog =
-      handler(
-          //# log ussd purchase
-          payload -&gt; {
-              &lt;purchase logging code&gt;
-          }
-
-      ).withMerger((payload, result) -&gt; {
-            ...
-      });
-
-  Vertex fireSubscribeAction =
-      handler(
-            //# fire purchase statistic event
-            payload -&gt; {
-                &lt;statistc event firing code&gt;
-            }
-
-      ).withoutMerger();
-
-}</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_give_vertex_a_name_as_if_it_is_a_function">Give vertex a name as if it is a function</h3>
-<div class="paragraph">
-<p>Vertex usually implies business logic that should be executed as a part of
-use case scenario.
-It would be better to give vertex a name
-that describes what action this vertex implements.</p>
-</div>
-<div class="paragraph">
-<p>Bad:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>Vertex userLogWriter = ...;
-Vertex statisticProcessor = ...;</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Good:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>Vertex writePurchaseToUserLog = ...;
-Vertex firePurchaseEventToStatistics = ...;</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_in_spring_project_declare_your_graph_as_a_bean">In Spring project declare your graph as a Bean</h3>
-<div class="paragraph">
-<p>You can use different approaches in registering graphs in you application.
-Main thing is to be consistent about it.
-We suggest to use an approach when you declare graph as a Bean</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>public class MyGraph extends Graph&lt;MyPayload&gt;{
-    @Autowired
-    MyService myService;
-
-    Vertex doStuff =
-        handler(
-            paylaod -&gt; myService.doSomethingUsefull()
-
-        ).withMerger(...);
-}
-
-@Configuration
-public class ApplicationConfiguration{
-
-    @Bean
-    public MyGraph muGraph(){
-        return new MyGraph();
-    }
+class MyGraph: Graph&lt;MyPayload&gt;{
     ...
-
-    @Autowired
-    Collection&lt;Graph&gt; applicationGraphs;
-
-    @Bean
-    public CompletableReactor completableReactor(){
-      CompletableReactor completableReactor = new CompletableReactor()
-      applicationGraphs.forEach(completableReactor::registerGraph)
-      return completableReactor;
-    }
+    val myVertex = handler{...}.withMerger{...}
+    ...
+    myVertex.on(...).handleBy(...)
+    ...
 }</pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_optional_lateinit_vars_for_graph_context_variable">Optional, lateinit vars for Graph context variable</h3>
-<div class="paragraph">
-<p>Nullable types <code>T?</code> or <code>Optional&lt;T&gt;</code> force us to check value for null before we can use it.
-This is very handy for function arguments, class states, etc.
-But lets discuss situation with graphs.
-We usually desing graphs in a way so upper vertices initialize data and bottom vertices uses them.
-Upper vertex1 initialize <code>data</code> with value and vertex2 reads <code>data</code>.
-In that case our graph design imply that data will be ready for reading in vertex2.
-Suppose that data is not ready : vertex2 from our example have only one case: if <code>data</code> is null - rise an exception.
-But Kotlin lateinit or Nullable <code>data</code> will rise NPE for this case for us.
-So if our graph design imply that data should be ready before reading by bottom vertices - we should use nullable or lateinit vars.</p>
-</div>
-<div class="paragraph">
-<p>What if our logic have two cases: in one we use data, and in another - do not.
-Best way to solve this case is to try to implement it thought graph design and have two branches of vertices.
-This way we can continue to use lateinit vars/nullable values inside payload.</p>
-</div>
-<div class="paragraph">
-<p>But some times it is better not to increase complexity by adding new branches to graph
- and instead to use <code>T?/Optional&lt;T&gt;</code> data in graph payload.
-Then we simply implement <code>if (data == null/isPresent) A else B</code> logic inside vertex without any exceptions.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_code_formatting">Code formatting</h3>
-<div class="paragraph">
-<p>(1) Separate vertex field declaration and handler block with new line '\n'<br>
-(2) Separate handler block and merger block with new line '\n'<br>
-(3) Separate documentation comment with new line '\n'<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Runtime - stores graph configuration in runtime.
+CompletabelReactor executes DSL and creates runtime graph instances during application initialization.</p>
+</li>
+</ul>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>public class PurchaseGraph extends Graph&lt;PurchasePayload&gt; {
-  Vertex writeUserLog =  //(1)
-      handler(
-          //# log ussd purchase details //(3)
-          payload -&gt; {
-              &lt;purchase logging code&gt;
-          }
-      ).withMerger((payload, result) -&gt; { //(2)
-            ...
-      });
-
-  Vertex fireSubscribeAction =
-      handler( payload -&gt; { //(3)
-                &lt;statistc event firing code&gt;
-            }
-      ).withoutMerger();
-}</pre>
+<pre>ru.fix.completable.reactor.graph.runtime.RuntimeGraph +
+ru.fix.completable.reactor.graph.runtime.RuntimeVertex</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Execution - for each Payload submission CompletableReactor reads Runtime graph description `RuntimeGraph`and builds Execution representation.
+Execution representation of the graph is a brunch of CompletableFutures linked with each other.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.ProcessingVertex</pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="source-guidebook/graph-representation-runtime.png" alt="graph representation runtime">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Compile - functionality that represent Graph during visualization.
+Parser analyzes source code of Graph and builds graph model.
+This model is displayed by viewer as visual representation.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.parser.java.JavaSourceParser
+ru.fix.completable.reactor.model.CompileTimeGraph</pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="source-guidebook/graph-representation-compiletime.png" alt="graph representation compiletime">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_to_build">How to build</h3>
+<div class="paragraph">
+<p>There is no task that builds Intellij Idea plugin.
+Use Intellij Idea IDE UI to create plugin release.
+Intellij plugin located at <code>completable-reactor-plugin-idea</code> directory.
+In order to open plugin module into Intellij Idea you have to manually add line</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;module fileurl="file://$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" filepath="$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" /&gt;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>into <code>.idea/modules.xml</code> configuration file.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_generate_documentation">Generate documentation</h3>
+<div class="paragraph">
+<p>Documentation source located at</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>asciidoc/*</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Compiled documentation stored at</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>docs/*</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Compiled documentation stored in git and served as a static content.
+To compile documentation run</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>gradle asciidoctor</pre>
 </div>
 </div>
 </div>
@@ -697,7 +571,7 @@ Then we simply implement <code>if (data == null/isPresent) A else B</code> logic
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-07 14:30:30 MSK
+Last updated 2018-11-08 10:44:42 MSK
 </div>
 </div>
 </body>

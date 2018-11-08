@@ -1,6 +1,6 @@
 package ru.fix.completable.reactor.graph.internal
 
-import ru.fix.completable.reactor.graph.runtime.GlVertex
+import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 
 class GlTransition(
 
@@ -10,8 +10,8 @@ class GlTransition(
         var isOnElse: Boolean = false,
         var isComplete: Boolean = false,
 
-        var mergeBy: GlVertex? = null,
-        var handleBy: GlVertex? = null) {
+        var mergeBy: RuntimeVertex? = null,
+        var handleBy: RuntimeVertex? = null) {
 
 
     override fun toString(): String {

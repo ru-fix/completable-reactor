@@ -583,7 +583,13 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_code_formatting">Code formatting</a></li>
 </ul>
 </li>
-<li><a href="#_how_to_build_this_project">How to build this project</a></li>
+<li><a href="#_source_guidebook">Source guidebook</a>
+<ul class="sectlevel2">
+<li><a href="#_graph_representation">Graph representation</a></li>
+<li><a href="#_how_to_build">How to build</a></li>
+<li><a href="#_generate_documentation">Generate documentation</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -2386,10 +2392,100 @@ Then we simply implement <code>if (data == null/isPresent) A else B</code> logic
 </div>
 </div>
 </div>
-<h1 id="_how_to_build_this_project" class="sect0">How to build this project</h1>
+<div class="sect1">
+<h2 id="_source_guidebook">Source guidebook</h2>
+<div class="sectionbody">
+<div class="quoteblock abstract">
+<blockquote>
+Completable Reactor implementation details
+</blockquote>
+</div>
+<div class="sect2">
+<h3 id="_graph_representation">Graph representation</h3>
 <div class="paragraph">
-<p>Intellij plugin located at <code>completable-reactor-plugin-idea</code> directory.
-In order to include plugin module into Intellij Idea you have to manually add line</p>
+<p>There are four scopes of classes that express Graph:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>DSL - public language specific API that developers use to build Graphs.<br></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.graph.Vertex +
+ru.fix.completable.reactor.graph.Graph
+
+class MyGraph: Graph&lt;MyPayload&gt;{
+    ...
+    val myVertex = handler{...}.withMerger{...}
+    ...
+    myVertex.on(...).handleBy(...)
+    ...
+}</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Runtime - stores graph configuration in runtime.
+CompletabelReactor executes DSL and creates runtime graph instances during application initialization.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.graph.runtime.RuntimeGraph +
+ru.fix.completable.reactor.graph.runtime.RuntimeVertex</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Execution - for each Payload submission CompletableReactor reads Runtime graph description `RuntimeGraph`and builds Execution representation.
+Execution representation of the graph is a brunch of CompletableFutures linked with each other.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.ProcessingVertex</pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="source-guidebook/graph-representation-runtime.png" alt="graph representation runtime">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Compile - functionality that represent Graph during visualization.
+Parser analyzes source code of Graph and builds graph model.
+This model is displayed by viewer as visual representation.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.parser.java.JavaSourceParser
+ru.fix.completable.reactor.model.CompileTimeGraph</pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="source-guidebook/graph-representation-compiletime.png" alt="graph representation compiletime">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_to_build">How to build</h3>
+<div class="paragraph">
+<p>There is no task that builds Intellij Idea plugin.
+Use Intellij Idea IDE UI to create plugin release.
+Intellij plugin located at <code>completable-reactor-plugin-idea</code> directory.
+In order to open plugin module into Intellij Idea you have to manually add line</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2400,9 +2496,40 @@ In order to include plugin module into Intellij Idea you have to manually add li
 <p>into <code>.idea/modules.xml</code> configuration file.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_generate_documentation">Generate documentation</h3>
+<div class="paragraph">
+<p>Documentation source located at</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>asciidoc/*</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Compiled documentation stored at</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>docs/*</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Compiled documentation stored in git and served as a static content.
+To compile documentation run</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>gradle asciidoctor</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-02 10:13:56 MSK
+Last updated 2018-11-08 09:27:47 MSK
 </div>
 </div>
 </body>

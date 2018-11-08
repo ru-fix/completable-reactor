@@ -40,7 +40,7 @@ class GraphViewPane(
 
     private var oldScrollPosition = Point2D(0.5, 0.5)
 
-    var graphModel: GraphModel? = null
+    var graphModel: CompileTimeGraph? = null
         private set
 
     init {
@@ -108,7 +108,7 @@ class GraphViewPane(
         })
     }
 
-    fun openGraph(graphModel: GraphModel, resetViewer: Boolean = true): GraphViewPane {
+    fun openGraph(graphModel: CompileTimeGraph, resetViewer: Boolean = true): GraphViewPane {
         this.graphModel = graphModel
         if (!resetViewer) {
             this.oldScrollPosition = Point2D(hvalue, vvalue)

@@ -1,11 +1,11 @@
 package ru.fix.completable.reactor.model.validation
 
-import ru.fix.completable.reactor.model.GraphModel
+import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.model.HandleableVertexFigure
 
 class HandleableVerticesHaveIncomingFlowsValidator : Validator {
 
-    override fun validate(graph: GraphModel): ValidationResult {
+    override fun validate(graph: CompileTimeGraph): ValidationResult {
 
         val verticesWithIncomingTransitions = (graph.transitionable
                 //collect all transitions targets
