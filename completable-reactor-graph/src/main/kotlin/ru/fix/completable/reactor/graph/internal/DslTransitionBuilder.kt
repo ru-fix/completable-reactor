@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.graph.internal
 
 import ru.fix.completable.reactor.graph.TransitionBuilder
 import ru.fix.completable.reactor.graph.Vertex
+import ru.fix.completable.reactor.graph.runtime.RuntimeTransition
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 
 class DslTransitionBuilder(

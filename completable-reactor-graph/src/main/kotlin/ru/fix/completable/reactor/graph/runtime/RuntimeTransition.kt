@@ -1,6 +1,4 @@
-package ru.fix.completable.reactor.graph.internal
-
-import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
+package ru.fix.completable.reactor.graph.runtime
 
 class RuntimeTransition(
 
