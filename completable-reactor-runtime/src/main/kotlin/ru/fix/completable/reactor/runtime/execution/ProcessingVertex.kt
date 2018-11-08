@@ -41,10 +41,6 @@ class ProcessingVertex(val vertex: RuntimeVertex,
             // Subgraph
             this.vertex.subgraphPayloadBuilder != null -> invokeSubgraphHandlingMethod(payload)
 
-            // Router route method is invoked in MergeBy section in a way Merger merge method works.
-            // To pass execution down to mergerFeature for Router we use fake empty handling
-            this.vertex.router != null -> CompletableFuture.completedFuture(null)
-
             else -> CompletableFuture<Any?>().apply {
                 completeExceptionally(IllegalStateException(
                         """
@@ -121,17 +117,6 @@ class ProcessingVertex(val vertex: RuntimeVertex,
         return when {
             vertex.merger != null -> {
                 vertex.merger!!.merge(payload, handlingResult)
-            }
-
-            vertex.router != null -> {
-                if (handlingResult != null) {
-                    throw IllegalStateException("""
-                        Invalid runtime behavior.
-                        Router received non null handling result.
-                        Vertex: ${vertex.name}
-                        """.trimIndent())
-                }
-                vertex.router!!.route(payload)
             }
 
             else -> throw IllegalArgumentException(

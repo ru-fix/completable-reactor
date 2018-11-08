@@ -2,6 +2,7 @@ package ru.fix.completable.reactor.graph
 
 import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -58,7 +59,7 @@ abstract class Graph<Payload> : Graphable {
     protected fun <HandlerResult> handler(
             handler: NoArgHandler<HandlerResult>): MergerBuilder<Payload, HandlerResult> {
 
-        return handler(object: Handler<Payload, HandlerResult>{
+        return handler(object : Handler<Payload, HandlerResult> {
             override fun handle(payload: Payload): CompletableFuture<HandlerResult> {
                 return handler.handle()
             }
@@ -95,8 +96,10 @@ abstract class Graph<Payload> : Graphable {
 
         graphBuilderValidator.validateRouter(vx)
 
-        vx.router = router as Router<Any?>
-        vx.isRoutable = true
+        vx.handler = RuntimeEmptyHandler()
+        vx.merger = RuntimeRouterMerger(router as Router<Any?>)
+
+        vx.type = RuntimeVertex.Type.Router
         return vertex
     }
 
@@ -104,12 +107,17 @@ abstract class Graph<Payload> : Graphable {
      * Creates vertex based on sync method invocation.
      */
     protected fun mutator(mutator: Mutator<Payload>): Vertex {
-        return router(object : Router<Payload> {
-            override fun route(payload: Payload): Enum<*> {
-                mutator.mutate(payload)
-                return RuntimeEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
-            }
-        })
+        val vertex = Vertex()
+        val vx = InternalDslAccessor.vx(vertex)
+        graph.vertices.add(vx)
+
+        graphBuilderValidator.validateMutator(vx)
+
+        vx.handler = RuntimeEmptyHandler()
+        vx.merger = RuntimeMutatorMerger(mutator as Mutator<Any?>)
+
+        vx.type = RuntimeVertex.Type.Mutator
+        return vertex
     }
 
     /**

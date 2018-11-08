@@ -5,6 +5,7 @@ import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.kotlin.internal.DslMergerBuilder
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
 
@@ -59,10 +60,17 @@ open class Graph<Payload> : Graphable {
     }
 
     protected fun mutator(mutator: Payload.() -> Unit): Vertex {
-        return router {
-            mutator(this)
-            RuntimeEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
-        }
+        val vertex = Vertex()
+        val vx = InternalDslAccessor.vx(vertex)
+        graph.vertices.add(vx)
+
+        graphBuilderValidator.validateMutator(vx)
+
+        vx.handler = RuntimeEmptyHandler()
+        vx.merger = RuntimeMutatorMerger(mutator as Mutator<Any?>)
+        vx.type = RuntimeVertex.Type.Mutator
+
+        return vertex
     }
 
     protected fun router(router: Payload.() -> Enum<*>): Vertex {
@@ -72,13 +80,9 @@ open class Graph<Payload> : Graphable {
 
         graphBuilderValidator.validateRouter(vx)
 
-        vx.router = object : Router<Payload> {
-            override fun route(payload: Payload): Enum<*> {
-                return router(payload)
-            }
-        } as Router<Any?>
-
-        vx.isRoutable = true
+        vx.handler = RuntimeEmptyHandler()
+        vx.merger = RuntimeRouterMerger(router as Router<Any?>)
+        vx.type = RuntimeVertex.Type.Router
 
         return vertex
     }
