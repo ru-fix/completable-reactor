@@ -1,9 +1,6 @@
 package ru.fix.completable.reactor.runtime.tests;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
-import lombok.val;
+
 import org.junit.jupiter.api.Test;
 import ru.fix.aggregating.profiler.AggregatingProfiler;
 import ru.fix.completable.reactor.graph.Graph;
@@ -20,66 +17,72 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class TracingTest {
 
-
-
-    @Data
-    @EqualsAndHashCode(callSuper = true)
-    @Accessors(chain = true)
-    static class TracablePayload extends GlCompletableReactorTest.IdListPayload {
+    /**
+     * If tracable payload contain number that match particular condition
+     * this payload will be traced by tracer
+     */
+    static class TracablePayload extends CompletableReactorTest.IdListPayload {
         int number;
+
+        public int getNumber() {
+            return number;
+        }
+
+        public TracablePayload setNumber(int number) {
+            this.number = number;
+            return this;
+        }
     }
 
-    enum Status {OK}
 
-    final CompletableReactor completableReactor = new CompletableReactor(new AggregatingProfiler());
+    private final AggregatingProfiler profiler = new AggregatingProfiler();
+    final CompletableReactor completableReactor = new CompletableReactor(profiler);
+
+
+    static class SimpleGraph extends Graph<TracablePayload> {
+
+        Vertex processor1 =
+                handler(
+                        new IdProcessor(1)::handle
+                ).withoutMerger();
+
+        Vertex processor2 =
+                handler(new IdProcessor(2)::handle
+                ).withoutMerger();
+
+        Vertex processor3 =
+                handler(new IdProcessor(3)::handle
+                ).withoutMerger();
+
+        {
+            payload()
+                    .handleBy(processor1)
+                    .handleBy(processor2);
+
+            processor1
+                    .onAny().mergeBy(processor2);
+
+            processor2
+                    .onAny().handleBy(processor3);
+
+            processor3
+                    .onAny().complete();
+        }
+
+    }
+
 
     @Test
     public void trace_payload_if_payload_contain_special_id() throws Exception {
 
-        /**
-         * If traceable payload contains number that matches particular condition
-         * payload will be traced by tracer.
-         */
-        class Config extends Graph<TracablePayload> {
 
-            Vertex processor1 =
-                    handler(new IdProcessor(1)::handle)
-                    .withRoutingMerger((payload, any) -> Status.OK);
-
-            Vertex processor2 =
-                    handler(new IdProcessor(2)::handle)
-                    .withRoutingMerger((payload, any) -> Status.OK);
-
-            Vertex processor3 =
-                    handler(new IdProcessor(3)::handle)
-                    .withRoutingMerger((payload, any) -> Status.OK);
-
-            {
-                payload()
-                        .handleBy(processor1)
-                        .handleBy(processor2);
-
-                processor1
-                        .onAny().mergeBy(processor2);
-
-                        processor2
-                        .onAny().handleBy(processor3);
-
-                processor3
-                        .onAny().complete();
-
-                        coordinates();
-            }
-
-        }
-
-        val graph = new Config();
+        SimpleGraph graph = new SimpleGraph();
         completableReactor.registerGraph(graph);
 
-        val beforeHandle = new AtomicBoolean();
-        val beforeMerge = new AtomicBoolean();
+        AtomicBoolean beforeHandle = new AtomicBoolean();
+        AtomicBoolean beforeMerge = new AtomicBoolean();
 
-        val tracer = new LogTracer() {
+        LogTracer tracer = new LogTracer() {
             @Override
             public boolean isTraceable(Object payload) {
                 if (payload instanceof TracablePayload) {

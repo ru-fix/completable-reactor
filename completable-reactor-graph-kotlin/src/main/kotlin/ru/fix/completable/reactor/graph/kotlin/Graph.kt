@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.graph.kotlin
 import kotlinx.coroutines.experimental.future.future
 import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.*
-import ru.fix.completable.reactor.graph.kotlin.internal.GlMergerBuilder
+import ru.fix.completable.reactor.graph.kotlin.internal.DslMergerBuilder
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
@@ -22,11 +22,11 @@ open class Graph<Payload> : Graphable {
     private val graphBuilderValidator = GraphBuilderValidator()
 
     protected fun payload(): PayloadTransitionBuilder<Payload> {
-        return GlPayloadImpl(graph)
+        return DslPayloadImpl(graph)
     }
 
     protected fun coordinates(): CoordinatesBuilder {
-        return GlCoordinatesBuilder()
+        return DslCoordinatesBuilder()
     }
 
 
@@ -34,7 +34,7 @@ open class Graph<Payload> : Graphable {
             MergerBuilder<Payload, HandlerResult> {
 
         val vertex = Vertex()
-        val vx = InternalGlAccessor.vx(vertex)
+        val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
 
         graphBuilderValidator.validateHandler(vx)
@@ -45,7 +45,7 @@ open class Graph<Payload> : Graphable {
             }
         } as Handler<Any?, Any?>
 
-        return GlMergerBuilder(vertex)
+        return DslMergerBuilder(vertex)
     }
 
     protected fun <HandlerResult> suspendHandler(handler: suspend Payload.() -> HandlerResult):
@@ -61,13 +61,13 @@ open class Graph<Payload> : Graphable {
     protected fun mutator(mutator: Payload.() -> Unit): Vertex {
         return router {
             mutator(this)
-            GlEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
+            RuntimeEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
         }
     }
 
     protected fun router(router: Payload.() -> Enum<*>): Vertex {
         val vertex = Vertex()
-        val vx = InternalGlAccessor.vx(vertex)
+        val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
 
         graphBuilderValidator.validateRouter(vx)
@@ -88,7 +88,7 @@ open class Graph<Payload> : Graphable {
             subgraph: Payload.() -> SubgraphPayload): MergerBuilder<Payload, SubgraphPayload> {
 
         val vertex = Vertex()
-        val vx = InternalGlAccessor.vx(vertex)
+        val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
 
         graphBuilderValidator.validateSubgraph(vx)
@@ -100,6 +100,6 @@ open class Graph<Payload> : Graphable {
             }
         } as Subgraph<Any?, Any?>
 
-        return GlMergerBuilder(vertex)
+        return DslMergerBuilder(vertex)
     }
 }

@@ -301,7 +301,7 @@ class JavaSourceParserTest {
 
     @Test
     fun two_test_graphs_in_single_source() {
-        val sourceFilePath = "completable-reactor-runtime/src/test/java/ru/fix/completable/reactor/runtime/tests/GlCompletableReactorTest.java"
+        val sourceFilePath = "completable-reactor-runtime/src/test/java/ru/fix/completable/reactor/runtime/tests/CompletableReactorTest.java"
         val body = ProjectFileResolver().read(sourceFilePath)
 
         val startTime = Instant.now()

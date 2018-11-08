@@ -16,9 +16,9 @@ import com.intellij.util.BooleanFunction
 import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
 import javafx.scene.input.KeyCode
-import ru.fix.completable.reactor.graph.viewer.gl.GraphViewer
-import ru.fix.completable.reactor.graph.viewer.gl.Shortcut
-import ru.fix.completable.reactor.graph.viewer.gl.ShortcutType
+import ru.fix.completable.reactor.graph.viewer.GraphViewer
+import ru.fix.completable.reactor.graph.viewer.Shortcut
+import ru.fix.completable.reactor.graph.viewer.ShortcutType
 import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.parser.java.JavaSourceParser
 import java.awt.Dimension
