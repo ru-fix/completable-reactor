@@ -1,0 +1,64 @@
+== Source guidebook
+[abstract]
+Completable Reactor implementation details
+
+=== Graph representation
+There are four scopes of classes that express Graph:
+
+* DSL - public language specific API that developers use to build Graphs. +
+[code]
+----
+ru.fix.completable.reactor.graph.Vertex +
+ru.fix.completable.reactor.graph.Graph
+
+class MyGraph: Graph<MyPayload>{
+    ...
+    val myVertex = handler{...}.withMerger{...}
+    ...
+    myVertex.on(...).handleBy(...)
+    ...
+}
+
+----
+
+* Runtime - stores graph configuration in runtime.
+CompletabelReactor executes DSL and creates runtime graph instances during application initialization.
+[code]
+----
+ru.fix.completable.reactor.graph.runtime.RuntimeGraph +
+ru.fix.completable.reactor.graph.runtime.RuntimeVertex
+----
+
+* Execution - for each Payload submission CompletableReactor reads Runtime graph description `RuntimeGraph`and builds Execution representation.
+Execution representation of the graph is a brunch of CompletableFutures linked with each other.
+[code]
+----
+ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.ProcessingVertex
+----
+image::source-guidebook/graph-representation-runtime.png[]
+
+* Compile - functionality that represent Graph during visualization.
+Parser analyzes source code of Graph and builds graph model.
+This model is displayed by viewer as visual representation.
+[code]
+----
+ru.fix.completable.reactor.parser.java.JavaSourceParser
+ru.fix.completable.reactor.model.GraphModel
+----
+image::source-guidebook/graph-representation-compiletime.png[]
+
+
+=== How to build
+There is no task that builds Intellij Idea plugin.
+Use Intellij Idea IDE UI to create plugin release.
+Intellij plugin located at `completable-reactor-plugin-idea` directory.
+In order to open plugin module into Intellij Idea you have to manually add line
+[code,xml]
+----
+<module fileurl="file://$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" filepath="$PROJECT_DIR$/completable-reactor-plugin-idea/completable-reactor-plugin-idea.iml" />
+----
+
+into `.idea/modules.xml` configuration file.
+
+
+
