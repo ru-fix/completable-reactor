@@ -433,13 +433,11 @@ class CompletableReactorTest {
                     .onAny().complete();
 
             coordinates()
-                    .payload(107, 9)
-                    .handler(idProcessor0, 22, 78)
-                    .handler(idProcessor1, 211, 79)
-                    .merger(idProcessor0, 126, 215)
-                    .merger(idProcessor1, 267, 187)
-                    .router(mergePoint, 424, 160)
-                    .complete(idProcessor0, 57, 274);
+                    .pd(107, 9)
+                    .vx(mergePoint, 400, 151)
+                    .vx(idProcessor0, 22, 78, 126, 215)
+                    .vx(idProcessor1, 211, 79, 267, 187)
+                    .ct(idProcessor0, 57, 274);
 
         }
     }
@@ -500,8 +498,6 @@ class CompletableReactorTest {
             router
                     .onAny().complete();
 
-            coordinates()
-                    .merger(idProcessor1, 85, 180);
         }
     }
 
@@ -582,15 +578,12 @@ class CompletableReactorTest {
                     .onAny().complete();
 
             coordinates()
-                    .payload(0, 17)
-                    .handler(idProcessor1, 246, 147)
-                    .handler(idProcessor2, -17, 252)
-                    .handler(idProcessor3, -15, 413)
-                    .merger(idProcessor1, 287, 223)
-                    .merger(idProcessor2, 21, 328)
-                    .merger(idProcessor3, 23, 504)
-                    .router(mergePoint, 98, 79)
-                    .complete(idProcessor3, 129, 537);
+                    .pd(0, 17)
+                    .vx(mergePoint, 98, 79)
+                    .vx(idProcessor1, 246, 147, 287, 223)
+                    .vx(idProcessor2, -17, 252, 21, 328)
+                    .vx(idProcessor3, -15, 413, 23, 504)
+                    .ct(idProcessor3, 70, 573);
 
         }
     }
@@ -707,17 +700,13 @@ class CompletableReactorTest {
             idProcessor3b.onAny().handleBy(idProcessor4);
 
             coordinates()
-                    .handler(idProcessor1, -206, 132)
-                    .handler(idProcessor1b, 254, 139)
-                    .handler(idProcessor2, -64, 140)
-                    .handler(idProcessor3, 63, 140)
-                    .handler(idProcessor3b, 391, 131)
-                    .handler(idProcessor4, 196, 362)
-                    .merger(idProcessor1, -158, 214)
-                    .merger(idProcessor2, -21, 253)
-                    .merger(idProcessor3, 111, 272)
-                    .merger(idProcessor3b, 421, 241)
-                    .complete(idProcessor4, 250, 503);
+                    .vx(idProcessor1b, 254, 139)
+                    .vx(idProcessor4, 196, 362)
+                    .vx(idProcessor1, -206, 132, -158, 214)
+                    .vx(idProcessor2, -64, 140, -21, 253)
+                    .vx(idProcessor3, 63, 140, 111, 272)
+                    .vx(idProcessor3b, 391, 131, 421, 241)
+                    .ct(idProcessor4, 250, 503);
 
 
         }
