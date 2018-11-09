@@ -127,3 +127,14 @@ include::best-practice-code-convention.adoc[]
 
 include::source-guidebook.adoc[]
 
+== Well known problems
+=== JavaFx application failed to load canberra-gtk-module.
+Application starts with error  message:
+----
+Gtk-Message: ... Failed to load module "canberra-gtk-module"
+----
+Fix:
+
+----
+sudo apt-get install libcanberra-gtk-module
+----
