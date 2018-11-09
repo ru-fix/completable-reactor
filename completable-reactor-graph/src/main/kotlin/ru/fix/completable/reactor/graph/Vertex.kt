@@ -14,9 +14,9 @@ class Vertex {
     private var vx = RuntimeVertex(this)
 
     fun on(mergeStatus: Enum<*>): TransitionBuilder {
-        if(vx.merger == null && vx.router == null){
+        if(vx.merger == null){
             throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} is used as source of on() transition but does not have merger or router.")
+                    "Vertex ${vx.name} is used as source of on() transition but does not have merger")
         }
 
         if(vx.merger != null && !vx.isRoutable){
@@ -25,15 +25,8 @@ class Vertex {
                     " That vertex could participate only in .onAny() transition.")
         }
 
-        if(vx.router != null && !vx.isRoutable){
-            throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} have non routable mutator." +
-                    " That vertex could participate only in .onAny() transition.")
-        }
-
         val transition = RuntimeTransition()
         transition.mergeStatuses = hashSetOf(mergeStatus)
-
 
         return DslTransitionBuilder(
                 this,
@@ -48,7 +41,7 @@ class Vertex {
         val transition = RuntimeTransition()
         transition.isOnAny = true
 
-        checkForIncompatibleTransitions(transition)
+        checkForIncompatibleOnAnyOnElseTransitions(transition)
 
         return DslTransitionBuilder(
                 this,
@@ -61,7 +54,7 @@ class Vertex {
         val transition = RuntimeTransition()
         transition.isOnElse = true
 
-        checkForIncompatibleTransitions(transition)
+        checkForIncompatibleOnAnyOnElseTransitions(transition)
 
         return DslTransitionBuilder(
                 this,
@@ -75,8 +68,15 @@ class Vertex {
      * then vertex is effectively generates default empty merger
      */
     private fun addEmptyMergerIfNotExists() {
-        if((vx.handler != null || vx.subgraphPayloadBuilder != null) && vx.merger == null){
-            vx.merger = RuntimeEmptyMerger()
+        when{
+            vx.handler != null && vx.merger == null ->{
+                vx.merger = RuntimeEmptyMerger()
+                vx.type = RuntimeVertex.Type.HandlerWithEmptyMerger
+            }
+            vx.subgraphPayloadBuilder != null && vx.merger == null -> {
+                vx.merger = RuntimeEmptyMerger()
+                vx.type = RuntimeVertex.Type.SubgraphWithEmptyMerger
+            }
         }
     }
 
@@ -85,11 +85,11 @@ class Vertex {
      * -check that vertex is transition onElse or onAny has merger or router
      * -check that vertex doesn't have two transitions onAny and onElse
      */
-    private fun checkForIncompatibleTransitions(newTransition: RuntimeTransition) {
-        if(vx.merger == null && vx.router == null) {
+    private fun checkForIncompatibleOnAnyOnElseTransitions(newTransition: RuntimeTransition) {
+        if(vx.merger == null) {
             val name = if (newTransition.isOnAny) "onAny()" else "onElse()"
             throw IllegalArgumentException("" +
-                    "Vertex ${vx.name} is used as source of $name transition but does not have merger or router.")
+                    "Vertex ${vx.name} is used as source of $name transition but does not have merger.")
         }
 
 
@@ -103,7 +103,7 @@ class Vertex {
         }
         if (hasIncompatibleTransition)  {
             throw IllegalArgumentException(
-                    "Vertex ${vx.name} is used together incompatible transitions onElse and onAny.")
+                    "Vertex ${vx.name} is used two incompatible transitions onElse and onAny is same time.")
         }
     }
 }

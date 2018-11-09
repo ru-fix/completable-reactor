@@ -31,21 +31,26 @@ class GraphBuilder {
                     " $verticesNames")
         }
 
+        glGraph.vertices.filter { it.type == null }.takeIf { it.isNotEmpty() }?.let { untypedVertices ->
+
+            val contex = BuilderContext().apply { setGraph(graph, glGraph) }
+            val verticesNames = untypedVertices.map { contex.resolveVertexName(it.sourceVertex) }.joinToString()
+
+            throw IllegalStateException("Failed to resolve type for vertices: $verticesNames")
+        }
+
         glGraph.vertices
                 .asSequence()
                 .filter {
                     it.handler == null
                             && it.subgraphPayloadBuilder == null
-                            && it.router == null
                 }
                 .map { it.name }
                 .toList()
                 .takeIf { it.isNotEmpty() }
                 ?.let {
                     throw IllegalArgumentException("" +
-                            "Detected illegal vertex that does not have" +
-                            " handler, router or subgraph:" +
-                            " $it")
+                            "Detected illegal vertex that does not have handler or subgraph: $it")
                 }
 
         val graphModel = modelBuilder.build(glGraph)

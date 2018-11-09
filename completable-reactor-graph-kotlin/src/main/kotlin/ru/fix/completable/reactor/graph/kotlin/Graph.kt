@@ -67,7 +67,12 @@ open class Graph<Payload> : Graphable {
         graphBuilderValidator.validateMutator(vx)
 
         vx.handler = RuntimeEmptyHandler()
-        vx.merger = RuntimeMutatorMerger(mutator as Mutator<Any?>)
+        vx.merger = RuntimeMutatorMerger(
+                object : Mutator<Payload> {
+                    override fun mutate(payload: Payload) {
+                        mutator(payload)
+                    }
+                } as Mutator<Any?>)
         vx.type = RuntimeVertex.Type.Mutator
 
         return vertex
@@ -81,7 +86,13 @@ open class Graph<Payload> : Graphable {
         graphBuilderValidator.validateRouter(vx)
 
         vx.handler = RuntimeEmptyHandler()
-        vx.merger = RuntimeRouterMerger(router as Router<Any?>)
+        vx.merger = RuntimeRouterMerger(
+                object : Router<Payload> {
+                    override fun route(payload: Payload): Enum<*> {
+                        return router(payload)
+                    }
+                } as Router<Any?>
+        )
         vx.type = RuntimeVertex.Type.Router
 
         return vertex

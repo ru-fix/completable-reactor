@@ -6,11 +6,10 @@ import ru.fix.completable.reactor.graph.RoutingMerger
 import ru.fix.completable.reactor.graph.Vertex
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 
-internal class DslMergerBuilder<Payload, HandlerResult>(private val vertex: Vertex) :
+class DslMergerBuilder<Payload, HandlerResult>(private val vertex: Vertex) :
         MergerBuilder<Payload, HandlerResult> {
 
     private val vx = InternalDslAccessor.vx(vertex)
-
 
     override fun withRoutingMerger(merger: RoutingMerger<Payload, HandlerResult>): Vertex {
         if (vx.merger != null) {
@@ -18,12 +17,11 @@ internal class DslMergerBuilder<Payload, HandlerResult>(private val vertex: Vert
         }
         vx.merger = merger as RoutingMerger<Any?, Any?>
 
-        vx.type =
-                if (vx.subgraphPayloadBuilder == null)
-                    RuntimeVertex.Type.HandlerWithRoutingMerger
-                else
-                    RuntimeVertex.Type.SubgraphWithRoutingMerger
-
+        vx.type = when {
+            vx.handler != null -> RuntimeVertex.Type.HandlerWithRoutingMerger
+            vx.subgraphPayloadBuilder != null -> RuntimeVertex.Type.SubgraphWithRoutingMerger
+            else -> throw IllegalStateException()
+        }
         return vertex
     }
 
@@ -39,23 +37,20 @@ internal class DslMergerBuilder<Payload, HandlerResult>(private val vertex: Vert
             }
         } as RoutingMerger<Any?, Any?>
 
-        vx.type =
-                if (vx.subgraphPayloadBuilder == null)
-                    RuntimeVertex.Type.HandlerWithMerger
-                else
-                    RuntimeVertex.Type.SubgraphWithMerger
-
+        vx.type = when {
+            vx.handler != null -> RuntimeVertex.Type.HandlerWithMerger
+            vx.subgraphPayloadBuilder != null -> RuntimeVertex.Type.SubgraphWithMerger
+            else -> throw IllegalStateException()
+        }
         return vertex
     }
 
     override fun withoutMerger(): Vertex {
-        vx.type =
-                if (vx.subgraphPayloadBuilder == null)
-                    RuntimeVertex.Type.HandlerWithoutMerger
-                else
-                    RuntimeVertex.Type.SubgraphWithoutMerger
-
-
+        vx.type = when {
+            vx.handler != null -> RuntimeVertex.Type.HandlerWithoutMerger
+            vx.subgraphPayloadBuilder != null -> RuntimeVertex.Type.SubgraphWithoutMerger
+            else -> throw IllegalStateException()
+        }
         return vertex
     }
 }
