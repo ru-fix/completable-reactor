@@ -586,8 +586,14 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_source_guidebook">Source guidebook</a>
 <ul class="sectlevel2">
 <li><a href="#_graph_representation">Graph representation</a></li>
+<li><a href="#_execution_process">Execution Process</a></li>
 <li><a href="#_how_to_build">How to build</a></li>
 <li><a href="#_generate_documentation">Generate documentation</a></li>
+</ul>
+</li>
+<li><a href="#_well_known_problems">Well known problems</a>
+<ul class="sectlevel2">
+<li><a href="#_javafx_application_failed_to_load_canberra_gtk_module">JavaFx application failed to load canberra-gtk-module.</a></li>
 </ul>
 </li>
 </ul>
@@ -639,7 +645,29 @@ unobvious conditional branching with scenarios executed in parallel.</p>
  approach without proper visualization. One of ways to represent that branching is a graph with nodes and
  transitions.
 CompletableReactor API tries to keep API as simple and possible, saves benefits of statically typed languages and in
-same time provides ability for fast code parsing and visualization as a graph of execution flows.</p>
+same time provides ability for fast code parsing and visualization the execution flow.</p>
+</div>
+<div class="paragraph">
+<p>Project goals are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Tool that can visualize complex concurrent code in simple and self-documented manner and can provide search and navigation capabilities.</p>
+</li>
+<li>
+<p>Code first approach: write concurrent code and then visualize/navigate through it in your favorite IDE</p>
+</li>
+<li>
+<p>Concise easy to learn DSL that enables fast source code parsing for visualization purpose</p>
+</li>
+<li>
+<p>Tracing, profiling, performance monitoring, detailed information in exceptional cases out of the box.</p>
+</li>
+<li>
+<p>Performance and lightweight</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -2480,6 +2508,54 @@ ru.fix.completable.reactor.model.CompileTimeGraph</pre>
 </div>
 </div>
 <div class="sect2">
+<h3 id="_execution_process">Execution Process</h3>
+<div class="paragraph">
+<p>Each invocation of Completable Reactor triggers execution process that consists of three parts.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Read graph runtime description <code>RuntimeGraph/RuntimeVertices</code></p>
+</li>
+<li>
+<p>Build CompletableFuture chain that implements given Graph</p>
+</li>
+<li>
+<p>Execute CompletableFuture chain</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.runtime.execution.ExecutionBuilder</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>is responsible for building CompletableFuture chain.
+Intermediate representation of CompletableFuture chain is a graph of Processing Vertices.
+Processing Vertex Graph is a temporal structure that stores CompletableFutures.
+Each ProcessingVertex (pvx) in Processing Vertex Graph is linked with RuntimeVertex (vx).
+Tree of Runtime Vertices (vx) is build by DSL and represents graph structure.
+Tree of runtime graph is immutable.
+Tree of Processing Vertexes (pvx) represents execution graph.
+Runtime builds execution graph each time when payload submitted to ReactorGraph.</p>
+</div>
+<div class="paragraph">
+<p>Processing Vertex keeps references to CompletableFutures.
+CompletableFutures represent incoming or outgoing transitions and result of computation particular elements of a vertex: handlers.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="source-guidebook/processing-vertex.png" alt="processing vertex">
+</div>
+</div>
+<div class="paragraph">
+<p>All types of Vertices in runtime represents as a Processing Vertex with handler and merger.
+Router is a Processing Vertex with empty merger.
+Mutator is a router with no result.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_how_to_build">How to build</h3>
 <div class="paragraph">
 <p>There is no task that builds Intellij Idea plugin.
@@ -2526,10 +2602,34 @@ To compile documentation run</p>
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_well_known_problems">Well known problems</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_javafx_application_failed_to_load_canberra_gtk_module">JavaFx application failed to load canberra-gtk-module.</h3>
+<div class="paragraph">
+<p>Application starts with error  message:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Gtk-Message: ... Failed to load module "canberra-gtk-module"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Fix:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>sudo apt-get install libcanberra-gtk-module</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-08 09:27:47 MSK
+Last updated 2018-11-09 10:46:55 MSK
 </div>
 </div>
 </body>

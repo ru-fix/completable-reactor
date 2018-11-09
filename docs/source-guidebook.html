@@ -522,6 +522,54 @@ ru.fix.completable.reactor.model.CompileTimeGraph</pre>
 </div>
 </div>
 <div class="sect2">
+<h3 id="_execution_process">Execution Process</h3>
+<div class="paragraph">
+<p>Each invocation of Completable Reactor triggers execution process that consists of three parts.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Read graph runtime description <code>RuntimeGraph/RuntimeVertices</code></p>
+</li>
+<li>
+<p>Build CompletableFuture chain that implements given Graph</p>
+</li>
+<li>
+<p>Execute CompletableFuture chain</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.runtime.execution.ExecutionBuilder</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>is responsible for building CompletableFuture chain.
+Intermediate representation of CompletableFuture chain is a graph of Processing Vertices.
+Processing Vertex Graph is a temporal structure that stores CompletableFutures.
+Each ProcessingVertex (pvx) in Processing Vertex Graph is linked with RuntimeVertex (vx).
+Tree of Runtime Vertices (vx) is build by DSL and represents graph structure.
+Tree of runtime graph is immutable.
+Tree of Processing Vertexes (pvx) represents execution graph.
+Runtime builds execution graph each time when payload submitted to ReactorGraph.</p>
+</div>
+<div class="paragraph">
+<p>Processing Vertex keeps references to CompletableFutures.
+CompletableFutures represent incoming or outgoing transitions and result of computation particular elements of a vertex: handlers.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="source-guidebook/processing-vertex.png" alt="processing vertex">
+</div>
+</div>
+<div class="paragraph">
+<p>All types of Vertices in runtime represents as a Processing Vertex with handler and merger.
+Router is a Processing Vertex with empty merger.
+Mutator is a router with no result.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_how_to_build">How to build</h3>
 <div class="paragraph">
 <p>There is no task that builds Intellij Idea plugin.
@@ -571,7 +619,7 @@ To compile documentation run</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-08 10:44:42 MSK
+Last updated 2018-11-09 13:52:23 MSK
 </div>
 </div>
 </body>
