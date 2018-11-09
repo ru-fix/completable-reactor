@@ -1,5 +1,5 @@
 object Vers {
-    val kotlin = "1.2.71"
+    val kotlin = "1.3.0"
     val sl4j = "1.7.25"
     val dokkav = "0.9.16"
     val gradleReleasePlugin = "1.2.20"
@@ -9,7 +9,7 @@ object Vers {
     val dynamicProperty = "1.0.5"
 
     val spring = "5.1.0.RELEASE"
-    val kotlinCoroutines = "0.30.0"
+    val kotlinCoroutines = "1.0.1"
     val asciidoctor = "1.5.9.1"
 }
 

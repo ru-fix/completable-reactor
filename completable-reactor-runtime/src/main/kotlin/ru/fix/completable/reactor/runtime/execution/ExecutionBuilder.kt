@@ -147,7 +147,7 @@ class ExecutionBuilder(
         /**
          * Populate outgoing flows
          */
-        processingVertices.values.asSequence().filter { it.isMergerable }.forEach { mergerablePvx ->
+        processingVertices.values.asSequence().filter { it.vertex.isMergerable }.forEach { mergerablePvx ->
 
             /**
              * Completion of Mergerable feature triggers completion of outgoing transitions.

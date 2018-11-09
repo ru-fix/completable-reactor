@@ -72,6 +72,11 @@ CompletableFutures represent incoming or outgoing transitions and result of comp
 
 image::source-guidebook/processing-vertex.png[]
 
+All types of Vertices in runtime represents as a Processing Vertex with handler and merger.
+Router is a Processing Vertex with empty merger.
+Mutator is a router with no result.
+
+
 === How to build
 There is no task that builds Intellij Idea plugin.
 Use Intellij Idea IDE UI to create plugin release.

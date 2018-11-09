@@ -4,7 +4,7 @@ import ru.fix.completable.reactor.graph.RoutingMerger
 
 class RuntimeEmptyMerger : RoutingMerger<Any?, Any?> {
 
-    enum class EmptyMergerStatusEnum{
+    enum class EmptyMergerStatusEnum {
         EMPTY_MERGER_STATUS
     }
 

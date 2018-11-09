@@ -38,14 +38,38 @@ class DslTransitionBuilder(
             targetGlVertex.name = BuilderContext.get().resolveVertexName(vertex)
         }
 
-        if (targetGlVertex.router != null) {
-            throw IllegalArgumentException(
+        when (targetGlVertex.type) {
+            RuntimeVertex.Type.Router,
+            RuntimeVertex.Type.Mutator -> throw IllegalArgumentException(
                     """
-                        MergeBy transition is targeting vertex ${targetGlVertex.name}.
-                        Vertex ${targetGlVertex.name} is of type Router or Mutator.
-                        Routers and Mutators are allowed to participate only in handleBy transitions.
-                        Maybe you want to use HandleBy transition instead.
-                        """.trimIndent())
+                    MergeBy transition is targeting vertex ${targetGlVertex.name}.
+                    Vertex ${targetGlVertex.name} is of type Router or Mutator.
+                    Routers and Mutators are allowed to participate only in handleBy transitions.
+                    Maybe you want to use HandleBy transition instead.
+                    """.trimIndent())
+
+            RuntimeVertex.Type.SubgraphWithEmptyMerger,
+            RuntimeVertex.Type.SubgraphWithMerger,
+            RuntimeVertex.Type.SubgraphWithRoutingMerger,
+            RuntimeVertex.Type.HandlerWithEmptyMerger,
+            RuntimeVertex.Type.HandlerWithMerger,
+            RuntimeVertex.Type.HandlerWithRoutingMerger -> {
+                /* OK */
+            }
+
+            /*
+                MergeBy transition is targeting vertex of type Handler or Subgraph without Merger.
+                We will implicitly create empty merger fot that vertex
+                TODO: add implicit empty merger creation into JavaSourceParser, onAny case already exist in parser
+             */
+            RuntimeVertex.Type.HandlerWithoutMerger -> {
+                vx.merger = RuntimeEmptyMerger()
+                vx.type = RuntimeVertex.Type.HandlerWithEmptyMerger
+            }
+            RuntimeVertex.Type.SubgraphWithoutMerger -> {
+                vx.merger = RuntimeEmptyMerger()
+                vx.type = RuntimeVertex.Type.SubgraphWithEmptyMerger
+            }
         }
 
         transition.mergeBy = targetGlVertex
