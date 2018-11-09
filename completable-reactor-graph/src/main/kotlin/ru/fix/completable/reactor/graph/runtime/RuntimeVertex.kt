@@ -33,7 +33,6 @@ class RuntimeVertex(val sourceVertex: Vertex) {
     @JvmField
     var handler: Handler<Any?, Any?>? = null
 
-    //TODO: rename to routing merger
     @JvmField
     var merger: RoutingMerger<Any?, Any?>? = null
 

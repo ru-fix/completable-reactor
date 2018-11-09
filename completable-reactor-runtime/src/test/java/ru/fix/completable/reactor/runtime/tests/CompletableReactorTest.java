@@ -801,14 +801,11 @@ class CompletableReactorTest {
             idProcessor3.onAny().complete();
 
             coordinates()
-                    .handler(idProcessor0, 13, 72)
-                    .handler(idProcessor1, -201, 70)
-                    .handler(idProcessor3, 278, 158)
-                    .router(router2, 207, 65)
-                    .merger(idProcessor0, 89, 207)
-                    .merger(idProcessor1, -113, 249)
-                    .merger(idProcessor3, 196, 299)
-                    .complete(idProcessor3, 185, 391);
+                    .vx(router2, 207, 65)
+                    .vx(idProcessor0, 13, 72, 89, 207)
+                    .vx(idProcessor1, -201, 70, -113, 249)
+                    .vx(idProcessor3, 278, 158, 196, 299)
+                    .ct(idProcessor3, 196, 389);
 
         }
     }
@@ -908,19 +905,14 @@ class CompletableReactorTest {
                     .onAny().complete();
 
             coordinates()
-                    .payload(461, 96)
-                    .handler(idProcessor0, 366, 177)
-                    .handler(idProcessor2, 649, 181)
-                    .handler(idProcessor1, 502, 178)
-                    .handler(idProcessor3, 708, 396)
-                    .handler(idProcessor4, 289, 339)
-                    .merger(idProcessor0, 407, 250)
-                    .merger(idProcessor1, 538, 304)
-                    .merger(idProcessor2, 682, 315)
-                    .merger(idProcessor3, 755, 477)
-                    .merger(idProcessor4, 330, 436)
-                    .complete(idProcessor3, 820, 514)
-                    .complete(idProcessor4, 396, 475);
+                    .pd(461, 96)
+                    .vx(idProcessor0, 366, 177, 407, 250)
+                    .vx(idProcessor1, 502, 178, 538, 304)
+                    .vx(idProcessor2, 649, 181, 682, 315)
+                    .vx(idProcessor3, 703, 396, 755, 477)
+                    .vx(idProcessor4, 289, 339, 330, 436)
+                    .ct(idProcessor3, 820, 514)
+                    .ct(idProcessor4, 396, 475);
         }
     }
 
