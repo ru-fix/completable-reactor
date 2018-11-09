@@ -57,16 +57,19 @@ class DslTransitionBuilder(
                 /* OK */
             }
 
-            RuntimeVertex.Type.HandlerWithoutMerger,
-            RuntimeVertex.Type.SubgraphWithoutMerger -> throw IllegalArgumentException(
-                    """
-                    MergeBy transition is targeting vertex ${targetGlVertex.name}.
-                    Vertex ${targetGlVertex.name} is of type Handler or Subgraph without Merger.
-                    That vertex is allowed to participate only in handleBy transitions.
-                    Maybe you want to use HandleBy transition instead.
-                    Or you can add merger to your vertex.
-                    """.trimIndent())
-
+            /*
+                MergeBy transition is targeting vertex of type Handler or Subgraph without Merger.
+                We will implicitly create empty merger fot that vertex
+                TODO: add implicit empty merger creation into JavaSourceParser, onAny case already exist in parser
+             */
+            RuntimeVertex.Type.HandlerWithoutMerger -> {
+                vx.merger = RuntimeEmptyMerger()
+                vx.type = RuntimeVertex.Type.HandlerWithEmptyMerger
+            }
+            RuntimeVertex.Type.SubgraphWithoutMerger -> {
+                vx.merger = RuntimeEmptyMerger()
+                vx.type = RuntimeVertex.Type.SubgraphWithEmptyMerger
+            }
         }
 
         transition.mergeBy = targetGlVertex

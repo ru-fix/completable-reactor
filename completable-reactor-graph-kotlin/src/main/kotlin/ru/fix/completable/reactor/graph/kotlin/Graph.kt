@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.graph.kotlin
 
-import kotlinx.coroutines.experimental.future.future
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.future.future
 import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.kotlin.internal.DslMergerBuilder
@@ -40,6 +41,7 @@ open class Graph<Payload> : Graphable {
 
         graphBuilderValidator.validateHandler(vx)
 
+        @Suppress("UNCHECKED_CAST")
         vx.handler = object : Handler<Payload, HandlerResult> {
             override fun handle(payload: Payload): CompletableFuture<HandlerResult> {
                 return handler(payload)
@@ -53,7 +55,8 @@ open class Graph<Payload> : Graphable {
             MergerBuilder<Payload, HandlerResult> {
 
         return handler {
-            future {
+            //TODO replace global scope with custom scope provided by completable reactor
+            GlobalScope.future {
                 handler()
             }
         }
@@ -67,6 +70,7 @@ open class Graph<Payload> : Graphable {
         graphBuilderValidator.validateMutator(vx)
 
         vx.handler = RuntimeEmptyHandler()
+        @Suppress("UNCHECKED_CAST")
         vx.merger = RuntimeMutatorMerger(
                 object : Mutator<Payload> {
                     override fun mutate(payload: Payload) {
@@ -86,6 +90,7 @@ open class Graph<Payload> : Graphable {
         graphBuilderValidator.validateRouter(vx)
 
         vx.handler = RuntimeEmptyHandler()
+        @Suppress("UNCHECKED_CAST")
         vx.merger = RuntimeRouterMerger(
                 object : Router<Payload> {
                     override fun route(payload: Payload): Enum<*> {
@@ -109,6 +114,7 @@ open class Graph<Payload> : Graphable {
         graphBuilderValidator.validateSubgraph(vx)
 
         vx.subgraphPayloadType = subgraphPayloadType.java
+        @Suppress("UNCHECKED_CAST")
         vx.subgraphPayloadBuilder = object : Subgraph<Payload, SubgraphPayload> {
             override fun subgraph(payload: Payload): SubgraphPayload {
                 return subgraph(payload)

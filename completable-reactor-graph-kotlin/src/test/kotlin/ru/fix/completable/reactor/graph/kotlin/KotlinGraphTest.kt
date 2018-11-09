@@ -1,9 +1,11 @@
 package ru.fix.completable.reactor.graph.kotlin
 
-import kotlinx.coroutines.experimental.future.await
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.apache.commons.lang3.exception.ExceptionUtils
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -936,8 +938,8 @@ class KotlinGraphTest {
             log.info(exc) { "Expected exception" }
 
             ExceptionUtils.getStackTrace(exc).let {
-                assertTrue(it.contains("on() transition"))
-                assertTrue(it.contains("does not have merger or router"))
+                assertThat(it, containsString("on() transition"))
+                assertThat(it, containsString("does not have merger"))
             }
         }
     }
