@@ -239,7 +239,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
         bonusPurchaseSubgraph.onAny().complete();
 
         coordinates()
-                .payload(495, 34)
+                .pd(495, 34)
                 .vx(bonusPurchaseSubgraph, 309, 917)
                 .vx(checkBonuses, 595, 806)
                 .vx(isPartnerService, 376, 513)
@@ -251,8 +251,8 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                 .vx(logTransaction, 434, 586, 464, 658)
                 .vx(logTransaction2, 700, 481, 719, 551)
                 .vx(withdrawMoneyWithMinus, 349, 377, 378, 441)
-                .complete(checkBonuses, 775, 934)
-                .complete(loadServiceInfo, 497, 293)
-                .complete(loadUserProfile, 897, 225);
+                .ct(checkBonuses, 775, 934)
+                .ct(loadServiceInfo, 497, 293)
+                .ct(loadUserProfile, 897, 225);
     }
 }
