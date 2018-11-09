@@ -4,7 +4,9 @@ class Validators {
     companion object {
         fun get() = listOf(
                 AtLeastOneEndPointExistValidator(),
-                HandleableVerticesHaveIncomingFlowsValidator()
+                HandleableVerticesHaveIncomingFlowsValidator(),
+                MergerableVerticesHaveOutgoingTransitionsValidator()
         )
+        //TODO: add RouterOrMutatorCouldNotParticipateInMergeByTransitionValidator, required resolving transition type in compileTimeModel
     }
 }

@@ -256,7 +256,7 @@ class JavaSourceParserTest {
         }
 
 
-        """\.payload\((\d+), (\d+)\)""".toRegex().find(body)!!.let {
+        """\.pd\((\d+), (\d+)\)""".toRegex().find(body)!!.let {
             assertEquals(
                     Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
                     model.startPoint.coordinates)
@@ -277,7 +277,7 @@ class JavaSourceParserTest {
                     model.handleable[WEB_NOTIFICATION]!!.coordinates)
         }
 
-        """\.complete\($SERVICE_INFO, (\d+), (\d+)\)""".toRegex().find(body)!!.let {
+        """\.ct\($SERVICE_INFO, (\d+), (\d+)\)""".toRegex().find(body)!!.let {
             assertEquals(
                     Coordinates(it.groupValues[1].toInt(), it.groupValues[2].toInt()),
                     model.endpoints[SERVICE_INFO]!!.coordinates)

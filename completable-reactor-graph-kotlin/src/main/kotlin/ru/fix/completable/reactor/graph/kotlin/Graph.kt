@@ -1,10 +1,12 @@
 package ru.fix.completable.reactor.graph.kotlin
 
-import kotlinx.coroutines.experimental.future.future
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.future.future
 import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.kotlin.internal.DslMergerBuilder
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
 
@@ -39,6 +41,7 @@ open class Graph<Payload> : Graphable {
 
         graphBuilderValidator.validateHandler(vx)
 
+        @Suppress("UNCHECKED_CAST")
         vx.handler = object : Handler<Payload, HandlerResult> {
             override fun handle(payload: Payload): CompletableFuture<HandlerResult> {
                 return handler(payload)
@@ -52,17 +55,31 @@ open class Graph<Payload> : Graphable {
             MergerBuilder<Payload, HandlerResult> {
 
         return handler {
-            future {
+            //TODO replace global scope with custom scope provided by completable reactor
+            GlobalScope.future {
                 handler()
             }
         }
     }
 
     protected fun mutator(mutator: Payload.() -> Unit): Vertex {
-        return router {
-            mutator(this)
-            RuntimeEmptyMerger.EmptyMergerStatusEnum.EMPTY_MERGER_STATUS
-        }
+        val vertex = Vertex()
+        val vx = InternalDslAccessor.vx(vertex)
+        graph.vertices.add(vx)
+
+        graphBuilderValidator.validateMutator(vx)
+
+        vx.handler = RuntimeEmptyHandler()
+        @Suppress("UNCHECKED_CAST")
+        vx.merger = RuntimeMutatorMerger(
+                object : Mutator<Payload> {
+                    override fun mutate(payload: Payload) {
+                        mutator(payload)
+                    }
+                } as Mutator<Any?>)
+        vx.type = RuntimeVertex.Type.Mutator
+
+        return vertex
     }
 
     protected fun router(router: Payload.() -> Enum<*>): Vertex {
@@ -72,13 +89,16 @@ open class Graph<Payload> : Graphable {
 
         graphBuilderValidator.validateRouter(vx)
 
-        vx.router = object : Router<Payload> {
-            override fun route(payload: Payload): Enum<*> {
-                return router(payload)
-            }
-        } as Router<Any?>
-
-        vx.isRoutable = true
+        vx.handler = RuntimeEmptyHandler()
+        @Suppress("UNCHECKED_CAST")
+        vx.merger = RuntimeRouterMerger(
+                object : Router<Payload> {
+                    override fun route(payload: Payload): Enum<*> {
+                        return router(payload)
+                    }
+                } as Router<Any?>
+        )
+        vx.type = RuntimeVertex.Type.Router
 
         return vertex
     }
@@ -94,6 +114,7 @@ open class Graph<Payload> : Graphable {
         graphBuilderValidator.validateSubgraph(vx)
 
         vx.subgraphPayloadType = subgraphPayloadType.java
+        @Suppress("UNCHECKED_CAST")
         vx.subgraphPayloadBuilder = object : Subgraph<Payload, SubgraphPayload> {
             override fun subgraph(payload: Payload): SubgraphPayload {
                 return subgraph(payload)

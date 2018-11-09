@@ -4,7 +4,7 @@ import ru.fix.completable.reactor.graph.Vertex
 
 interface MergerBuilder<Payload, HandlerResult> {
 
-    //TODO merger that could return any object, or do not return anything at all
+    //TODO merger that could return any object
 
     fun withRoutingMerger(merger: Payload.(handlerResult: HandlerResult) -> Enum<*>): Vertex
 

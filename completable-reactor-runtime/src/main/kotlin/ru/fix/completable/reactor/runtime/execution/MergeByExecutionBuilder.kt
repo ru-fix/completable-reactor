@@ -171,18 +171,12 @@ class MergeByExecutionBuilder<PayloadType>(
                         /**
                          * Assert graph consistency
                          */
-                        if (pvx.vertex.router == null && pvx.incomingMergingFlows.size > 1) {
+                        if ((pvx.vertex.type == RuntimeVertex.Type.Router
+                                        || pvx.vertex.type == RuntimeVertex.Type.Mutator)
+                                && pvx.incomingMergingFlows.isNotEmpty()) {
                             throw IllegalStateException(
                                     """
-                                    More than 1 incoming merging flow exist for non router vertex ${pvx.vertex.name}.
-                                    Only single incoming merging flow is allowed.
-                                    Incoming merging flows: ${pvx.incomingMergingFlows}
-                                    """.trimIndent())
-                        }
-                        if (pvx.vertex.router != null && pvx.incomingMergingFlows.isNotEmpty()) {
-                            throw IllegalStateException(
-                                    """
-                                    Incoming merging flow exist for router vertex ${pvx.vertex.name}.
+                                    Incoming merging flow exist for router or mutator vertex ${pvx.vertex.name}.
                                     Router vertex could not have incoming merging flows.
                                     Incoming merging flows: ${pvx.incomingMergingFlows}
                                     """.trimIndent())
@@ -220,9 +214,9 @@ class MergeByExecutionBuilder<PayloadType>(
                                 /**
                                  * Incoming merge flows exists.
                                  */
-                                if (pvx.vertex.router != null) {
+                                if (pvx.vertex.type == RuntimeVertex.Type.Router || pvx.vertex.type == RuntimeVertex.Type.Mutator) {
                                     /**
-                                     * In case of Router there should be no such transitions.
+                                     * In case of Router or Mutator there should be no such transitions.
                                      */
                                     throw IllegalStateException(
                                             """
