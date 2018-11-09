@@ -55,7 +55,10 @@ class RuntimeVertex(val sourceVertex: Vertex) {
     val isRoutable: Boolean
         get() = type in ROUTABLE_TYPES
 
-//TODO: rename and give same concept as compileTime graph
+    /**
+     * Vertices that have mergers and could have outgoing transitions
+     * Router, Mutator, Subgraph or Handlers with any type of Mergers
+     */
     val isMergerable: Boolean
         get() = type in MERGERABLE_TYPES
 
@@ -63,9 +66,11 @@ class RuntimeVertex(val sourceVertex: Vertex) {
         HandlerWithMerger,
         HandlerWithRoutingMerger,
         HandlerWithoutMerger,
+        HandlerWithEmptyMerger,
         SubgraphWithMerger,
         SubgraphWithRoutingMerger,
         SubgraphWithoutMerger,
+        SubgraphWithEmptyMerger,
         Router,
         Mutator,
     }

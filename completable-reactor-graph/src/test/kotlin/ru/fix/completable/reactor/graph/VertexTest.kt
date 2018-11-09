@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import ru.fix.completable.reactor.graph.internal.InternalDslAccessor
+import ru.fix.completable.reactor.graph.internal.RuntimeEmptyHandler
+import ru.fix.completable.reactor.graph.internal.RuntimeRouterMerger
 
 private const val VERTEX_NAME = "vertex"
 
@@ -21,11 +23,12 @@ class VertexTest {
 
         InternalDslAccessor.vx(vertex).apply {
             name = VERTEX_NAME
-            router = object: Router<Any?> {
+            handler = RuntimeEmptyHandler()
+            merger = RuntimeRouterMerger(object : Router<Any?> {
                 override fun route(payload: Any?): Enum<*> {
                     return Foo.BAR
                 }
-            }
+            })
         }
 
         val ex = assertThrows<IllegalArgumentException> {
@@ -33,7 +36,8 @@ class VertexTest {
                     .onElse().handleBy(onElseTransition)
                     .onAny().handleBy(onAnyTransition)
         }
-        assertEquals("Vertex $VERTEX_NAME is used together incompatible transitions onElse and onAny.", ex.message)
+        assertEquals(
+                "Vertex $VERTEX_NAME is used two incompatible transitions onElse and onAny is same time.", ex.message)
     }
 
     @Test
@@ -44,11 +48,12 @@ class VertexTest {
 
         InternalDslAccessor.vx(vertex).apply {
             name = VERTEX_NAME
-            router = object: Router<Any?> {
+            handler = RuntimeEmptyHandler()
+            merger = RuntimeRouterMerger(object : Router<Any?> {
                 override fun route(payload: Any?): Enum<*> {
                     return Foo.BAR
                 }
-            }
+            })
         }
 
         val ex = assertThrows<IllegalArgumentException> {
@@ -56,7 +61,7 @@ class VertexTest {
                     .onAny().handleBy(onAnyTransition)
                     .onElse().handleBy(onElseTransition)
         }
-        assertEquals("Vertex $VERTEX_NAME is used together incompatible transitions onElse and onAny.", ex.message)
+        assertEquals("Vertex $VERTEX_NAME is used two incompatible transitions onElse and onAny is same time.", ex.message)
     }
 
     @Test
@@ -70,7 +75,7 @@ class VertexTest {
         }
 
         assertEquals(
-                "Vertex $VERTEX_NAME is used as source of onElse() transition but does not have merger or router.",
+                "Vertex $VERTEX_NAME is used as source of onElse() transition but does not have merger.",
                 ex.message
         )
     }
@@ -87,7 +92,7 @@ class VertexTest {
         }
 
         assertEquals(
-                "Vertex $VERTEX_NAME is used as source of onAny() transition but does not have merger or router.",
+                "Vertex $VERTEX_NAME is used as source of onAny() transition but does not have merger.",
                 ex.message
         )
     }

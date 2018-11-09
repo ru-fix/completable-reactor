@@ -38,14 +38,35 @@ class DslTransitionBuilder(
             targetGlVertex.name = BuilderContext.get().resolveVertexName(vertex)
         }
 
-        if (targetGlVertex.router != null) {
-            throw IllegalArgumentException(
+        when (targetGlVertex.type) {
+            RuntimeVertex.Type.Router,
+            RuntimeVertex.Type.Mutator -> throw IllegalArgumentException(
                     """
-                        MergeBy transition is targeting vertex ${targetGlVertex.name}.
-                        Vertex ${targetGlVertex.name} is of type Router or Mutator.
-                        Routers and Mutators are allowed to participate only in handleBy transitions.
-                        Maybe you want to use HandleBy transition instead.
-                        """.trimIndent())
+                    MergeBy transition is targeting vertex ${targetGlVertex.name}.
+                    Vertex ${targetGlVertex.name} is of type Router or Mutator.
+                    Routers and Mutators are allowed to participate only in handleBy transitions.
+                    Maybe you want to use HandleBy transition instead.
+                    """.trimIndent())
+
+            RuntimeVertex.Type.SubgraphWithEmptyMerger,
+            RuntimeVertex.Type.SubgraphWithMerger,
+            RuntimeVertex.Type.SubgraphWithRoutingMerger,
+            RuntimeVertex.Type.HandlerWithEmptyMerger,
+            RuntimeVertex.Type.HandlerWithMerger,
+            RuntimeVertex.Type.HandlerWithRoutingMerger -> {
+                /* OK */
+            }
+
+            RuntimeVertex.Type.HandlerWithoutMerger,
+            RuntimeVertex.Type.SubgraphWithoutMerger -> throw IllegalArgumentException(
+                    """
+                    MergeBy transition is targeting vertex ${targetGlVertex.name}.
+                    Vertex ${targetGlVertex.name} is of type Handler or Subgraph without Merger.
+                    That vertex is allowed to participate only in handleBy transitions.
+                    Maybe you want to use HandleBy transition instead.
+                    Or you can add merger to your vertex.
+                    """.trimIndent())
+
         }
 
         transition.mergeBy = targetGlVertex

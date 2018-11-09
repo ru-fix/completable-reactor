@@ -17,12 +17,11 @@ class AtLeastOneEndPointExistValidator : Validator {
                     """
                     There are no EndPoints in graph.
                     Graph should contain at least one terminal transition.
-                    Add complete step to at least one vertex.
+                    Add complete() step to at least one vertex.
                     """.trimIndent())
 
         } else {
             ValidationSucceed()
         }
-
     }
 }

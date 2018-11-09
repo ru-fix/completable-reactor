@@ -5,7 +5,7 @@ import ru.fix.completable.reactor.model.CompileTimeGraph
 
 sealed class ValidationResult
 
-class ValidationSucceed() : ValidationResult()
+class ValidationSucceed : ValidationResult()
 
 class ValidationFailed(val message: String) : ValidationResult()
 
