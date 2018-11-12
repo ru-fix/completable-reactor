@@ -51,6 +51,7 @@ open class Graph<Payload> : Graphable {
         return DslMergerBuilder(vertex)
     }
 
+    //TODO: consider an ability to specify CoroutineContext and Scope
     protected fun <HandlerResult> suspendHandler(handler: suspend Payload.() -> HandlerResult):
             MergerBuilder<Payload, HandlerResult> {
 
