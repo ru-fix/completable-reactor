@@ -36,6 +36,7 @@ buildscript {
         classpath(Libs.kotlin_reflect)
         classpath(Libs.shadowPlugin)
         classpath(Libs.asciidoctor)
+        classpath(Libs.jmhGradlePlugin)
     }
 }
 

@@ -11,6 +11,8 @@ object Vers {
     val spring = "5.1.0.RELEASE"
     val kotlinCoroutines = "1.0.1"
     val asciidoctor = "1.5.9.1"
+
+    val jmh = "1.21"
 }
 
 object Libs {
@@ -56,4 +58,8 @@ object Libs {
 
     val asciidoctor = "org.asciidoctor:asciidoctor-gradle-plugin:${Vers.asciidoctor}"
 
+    val jmhGradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.4.7"
+    val jmh = "org.openjdk.jmh:jmh-core:${Vers.jmh}"
+    val jmhGeneratorAnn = "org.openjdk.jmh:jmh-generator-annprocess:${Vers.jmh}"
+    val jmhGeneratorBytecode = "org.openjdk.jmh:jmh-generator-bytecode:${Vers.jmh}"
 }
