@@ -70,11 +70,11 @@ open class Graph<Payload> : Graphable {
      * By default [Graph.defaultCoroutineScope] will be used.
      * Default [Graph.defaultCoroutineScope] could be redefined by user globally.
      */
-    protected fun <HandlerResult> suspendHandler(coroutineScope: CoroutineScope = Graph.defaultCoroutineScope, handler: suspend Payload.() -> HandlerResult):
+    protected fun <HandlerResult> suspendHandler(coroutineScope: CoroutineScope? = null, handler: suspend Payload.() -> HandlerResult):
             MergerBuilder<Payload, HandlerResult> {
 
         return handler {
-            coroutineScope.future {
+            (coroutineScope ?: defaultCoroutineScope).future {
                 handler()
             }
         }
