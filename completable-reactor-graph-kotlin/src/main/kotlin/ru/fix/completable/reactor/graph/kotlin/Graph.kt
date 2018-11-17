@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.graph.kotlin
 
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.future
 import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.*
@@ -8,9 +9,21 @@ import ru.fix.completable.reactor.graph.kotlin.internal.DslMergerBuilder
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ForkJoinPool
 import kotlin.reflect.KClass
 
 open class Graph<Payload> : Graphable {
+
+    companion object {
+        //TODO: add ability to use different pool for completable reactor, update default value accordingly.
+        /**
+         * By default, Completable Reactor uses Common pool for execution.
+         * suspendHandler works as a bridge to Kotlin coroutines.
+         * This bridge will use [defaultCoroutineScope] scope to execute coroutines.
+         * You can redefine defaultCoroutineScope globally.
+         */
+        var defaultCoroutineScope: CoroutineScope = CoroutineScope(ForkJoinPool.commonPool().asCoroutineDispatcher())
+    }
 
     // Field accessed via reflection by field name
     private val graph = RuntimeGraph()
@@ -51,13 +64,17 @@ open class Graph<Payload> : Graphable {
         return DslMergerBuilder(vertex)
     }
 
-    //TODO: consider an ability to specify CoroutineContext and Scope
-    protected fun <HandlerResult> suspendHandler(handler: suspend Payload.() -> HandlerResult):
+    /**
+     * Builds new handler based on coroutine.
+     * Coroutine context is inherited from a [coroutineScope].
+     * By default [Graph.defaultCoroutineScope] will be used.
+     * Default [Graph.defaultCoroutineScope] could be redefined by user globally.
+     */
+    protected fun <HandlerResult> suspendHandler(coroutineScope: CoroutineScope = Graph.defaultCoroutineScope, handler: suspend Payload.() -> HandlerResult):
             MergerBuilder<Payload, HandlerResult> {
 
         return handler {
-            //TODO replace global scope with custom scope provided by completable reactor
-            GlobalScope.future {
+            coroutineScope.future {
                 handler()
             }
         }
