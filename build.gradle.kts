@@ -25,7 +25,6 @@ import kotlin.reflect.KProperty
 buildscript {
     repositories {
         jcenter()
-        gradlePluginPortal()
         mavenCentral()
     }
     dependencies {
@@ -118,8 +117,8 @@ subprojects {
                 }
             }
         }
-        (publications) {
-            "maven"(MavenPublication::class) {
+        publications {
+            register("maven", MavenPublication::class) {
                 from(components["java"])
 
                 artifact(sourcesJar)
