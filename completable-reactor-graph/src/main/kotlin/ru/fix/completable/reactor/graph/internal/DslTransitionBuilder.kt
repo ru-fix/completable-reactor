@@ -63,12 +63,12 @@ class DslTransitionBuilder(
                 TODO: add implicit empty merger creation into JavaSourceParser, onAny case already exist in parser
              */
             RuntimeVertex.Type.HandlerWithoutMerger -> {
-                vx.merger = RuntimeEmptyMerger()
-                vx.type = RuntimeVertex.Type.HandlerWithEmptyMerger
+                targetGlVertex.merger = RuntimeEmptyMerger()
+                targetGlVertex.type = RuntimeVertex.Type.HandlerWithEmptyMerger
             }
             RuntimeVertex.Type.SubgraphWithoutMerger -> {
-                vx.merger = RuntimeEmptyMerger()
-                vx.type = RuntimeVertex.Type.SubgraphWithEmptyMerger
+                targetGlVertex.merger = RuntimeEmptyMerger()
+                targetGlVertex.type = RuntimeVertex.Type.SubgraphWithEmptyMerger
             }
         }
 

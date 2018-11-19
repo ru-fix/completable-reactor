@@ -339,7 +339,7 @@ public class CompletableReactor implements AutoCloseable {
      * @param debugProcessingVertexGraphState By default this flag is disabled.
      */
     public CompletableReactor setDebugProcessingVertexGraphState(boolean debugProcessingVertexGraphState) {
-        debugProcessingVertexGraphState = true;
+        this.debugProcessingVertexGraphState = true;
         return this;
     }
 
