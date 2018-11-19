@@ -1,71 +1,116 @@
 package ru.fix.completable.reactor.jmh
 
-import org.openjdk.jmh.annotations.Benchmark
-import org.openjdk.jmh.annotations.Scope
-import org.openjdk.jmh.annotations.State
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.infra.Blackhole
+import java.util.concurrent.*
 import java.util.function.Supplier
 
 @State(Scope.Benchmark)
 open class BaselineJmh {
 
-    val atomic = AtomicLong()
+    val POOL_SIZE = 4
 
-    @Benchmark
-    fun increment_atomic_log(): Long {
-        return atomic.incrementAndGet()
-    }
+    val DAO = Executors.newFixedThreadPool(POOL_SIZE)
+    val HTTP = Executors.newFixedThreadPool(POOL_SIZE)
+    val SMPP = Executors.newFixedThreadPool(POOL_SIZE)
+    val IMDG = Executors.newFixedThreadPool(POOL_SIZE)
+    val NOSQL = Executors.newFixedThreadPool(POOL_SIZE)
 
-    val DAO_POOL_SIZE = 10
-    val DAO = Executors.newFixedThreadPool(DAO_POOL_SIZE)
-
-    val HTTP_POOL_SIZE = 10
-    val HTTP = Executors.newFixedThreadPool(HTTP_POOL_SIZE)
-
-    val SMPP_POOL_SIZE = 10
-    val SMPP = Executors.newFixedThreadPool(SMPP_POOL_SIZE)
+    val dao = DAO.asCoroutineDispatcher()
+    val smpp = SMPP.asCoroutineDispatcher()
+    val http = HTTP.asCoroutineDispatcher()
+    val imdg = IMDG.asCoroutineDispatcher()
+    val nosql = NOSQL.asCoroutineDispatcher()
 
     val service = Service()
 
 
     @Benchmark
-    fun work_load() {
+    @BenchmarkMode(Mode.Throughput)
+    fun pools_cf() {
 
-        fun dao() = CompletableFuture.supplyAsync(Supplier { service.databaseQuery() }, DAO)
-        fun smpp() = CompletableFuture.supplyAsync(Supplier { service.sendSmppMessage() }, SMPP)
-        fun http() = CompletableFuture.supplyAsync(Supplier { service.sendHttpNotification() }, HTTP)
+        CompletableFuture.supplyAsync(Supplier { service.databaseQuery() }, DAO)
+                .thenApplyAsync(java.util.function.Function<String, String> { service.sendSmppMessage() }, SMPP)
+                .thenApplyAsync(java.util.function.Function<String, String> { service.sendHttpNotification() }, HTTP)
+                .thenApplyAsync(java.util.function.Function<String, String> { service.sendHttpNotification() }, IMDG)
+                .thenApplyAsync(java.util.function.Function<String, String> { service.sendHttpNotification() }, NOSQL)
 
-        dao()
-                .thenCompose { smpp() }
-                .thenCompose { http() }
                 .join()
     }
 
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    fun pools_executor() {
+
+        DAO.submit(Callable<Future<Future<Future<Future<String>>>>> {
+
+            service.databaseQuery()
+            SMPP.submit(Callable<Future<Future<Future<String>>>> {
+
+                service.sendSmppMessage()
+                HTTP.submit(Callable<Future<Future<String>>> {
+                    service.sendHttpNotification()
+
+                    IMDG.submit(Callable<Future<String>> {
+                        service.imdgQuery()
+                        NOSQL.submit(Callable<String> { service.noSqlQuery() })
+                    })
+
+                })
+            })
+        }).get().get().get()
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    fun pools_coroutines() {
+
+        runBlocking(dao) {
+            service.databaseQuery()
+            withContext(smpp) {
+                service.sendSmppMessage()
+            }
+            withContext(http) {
+                service.sendHttpNotification()
+                withContext(imdg) {
+                    service.imdgQuery()
+                    withContext(nosql) {
+                        service.noSqlQuery()
+                    }
+                }
+            }
+        }
+    }
 }
 
 
 class Service {
 
-    companion object {
-        const val DAO_RESP_TIMEOUT = 2L
-        const val SMPP_RESP_TIMEOUT = 2L
-        const val HTTP_RESP_TIMEOUT = 2L
+    fun load(): String {
+        Blackhole.consumeCPU(1000)
+        return "" + System.currentTimeMillis()
     }
 
     fun databaseQuery(): String {
-
-        return "query"
+        return load()
     }
 
     fun sendSmppMessage(): String {
-        Thread.sleep(SMPP_RESP_TIMEOUT)
-        return "sms"
+        return load()
     }
 
     fun sendHttpNotification(): String {
-        Thread.sleep(HTTP_RESP_TIMEOUT)
-        return "notify"
+        return load()
+    }
+
+    fun imdgQuery(): String {
+        return load()
+    }
+
+    fun noSqlQuery(): String {
+        return load()
     }
 }

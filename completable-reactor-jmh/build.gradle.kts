@@ -21,6 +21,8 @@ dependencies {
     compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_stdlib)
     compile(Libs.kotlin_reflect)
+    compile(Libs.kotlinCoroutinesCore)
+    compile(Libs.kotlinCoroutinesJdk)
 
     compile(Libs.jmh)
     compile(Libs.jmhGeneratorAnn)
