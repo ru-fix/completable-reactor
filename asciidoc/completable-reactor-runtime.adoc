@@ -689,7 +689,7 @@ In that case payload will be modified by these Mergers concurrently.
 
 
 
-=== Detached  Handler without Merger
+=== Detached Handler without Merger
 
 Some times we are not interesting in computation result of Handler.
 We simply need to invoke async method and does not care about it's result.
