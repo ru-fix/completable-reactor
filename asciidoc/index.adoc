@@ -117,7 +117,7 @@ Validators checks that graph is consistent, have correct configuration of nodes 
 
 == Metrics
 
-Each graph and each vertex withing graph is being profiled by
+Each graph and each vertex within graph is being profiled by
 link:https://github.com/ru-fix/aggregating-profiler[aggregating profiler]
 image:https://img.shields.io/maven-central/v/ru.fix/aggregating-profiler.svg[]
 
