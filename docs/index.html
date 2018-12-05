@@ -564,13 +564,14 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_routers_and_mutators">Routers and Mutators</a></li>
 <li><a href="#_merger_decision">Merger decision</a></li>
 <li><a href="#_parallel_execution">Parallel execution</a></li>
-<li><a href="#_detached_handler_without_merger">Detached  Handler without Merger</a></li>
+<li><a href="#_detached_handler_without_merger">Detached Handler without Merger</a></li>
 <li><a href="#_detached_handler_with_merger">Detached Handler with Merger</a></li>
 <li><a href="#_conditional_execution">Conditional execution</a></li>
 <li><a href="#_vertex_template_function">Vertex template function</a></li>
 </ul>
 </li>
 <li><a href="#_validation">Validation</a></li>
+<li><a href="#_metrics">Metrics</a></li>
 <li><a href="#_intellij_idea_plugin">Intellij Idea Plugin</a></li>
 <li><a href="#_best_practice_and_code_convention">Best Practice and Code Convention</a>
 <ul class="sectlevel2">
@@ -1933,7 +1934,7 @@ In that case payload will be modified by these Mergers concurrently.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_detached_handler_without_merger">Detached  Handler without Merger</h3>
+<h3 id="_detached_handler_without_merger">Detached Handler without Merger</h3>
 <div class="paragraph">
 <p>Some times we are not interesting in computation result of Handler.
 We simply need to invoke async method and does not care about it&#8217;s result.
@@ -2145,6 +2146,59 @@ val failureLog = loggingVertex("failure");
 For example we can forgot to specify endpoints for one of branches that could lead to situation when graph execution could not complete at all.
 To prevent this, during graph building process CompletableReactor apply validation procedures on Graph instance.
 Validators checks that graph is consistent, have correct configuration of nodes and transitions.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_metrics">Metrics</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Each graph and each vertex withing graph is being profiled by
+<a href="https://github.com/ru-fix/aggregating-profiler">aggregating profiler</a>
+<span class="image"><img src="https://img.shields.io/maven-central/v/ru.fix/aggregating-profiler.svg" alt="aggregating profiler"></span></p>
+</div>
+<div class="paragraph">
+<p>All metrics names have common prefix, by default it is</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.runtime.*</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>for example</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ru.fix.completable.reactor.runtime.exc.AvailableSubscriptionsPayload.callsCountSum</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There are four types of metrics:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>pld.payload-name.* - span between two point of time: when we submitted payload into reactor and when result is completed.</p>
+</li>
+<li>
+<p>exc.payload-name.* - some graphs contain detached nodes
+(see <a href="#completable-reactor-runtime.adoc">Detached Handler without Merger</a>).
+In such cases graph execution is continues even after result completion.
+exc metric shows when whole graph execution is completes including such detached vertices.</p>
+</li>
+<li>
+<p>hndl.vertex-name.* - async handler operation execution time span</p>
+</li>
+<li>
+<p>mrg.vertex_name.* - sync merger, mutator or router operations time span</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Each metric measure how many times vertex was invoked, how long it took to execute, etc.
+Check out details in
+<a href="https://github.com/ru-fix/aggregating-profiler#metrics-summary">aggregating-profiler metrics summary</a>.</p>
 </div>
 </div>
 </div>
@@ -2629,7 +2683,7 @@ To compile documentation run</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-09 10:46:55 MSK
+Last updated 2018-12-05 12:29:37 MSK
 </div>
 </div>
 </body>

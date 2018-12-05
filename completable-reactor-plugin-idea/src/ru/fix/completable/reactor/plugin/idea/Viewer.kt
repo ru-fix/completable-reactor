@@ -72,7 +72,7 @@ class Viewer(
     private val scheduler = Executors.newSingleThreadScheduledExecutor()
 
     val documentListener = object : DocumentListener {
-        override fun documentChanged(event: DocumentEvent?) {
+        override fun documentChanged(event: DocumentEvent) {
             scheduleCommand { refreshGraph() }
         }
     }

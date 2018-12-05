@@ -312,6 +312,8 @@ public class CompletableReactor implements AutoCloseable {
     public CompletableReactor(Profiler profiler) {
         this.profiler = new PrefixedProfiler(profiler, ProfilerNames.PROFILER + ".");
 
+        profiler.attachIndicator(ProfilerNames.PENDING_REQUEST, pendingRequestCount::get);
+
         this.glExecutionBuilder = new ExecutionBuilder(
                 this.profiler,
                 payload -> {
@@ -345,6 +347,13 @@ public class CompletableReactor implements AutoCloseable {
 
     public long getMaxPendingRequestCount() {
         return maxPendingRequestCount.get();
+    }
+
+    /**
+     * How many request currently executing within reactor
+     */
+    public long getPendingRequestCount() {
+        return pendingRequestCount.get();
     }
 
     public CompletableReactor setMaxPendingRequestCount(long value) {
@@ -727,4 +736,3 @@ public class CompletableReactor implements AutoCloseable {
         }
     }
 }
-//TODO: readme: add scenario when you launch long B and short A, after A you decide to ignore result of B
