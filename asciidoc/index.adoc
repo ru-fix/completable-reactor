@@ -132,17 +132,19 @@ ru.fix.completable.reactor.runtime.exc.AvailableSubscriptionsPayload.callsCountS
 
 There are four types of metrics:
 
-- pld.* - span between two point of time: when we submitted payload into reactor and when result is completed.
-- exc.* - some time graph contains detached nodes (Detached Handler without Merger). In such cases graph execution is continues even after result completion. exc metric shows when whole graph execution is completes including such detached vertices.
-- hndl.*
-- mrg.*
+- pld.payload-name.* - span between two point of time: when we submitted payload into reactor and when result is completed.
+- exc.payload-name.* - some graphs contain detached nodes
+(see <<completable-reactor-runtime.adoc, Detached Handler without Merger>>).
+In such cases graph execution is continues even after result completion.
+exc metric shows when whole graph execution is completes including such detached vertices.
+- hndl.vertex-name.* - async handler operation execution time span
+- mrg.vertex_name.* - sync merger, mutator or router operations time span
+
+Each metric measure how many times vertex was invoked, how long it took to execute, etc.
+Check out details in
+link:https://github.com/ru-fix/aggregating-profiler#metrics-summary[aggregating-profiler metrics summary].
 
 
-
-ru.fix.completable.reactor.runtime.exc.AvailableSubscriptionsPayload.callsCountSum
-ru.fix.completable.reactor.runtime.hndl.AvailableSubscriptionsPayload.fetchAbonentRestriction.activeCallsCountMax
-ru.fix.completable.reactor.runtime.mrg.AvailableSubscriptionsPayload.fetchAbonentRestriction.activeCallsCountMax
-ru.fix.completable.reactor.runtime.pld.AvailableSubscriptionsPayload.activeCallsCountMax
 
 == Intellij Idea Plugin
 
