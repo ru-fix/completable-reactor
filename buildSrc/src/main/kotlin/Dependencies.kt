@@ -5,7 +5,7 @@ object Vers {
     val gradleReleasePlugin = "1.3.3"
     val junit = "5.2.0"
 
-    val aggregatingProfiler = "1.4.7"
+    val aggregatingProfiler = "1.4.13"
     val dynamicProperty = "1.0.5"
 
     val spring = "5.1.0.RELEASE"
