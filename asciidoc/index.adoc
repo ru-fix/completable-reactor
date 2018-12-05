@@ -134,7 +134,7 @@ There are four types of metrics:
 
 - pld.payload-name.* - span between two point of time: when we submitted payload into reactor and when result is completed.
 - exc.payload-name.* - some graphs contain detached nodes
-(see <<completable-reactor-runtime.adoc, Detached Handler without Merger>>).
+(see <<Detached Handler without Merger>>).
 In such cases graph execution is continues even after result completion.
 exc metric shows when whole graph execution is completes including such detached vertices.
 - hndl.vertex-name.* - async handler operation execution time span
