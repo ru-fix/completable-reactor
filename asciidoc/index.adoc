@@ -115,6 +115,37 @@ For example we can forgot to specify endpoints for one of branches that could le
 To prevent this, during graph building process CompletableReactor apply validation procedures on Graph instance.
 Validators checks that graph is consistent, have correct configuration of nodes and transitions.
 
+== Metrics
+
+Each graph and each vertex withing graph is being profiled by
+link:https://github.com/ru-fix/aggregating-profiler[aggregating profiler]
+image:https://img.shields.io/maven-central/v/ru.fix/aggregating-profiler.svg[]
+
+All metrics names have common prefix, by default it is
+----
+ru.fix.completable.reactor.runtime.*
+----
+for example
+----
+ru.fix.completable.reactor.runtime.exc.AvailableSubscriptionsPayload.callsCountSum
+----
+
+There are four types of metrics:
+
+- pld.payload-name.* - span between two point of time: when we submitted payload into reactor and when result is completed.
+- exc.payload-name.* - some graphs contain detached nodes
+(see <<completable-reactor-runtime.adoc, Detached Handler without Merger>>).
+In such cases graph execution is continues even after result completion.
+exc metric shows when whole graph execution is completes including such detached vertices.
+- hndl.vertex-name.* - async handler operation execution time span
+- mrg.vertex_name.* - sync merger, mutator or router operations time span
+
+Each metric measure how many times vertex was invoked, how long it took to execute, etc.
+Check out details in
+link:https://github.com/ru-fix/aggregating-profiler#metrics-summary[aggregating-profiler metrics summary].
+
+
+
 == Intellij Idea Plugin
 
 link:https://plugins.jetbrains.com/plugin/9599-completable-reactor[]
