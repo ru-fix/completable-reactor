@@ -1,8 +1,8 @@
 package ru.fix.completable.reactor.graph.kotlin
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.future.future
+import org.slf4j.LoggerFactory
 import ru.fix.completable.reactor.graph.*
 import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.kotlin.internal.DslMergerBuilder
@@ -10,11 +10,12 @@ import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ForkJoinPool
+import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
 
 open class Graph<Payload> : Graphable {
-
     companion object {
+        private val log = LoggerFactory.getLogger(Graph::class.java)
         //TODO: add ability to use different pool for completable reactor, update default value accordingly.
         /**
          * By default, Completable Reactor uses Common pool for execution.
@@ -22,7 +23,15 @@ open class Graph<Payload> : Graphable {
          * This bridge will use [defaultCoroutineScope] scope to execute coroutines.
          * You can redefine defaultCoroutineScope globally.
          */
-        var defaultCoroutineScope: CoroutineScope = CoroutineScope(ForkJoinPool.commonPool().asCoroutineDispatcher())
+        var defaultCoroutineScope: CoroutineScope = object : CoroutineScope {
+
+            override val coroutineContext: CoroutineContext
+                get() = ForkJoinPool.commonPool().asCoroutineDispatcher() +
+                        SupervisorJob() +
+                        CoroutineExceptionHandler { context, thr ->
+                            log.error(context.toString(), thr)
+                        }
+        }
     }
 
     // Field accessed via reflection by field name
