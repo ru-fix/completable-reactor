@@ -1526,6 +1526,59 @@ and simply do nothing in handler itself.<br>
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p>Lets discuss second example with parallel execution and conditions.
+Suppose that merger B depends on result of computation of A.
+Launching D depends on result of computation of A. It will be executed or not.
+In given configuration A and B launched in parallel.
+Merger B will wait for completion of merger A.
+D will execution only if merger of A return status REQUIRED_D.
+<span class="image"><img src="completable-reactor-runtime/parallel-or-behavior.png" alt="parallel or behavior"></span></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If A returns REQUIRED_D</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Merger B executes.</p>
+</li>
+<li>
+<p>Vertex D executes.</p>
+</li>
+<li>
+<p>Vertex C waits for all incoming transitions to complete.</p>
+</li>
+<li>
+<p>Vertex C executes.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>If A returns other status, e.g. NOT_REQUIRED_D</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Merger B executes.</p>
+</li>
+<li>
+<p>Vertex D does not execute. Outgoing transition from D marked as Dead.</p>
+</li>
+<li>
+<p>Vertex C waits for all incoming transitions to complete.</p>
+</li>
+<li>
+<p>Vertex C see that transition from D is dead.
+But there are active transition from B.
+Vertex C executes.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_vertex_template_function">Vertex template function</h3>
@@ -1588,7 +1641,7 @@ val failureLog = loggingVertex("failure");
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-12-05 12:35:09 MSK
+Last updated 2018-12-28 11:50:45 MSK
 </div>
 </div>
 </body>
