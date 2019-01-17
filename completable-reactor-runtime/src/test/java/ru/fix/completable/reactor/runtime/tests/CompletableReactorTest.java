@@ -3,6 +3,7 @@ package ru.fix.completable.reactor.runtime.tests;
 import lombok.Data;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -907,11 +908,11 @@ class CompletableReactorTest {
 
 
     @Data
-    static class OrElsePayload {
+    static class OnElsePayload {
         private Status request;
         private List<Status> result = new ArrayList<>();
 
-        public OrElsePayload(Status request) {
+        OnElsePayload(Status request) {
             this.request = request;
         }
 
@@ -920,21 +921,21 @@ class CompletableReactorTest {
         }
     }
 
-    static class OrElseTransitionGraph extends Graph<OrElsePayload> {
+    static class OrElseTransitionGraph extends Graph<OnElsePayload> {
 
-        Vertex resolveFlow = router(OrElsePayload::getRequest);
+        Vertex resolveFlow = router(OnElsePayload::getRequest);
 
         Vertex first =
                 handler(p ->
-                        CompletableFuture.completedFuture(OrElsePayload.Status.FIRST)
+                        CompletableFuture.completedFuture(OnElsePayload.Status.FIRST)
                 ).withRoutingMerger((p, status) -> {
-                    p.getResult().add(OrElsePayload.Status.FIRST);
+                    p.getResult().add(OnElsePayload.Status.FIRST);
                     return status;
                 });
 
         Vertex second =
                 handler(p ->
-                        CompletableFuture.completedFuture(OrElsePayload.Status.SECOND)
+                        CompletableFuture.completedFuture(OnElsePayload.Status.SECOND)
                 ).withRoutingMerger((p, status) -> {
                     p.getResult().add(status);
                     return status;
@@ -955,9 +956,9 @@ class CompletableReactorTest {
                     .handleBy(resolveFlow);
 
             resolveFlow
-                    .on(OrElsePayload.Status.FIRST).handleBy(first)
+                    .on(OnElsePayload.Status.FIRST).handleBy(first)
                     .onElse().handleBy(onElse)
-                    .on(OrElsePayload.Status.SECOND).handleBy(second);
+                    .on(OnElsePayload.Status.SECOND).handleBy(second);
 
             first.onAny().handleBy(end);
             second.onAny().handleBy(end);
@@ -976,13 +977,13 @@ class CompletableReactorTest {
         OrElseTransitionGraph graph= new OrElseTransitionGraph();
         reactor.registerGraphIfAbsent(graph);
 
-        CompletableFuture<OrElsePayload> resultFuture =
-                reactor.submit(new OrElsePayload(OrElsePayload.Status.FIRST)).getResultFuture();
+        CompletableFuture<OnElsePayload> resultFuture =
+                reactor.submit(new OnElsePayload(OnElsePayload.Status.FIRST)).getResultFuture();
 
-        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+        OnElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
 
         assertEquals(1, payload.getResult().size());
-        assertEquals(payload.getResult().get(0), OrElsePayload.Status.FIRST);
+        assertEquals(payload.getResult().get(0), OnElsePayload.Status.FIRST);
     }
 
     @Test
@@ -990,13 +991,13 @@ class CompletableReactorTest {
         OrElseTransitionGraph graph= new OrElseTransitionGraph();
         reactor.registerGraphIfAbsent(graph);
 
-        CompletableFuture<OrElsePayload> resultFuture =
-                reactor.submit(new OrElsePayload(OrElsePayload.Status.SECOND)).getResultFuture();
+        CompletableFuture<OnElsePayload> resultFuture =
+                reactor.submit(new OnElsePayload(OnElsePayload.Status.SECOND)).getResultFuture();
 
-        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+        OnElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
 
         assertEquals(1, payload.getResult().size());
-        assertEquals(payload.getResult().get(0), OrElsePayload.Status.SECOND);
+        assertEquals(payload.getResult().get(0), OnElsePayload.Status.SECOND);
     }
 
     @Test
@@ -1004,13 +1005,13 @@ class CompletableReactorTest {
         OrElseTransitionGraph graph= new OrElseTransitionGraph();
         reactor.registerGraphIfAbsent(graph);
 
-        CompletableFuture<OrElsePayload> resultFuture =
-                reactor.submit(new OrElsePayload(OrElsePayload.Status.THIRD)).getResultFuture();
+        CompletableFuture<OnElsePayload> resultFuture =
+                reactor.submit(new OnElsePayload(OnElsePayload.Status.THIRD)).getResultFuture();
 
-        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+        OnElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
 
         assertEquals(1, payload.getResult().size());
-        assertEquals(payload.getResult().get(0), OrElsePayload.Status.THIRD);
+        assertEquals(payload.getResult().get(0), OnElsePayload.Status.THIRD);
     }
 
     @Test
@@ -1018,13 +1019,13 @@ class CompletableReactorTest {
         OrElseTransitionGraph graph= new OrElseTransitionGraph();
         reactor.registerGraphIfAbsent(graph);
 
-        CompletableFuture<OrElsePayload> resultFuture =
-                reactor.submit(new OrElsePayload(OrElsePayload.Status.FOURTH)).getResultFuture();
+        CompletableFuture<OnElsePayload> resultFuture =
+                reactor.submit(new OnElsePayload(OnElsePayload.Status.FOURTH)).getResultFuture();
 
-        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+        OnElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
 
         assertEquals(1, payload.getResult().size());
-        assertEquals(payload.getResult().get(0), OrElsePayload.Status.FOURTH);
+        assertEquals(payload.getResult().get(0), OnElsePayload.Status.FOURTH);
     }
 
     @Test
@@ -1032,18 +1033,18 @@ class CompletableReactorTest {
         OrElseTransitionGraph graph= new OrElseTransitionGraph();
         reactor.registerGraphIfAbsent(graph);
 
-        CompletableFuture<OrElsePayload> resultFuture =
-                reactor.submit(new OrElsePayload(null)).getResultFuture();
+        CompletableFuture<OnElsePayload> resultFuture =
+                reactor.submit(new OnElsePayload(null)).getResultFuture();
 
-        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+        OnElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
 
         assertEquals(1, payload.getResult().size());
         assertNull(payload.getResult().get(0));
     }
 
-    static class SingleOrElseGraph extends Graph<OrElsePayload> {
+    static class SingleOrElseGraph extends Graph<OnElsePayload> {
 
-        Vertex resolveFlow = router(OrElsePayload::getRequest);
+        Vertex resolveFlow = router(OnElsePayload::getRequest);
 
         Vertex onElse =
                 handler(p ->
@@ -1069,17 +1070,17 @@ class CompletableReactorTest {
         SingleOrElseGraph graph = new SingleOrElseGraph();
         reactor.registerGraphIfAbsent(graph);
 
-        CompletableFuture<OrElsePayload> resultFuture =
-                reactor.submit(new OrElsePayload(OrElsePayload.Status.FOURTH)).getResultFuture();
+        CompletableFuture<OnElsePayload> resultFuture =
+                reactor.submit(new OnElsePayload(OnElsePayload.Status.FOURTH)).getResultFuture();
 
-        OrElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
+        OnElsePayload payload = resultFuture.get(2, TimeUnit.SECONDS);
 
         assertEquals(1, payload.getResult().size());
-        assertEquals(payload.getResult().get(0), OrElsePayload.Status.FOURTH);
+        assertEquals(payload.getResult().get(0), OnElsePayload.Status.FOURTH);
     }
 
-    static class OnElseErrorFlow extends Graph<OrElsePayload> {
-        Vertex resolveFlow = router(OrElsePayload::getRequest);
+    static class OnElseErrorFlow extends Graph<OnElsePayload> {
+        Vertex resolveFlow = router(OnElsePayload::getRequest);
 
         Vertex onElse = mutator(p -> {});
 
@@ -1101,6 +1102,47 @@ class CompletableReactorTest {
     @Test
     public void defineOnAnyAndOnElseFlow_mustCompleteWithException() {
         assertThrows(IllegalArgumentException.class, OnElseErrorFlow::new);
+    }
+
+    static class OnElseCompleteFlow extends Graph<OnElsePayload> {
+        Vertex resolveFlow = router(OnElsePayload::getRequest);
+
+        Vertex concreteStatusTransition =
+                handler(p ->
+                        CompletableFuture.completedFuture(OnElsePayload.Status.FIRST)
+                ).withMerger((p, status) ->
+                        p.getResult().add(OnElsePayload.Status.FIRST)
+                        
+                );
+
+        {
+            payload()
+                    .handleBy(resolveFlow);
+
+            resolveFlow
+                    .on(OnElsePayload.Status.FIRST).handleBy(concreteStatusTransition)
+                    .onElse().complete();
+
+            concreteStatusTransition.onAny().complete();
+
+                    coordinates()
+                        .vx(concreteStatusTransition, -99, 209)
+                        .vx(resolveFlow, -1, 94)
+                        .ct(resolveFlow, 261, 138);
+        }
+    }
+
+    @Disabled("If onElse transition is defined as complete then it always complete by this transition. It's wrong")
+    @Test
+    public void completeByOnElseTransition_mustBeSuccess() throws Exception {
+        OnElseCompleteFlow graph = new OnElseCompleteFlow();
+        reactor.registerGraphIfAbsent(graph);
+
+        OnElsePayload payload =
+                reactor.submit(new OnElsePayload(OnElsePayload.Status.FIRST))
+                        .getResultFuture().get(2, TimeUnit.SECONDS);
+
+        assertEquals(payload.getResult().get(0), OnElsePayload.Status.FIRST);
     }
 
     @Test
