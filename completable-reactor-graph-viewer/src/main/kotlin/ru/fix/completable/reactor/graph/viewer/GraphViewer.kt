@@ -1,9 +1,11 @@
 package ru.fix.completable.reactor.graph.viewer
 
 import javafx.scene.Scene
+import javafx.scene.control.Label
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.layout.Pane
+import javafx.stage.Stage
 import ru.fix.completable.reactor.model.CompileTimeGraph
 import ru.fix.completable.reactor.model.Source
 import java.util.concurrent.ConcurrentHashMap
@@ -101,6 +103,7 @@ class GraphViewer {
         }
     }
 
+    //TODO: ловим shortcut
     private fun addShortcutListener(pane: GraphViewPane) {
         pane.setOnKeyReleased { keyEvent ->
             shortcuts.forEach { shortcut, shortcutType ->
@@ -109,9 +112,20 @@ class GraphViewer {
                         ShortcutType.GOTO_GRAPH -> pane.graphModel?.startPoint?.source?.let {
                             viewPaneActionListener.goToSource(it)
                         }
+                        ShortcutType.SHOW_SEARCH_PANE -> {
+                            println("call search box")
+
+                            val label = Label("Search Box")
+                            val scene = Scene(label, 230.0, 100.0)
+
+                            val stage = Stage()
+                            stage.title = "Search Box"
+                            stage.scene = scene
+
+                            stage.show()
+                        }
                     }
                 }
-
             }
         }
     }

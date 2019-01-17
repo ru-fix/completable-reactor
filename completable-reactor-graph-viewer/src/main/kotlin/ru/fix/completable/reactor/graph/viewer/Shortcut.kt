@@ -28,5 +28,6 @@ class Shortcut(
 }
 
 enum class ShortcutType {
-    GOTO_GRAPH
+    GOTO_GRAPH,
+    SHOW_SEARCH_PANE
 }
