@@ -3,7 +3,6 @@ package ru.fix.completable.reactor.runtime.tests;
 import lombok.Data;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -1105,13 +1104,13 @@ class CompletableReactorTest {
     }
 
     static class OnElseCompleteFlow extends Graph<OnElsePayload> {
-        Vertex resolveFlow = router(OnElsePayload::getRequest);
+        Vertex resolveFlow = router(p -> p.getRequest());
 
         Vertex concreteStatusTransition =
                 handler(p ->
                         CompletableFuture.completedFuture(OnElsePayload.Status.FIRST)
                 ).withMerger((p, status) ->
-                        p.getResult().add(OnElsePayload.Status.FIRST)
+                        p.getResult().add(status)
                         
                 );
 
@@ -1132,9 +1131,8 @@ class CompletableReactorTest {
         }
     }
 
-    @Disabled("If onElse transition is defined as complete then it always complete by this transition. It's wrong")
     @Test
-    public void completeByOnElseTransition_mustBeSuccess() throws Exception {
+    public void hasCompleteOnElseTransition_flowResolvesByAnotherTransition_mustCompleteSuccess() throws Exception {
         OnElseCompleteFlow graph = new OnElseCompleteFlow();
         reactor.registerGraphIfAbsent(graph);
 
