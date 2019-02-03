@@ -302,15 +302,7 @@ class MergeByExecutionBuilder<PayloadType>(
                 builder.tracer.afterMerger(mergeTracingMarker, pvx.vertex.name, payload)
             }
 
-            /**
-             * Select outgoing transitions that matches mergeStatus
-             */
-            val activeTransitions = pvx.outgoingTransitions
-                    .stream()
-                    .filter { transition ->
-                        transition.isOnAny || transition.isOnElse || transition.mergeStatuses.contains(mergeStatus)
-                    }
-                    .collect(Collectors.toList())
+            val activeTransitions = selectActiveOutgoingTransitions(pvx, mergeStatus)
 
             if (activeTransitions.isEmpty()) {
                 throw IllegalStateException("""
@@ -323,9 +315,9 @@ class MergeByExecutionBuilder<PayloadType>(
             }
 
             /**
-             * Check if this merge point have terminal transitions
+             * check if this merge point have terminal transitions that matches merge status
              */
-            if (hasTerminalTransition(activeTransitions, mergeStatus)) {
+            if (activeTransitions.any { it.isComplete }) {
 
                 /**
                  * Handle terminal transition by completing execution result
@@ -394,29 +386,19 @@ class MergeByExecutionBuilder<PayloadType>(
     }
 
     /**
-     * Check if present terminal transitions of merge point.
-     * <p>
-     * Transition is terminal if it's completed. But if onElse transition is completed
-     * and also there is transition matches by merge status it means transition is not terminal
+     * Select outgoing transitions that matches mergeStatus
      */
-    private fun hasTerminalTransition(activeTransitions: List<RuntimeTransition>, mergeStatus: Enum<*>?): Boolean {
-        var hasCompleted = false
-        var hasCompletedOnElse = false
-        var hasAnyMatchesByStatus = false
-
-        for (transition in activeTransitions) {
-            if (transition.isComplete) {
-                hasCompleted = true
-                if (transition.isOnElse) {
-                    hasCompletedOnElse = true
+    private fun selectActiveOutgoingTransitions(
+            pvx: ProcessingVertex, mergeStatus: Enum<*>?
+    ): MutableList<RuntimeTransition> {
+        val noMatchesByStatus = pvx.outgoingTransitions.all { mergeStatus !in it.mergeStatuses }
+        return pvx.outgoingTransitions
+                .asSequence()
+                .filter { transition ->
+                    transition.isOnAny ||
+                            mergeStatus in transition.mergeStatuses ||
+                            (transition.isOnElse && noMatchesByStatus)
                 }
-            }
-
-            if (mergeStatus in transition.mergeStatuses) {
-                hasAnyMatchesByStatus = true
-            }
-        }
-
-        return hasCompleted && !(hasCompletedOnElse && hasAnyMatchesByStatus)
+                .toMutableList()
     }
 }

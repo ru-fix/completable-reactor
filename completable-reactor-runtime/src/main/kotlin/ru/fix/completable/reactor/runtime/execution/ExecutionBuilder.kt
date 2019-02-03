@@ -3,8 +3,8 @@ package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
 import ru.fix.aggregating.profiler.Profiler
-import ru.fix.completable.reactor.graph.runtime.RuntimeTransition
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
+import ru.fix.completable.reactor.graph.runtime.RuntimeTransition
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer
 import ru.fix.completable.reactor.runtime.tracing.Tracer
@@ -152,7 +152,6 @@ class ExecutionBuilder(
             /**
              * Completion of Mergerable feature triggers completion of outgoing transitions.
              */
-
             val mergingFeature = mergerablePvx.mergingFuture
 
             for (transition in mergerablePvx.outgoingTransitions) {
@@ -178,14 +177,12 @@ class ExecutionBuilder(
                                     } else if (context.isDeadTransition) {
                                         TransitionPayloadContext(isDeadTransition = true)
 
-                                    } else if (transition.isOnAny
-                                            || transition.mergeStatuses.contains(context.mergeResult)) {
-
+                                    } else if (
+                                            transition.isOnAny ||
+                                            context.mergeResult in transition.mergeStatuses ||
+                                            isOnElse(transition, mergerablePvx, context)
+                                    ) {
                                         TransitionPayloadContext(payload = context.payload)
-
-                                    } else if (isOnElse(transition, mergerablePvx, context)) {
-                                        TransitionPayloadContext(payload = context.payload)
-
                                     } else {
                                         TransitionPayloadContext(
                                                 payload = context.payload,
@@ -222,17 +219,14 @@ class ExecutionBuilder(
                                     } else if (context.isDeadTransition) {
                                         MergePayloadContext(isDeadTransition = true)
 
-                                    } else if (transition.isOnAny ||
-                                            transition.mergeStatuses.contains(context.mergeResult)) {
-
+                                    } else if (
+                                            transition.isOnAny ||
+                                            context.mergeResult in transition.mergeStatuses ||
+                                            isOnElse(transition, mergerablePvx, context)
+                                    ) {
                                         MergePayloadContext(
                                                 payload = context.payload,
                                                 mergeResult = context.mergeResult)
-
-                                    } else if (isOnElse(transition, mergerablePvx, context)) {
-                                      MergePayloadContext(
-                                              payload = context.payload,
-                                              mergeResult = context.mergeResult)
                                     } else {
                                         MergePayloadContext(isDeadTransition = true)
                                     }
