@@ -1,11 +1,13 @@
 package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
+import ru.fix.completable.reactor.graph.runtime.RuntimeTransition
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.ProfilerNames
-import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.*
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_HANDLE_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_MERGE_PAYLOAD_CONTEXT
+import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.HandlePayloadContext
+import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.MergePayloadContext
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
@@ -300,15 +302,7 @@ class MergeByExecutionBuilder<PayloadType>(
                 builder.tracer.afterMerger(mergeTracingMarker, pvx.vertex.name, payload)
             }
 
-            /**
-             * Select outgoing transitions that matches mergeStatus
-             */
-            val activeTransitions = pvx.outgoingTransitions
-                    .stream()
-                    .filter { transition ->
-                        transition.isOnAny || transition.isOnElse || transition.mergeStatuses.contains(mergeStatus)
-                    }
-                    .collect(Collectors.toList())
+            val activeTransitions = selectActiveOutgoingTransitions(pvx, mergeStatus)
 
             if (activeTransitions.isEmpty()) {
                 throw IllegalStateException("""
@@ -389,5 +383,22 @@ class MergeByExecutionBuilder<PayloadType>(
             pvx.mergingFuture.complete(MergePayloadContext(isDeadTransition = true))
 
         }
+    }
+
+    /**
+     * Select outgoing transitions that matches mergeStatus
+     */
+    private fun selectActiveOutgoingTransitions(
+            pvx: ProcessingVertex, mergeStatus: Enum<*>?
+    ): MutableList<RuntimeTransition> {
+        val noMatchesByStatus = pvx.outgoingTransitions.all { mergeStatus !in it.mergeStatuses }
+        return pvx.outgoingTransitions
+                .asSequence()
+                .filter { transition ->
+                    transition.isOnAny ||
+                            mergeStatus in transition.mergeStatuses ||
+                            (transition.isOnElse && noMatchesByStatus)
+                }
+                .toMutableList()
     }
 }
