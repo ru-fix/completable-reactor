@@ -370,13 +370,15 @@ class MergeByExecutionBuilder<PayloadType>(
             }
 
         } catch (exc: Exception) {
-            log.error(exc) {
-                """
+
+            val exceptionMessage = """
                 Failed to merge payload ${builder.debugSerializer.dumpObject(payload)}
                 by vertex ${pvx.vertex.name}
                 with result ${builder.debugSerializer.dumpObject(handlingResult)}
                 """.trimIndent()
-            }
+
+            val message = MessageUtils.formatErrorMessage(exceptionMessage, exc)
+            log.error(message, exc)
 
             executionResultFuture.completeExceptionally(exc)
 

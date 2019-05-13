@@ -163,12 +163,14 @@ class HandleByExecutionBuilder<PayloadType>(
         } catch (handlingException: Exception) {
             val exc = RuntimeException(
                     """
-                    Failed to run handling method by veretx ${vx.name} for payload ${builder.debugSerializer.dumpObject(payload)}.
+                    Failed to run handling method by vertex ${vx.name} for payload ${builder.debugSerializer.dumpObject(payload)}.
                     Handling method raised an exception: $handlingException.
                     """.trimIndent(),
                     handlingException)
 
-            log.error(exc) {}
+            val errorMessage = MessageUtils.formatErrorMessage("Failed to run handling method by vertex", handlingException)
+
+            log.error(errorMessage, exc)
             executionResultFuture.completeExceptionally(exc)
             pvx.handlingFuture.complete(ExecutionBuilder.HandlePayloadContext(isTerminal = true))
             handleCall.stop()
@@ -192,7 +194,9 @@ class HandleByExecutionBuilder<PayloadType>(
                         """.trimIndent(),
                         throwable)
 
-                log.error(exc) {}
+                val errorMessage = MessageUtils.formatErrorMessage("Failed handling by vertex", exc)
+                log.error(errorMessage, exc)
+
                 executionResultFuture.completeExceptionally(exc)
 
                 pvx.handlingFuture.complete(HandlePayloadContext(isTerminal = true))

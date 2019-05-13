@@ -190,14 +190,15 @@ class ExecutionBuilder(
                                     }
 
                                 }.exceptionally { exc ->
-                                    log.error(exc) {
-                                        """
+
+                                    val message = MessageUtils.formatErrorMessage("""
                                         Failed to activate handleBy transition.
                                         Mark transition as dead.
                                         Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
                                         Transition: $transition
-                                        """.trimIndent()
-                                    }
+                                        """.trimIndent(), exc)
+
+                                    log.error(message, exc)
 
                                     TransitionPayloadContext(isDeadTransition = true)
                                 }
@@ -231,14 +232,15 @@ class ExecutionBuilder(
                                         MergePayloadContext(isDeadTransition = true)
                                     }
                                 }.exceptionally { exc ->
-                                    log.error(exc) {
-                                        """
+
+                                    val message = MessageUtils.formatErrorMessage("""
                                         Failed to activate mergeBy transition.
                                         Mark transition as dead.
                                         Transition from ${mergerablePvx.vertex.name} to ${target?.name}.
                                         Transition: $transition
-                                        """.trimIndent()
-                                    }
+                                        """.trimIndent(), exc)
+
+                                    log.error(message, exc)
 
                                     MergePayloadContext(isDeadTransition = true)
                                 }
@@ -284,10 +286,11 @@ class ExecutionBuilder(
                         future.complete(TransitionPayloadContext(isDeadTransition = true))
                     }
         }.exceptionally { throwable ->
-            log.error(throwable) {
-                "Marking transitions as dead " +
-                        "after execution result feature is completed is failed."
-            }
+
+            val message = MessageUtils.formatErrorMessage("Marking transitions as dead " +
+                    "after execution result feature is completed is failed.", throwable)
+            log.error(message, throwable)
+
             null
         }
 
