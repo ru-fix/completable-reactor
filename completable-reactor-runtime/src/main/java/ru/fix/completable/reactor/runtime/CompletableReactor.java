@@ -6,6 +6,7 @@ import ru.fix.aggregating.profiler.PrefixedProfiler;
 import ru.fix.aggregating.profiler.ProfiledCall;
 import ru.fix.aggregating.profiler.Profiler;
 import ru.fix.completable.reactor.graph.Graphable;
+import ru.fix.completable.reactor.graph.mapped.Graph;
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
@@ -13,6 +14,7 @@ import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder;
 import ru.fix.completable.reactor.runtime.execution.ProcessingVertex;
 import ru.fix.completable.reactor.runtime.execution.ReactorGraphExecution;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
@@ -734,5 +736,21 @@ public class CompletableReactor implements AutoCloseable {
                 log.info("Completable Reactor closed without any pending request left to process.");
             }
         }
+    }
+
+    /**
+     * Register new graph within reactor.
+     * Generate proxy that implements given interface.
+     * Interface method will works as if you submitted payload to graph via {@link CompletableReactor#submit(Object)}
+     * Interface should contain single non default method.
+     * This method should take single {@code RequestT request} argument
+     * and return {@code ResponseT response}
+     *
+     * @param interfaceClass
+     * @return
+     */
+    public <GraphConfigT extends ru.fix.completable.reactor.graph.mapped.Graph, InvocationInterfaceT> InvocationInterfaceT registerGraph(
+            GraphConfigT graph, Class<InvocationInterfaceT> interfaceClass) {
+        throw new NotImplementedException();
     }
 }
