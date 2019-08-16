@@ -64,10 +64,12 @@ class DslTransitionBuilder(
              */
             RuntimeVertex.Type.HandlerWithoutMerger -> {
                 targetGlVertex.merger = RuntimeEmptyMerger()
+                targetGlVertex.isImplicitMerger = true
                 targetGlVertex.type = RuntimeVertex.Type.HandlerWithEmptyMerger
             }
             RuntimeVertex.Type.SubgraphWithoutMerger -> {
                 targetGlVertex.merger = RuntimeEmptyMerger()
+                targetGlVertex.isImplicitMerger = true
                 targetGlVertex.type = RuntimeVertex.Type.SubgraphWithEmptyMerger
             }
         }

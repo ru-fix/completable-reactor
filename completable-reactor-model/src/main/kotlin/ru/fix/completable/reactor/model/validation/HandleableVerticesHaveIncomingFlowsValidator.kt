@@ -29,9 +29,9 @@ class HandleableVerticesHaveIncomingFlowsValidator : Validator {
                 .toList()
 
         return if (verticesWithoutIncomingFlows.isNotEmpty()) {
-            ValidationFailed("Handleable items  ${verticesWithoutIncomingFlows.joinToString()} do not have incoming transitions.")
+            ValidationFailed(javaClass,"Handleable items  ${verticesWithoutIncomingFlows.joinToString()} do not have incoming transitions.")
         } else {
-            ValidationSucceed()
+            ValidationSucceed(javaClass)
         }
     }
 }

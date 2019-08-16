@@ -14,14 +14,15 @@ class AtLeastOneEndPointExistValidator : Validator {
                         .none { it.isComplete }) {
 
             ValidationFailed(
+                    javaClass,
                     """
-                    There are no EndPoints in graph.
-                    Graph should contain at least one terminal transition.
-                    Add complete() step to at least one vertex.
-                    """.trimIndent())
+                    |There are no EndPoints in graph.
+                    |Graph should contain at least one terminal transition.
+                    |Add complete() step to at least one vertex.
+                    """.trimMargin())
 
         } else {
-            ValidationSucceed()
+            ValidationSucceed(javaClass)
         }
     }
 }

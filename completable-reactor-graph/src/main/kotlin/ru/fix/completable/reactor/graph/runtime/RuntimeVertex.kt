@@ -37,6 +37,9 @@ class RuntimeVertex(val sourceVertex: Vertex) {
     var merger: RoutingMerger<Any?, Any?>? = null
 
     @JvmField
+    var isImplicitMerger: Boolean = false
+
+    @JvmField
     var subgraphPayloadType: Class<*>? = null
 
 

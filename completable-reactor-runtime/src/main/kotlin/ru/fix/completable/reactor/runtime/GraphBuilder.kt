@@ -6,6 +6,7 @@ import ru.fix.completable.reactor.graph.internal.BuilderContext
 import ru.fix.completable.reactor.graph.internal.InternalDslAccessor
 import ru.fix.completable.reactor.graph.internal.ModelBuilder
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
+import ru.fix.completable.reactor.model.validation.GraphValidationException
 import ru.fix.completable.reactor.model.validation.ValidationFailed
 import ru.fix.completable.reactor.model.validation.ValidationSucceed
 import ru.fix.completable.reactor.model.validation.Validators
@@ -53,17 +54,13 @@ class GraphBuilder {
                             "Detected illegal vertex that does not have handler or subgraph: $it")
                 }
 
-        val graphModel = modelBuilder.build(glGraph)
+        val compileTimeModel = modelBuilder.buildCompileTimeFromRuntime(glGraph)
 
         Validators.get().forEach {
-            val result = it.validate(graphModel)
-            when (result) {
-                is ValidationFailed -> IllegalArgumentException(
-                        """
-                        Graph validation failed.
-                        ${result.message}
-                        """.trimIndent()
-                )
+            when (val result = it.validate(compileTimeModel)) {
+                is ValidationFailed -> throw GraphValidationException(
+                        result.message,
+                        result.validatorClass)
                 is ValidationSucceed -> Unit
             }
         }

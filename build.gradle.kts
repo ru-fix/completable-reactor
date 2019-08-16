@@ -13,7 +13,6 @@ import org.gradle.kotlin.dsl.extra
 import org.gradle.api.publication.maven.internal.action.MavenInstallAction
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.internal.authentication.DefaultBasicAuthentication
-import org.gradle.kotlin.dsl.accessors.loadMultiProjectSchemaFrom
 import org.gradle.kotlin.dsl.repositories
 import org.gradle.kotlin.dsl.version
 import org.jetbrains.dokka.gradle.DokkaTask

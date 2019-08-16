@@ -13,8 +13,8 @@ class MergerableVerticesHaveOutgoingTransitionsValidator : Validator {
                 .takeIf { it.isNotEmpty() }
                 ?.joinToString()
                 ?.let {
-                    ValidationFailed("Mergerable items $it do not have any outgoing transitions.")
+                    ValidationFailed(javaClass, "Mergerable items $it do not have any outgoing transitions.")
                 }
-                ?: ValidationSucceed()
+                ?: ValidationSucceed(javaClass)
     }
 }

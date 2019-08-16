@@ -2,10 +2,11 @@ package ru.fix.completable.reactor.model.validation
 
 class Validators {
     companion object {
-        fun get() = listOf(
+        fun get() : List<Validator> = listOf(
                 AtLeastOneEndPointExistValidator(),
                 HandleableVerticesHaveIncomingFlowsValidator(),
-                MergerableVerticesHaveOutgoingTransitionsValidator()
+                MergerableVerticesHaveOutgoingTransitionsValidator(),
+                MergerShouldHaveOutgoingOrCompleteTransitionValidator()
         )
         //TODO: add RouterOrMutatorCouldNotParticipateInMergeByTransitionValidator, required resolving transition type in compileTimeModel
     }
