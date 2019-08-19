@@ -56,6 +56,4 @@ object Libs {
     val hamcrest = "org.hamcrest:hamcrest-all:1.3"
 
     val asciidoctor = "org.asciidoctor:asciidoctor-gradle-plugin:${Vers.asciidoctor}"
-//    val javafx = "org.openjfx:javafx-base:11.0.2"
-
 }
