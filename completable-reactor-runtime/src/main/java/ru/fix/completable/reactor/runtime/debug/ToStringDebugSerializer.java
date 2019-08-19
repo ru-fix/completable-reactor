@@ -7,6 +7,8 @@ package ru.fix.completable.reactor.runtime.debug;
  * @author Kamil Asfandiyarov
  */
 public class ToStringDebugSerializer implements DebugSerializer {
+
+    //TODO add dump implementation for kotlin data classes
     @Override
     public String dumpObject(Object object) {
         return "" + object;

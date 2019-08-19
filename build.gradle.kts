@@ -1,24 +1,8 @@
-import groovy.lang.Closure
-import org.asciidoctor.gradle.AsciidoctorExtension
 import org.asciidoctor.gradle.AsciidoctorTask
-import org.gradle.kotlin.dsl.kotlin
-import org.gradle.kotlin.dsl.maven
-import org.gradle.kotlin.dsl.repositories
-import java.net.URI
-import ru.fix.gradle.release.plugin.ReleaseExtension
-import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.artifacts.dsl.*
-import org.gradle.kotlin.dsl.extra
-import org.gradle.api.publication.maven.internal.action.MavenInstallAction
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.gradle.internal.authentication.DefaultBasicAuthentication
-import org.gradle.kotlin.dsl.accessors.loadMultiProjectSchemaFrom
-import org.gradle.kotlin.dsl.repositories
-import org.gradle.kotlin.dsl.version
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import kotlin.properties.Delegates
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -104,52 +88,53 @@ subprojects {
         dependsOn(dokkaTask)
     }
 
-
-    publishing {
-        repositories {
-            maven {
-                url = uri("$repositoryUrl")
-                if (url.scheme.startsWith("http", true)) {
-                    credentials {
-                        username = "$repositoryUser"
-                        password = "$repositoryPassword"
+    afterEvaluate {
+        publishing {
+            repositories {
+                maven {
+                    url = uri("$repositoryUrl")
+                    if (url.scheme.startsWith("http", true)) {
+                        credentials {
+                            username = "$repositoryUser"
+                            password = "$repositoryPassword"
+                        }
                     }
                 }
             }
-        }
-        publications {
-            register("maven", MavenPublication::class) {
-                from(components["java"])
+            publications {
+                register("maven", MavenPublication::class) {
+                    from(components["java"])
 
-                artifact(sourcesJar)
-                artifact(dokkaJar)
+                    artifact(sourcesJar)
+                    artifact(dokkaJar)
 
-                pom {
-                    name.set("${project.group}:${project.name}")
-                    description.set("""
+                    pom {
+                        name.set("${project.group}:${project.name}")
+                        description.set("""
                         CompletableReactor framework makes it easier to create business flows
                         that have concurrently running parts and complex execution branching.
                         CompletableReactor provides DSL-like Builder-style API to describe business flows.
                         Framework built on top of Fork Join Pool and CompletableFuture API.
                         """.trimIndent())
-                    url.set("https://github.com/ru-fix/completable-reactor")
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set("swarmshine")
-                            name.set("Kamil Asfandiyarov")
-                            url.set("https://github.com/swarmshine")
-                        }
-                    }
-                    scm {
                         url.set("https://github.com/ru-fix/completable-reactor")
-                        connection.set("https://github.com/ru-fix/completable-reactor.git")
-                        developerConnection.set("https://github.com/ru-fix/completable-reactor.git")
+                        licenses {
+                            license {
+                                name.set("The Apache License, Version 2.0")
+                                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                            }
+                        }
+                        developers {
+                            developer {
+                                id.set("swarmshine")
+                                name.set("Kamil Asfandiyarov")
+                                url.set("https://github.com/swarmshine")
+                            }
+                        }
+                        scm {
+                            url.set("https://github.com/ru-fix/completable-reactor")
+                            connection.set("https://github.com/ru-fix/completable-reactor.git")
+                            developerConnection.set("https://github.com/ru-fix/completable-reactor.git")
+                        }
                     }
                 }
             }

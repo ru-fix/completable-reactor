@@ -19,7 +19,6 @@ dependencies {
     compile(Libs.kotlin_reflect)
     compile(Libs.kotlin_logging)
 
-    compile(Libs.lombok)
     testCompile(Libs.mockito)
     testCompile(Libs.mockito_kotiln)
 
