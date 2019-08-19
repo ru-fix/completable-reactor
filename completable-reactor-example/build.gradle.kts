@@ -16,12 +16,15 @@ dependencies {
     compile(Libs.kotlin_stdlib)
     compile(Libs.kotlin_reflect)
 
-    compile(Libs.springBeans)
-    compile(Libs.springContext)
+    compile(Libs.spring_beans)
+    compile(Libs.spring_context)
 
     compile(Libs.lombok)
+    annotationProcessor(Libs.lombok)
 
-    testCompile(Libs.springTest)
+    compile(Libs.javax_annotations)
+
+    testCompile(Libs.spring_test)
 
 
     testImplementation(Libs.junit_api)

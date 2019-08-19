@@ -14,6 +14,8 @@ dependencies {
     compile(Libs.kotlin_reflect)
     compile(Libs.kotlin_logging)
 
+//    compile(Libs.javafx)
+
 
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
