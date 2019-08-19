@@ -6,7 +6,12 @@ plugins {
     java
     kotlin("jvm")
     id("com.github.johnrengelman.shadow")
+    id("org.openjfx.javafxplugin") version "0.0.8"
+}
 
+javafx {
+    version = "11"
+    modules("javafx.controls")
 }
 
 dependencies {
@@ -31,7 +36,7 @@ dependencies {
 
 tasks {
     withType<ShadowJar> {
-        manifest{
+        manifest {
             attributes["Main-Class"] = "ru.fix.completable.reactor.graph.viewer.app.Main"
         }
     }
