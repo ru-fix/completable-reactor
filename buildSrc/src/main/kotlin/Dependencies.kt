@@ -1,26 +1,34 @@
 object Vers {
     val kotlin = "1.3.41"
+    val kotlin_coroutines = "1.2.2"
+    
     val sl4j = "1.7.25"
-    val dokkav = "0.9.16"
-    val gradleReleasePlugin = "1.3.3"
+    val dokkav = "0.9.18"
+    val gradle_release_plugin = "1.3.9"
     val junit = "5.2.0"
 
-    val aggregatingProfiler = "1.4.13"
-    val dynamicProperty = "1.0.5"
+    val aggregating_profiler = "1.5.16"
+    val dynamic_property = "1.0.5"
 
-    val spring = "5.1.0.RELEASE"
-    val kotlinCoroutines = "1.0.1"
+    val spring = "5.1.9.RELEASE"
+    
     val asciidoctor = "1.5.9.1"
 }
 
 object Libs {
+    //Plugins
+    val gradle_release_plugin = "ru.fix:gradle-release-plugin:${Vers.gradle_release_plugin}"
+    val dokka_gradle_plugin = "org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokkav}"
+    val nexus_staging_plugin = "io.codearte.nexus-staging"
+    val nexus_publish_plugin = "de.marcphilipp.nexus-publish"
+    val shadowPlugin = "com.github.jengelman.gradle.plugins:shadow:2.0.4"
+    
+    //Dependencies
     val kotlin_stdlib = "org.jetbrains.kotlin:kotlin-stdlib:${Vers.kotlin}"
     val kotlin_jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Vers.kotlin}"
     val kotlin_reflect = "org.jetbrains.kotlin:kotlin-reflect:${Vers.kotlin}"
-
-    val gradleReleasePlugin = "ru.fix:gradle-release-plugin:${Vers.gradleReleasePlugin}"
-    val dokkaGradlePlugin = "org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokkav}"
-    val shadowPlugin = "com.github.jengelman.gradle.plugins:shadow:2.0.4"
+    val kotlin_coroutines_core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlin_coroutines}"
+    val kotlin_coroutines_jdk = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Vers.kotlin_coroutines}"
 
     val slf4j_api = "org.slf4j:slf4j-api:${Vers.sl4j}"
     val slf4j_simple = "org.slf4j:slf4j-simple:${Vers.sl4j}"
@@ -36,16 +44,13 @@ object Libs {
     val mockito = "org.mockito:mockito-core:2.21.0"
 
 
-    val aggregatingProfiler = "ru.fix:aggregating-profiler:${Vers.aggregatingProfiler}"
-    val dynamicProperty = "ru.fix:dynamic-property-api:${Vers.dynamicProperty}"
+    val aggregating_profiler = "ru.fix:aggregating-profiler:${Vers.aggregating_profiler}"
+    val dynamic_property = "ru.fix:dynamic-property-api:${Vers.dynamic_property}"
 
     val spring_test = "org.springframework:spring-test:${Vers.spring}"
     val spring_beans = "org.springframework:spring-beans:${Vers.spring}"
     val spring_context = "org.springframework:spring-context:${Vers.spring}"
 
-
-    val kotlinCoroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlinCoroutines}"
-    val kotlinCoroutinesJdk = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Vers.kotlinCoroutines}"
 
     val javax_annotations = "javax.annotation:javax.annotation-api:1.3.2"
     val lombok = "org.projectlombok:lombok:1.18.8"
@@ -54,6 +59,7 @@ object Libs {
     val antlrAll = "org.antlr:antlr4:4.7.1"
 
     val hamcrest = "org.hamcrest:hamcrest-all:1.3"
+    val hamkrest = "com.natpryce:hamkrest:1.7.0.0"
 
     val asciidoctor = "org.asciidoctor:asciidoctor-gradle-plugin:${Vers.asciidoctor}"
 //    val javafx = "org.openjfx:javafx-base:11.0.2"
