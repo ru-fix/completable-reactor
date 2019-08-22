@@ -1416,12 +1416,7 @@ class CompletableReactorTest {
             }
         }
 
-        @Override
-        public void stop(long l) {
-            if (!state.compareAndSet(1, 2)) {
-                fail("stop called in improper state");
-            }
-        }
+
 
         public boolean isStopped() {
             return state.get() == 2;

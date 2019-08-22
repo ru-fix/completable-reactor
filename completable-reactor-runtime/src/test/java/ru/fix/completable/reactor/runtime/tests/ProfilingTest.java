@@ -2,8 +2,10 @@ package ru.fix.completable.reactor.runtime.tests;
 
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.fix.aggregating.profiler.Identity;
 import ru.fix.aggregating.profiler.ProfiledCall;
 import ru.fix.aggregating.profiler.Profiler;
 import ru.fix.completable.reactor.graph.Graph;
@@ -78,7 +80,9 @@ public class ProfilingTest {
 
         Profiler profiler = mock(Profiler.class);
         ProfiledCall profiledCall = mock(ProfiledCall.class);
-        when(profiler.profiledCall(any())).thenReturn(profiledCall);
+        when(profiler.profiledCall(ArgumentMatchers.<String>any())).thenReturn(profiledCall);
+        when(profiler.profiledCall(ArgumentMatchers.<Identity>any())).thenReturn(profiledCall);
+
         when(profiledCall.start()).thenReturn(profiledCall);
 
         final CompletableReactor completableReactor = new CompletableReactor(profiler);
@@ -94,7 +98,7 @@ public class ProfilingTest {
         completableReactor.close();
 
 
-        verify(profiler, times(80)).profiledCall(any());
+        verify(profiler, times(80)).profiledCall(ArgumentMatchers.<String>any());
         verify(profiler, times(10)).profiledCall(prefix(ProfilerNames.PAYLOAD));
         verify(profiler, times(10)).profiledCall(prefix(ProfilerNames.EXECUTION));
         verify(profiler, times(10)).profiledCall(prefix(ProfilerNames.HANDLE) + ".processor1");
