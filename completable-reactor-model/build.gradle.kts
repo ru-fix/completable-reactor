@@ -6,8 +6,8 @@ plugins {
 }
 
 dependencies {
-    compile(Libs.dynamicProperty)
-    compile(Libs.aggregatingProfiler)
+    compile(Libs.dynamic_property)
+    compile(Libs.aggregating_profiler)
 
     compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_stdlib)

@@ -13,8 +13,8 @@ dependencies {
     compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_stdlib)
     compile(Libs.kotlin_reflect)
-    compile(Libs.kotlinCoroutinesCore)
-    compile(Libs.kotlinCoroutinesJdk)
+    compile(Libs.kotlin_coroutines_core)
+    compile(Libs.kotlin_coroutines_jdk)
 
     testCompile(Libs.apacheCommonsLang)
 
@@ -22,4 +22,5 @@ dependencies {
     testRuntimeOnly(Libs.junit_engine)
     testRuntimeOnly(Libs.slf4j_simple)
     testImplementation(Libs.hamcrest)
+    testImplementation(Libs.hamkrest)
 }

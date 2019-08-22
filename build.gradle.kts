@@ -1,27 +1,34 @@
-import org.asciidoctor.gradle.AsciidoctorTask
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
+        import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+        import org.gradle.api.tasks.testing.logging.TestLogEvent
+        import org.jetbrains.dokka.gradle.DokkaTask
+        import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+        import kotlin.properties.ReadOnlyProperty
+        import kotlin.reflect.KProperty
 
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath(Libs.gradleReleasePlugin)
-        classpath(Libs.dokkaGradlePlugin)
-        classpath(Libs.kotlin_stdlib)
-        classpath(Libs.kotlin_jdk8)
-        classpath(Libs.kotlin_reflect)
-        classpath(Libs.shadowPlugin)
-        classpath(Libs.asciidoctor)
-    }
+        buildscript {
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            dependencies {
+                classpath(Libs.gradle_release_plugin)
+                classpath(Libs.dokka_gradle_plugin)
+                classpath(Libs.kotlin_stdlib)
+                classpath(Libs.kotlin_jdk8)
+                classpath(Libs.kotlin_reflect)
+                classpath(Libs.shadowPlugin)
+                classpath(Libs.asciidoctor)
+            }
+        }
+
+plugins {
+    kotlin("jvm") version Vers.kotlin apply false
+    signing
+    `maven-publish`
+    id(Libs.nexus_publish_plugin) version "0.3.0" apply false
+    id(Libs.nexus_staging_plugin) version "0.21.0"
 }
-
 
 /**
  * Project configuration by properties and environment
@@ -42,12 +49,13 @@ val signingKeyId by envConfig()
 val signingPassword by envConfig()
 val signingSecretKeyRingFile by envConfig()
 
-
-plugins {
-    kotlin("jvm") version "${Vers.kotlin}" apply false
-    signing
-    `maven-publish`
-    id("org.asciidoctor.convert") version Vers.asciidoctor
+nexusStaging {
+    packageGroup = "ru.fix"
+    stagingProfileId = "1f0730098fd259"
+    username = "$repositoryUser"
+    password = "$repositoryPassword"
+    numberOfRetries = 50
+    delayBetweenRetriesInMillis = 3_000
 }
 
 apply {
@@ -62,12 +70,12 @@ subprojects {
         plugin("signing")
         plugin("java")
         plugin("org.jetbrains.dokka")
+        plugin(Libs.nexus_publish_plugin)
     }
 
     repositories {
         jcenter()
         mavenCentral()
-        mavenLocal()
     }
 
     val sourcesJar by tasks.creating(Jar::class) {
@@ -88,21 +96,35 @@ subprojects {
         dependsOn(dokkaTask)
     }
 
-    afterEvaluate {
+    configure<NexusPublishExtension> {
+        repositories {
+            sonatype {
+                username.set("$repositoryUser")
+                password.set("$repositoryPassword")
+                useStaging.set(true)
+                stagingProfileId.set("1f0730098fd259")
+            }
+        }
+    }
+
+    project.afterEvaluate {
         publishing {
-            repositories {
-                maven {
-                    url = uri("$repositoryUrl")
-                    if (url.scheme.startsWith("http", true)) {
-                        credentials {
-                            username = "$repositoryUser"
-                            password = "$repositoryPassword"
+
+            publications {
+                //Internal repository setup
+                repositories {
+                    maven {
+                        url = uri("$repositoryUrl")
+                        if (url.scheme.startsWith("http", true)) {
+                            credentials {
+                                username = "$repositoryUser"
+                                password = "$repositoryPassword"
+                            }
                         }
                     }
                 }
-            }
-            publications {
-                register("maven", MavenPublication::class) {
+
+                create<MavenPublication>("maven") {
                     from(components["java"])
 
                     artifact(sourcesJar)
@@ -110,13 +132,8 @@ subprojects {
 
                     pom {
                         name.set("${project.group}:${project.name}")
-                        description.set("""
-                        CompletableReactor framework makes it easier to create business flows
-                        that have concurrently running parts and complex execution branching.
-                        CompletableReactor provides DSL-like Builder-style API to describe business flows.
-                        Framework built on top of Fork Join Pool and CompletableFuture API.
-                        """.trimIndent())
-                        url.set("https://github.com/ru-fix/completable-reactor")
+                        description.set("https://github.com/ru-fix/${rootProject.name}")
+                        url.set("https://github.com/ru-fix/${rootProject.name}")
                         licenses {
                             license {
                                 name.set("The Apache License, Version 2.0")
@@ -125,15 +142,15 @@ subprojects {
                         }
                         developers {
                             developer {
-                                id.set("swarmshine")
-                                name.set("Kamil Asfandiyarov")
-                                url.set("https://github.com/swarmshine")
+                                id.set("JFix Team")
+                                name.set("JFix Team")
+                                url.set("https://github.com/ru-fix/")
                             }
                         }
                         scm {
-                            url.set("https://github.com/ru-fix/completable-reactor")
-                            connection.set("https://github.com/ru-fix/completable-reactor.git")
-                            developerConnection.set("https://github.com/ru-fix/completable-reactor.git")
+                            url.set("https://github.com/ru-fix/${rootProject.name}")
+                            connection.set("https://github.com/ru-fix/${rootProject.name}.git")
+                            developerConnection.set("https://github.com/ru-fix/${rootProject.name}.git")
                         }
                     }
                 }
@@ -142,20 +159,16 @@ subprojects {
     }
 
     configure<SigningExtension> {
-
         if (!signingKeyId.isNullOrEmpty()) {
             project.ext["signing.keyId"] = signingKeyId
             project.ext["signing.password"] = signingPassword
             project.ext["signing.secretKeyRingFile"] = signingSecretKeyRingFile
-
             logger.info("Signing key id provided. Sign artifacts for $project.")
-
             isRequired = true
         } else {
-            logger.warn("${project.name}: Signing key not provided. Disable signing for  $project.")
+            logger.info("${project.name}: Signing key not provided. Disable signing for  $project.")
             isRequired = false
         }
-
         sign(publishing.publications)
     }
 
@@ -163,7 +176,6 @@ subprojects {
         withType<KotlinCompile> {
             kotlinOptions.jvmTarget = "1.8"
         }
-
         withType<Test> {
             useJUnitPlatform()
 
@@ -175,22 +187,9 @@ subprojects {
                 exceptionFormat = TestExceptionFormat.FULL
             }
         }
-    }
-}
-
-tasks {
-    withType<AsciidoctorTask> {
-        sourceDir = project.file("asciidoc")
-        resources(closureOf<CopySpec> {
-            from("asciidoc")
-            include("**/*.png")
-        })
-
-        doLast {
-            copy {
-                from(outputDir.resolve("html5"))
-                into(project.file("docs"))
-                include("**/*.html", "**/*.png")
+        withType<KotlinCompile>{
+            kotlinOptions {
+                jvmTarget = "1.8"
             }
         }
     }

@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
     compile(project(":completable-reactor-runtime"))
-    compile(Libs.aggregatingProfiler)
+    compile(Libs.aggregating_profiler)
 
     compile(Libs.spring_beans)
     compile(Libs.spring_context)
