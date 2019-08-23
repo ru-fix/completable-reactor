@@ -172,9 +172,15 @@ subprojects {
         sign(publishing.publications)
     }
 
+    configure<JavaPluginExtension> {
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
     tasks {
-        withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = "1.8"
+        withType<KotlinCompile>{
+            kotlinOptions {
+                jvmTarget = "11"
+            }
         }
         withType<Test> {
             useJUnitPlatform()
@@ -187,10 +193,7 @@ subprojects {
                 exceptionFormat = TestExceptionFormat.FULL
             }
         }
-        withType<KotlinCompile>{
-            kotlinOptions {
-                jvmTarget = "1.8"
-            }
-        }
     }
 }
+
+
