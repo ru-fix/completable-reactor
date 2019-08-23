@@ -17,6 +17,8 @@ dependencies {
     compile(Libs.kotlin_stdlib)
     compile(Libs.kotlin_reflect)
 
+    compile(Libs.javax_annotations)
+
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
     testRuntimeOnly(Libs.slf4j_simple)
