@@ -3,7 +3,7 @@ object Vers {
     val kotlin_coroutines = "1.2.2"
     
     val sl4j = "1.7.25"
-    val dokkav = "0.9.18"
+    val dokka = "0.9.18"
     val gradle_release_plugin = "1.3.9"
     val junit = "5.2.0"
 
@@ -18,7 +18,7 @@ object Vers {
 object Libs {
     //Plugins
     val gradle_release_plugin = "ru.fix:gradle-release-plugin:${Vers.gradle_release_plugin}"
-    val dokka_gradle_plugin = "org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokkav}"
+    val dokka_gradle_plugin = "org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokka}"
     val nexus_staging_plugin = "io.codearte.nexus-staging"
     val nexus_publish_plugin = "de.marcphilipp.nexus-publish"
     val shadowPlugin = "com.github.jengelman.gradle.plugins:shadow:2.0.4"

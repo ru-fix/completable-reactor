@@ -1,26 +1,26 @@
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
-        import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-        import org.gradle.api.tasks.testing.logging.TestLogEvent
-        import org.jetbrains.dokka.gradle.DokkaTask
-        import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-        import kotlin.properties.ReadOnlyProperty
-        import kotlin.reflect.KProperty
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
-        buildscript {
-            repositories {
-                jcenter()
-                mavenCentral()
-            }
-            dependencies {
-                classpath(Libs.gradle_release_plugin)
-                classpath(Libs.dokka_gradle_plugin)
-                classpath(Libs.kotlin_stdlib)
-                classpath(Libs.kotlin_jdk8)
-                classpath(Libs.kotlin_reflect)
-                classpath(Libs.shadowPlugin)
-                classpath(Libs.asciidoctor)
-            }
-        }
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath(Libs.gradle_release_plugin)
+        classpath(Libs.dokka_gradle_plugin)
+        classpath(Libs.kotlin_stdlib)
+        classpath(Libs.kotlin_jdk8)
+        classpath(Libs.kotlin_reflect)
+        classpath(Libs.shadowPlugin)
+        classpath(Libs.asciidoctor)
+    }
+}
 
 plugins {
     kotlin("jvm") version Vers.kotlin apply false
@@ -87,6 +87,9 @@ subprojects {
     val dokkaTask by tasks.creating(DokkaTask::class) {
         outputFormat = "javadoc"
         outputDirectory = "$buildDir/dokka"
+
+        //TODO: wait dokka support JDK11 - https://github.com/Kotlin/dokka/issues/428
+        enabled = false
     }
 
     val dokkaJar by tasks.creating(Jar::class) {
@@ -177,7 +180,7 @@ subprojects {
     }
 
     tasks {
-        withType<KotlinCompile>{
+        withType<KotlinCompile> {
             kotlinOptions {
                 jvmTarget = "11"
             }
