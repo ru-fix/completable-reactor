@@ -1,4 +1,6 @@
 object Vers {
+    //Plugins
+    val asciidoctor = "1.5.9.2"
     val kotlin = "1.3.41"
     val kotlin_coroutines = "1.2.2"
     
@@ -12,7 +14,7 @@ object Vers {
 
     val spring = "5.1.9.RELEASE"
     
-    val asciidoctor = "1.5.9.1"
+
 }
 
 object Libs {
@@ -21,6 +23,7 @@ object Libs {
     val dokka_gradle_plugin = "org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokka}"
     val nexus_staging_plugin = "io.codearte.nexus-staging"
     val nexus_publish_plugin = "de.marcphilipp.nexus-publish"
+    val asciidoctor = "org.asciidoctor:asciidoctor-gradle-plugin:${Vers.asciidoctor}"
     val shadowPlugin = "com.github.jengelman.gradle.plugins:shadow:2.0.4"
     
     //Dependencies
@@ -60,6 +63,4 @@ object Libs {
 
     val hamcrest = "org.hamcrest:hamcrest-all:1.3"
     val hamkrest = "com.natpryce:hamkrest:1.7.0.0"
-
-    val asciidoctor = "org.asciidoctor:asciidoctor-gradle-plugin:${Vers.asciidoctor}"
 }

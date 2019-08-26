@@ -1,4 +1,5 @@
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
+import org.asciidoctor.gradle.AsciidoctorTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.dokka.gradle.DokkaTask
@@ -28,6 +29,7 @@ plugins {
     `maven-publish`
     id(Libs.nexus_publish_plugin) version "0.3.0" apply false
     id(Libs.nexus_staging_plugin) version "0.21.0"
+    id("org.asciidoctor.convert") version Vers.asciidoctor
 }
 
 /**
@@ -199,4 +201,19 @@ subprojects {
     }
 }
 
-
+tasks {
+    withType<AsciidoctorTask> {
+        sourceDir = project.file("asciidoc")
+        resources(closureOf<CopySpec> {
+            from("asciidoc")
+            include("**/*.png")
+        })
+        doLast {
+            copy {
+                from(outputDir.resolve("html5"))
+                into(project.file("docs"))
+                include("**/*.html", "**/*.png")
+            }
+        }
+    }
+}
