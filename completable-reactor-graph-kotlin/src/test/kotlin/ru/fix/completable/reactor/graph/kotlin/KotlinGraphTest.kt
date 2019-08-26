@@ -1,11 +1,13 @@
 package ru.fix.completable.reactor.graph.kotlin
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -14,6 +16,7 @@ import ru.fix.aggregating.profiler.AggregatingProfiler
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.*
 import java.util.concurrent.CompletableFuture.completedFuture
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.SECONDS
@@ -927,20 +930,24 @@ class KotlinGraphTest {
         }
     }
 
-    class ImplicitEmptyMergerWithOnAnyTransitionGraph : Graph<IdListPayload>() {
+    data class ImplicitEmptyMergerWithOnAnyTransitionPayload(
+            val syncSeq:ConcurrentLinkedDeque<Int> = ConcurrentLinkedDeque()
+    )
+
+    class ImplicitEmptyMergerWithOnAnyTransitionGraph : Graph<ImplicitEmptyMergerWithOnAnyTransitionPayload>() {
 
         val vertex11 = handler {
-            idSequence.add(11)
+            syncSeq.add(11)
             completedFuture("data")
         }.withoutMerger()
 
         val vertex12 = handler {
-            idSequence.add(12)
+            syncSeq.add(12)
             completedFuture("data")
         }.withoutMerger()
 
         val vertex2 = handler {
-            idSequence.add(2)
+            syncSeq.add(2)
             completedFuture("data2")
         }.withoutMerger()
 
@@ -963,10 +970,59 @@ class KotlinGraphTest {
     fun vertex_with_implicit_empty_merger_works_with_onAny_transition() = runBlocking {
         reactor.registerGraph(ImplicitEmptyMergerWithOnAnyTransitionGraph::class.java)
 
-        reactor.submit(IdListPayload()).resultFuture.await().idSequence.also {
+        reactor.submit(ImplicitEmptyMergerWithOnAnyTransitionPayload()).resultFuture.await().syncSeq.also {
             assertTrue(it.contains(11))
             assertTrue(it.contains(12))
             assertTrue(it.contains(2))
+        }
+
+        return@runBlocking
+    }
+
+    data class ExceptionInSuspendHandlerGraphPayload(
+            val syncSeq:ConcurrentLinkedDeque<Int> = ConcurrentLinkedDeque()
+    )
+
+    class ExceptionInSuspendHandlerGraph : Graph<ExceptionInSuspendHandlerGraphPayload>() {
+
+        val vertex1 = suspendHandler {
+            syncSeq.add(1)
+        }.withoutMerger()
+
+        val vertex2 = suspendHandler {
+            syncSeq.add(1)
+            throw java.lang.RuntimeException("stop")
+        }.withoutMerger()
+
+        val vertex3 = suspendHandler {
+            syncSeq.add(2)
+            delay(1)
+        }.withoutMerger()
+
+        init {
+            payload().handleBy(vertex1)
+            vertex1.onAny().handleBy(vertex2)
+            vertex2.onAny().handleBy(vertex3)
+            vertex3.onAny().complete()
+        }
+    }
+
+    @Test
+    fun `exception in suspend handler propagated to graph submission and do not hang`() = runBlocking {
+        reactor.registerGraph(ExceptionInSuspendHandlerGraph())
+
+        try {
+            reactor.submit(ExceptionInSuspendHandlerGraphPayload()).resultFuture.await()
+            fail<Unit>{"should rise an exception"}
+        }catch (exc: Exception){
+            log.info (exc){}
+            var cause: Throwable? = exc
+            while(cause != null){
+                if(cause is java.lang.RuntimeException && cause.message == "stop")
+                    break
+                cause = cause.cause
+            }
+            assertThat(cause?.message, equalTo("stop"));
         }
 
         return@runBlocking

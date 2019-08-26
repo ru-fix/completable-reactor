@@ -8,7 +8,7 @@ plugins {
 dependencies {
     compile(project(":completable-reactor-model"))
 
-    compile(Libs.aggregatingProfiler)
+    compile(Libs.aggregating_profiler)
 
     compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_stdlib)
