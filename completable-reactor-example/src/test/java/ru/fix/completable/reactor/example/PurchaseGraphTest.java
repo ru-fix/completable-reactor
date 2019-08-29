@@ -78,24 +78,32 @@ public class PurchaseGraphTest {
     CompletableReactor reactor;
 
     @Test()
-    public void invalid_user_purchases_invalid_service() throws Exception {
+    void invalid_user_purchases_invalid_service() throws Exception {
 
-        PurchasePayload payload = new PurchasePayload();
-        payload.request.setUserId(UserProfileManager.USER_ID_INVALID).setServiceId(ServiceRegistry.SERVICE_ID_INVALID);
+        PurchaseSubmit.Request request = new PurchaseSubmit.Request()
+                .setUserId(UserProfileManager.USER_ID_INVALID)
+                .setServiceId(ServiceRegistry.SERVICE_ID_INVALID);
 
-        PurchasePayload result = reactor.submit(payload).getResultFuture().get(5, TimeUnit.SECONDS);
+        PurchaseSubmit.Response response = reactor.graph(PurchaseSubmit.class)
+                .submit(request)
+                .getResultFuture()
+                .get(5, TimeUnit.SECONDS);
 
-        assertEquals(UserProfileManager.Status.USER_NOT_FOUND, result.response.getStatus());
+        assertEquals(UserProfileManager.Status.USER_NOT_FOUND, response.getStatus());
 
     }
 
     @Test
-    public void john_purchase_car_wash() throws Exception {
-        PurchasePayload payload = new PurchasePayload();
-        payload.request.setUserId(UserProfileManager.USER_ID_JOHN).setServiceId(ServiceRegistry.SERVICE_ID_CAR_WASH);
+    void john_purchase_car_wash() throws Exception {
+        PurchaseSubmit.Request request = new PurchaseSubmit.Request()
+                .setUserId(UserProfileManager.USER_ID_JOHN)
+                .setServiceId(ServiceRegistry.SERVICE_ID_CAR_WASH);
 
-        PurchasePayload result = reactor.submit(payload).getResultFuture().get(5, TimeUnit.SECONDS);
+        PurchaseSubmit.Response response = reactor.graph(PurchaseSubmit.class)
+                .submit(request)
+                .getResultFuture()
+                .get(5, TimeUnit.SECONDS);
 
-        assertEquals(Bank.Withdraw.Status.OK, result.response.getStatus());
+        assertEquals(Bank.Withdraw.Status.OK, response.getStatus());
     }
 }

@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.fix.aggregating.profiler.AggregatingProfiler
+import ru.fix.completable.reactor.graph.EmptyContext
+import ru.fix.completable.reactor.graph.Submit
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.*
 import java.util.concurrent.CompletableFuture.completedFuture
@@ -54,10 +56,12 @@ class KotlinGraphTest {
      * When IdListPayload goes through processors chain each processor adds their id
      *  so at the end we can clarify by witch processor and in what order this payload was processed.
      */
-    open class IdListPayload {
-        val idSequence: MutableList<Int> = ArrayList()
+    interface IdListSubmit: Submit<IdListSubmit.Request, IdListSubmit.Response>  {
+        class Request
+        class Response {
+            val idSequence: MutableList<Int> = ArrayList()
+        }
     }
-
 
     /**
      * Payload contains list of integer ids.
@@ -68,13 +72,13 @@ class KotlinGraphTest {
      * Test will check that single handler id end up in payload.",
      * Expected result: {1}
      */
-    class SingleProcessorGraph : Graph<IdListPayload>() {
+    class SingleProcessorGraph : KGraph<IdListSubmit, IdListSubmit.Request, IdListSubmit.Response, EmptyContext>() {
 
         var idProcessor1 =
                 handler {
                     IdProcessor(1).handle()
                 }.withMerger {
-                    idSequence.add(it)
+                    response.idSequence.add(it)
                 }
 
         init {
@@ -89,7 +93,7 @@ class KotlinGraphTest {
 
         reactor.registerGraphIfAbsent(SingleProcessorGraph::class.java)
 
-        val resultPayload = reactor.submit(IdListPayload())
+        val resultPayload = reactor.graph(IdListSubmit)
                 .resultFuture
                 .get(10, SECONDS)
 
@@ -100,7 +104,7 @@ class KotlinGraphTest {
      * Test will check that two processor ids end up at payloads idList in correct order.
      * Expected result: {1, 2}
      */
-    class TwoProcessorSequentialMergeGraph : Graph<IdListPayload>() {
+    class TwoProcessorSequentialMergeGraph : KGraph<IdListPayload>() {
 
         var idProcessor1 = handler { IdProcessor(1).handle() }
                 .withRoutingMerger {
@@ -147,7 +151,7 @@ class KotlinGraphTest {
      *
      * Expected result: {1, 2}
      */
-    class DetachedProcessorGraph : Graph<IdListPayload>() {
+    class DetachedProcessorGraph : KGraph<IdListPayload>() {
 
         var detachedProcessor = IdProcessor(3).withLaunchingLatch()
 
@@ -210,7 +214,7 @@ class KotlinGraphTest {
      * Subgraph behave the same way as plain processor.
      * The only difference is that instead of simple async operation CompletableReactor launches subgraph execution.
      */
-    class SubgraphPayloadGraph : Graph<SubgraphPaylaod>() {
+    class SubgraphPayloadGraph : KGraph<SubgraphPaylaod>() {
 
         var idProcessor11 = handler { IdProcessor(11).handle() }
                 .withMerger {
@@ -246,7 +250,7 @@ class KotlinGraphTest {
      * Parent graph is a simple graph that calls subgraph during its flow.
      * Expected result: 1, 11, 12, 13, 2, 3
      */
-    class ParentGraphPayloadGraph : Graph<IdListPayload>() {
+    class ParentGraphPayloadGraph : KGraph<IdListPayload>() {
         var idProcessor1 = handler { IdProcessor(1).handle() }
                 .withMerger {
                     idSequence.add(it)
@@ -311,7 +315,7 @@ class KotlinGraphTest {
      * Expected result: {42, 1, 0}
      */
 
-    class RouterFromStartPointGraph : Graph<IdListPayload>() {
+    class RouterFromStartPointGraph : KGraph<IdListPayload>() {
 
         var idProcessor0 = handler { IdProcessor(0).handle() }
                 .withMerger {
@@ -372,7 +376,7 @@ class KotlinGraphTest {
      * Router simply modify payload and send it through outgoing transitions.
      * Expected result: {0, 1, 42}
      */
-    class RouterFromProcessorsMergerGraph : Graph<IdListPayload>() {
+    class RouterFromProcessorsMergerGraph : KGraph<IdListPayload>() {
 
         var idProcessor0 = handler { IdProcessor(0).handle() }
                 .withMerger {
@@ -438,7 +442,7 @@ class KotlinGraphTest {
         LEFT, RIGHT
     }
 
-    class OptionalProcessorExecutionGraph : Graph<OptionalProcessorExecutionPayload>() {
+    class OptionalProcessorExecutionGraph : KGraph<OptionalProcessorExecutionPayload>() {
         var idProcessor1 = handler { IdProcessor(1).handle() }
                 .withMerger {
                     idSequence.add(it)
@@ -528,7 +532,7 @@ class KotlinGraphTest {
         If condition evaluated to false then this outgoing transitions marked as dead.
         If all incoming transitions to handler or subgraph marked as dead, then this handler or subgraph and it's merge point marked as dead.
     */
-    class DeadTransitionBreaksFlowGraph : Graph<DeadTransitionBreaksFlowPayload>() {
+    class DeadTransitionBreaksFlowGraph : KGraph<DeadTransitionBreaksFlowPayload>() {
 
         fun idProcessor1Tempalte() = handler { IdProcessor(1).handle() }
                 .withMerger {
@@ -628,7 +632,7 @@ class KotlinGraphTest {
      * or subgraph merge point.
      * Expected result: {2, 0, 1, 3}
      */
-    class StartPointRouterGraph : Graph<IdListPayload>() {
+    class StartPointRouterGraph : KGraph<IdListPayload>() {
 
         var mergePoint2Semaphore = Semaphore(0)
 
@@ -717,7 +721,7 @@ class KotlinGraphTest {
      * Dead transition deactivates merger and all outgoing transitions
      * Expected result: {2, 0, 1, 3}
      */
-    class DeadTransitionGraph : Graph<IdListPayload>() {
+    class DeadTransitionGraph : KGraph<IdListPayload>() {
 
         enum class Status {
             FIRST, SECOND, OK
@@ -827,7 +831,7 @@ class KotlinGraphTest {
      * Test will check that single detached merge point id end up at payloads idList.
      * Expected result: {1}
      */
-    class SingleRouterGraph : Graph<IdListPayload>() {
+    class SingleRouterGraph : KGraph<IdListPayload>() {
 
         var mergePoint = router {
             idSequence.add(1)
@@ -859,7 +863,7 @@ class KotlinGraphTest {
     /**
      * Handler return null as a result.
      */
-    class ReturnNullInHandlerGraph : Graph<IdListPayload>() {
+    class ReturnNullInHandlerGraph : KGraph<IdListPayload>() {
 
 
         val nullResultHandler = NullResultHandler()
@@ -900,7 +904,7 @@ class KotlinGraphTest {
 
     }
 
-    class RiseExceptionForImplicitEmptyMergerWithOnTransitionGraph : Graph<IdListPayload>() {
+    class RiseExceptionForImplicitEmptyMergerWithOnTransitionGraph : KGraph<IdListPayload>() {
 
         enum class STATUS { OK }
 
@@ -934,7 +938,7 @@ class KotlinGraphTest {
             val syncSeq:ConcurrentLinkedDeque<Int> = ConcurrentLinkedDeque()
     )
 
-    class ImplicitEmptyMergerWithOnAnyTransitionGraph : Graph<ImplicitEmptyMergerWithOnAnyTransitionPayload>() {
+    class ImplicitEmptyMergerWithOnAnyTransitionGraph : KGraph<ImplicitEmptyMergerWithOnAnyTransitionPayload>() {
 
         val vertex11 = handler {
             syncSeq.add(11)
@@ -983,7 +987,7 @@ class KotlinGraphTest {
             val syncSeq:ConcurrentLinkedDeque<Int> = ConcurrentLinkedDeque()
     )
 
-    class ExceptionInSuspendHandlerGraph : Graph<ExceptionInSuspendHandlerGraphPayload>() {
+    class ExceptionInSuspendHandlerGraph : KGraph<ExceptionInSuspendHandlerGraphPayload>() {
 
         val vertex1 = suspendHandler {
             syncSeq.add(1)

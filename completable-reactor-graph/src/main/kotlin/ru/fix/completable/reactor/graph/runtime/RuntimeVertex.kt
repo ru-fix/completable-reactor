@@ -35,13 +35,13 @@ class RuntimeVertex(val sourceVertex: Vertex) {
 
     @JvmField
     var merger: RoutingMerger<Any?, Any?>? = null
+//TODO support in implementation chaneg from payload to submit interface
+    @JvmField
+    var subgraphSubmitType: Class<*>? = null
+
 
     @JvmField
-    var subgraphPayloadType: Class<*>? = null
-
-
-    @JvmField
-    var subgraphPayloadBuilder: Subgraph<Any?, Any?>? = null
+    var subgraphRequestBuilder: Subgraph<Any?, Any?>? = null
 
     @JvmField
     val transitions: MutableList<RuntimeTransition> = ArrayList()
