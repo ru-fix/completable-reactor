@@ -50,8 +50,8 @@ tasks.register("generateAntlr"){
                     "ru.fix.completable.reactor.parser.java.antlr"
             ))
             outputDirectory = project.projectDir.resolve(antlrDestinationDir)
-//              TODO: fix due to gradle upgrade
-//            execute()
+
+            execute()
         }
     }
 }

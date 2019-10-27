@@ -1,6 +1,5 @@
 package ru.fix.completable.reactor.runtime.tests;
 
-import lombok.Data;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -906,7 +905,6 @@ class CompletableReactorTest {
     }
 
 
-    @Data
     static class OnElsePayload {
         private Status request;
         private List<Status> result = new ArrayList<>();
@@ -917,6 +915,14 @@ class CompletableReactorTest {
 
         public enum Status {
             FIRST, SECOND, THIRD, FOURTH
+        }
+
+        public Status getRequest() {
+            return request;
+        }
+
+        public List<Status> getResult() {
+            return result;
         }
     }
 
@@ -1410,12 +1416,7 @@ class CompletableReactorTest {
             }
         }
 
-        @Override
-        public void stop(long l) {
-            if (!state.compareAndSet(1, 2)) {
-                fail("stop called in improper state");
-            }
-        }
+
 
         public boolean isStopped() {
             return state.get() == 2;

@@ -3,6 +3,12 @@ import org.gradle.kotlin.dsl.*
 plugins {
     java
     kotlin("jvm")
+    id ("org.openjfx.javafxplugin") version "0.0.8"
+}
+
+javafx {
+    version = "11"
+    modules("javafx.controls")
 }
 
 dependencies {

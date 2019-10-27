@@ -139,6 +139,35 @@ Vertex writePurchaseToUserLog = ...;
 Vertex firePurchaseEventToStatistics = ...;
 ----
 
+=== Do not decouple async request and result validation into two separate vertices over need
+
+Vertex consist of two parts: handler and merger.
+Handler makes a request.
+Merger saves result in context and makes a decision where to go next.
+Most common pattern is to fetch data from remote store, validate it and move to another step.
+Or invoke remote service, check result of invocation and go to the next vertex depending on result.
+
+The purpose of the Graph is to give hi level visual representation of the business flow.
+If you start to decouple invocation of remote service in one vertex and validation and routing into another - this will lead to overcomplicated visual schema with lots of vertices. That breaks main purpose of the graph - hi level visualization of flow.
+
+In given example we have to actions:
+
+* fetchPayment - loads data from store
+* fetchStatusFromAbs - requests data from remote service
+
+Bad: invocation and routing splitted into two separate vertices
+
+image::decouple-vertices-bad.png[]
+
+Good: invocation and routing done in single vertex
+
+image::decouple-vertices-good.png[]
+
+This approach is applicable to the situation when decision of routing is tightly coupled with data fetched from remote store or result of service invocation.
+
+If you are making several request and routing is based on many conditions and depends on several statuses from context - then it could be a good idea to have distinct routing point in a graph that do not invokes anything and simply make a decision and route execution to one of outgoing directions.
+
+
 === In Spring project declare your graph as a Bean
 You can use different approaches in registering graphs in you application. 
 Main thing is to be consistent about it. 

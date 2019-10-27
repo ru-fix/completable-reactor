@@ -7,7 +7,7 @@
 CompletableReactor framework makes it easier to create business flows that have concurrently running parts and complex execution branching.
 [link=https://search.maven.org/search?q=g:ru.fix%20and%20a:completable-reactor-runtime]
 image::https://img.shields.io/maven-central/v/ru.fix/completable-reactor-runtime.svg[]
-image:https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png[32,32]
+image:https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png[32,32]
 link:https://github.com/ru-fix/completable-reactor[]
 
 CompletableReactor provides DSL-like builder-style API to describe business flows and visualization plugins

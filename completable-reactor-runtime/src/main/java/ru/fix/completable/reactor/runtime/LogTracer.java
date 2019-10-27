@@ -1,14 +1,15 @@
 package ru.fix.completable.reactor.runtime;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
 import ru.fix.completable.reactor.runtime.tracing.Tracer;
 
 /**
  * @author Kamil Asfandiyarov
  */
-@Slf4j
 public abstract class LogTracer implements Tracer {
+    private final Logger log = LoggerFactory.getLogger(LogTracer.class);
 
     final ToStringDebugSerializer serializer = new ToStringDebugSerializer();
 
