@@ -52,10 +52,10 @@ class ModelBuilder {
             model.startPoint.handleBy.add(model.buildIfFigureIfAbsent(vx))
         }
 
-        graph.vertices.forEach {vx ->
-            model.buildIfFigureIfAbsent(vx)
-            vx.
-        }
+//        graph.vertices.forEach {vx ->
+//            model.buildIfFigureIfAbsent(vx)
+//            vx.
+//        }
 
 
 

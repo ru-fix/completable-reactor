@@ -51,7 +51,8 @@ tasks.register("generateAntlr"){
             ))
             outputDirectory = project.projectDir.resolve(antlrDestinationDir)
 
-            execute()
+//              TODO: fix due to gradle upgrade
+//            execute()
         }
     }
 }
