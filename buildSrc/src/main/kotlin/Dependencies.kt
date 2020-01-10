@@ -1,8 +1,8 @@
 object Vers {
     //Plugins
     val asciidoctor = "1.5.9.2"
-    val kotlin = "1.3.41"
-    val kotlin_coroutines = "1.2.2"
+    val kotlin = "1.3.61"
+    val kotlin_coroutines = "1.3.3"
     
     val sl4j = "1.7.25"
     val dokka = "0.9.18"
