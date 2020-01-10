@@ -13,4 +13,5 @@ to support more suitable DSL-like API.
 
 Visit CompletableReactor site for project documentation:   
 https://ru-fix.github.io/completable-reactor/
- 
+
+MIT License

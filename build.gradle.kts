@@ -141,8 +141,8 @@ subprojects {
                         url.set("https://github.com/ru-fix/${rootProject.name}")
                         licenses {
                             license {
-                                name.set("The Apache License, Version 2.0")
-                                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                                name.set("MIT License")
+                                url.set("https://github.com/ru-fix/${rootProject.name}/blob/master/License.md")
                             }
                         }
                         developers {

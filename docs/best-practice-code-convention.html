@@ -598,6 +598,55 @@ Vertex firePurchaseEventToStatistics = ...;</pre>
 </div>
 </div>
 <div class="sect2">
+<h3 id="_do_not_decouple_async_request_and_result_validation_into_two_separate_vertices_over_need">Do not decouple async request and result validation into two separate vertices over need</h3>
+<div class="paragraph">
+<p>Vertex consist of two parts: handler and merger.
+Handler makes a request.
+Merger saves result in context and makes a decision where to go next.
+Most common pattern is to fetch data from remote store, validate it and move to another step.
+Or invoke remote service, check result of invocation and go to the next vertex depending on result.</p>
+</div>
+<div class="paragraph">
+<p>The purpose of the Graph is to give hi level visual representation of the business flow.
+If you start to decouple invocation of remote service in one vertex and validation and routing into another - this will lead to overcomplicated visual schema with lots of vertices. That breaks main purpose of the graph - hi level visualization of flow.</p>
+</div>
+<div class="paragraph">
+<p>In given example we have to actions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>fetchPayment - loads data from store</p>
+</li>
+<li>
+<p>fetchStatusFromAbs - requests data from remote service</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Bad: invocation and routing splitted into two separate vertices</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="decouple-vertices-bad.png" alt="decouple vertices bad">
+</div>
+</div>
+<div class="paragraph">
+<p>Good: invocation and routing done in single vertex</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="decouple-vertices-good.png" alt="decouple vertices good">
+</div>
+</div>
+<div class="paragraph">
+<p>This approach is applicable to the situation when decision of routing is tightly coupled with data fetched from remote store or result of service invocation.</p>
+</div>
+<div class="paragraph">
+<p>If you are making several request and routing is based on many conditions and depends on several statuses from context - then it could be a good idea to have distinct routing point in a graph that do not invokes anything and simply make a decision and route execution to one of outgoing directions.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_in_spring_project_declare_your_graph_as_a_bean">In Spring project declare your graph as a Bean</h3>
 <div class="paragraph">
 <p>You can use different approaches in registering graphs in you application.
@@ -697,7 +746,7 @@ Then we simply implement <code>if (data == null/isPresent) A else B</code> logic
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-07 14:30:30 +0300
+Last updated 2019-10-17 10:20:22 +0300
 </div>
 </div>
 </body>
