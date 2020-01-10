@@ -64,3 +64,20 @@ object Libs {
     val hamcrest = "org.hamcrest:hamcrest-all:1.3"
     val hamkrest = "com.natpryce:hamkrest:1.7.0.0"
 }
+
+enum class Proj{
+    `completable-reactor-example`,
+    `completable-reactor-graph`,
+    `completable-reactor-graph-kotlin`,
+    `completable-reactor-graph-viewer`,
+    `completable-reactor-graph-viewer-app`,
+    `completable-reactor-jmh`,
+    `completable-reactor-model`,
+    `completable-reactor-parser`,
+    `completable-reactor-plugin-idea`,
+    `completable-reactor-runtime`,
+    `completable-reactor-spring`,
+    `completable-reactor-test-utils`;
+
+    val asDependency get(): String = ":$name"
+}
