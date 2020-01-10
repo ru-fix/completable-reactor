@@ -11,6 +11,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.fix.aggregating.profiler.AggregatingProfiler
 import ru.fix.completable.reactor.example.services.*
+import ru.fix.completable.reactor.graph.kotlin.graph
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import java.util.concurrent.TimeUnit
 
@@ -66,9 +67,9 @@ open class SubscribeGraphTest {
 
     @BeforeEach
     fun before(){
-        reactor.registerGraphSync(PurchasePayload::class.java){
-            it.apply{
-                response.status = Bank.Withdraw.Status.OK
+        reactor.registerGraphImplementation(PurchaseSubmit::class.java){
+            PurchaseSubmit.Response().apply {
+                status = Bank.Withdraw.Status.OK
             }
         }
     }
@@ -77,44 +78,48 @@ open class SubscribeGraphTest {
     @Test
     fun invalid_user_subscribes_on_invalid_service() {
 
-        val payload = SubscribePayload(SubscribePayload.Request(
+        val request = SubscribeSubmit.Request(
                 userId = UserProfileManager.USER_ID_INVALID,
                 serviceId = ServiceRegistry.SERVICE_ID_INVALID
-        ))
+        )
 
-        val result = reactor.submit(payload).resultFuture.get(5, TimeUnit.SECONDS)
+        val response = reactor.graph<SubscribeSubmit>()
+                .submit(request)
+                .resultFuture.get(5, TimeUnit.SECONDS)
 
-        assertEquals(UserProfileManager.Status.USER_NOT_FOUND, result.response.status)
+        assertEquals(UserProfileManager.Status.USER_NOT_FOUND, response.status)
 
     }
 
     @Test
     fun john_subscribes_on_car_wash() {
 
-        val payload = SubscribePayload(SubscribePayload.Request(
+        val request = SubscribeSubmit.Request(
                 userId = UserProfileManager.USER_ID_JOHN,
                 serviceId = ServiceRegistry.SERVICE_ID_CAR_WASH
-        ))
+        )
 
-        val execution = reactor.submit(payload)
+        val response = reactor.graph<SubscribeSubmit>()
+                .submit(request)
+                .resultFuture
+                .get(5, TimeUnit.SECONDS)
 
-        val result = execution.resultFuture.get(5, TimeUnit.SECONDS)
-
-        assertEquals(Bank.Withdraw.Status.OK, result.response.status)
+        assertEquals(Bank.Withdraw.Status.OK, response.status)
     }
 
     @Test
     fun bob_wallet_not_found() {
 
-        val payload = SubscribePayload(SubscribePayload.Request(
+        val request = SubscribeSubmit.Request(
                 userId = UserProfileManager.USER_WITH_NO_WALLET,
                 serviceId = ServiceRegistry.SERVICE_ID_CAR_WASH
-        ))
+        )
 
-        val execution = reactor.submit(payload)
+        val response = reactor.graph<SubscribeSubmit>()
+                .submit(request)
+                .resultFuture
+                .get(5, TimeUnit.SECONDS)
 
-        val result = execution.resultFuture.get(5, TimeUnit.SECONDS)
-
-        assertEquals(Bank.Withdraw.Status.WALLET_NOT_FOUND, result.response.status)
+        assertEquals(Bank.Withdraw.Status.WALLET_NOT_FOUND, response.status)
     }
 }

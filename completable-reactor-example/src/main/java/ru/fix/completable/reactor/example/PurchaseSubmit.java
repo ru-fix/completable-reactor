@@ -1,17 +1,16 @@
 package ru.fix.completable.reactor.example;
 
 
-import ru.fix.completable.reactor.example.services.ServiceInfo;
-import ru.fix.completable.reactor.example.services.UserProfile;
+import ru.fix.completable.reactor.graph.Submit;
 
 import java.math.BigDecimal;
 
 /**
  * @author Kamil Asfandiyarov
  */
-public class PurchasePayload {
+public interface PurchaseSubmit extends Submit<PurchaseSubmit.Request, PurchaseSubmit.Response> {
 
-    public static class Request {
+    class Request {
         Long userId;
         Long serviceId;
 
@@ -34,7 +33,7 @@ public class PurchasePayload {
         }
     }
 
-    public static class Response {
+    class Response {
         Enum status;
         BigDecimal newAmount;
         boolean withdrawalWasInMinus;
@@ -86,44 +85,4 @@ public class PurchasePayload {
             return this;
         }
     }
-
-    public static class IntermediateData {
-        ServiceInfo serviceInfo;
-        UserProfile userInfo;
-        Long bonusService;
-
-        public ServiceInfo getServiceInfo() {
-            return serviceInfo;
-        }
-
-        public IntermediateData setServiceInfo(ServiceInfo serviceInfo) {
-            this.serviceInfo = serviceInfo;
-            return this;
-        }
-
-        public UserProfile getUserInfo() {
-            return userInfo;
-        }
-
-        public IntermediateData setUserInfo(UserProfile userInfo) {
-            this.userInfo = userInfo;
-            return this;
-        }
-
-        public Long getBonusService() {
-            return bonusService;
-        }
-
-        public IntermediateData setBonusService(Long bonusService) {
-            this.bonusService = bonusService;
-            return this;
-        }
-
-
-    }
-
-    public final Request request = new Request();
-    public final IntermediateData intermediateData = new IntermediateData();
-    public final Response response = new Response();
-
 }

@@ -6,6 +6,7 @@ import ru.fix.aggregating.profiler.PrefixedProfiler;
 import ru.fix.aggregating.profiler.ProfiledCall;
 import ru.fix.aggregating.profiler.Profiler;
 import ru.fix.completable.reactor.graph.Graphable;
+import ru.fix.completable.reactor.graph.Submit;
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph;
 import ru.fix.completable.reactor.runtime.debug.DebugSerializer;
 import ru.fix.completable.reactor.runtime.debug.ToStringDebugSerializer;
@@ -427,16 +428,19 @@ public class CompletableReactor implements AutoCloseable {
      * @param payloadProcessingFunction
      * @param <PayloadType>
      */
-    public <PayloadType> void registerGraphSync(
-            Class<PayloadType> payloadType,
-            Function<PayloadType, PayloadType> payloadProcessingFunction) {
+    public <Request, Response> void registerGraphImplementation(
+            Class<? extends Submit<Request, Response>> submitType,
+            Function<Request, Response> implementation) {
 
-        registerGraph(
-                payloadType,
-                pld -> CompletableFuture.completedFuture(payloadProcessingFunction.apply(pld)));
+        //TODO implement
+        throw new UnsupportedOperationException();
+//        registerGraph(
+//                payloadType,
+//                pld -> CompletableFuture.completedFuture(payloadProcessingFunction.apply(pld)));
     }
 
     //TODO extract statistics
+    //TODO: remove statistics, we are using profiler
 
     static class PayloadStatCounters {
         final LongAdder runningTotal = new LongAdder();
@@ -518,28 +522,28 @@ public class CompletableReactor implements AutoCloseable {
         }
     }
 
-
-    public <PayloadType> Optional<Execution<PayloadType>> trySubmit(PayloadType payload) {
-        return trySubmit(payload, executionTimeoutMs);
-    }
-
-    public <PayloadType> Optional<Execution<PayloadType>> trySubmit(PayloadType payload, long timeoutMs) {
-        if (pendingRequestCount.get() > maxPendingRequestCount.get()) {
-            return Optional.empty();
-        }
-        return Optional.of(submit(payload, timeoutMs));
-    }
-
-    public <PayloadType> Execution<PayloadType> submit(PayloadType payload) {
-        return submit(payload, executionTimeoutMs);
-    }
-
-    public <PayloadType> Execution<PayloadType> submit(PayloadType payload, long timeoutMs) {
-        if (isClosed.get()) {
-            throw new IllegalStateException("CompletableReactor is closed. Payload " + payload + " is discarded.");
-        }
-        return internalSubmit(payload, timeoutMs);
-    }
+//TODO port to graph() api
+//    public <PayloadType> Optional<Execution<PayloadType>> trySubmit(PayloadType payload) {
+//        return trySubmit(payload, executionTimeoutMs);
+//    }
+//
+//    public <PayloadType> Optional<Execution<PayloadType>> trySubmit(PayloadType payload, long timeoutMs) {
+//        if (pendingRequestCount.get() > maxPendingRequestCount.get()) {
+//            return Optional.empty();
+//        }
+//        return Optional.of(submit(payload, timeoutMs));
+//    }
+//
+//    public <PayloadType> Execution<PayloadType> submit(PayloadType payload) {
+//        return submit(payload, executionTimeoutMs);
+//    }
+//
+//    public <PayloadType> Execution<PayloadType> submit(PayloadType payload, long timeoutMs) {
+//        if (isClosed.get()) {
+//            throw new IllegalStateException("CompletableReactor is closed. Payload " + payload + " is discarded.");
+//        }
+//        return internalSubmit(payload, timeoutMs);
+//    }
 
     /**
      * Submit request without checking whether reactor closed or not.
@@ -734,5 +738,11 @@ public class CompletableReactor implements AutoCloseable {
                 log.info("Completable Reactor closed without any pending request left to process.");
             }
         }
+    }
+
+    public <Submit extends ru.fix.completable.reactor.graph.Submit> Submit graph(
+            Class<Submit> submitType) {
+        //TODO: implement
+        throw new UnsupportedOperationException();
     }
 }

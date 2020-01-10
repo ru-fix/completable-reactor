@@ -1,8 +1,8 @@
 object Vers {
     //Plugins
     val asciidoctor = "1.5.9.2"
-    val kotlin = "1.3.41"
-    val kotlin_coroutines = "1.2.2"
+    val kotlin = "1.3.61"
+    val kotlin_coroutines = "1.3.3"
     
     val sl4j = "1.7.25"
     val dokka = "0.9.18"
@@ -63,4 +63,21 @@ object Libs {
 
     val hamcrest = "org.hamcrest:hamcrest-all:1.3"
     val hamkrest = "com.natpryce:hamkrest:1.7.0.0"
+}
+
+enum class Proj{
+    `completable-reactor-example`,
+    `completable-reactor-graph`,
+    `completable-reactor-graph-kotlin`,
+    `completable-reactor-graph-viewer`,
+    `completable-reactor-graph-viewer-app`,
+    `completable-reactor-jmh`,
+    `completable-reactor-model`,
+    `completable-reactor-parser`,
+    `completable-reactor-plugin-idea`,
+    `completable-reactor-runtime`,
+    `completable-reactor-spring`,
+    `completable-reactor-test-utils`;
+
+    val asDependency get(): String = ":$name"
 }

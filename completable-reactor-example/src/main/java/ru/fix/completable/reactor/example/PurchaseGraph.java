@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.example;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import ru.fix.completable.reactor.example.services.*;
-import ru.fix.completable.reactor.graph.Graph;
+import ru.fix.completable.reactor.graph.JGraph;
 import ru.fix.completable.reactor.graph.Vertex;
 import ru.fix.completable.reactor.runtime.CompletableReactor;
 
@@ -15,7 +15,45 @@ import java.util.Optional;
  * # Defines purchase process when user buys good in the shop.
  */
 @Configuration
-public class PurchaseGraph extends Graph<PurchasePayload> {
+public class PurchaseGraph extends JGraph<
+        PurchaseSubmit,
+        PurchaseSubmit.Request,
+        PurchaseSubmit.Response,
+        PurchaseGraph.Context> {
+
+    class Context {
+        ServiceInfo serviceInfo;
+        UserProfile userInfo;
+        Long bonusService;
+
+        public ServiceInfo getServiceInfo() {
+            return serviceInfo;
+        }
+
+        public Context setServiceInfo(ServiceInfo serviceInfo) {
+            this.serviceInfo = serviceInfo;
+            return this;
+        }
+
+        public UserProfile getUserInfo() {
+            return userInfo;
+        }
+
+        public Context setUserInfo(UserProfile userInfo) {
+            this.userInfo = userInfo;
+            return this;
+        }
+
+        public Long getBonusService() {
+            return bonusService;
+        }
+
+        public Context setBonusService(Long bonusService) {
+            this.bonusService = bonusService;
+            return this;
+        }
+    }
+
 
     @Autowired
     UserProfileManager userProfileManager;
@@ -67,7 +105,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                                 return Flow.STOP;
 
                             case OK:
-                                pld.intermediateData.setUserInfo(result.userProfile);
+                                pld.context.setUserInfo(result.userProfile);
                                 return Flow.CONTINUE;
                         }
                         throw new IllegalArgumentException("result.status = " + result.status);
@@ -105,8 +143,8 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                         User will end up with negative balance after this operation.
                     */
                     pld -> bank.withdrawMoneyWithMinus(
-                            pld.intermediateData.getUserInfo(),
-                            pld.intermediateData.getServiceInfo())
+                            pld.context.getUserInfo(),
+                            pld.context.getServiceInfo())
             ).withRoutingMerger(
                     /*
                         # CheckWithdraw
@@ -138,7 +176,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                        Update payload response.
                    */
                     pld -> {
-                        if (pld.intermediateData.serviceInfo.isPartnerService()) {
+                        if (pld.context.serviceInfo.isPartnerService()) {
                             pld.response.isPartnerService = true;
                         }
                     });
@@ -163,7 +201,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                                 pld.response.setStatus(result.getStatus());
                                 return Flow.STOP;
                             case OK:
-                                pld.intermediateData.setServiceInfo(result.getServiceInfo());
+                                pld.context.setServiceInfo(result.getServiceInfo());
 
                                 if (result.getServiceInfo().isActive()) {
                                     return Flow.WITHDRAWAL;
@@ -180,7 +218,7 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
                 Optional<Long> bonus = marketingService.checkBonuses(pld.request.userId, pld.request.serviceId);
 
                 if (bonus.isPresent()) {
-                    pld.intermediateData.bonusService = bonus.get();
+                    pld.context.bonusService = bonus.get();
                     return Flow.BONUS_EXIST;
                 } else {
                     return Flow.NO_BONUS;
@@ -190,17 +228,17 @@ public class PurchaseGraph extends Graph<PurchasePayload> {
     Vertex bonusPurchaseSubgraph =
             subgraph(
                     //# Make bonus purchase
-                    PurchasePayload.class,
+                    PurchaseSubmit.class,
                     pld -> {
-                        PurchasePayload subgraphRequest = new PurchasePayload();
-                        subgraphRequest.request
+                        PurchaseSubmit.Request request = new PurchaseSubmit.Request();
+                        request
                                 .setServiceId(107L)
                                 .setUserId(pld.request.userId);
-                        return subgraphRequest;
+                        return request;
                     }
 
-            ).withMerger((pld, subgraphResult) ->
-                    pld.response.bonusServiceStatus = subgraphResult.response.status
+            ).withMerger((pld, subgraphResponse) ->
+                    pld.response.bonusServiceStatus = subgraphResponse.status
             );
 
     {

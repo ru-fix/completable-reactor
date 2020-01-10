@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import ru.fix.completable.reactor.example.services.*
 import ru.fix.completable.reactor.example.services.UserProfileManager.Status
-import ru.fix.completable.reactor.graph.kotlin.Graph
+import ru.fix.completable.reactor.graph.kotlin.KGraph
 import ru.fix.completable.reactor.runtime.CompletableReactor
 import javax.annotation.PostConstruct
 
@@ -14,7 +14,17 @@ import javax.annotation.PostConstruct
  * Created by Kamil Asfandiyarov
  */
 @Configuration
-open class SubscribeGraph : Graph<SubscribePayload>() {
+open class SubscribeGraph : KGraph<
+        SubscribeSubmit,
+        SubscribeSubmit.Request,
+        SubscribeSubmit.Response,
+        SubscribeGraph.Context>() {
+
+    class Context {
+        lateinit var serviceInfo: ServiceInfo
+        lateinit var accountInfo: AccountInfo
+        lateinit var userInfo: UserProfile
+    }
 
     @Autowired
     lateinit var userProfile: UserProfileManager
@@ -63,7 +73,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                     }
 
                     Status.OK -> {
-                        intermediateData.userInfo = it.userProfile
+                        context.userInfo = it.userProfile
                         Flow.CONTINUE
                     }
 
@@ -114,8 +124,8 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
     val withdrawMoney =
             handler {
                 bank.withdrawMoney(
-                        intermediateData.userInfo,
-                        intermediateData.serviceInfo)
+                        context.userInfo,
+                        context.serviceInfo)
 
             }.withRoutingMerger {
                 //update new amount
@@ -145,7 +155,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
                         Flow.STOP
                     }
                     ServiceRegistry.Status.OK -> {
-                        intermediateData.serviceInfo = result.serviceInfo
+                        context.serviceInfo = result.serviceInfo
 
                         if (result.serviceInfo.isActive) {
                             Flow.CONTINUE
@@ -160,7 +170,7 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
 
     val checkTrialPeriod = router {
         // Checks whether service supports trial period
-        if (intermediateData.serviceInfo.isSupportTrialPeriod) {
+        if (context.serviceInfo.isSupportTrialPeriod) {
             Flow.NO_WITHDRAWAL
         } else {
             Flow.WITHDRAWAL
@@ -168,16 +178,15 @@ open class SubscribeGraph : Graph<SubscribePayload>() {
     }
 
     val bonusPurchaseSubgraph =
-            subgraph(PurchasePayload::class) {
+            subgraph(PurchaseSubmit::class) {
                 //# Make bonus purchase
-                PurchasePayload().apply {
-                    request
-                            .setServiceId(107L)
-                            .setUserId(request.userId)
+                PurchaseSubmit.Request().apply {
+                    setServiceId(107L)
+                    setUserId(request.userId)
                 }
 
             }.withMerger {
-                response.bonusPurchaseStatus = it.response.status
+                response.bonusPurchaseStatus = it.status
                 Flow.CONTINUE
             }
 

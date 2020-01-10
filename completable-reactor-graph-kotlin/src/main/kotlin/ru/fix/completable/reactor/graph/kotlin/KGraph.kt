@@ -12,10 +12,15 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ForkJoinPool
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
+//TODO docs how to use
+open class KGraph<
+        Submit : ru.fix.completable.reactor.graph.Submit<Request, Response>,
+        Request,
+        Response,
+        Context> : Graphable {
 
-open class Graph<Payload> : Graphable {
     companion object {
-        private val log = LoggerFactory.getLogger(Graph::class.java)
+        private val log = LoggerFactory.getLogger(KGraph::class.java)
         //TODO: add ability to use different pool for completable reactor, update default value accordingly.
         /**
          * By default, Completable Reactor uses Common pool for execution.
@@ -45,7 +50,7 @@ open class Graph<Payload> : Graphable {
 
     private val graphBuilderValidator = GraphBuilderValidator()
 
-    protected fun payload(): PayloadTransitionBuilder<Payload> {
+    protected fun payload(): PayloadTransitionBuilder<Payload<Request,Response,Context>> {
         return DslPayloadImpl(graph)
     }
 
@@ -54,8 +59,8 @@ open class Graph<Payload> : Graphable {
     }
 
 
-    protected fun <HandlerResult> handler(handler: Payload.() -> CompletableFuture<HandlerResult>):
-            MergerBuilder<Payload, HandlerResult> {
+    protected fun <HandlerResult> handler(handler: Payload<Request, Response, Context>.() -> CompletableFuture<HandlerResult>):
+            MergerBuilder<Payload<Request, Response, Context>, HandlerResult> {
 
         val vertex = Vertex()
         val vx = InternalDslAccessor.vx(vertex)
@@ -63,9 +68,8 @@ open class Graph<Payload> : Graphable {
 
         graphBuilderValidator.validateHandler(vx)
 
-        @Suppress("UNCHECKED_CAST")
-        vx.handler = object : Handler<Payload, HandlerResult> {
-            override fun handle(payload: Payload): CompletableFuture<HandlerResult> {
+        vx.handler = object : Handler<Payload<Request, Response, Context>, HandlerResult> {
+            override fun handle(payload: Payload<Request, Response, Context>): CompletableFuture<HandlerResult> {
                 return handler(payload)
             }
         } as Handler<Any?, Any?>
@@ -76,11 +80,13 @@ open class Graph<Payload> : Graphable {
     /**
      * Builds new handler based on coroutine.
      * Coroutine context is inherited from a [coroutineScope].
-     * By default [Graph.defaultCoroutineScope] will be used.
-     * Default [Graph.defaultCoroutineScope] could be redefined by user globally.
+     * By default [KGraph.defaultCoroutineScope] will be used.
+     * Default [KGraph.defaultCoroutineScope] could be redefined by user globally.
      */
-    protected fun <HandlerResult> suspendHandler(coroutineScope: CoroutineScope? = null, handler: suspend Payload.() -> HandlerResult):
-            MergerBuilder<Payload, HandlerResult> {
+    protected fun <HandlerResult> suspendHandler(
+            coroutineScope: CoroutineScope? = null,
+            handler: suspend Payload<Request, Response, Context>.() -> HandlerResult):
+            MergerBuilder<Payload<Request,Response,Context>, HandlerResult> {
 
         return handler {
             (coroutineScope ?: defaultCoroutineScope).future {
@@ -89,7 +95,7 @@ open class Graph<Payload> : Graphable {
         }
     }
 
-    protected fun mutator(mutator: Payload.() -> Unit): Vertex {
+    protected fun mutator(mutator: Payload<Request,Response,Context>.() -> Unit): Vertex {
         val vertex = Vertex()
         val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
@@ -99,8 +105,8 @@ open class Graph<Payload> : Graphable {
         vx.handler = RuntimeEmptyHandler()
         @Suppress("UNCHECKED_CAST")
         vx.merger = RuntimeMutatorMerger(
-                object : Mutator<Payload> {
-                    override fun mutate(payload: Payload) {
+                object : Mutator<Payload<Request,Response,Context>> {
+                    override fun mutate(payload: Payload<Request,Response,Context>) {
                         mutator(payload)
                     }
                 } as Mutator<Any?>)
@@ -109,7 +115,7 @@ open class Graph<Payload> : Graphable {
         return vertex
     }
 
-    protected fun router(router: Payload.() -> Enum<*>): Vertex {
+    protected fun router(router: Payload<Request,Response,Context>.() -> Enum<*>): Vertex {
         val vertex = Vertex()
         val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
@@ -117,10 +123,9 @@ open class Graph<Payload> : Graphable {
         graphBuilderValidator.validateRouter(vx)
 
         vx.handler = RuntimeEmptyHandler()
-        @Suppress("UNCHECKED_CAST")
         vx.merger = RuntimeRouterMerger(
-                object : Router<Payload> {
-                    override fun route(payload: Payload): Enum<*> {
+                object : Router<Payload<Request,Response,Context>> {
+                    override fun route(payload: Payload<Request,Response,Context>): Enum<*> {
                         return router(payload)
                     }
                 } as Router<Any?>
@@ -130,9 +135,10 @@ open class Graph<Payload> : Graphable {
         return vertex
     }
 
-    protected fun <SubgraphPayload : Any> subgraph(
-            subgraphPayloadType: KClass<SubgraphPayload>,
-            subgraph: Payload.() -> SubgraphPayload): MergerBuilder<Payload, SubgraphPayload> {
+    protected fun <SubgraphRequest : Any, SubgraphResponse : Any> subgraph(
+            subgraphSubmitType: KClass<out ru.fix.completable.reactor.graph.Submit<SubgraphRequest, SubgraphResponse>>,
+            subgraph: Payload<Request,Response,Context>.() -> SubgraphRequest):
+            MergerBuilder<Payload<Request,Response,Context>, SubgraphResponse> {
 
         val vertex = Vertex()
         val vx = InternalDslAccessor.vx(vertex)
@@ -140,10 +146,9 @@ open class Graph<Payload> : Graphable {
 
         graphBuilderValidator.validateSubgraph(vx)
 
-        vx.subgraphPayloadType = subgraphPayloadType.java
-        @Suppress("UNCHECKED_CAST")
-        vx.subgraphPayloadBuilder = object : Subgraph<Payload, SubgraphPayload> {
-            override fun subgraph(payload: Payload): SubgraphPayload {
+        vx.subgraphSubmitType = subgraphSubmitType.java
+        vx.subgraphRequestBuilder = object : Subgraph<Payload<Request,Response,Context>, SubgraphRequest> {
+            override fun subgraph(payload: Payload<Request,Response,Context>): SubgraphRequest {
                 return subgraph(payload)
             }
         } as Subgraph<Any?, Any?>

@@ -4,14 +4,14 @@ import ru.fix.completable.reactor.graph.internal.*
 import ru.fix.completable.reactor.graph.runtime.RuntimeGraph
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import java.util.concurrent.CompletableFuture
-
+//TODO docs
 /**
  * Base class for Completable Reactor Graphs.
  *
  * Provides DSL builder methods to create Graph.
  *
  * ```
- * class MyGraph extends Graph<PayloadType> {
+ * class MyGraph extends JGraph<> {
  *      Vertex vx1 = handler(...).withMerger(...);
  *      Vertex vx2 = router(...);
  *      ...
@@ -26,7 +26,11 @@ import java.util.concurrent.CompletableFuture
  * }
  * ```
  */
-abstract class Graph<Payload> : Graphable {
+abstract class JGraph<
+        Submit: ru.fix.completable.reactor.graph.Submit<Request,Response>,
+        Request, 
+        Response,
+        Context> : Graphable {
 
     // Field accessed via reflection by field name
     private val graph = RuntimeGraph()
@@ -42,7 +46,7 @@ abstract class Graph<Payload> : Graphable {
     /**
      * Specifies StartPoint of the graph. Can be used to create transitions from StartPoint to Vertices.
      */
-    protected fun payload(): PayloadTransitionBuilder<Payload> {
+    protected fun payload(): PayloadTransitionBuilder<Payload<Request, Response, Context>> {
         return DslPayloadImpl(graph)
     }
 
@@ -57,10 +61,10 @@ abstract class Graph<Payload> : Graphable {
      * Creates vertex based on async method invocation.
      */
     protected fun <HandlerResult> handler(
-            handler: NoArgHandler<HandlerResult>): MergerBuilder<Payload, HandlerResult> {
+            handler: NoArgHandler<HandlerResult>): MergerBuilder<Payload<Request, Response, Context>, HandlerResult> {
 
-        return handler(object : Handler<Payload, HandlerResult> {
-            override fun handle(payload: Payload): CompletableFuture<HandlerResult> {
+        return handler(object : Handler<Payload<Request, Response, Context>, HandlerResult> {
+            override fun handle(payload: Payload<Request, Response, Context>): CompletableFuture<HandlerResult> {
                 return handler.handle()
             }
         })
@@ -73,8 +77,8 @@ abstract class Graph<Payload> : Graphable {
      * Then waits the function to complete.
      * Then Handler pass function result and payload to to Merger if one was specified during graph construction.
      */
-    protected fun <HandlerResult> handler(handler: Handler<Payload, HandlerResult>):
-            MergerBuilder<Payload, HandlerResult> {
+    protected fun <HandlerResult> handler(handler: Handler<Payload<Request, Response, Context>, HandlerResult>):
+            MergerBuilder<Payload<Request, Response, Context>, HandlerResult> {
 
         val vertex = Vertex()
         val vx = InternalDslAccessor.vx(vertex)
@@ -89,7 +93,7 @@ abstract class Graph<Payload> : Graphable {
     /**
      * Creates vertex based on sync method invocation.
      */
-    protected fun router(router: Router<Payload>): Vertex {
+    protected fun router(router: Router<Payload<Request, Response, Context>>): Vertex {
         val vertex = Vertex()
         val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
@@ -106,7 +110,7 @@ abstract class Graph<Payload> : Graphable {
     /**
      * Creates vertex based on sync method invocation.
      */
-    protected fun mutator(mutator: Mutator<Payload>): Vertex {
+    protected fun mutator(mutator: Mutator<Payload<Request, Response, Context>>): Vertex {
         val vertex = Vertex()
         val vx = InternalDslAccessor.vx(vertex)
         graph.vertices.add(vx)
@@ -123,9 +127,10 @@ abstract class Graph<Payload> : Graphable {
     /**
      * Creates vertex based on subgraph invocation.
      */
-    protected fun <SubgraphPayload> subgraph(
-            subgraphPayloadType: Class<SubgraphPayload>,
-            subgraph: Subgraph<Payload, SubgraphPayload>): MergerBuilder<Payload, SubgraphPayload> {
+    protected fun <SubgraphRequest, SubgraphResponse> subgraph(
+            subgraphSubmitType: Class<out ru.fix.completable.reactor.graph.Submit<SubgraphRequest, SubgraphResponse>>,
+            subgraph: Subgraph<Payload<Request, Response, Context>, SubgraphRequest>):
+            MergerBuilder<Payload<Request, Response, Context>, SubgraphResponse> {
 
         val vertex = Vertex()
         val vx = InternalDslAccessor.vx(vertex)
@@ -133,8 +138,8 @@ abstract class Graph<Payload> : Graphable {
 
         graphBuilderValidator.validateSubgraph(vx)
 
-        vx.subgraphPayloadType = subgraphPayloadType
-        vx.subgraphPayloadBuilder = subgraph as Subgraph<Any?, Any?>
+        vx.subgraphSubmitType = subgraphSubmitType
+        vx.subgraphRequestBuilder = subgraph as Subgraph<Any?, Any?>
         return DslMergerBuilder(vertex)
     }
 }

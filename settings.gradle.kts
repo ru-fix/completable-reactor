@@ -1,11 +1,14 @@
 rootProject.name = "completable-reactor"
-include("completable-reactor-example")
-include("completable-reactor-graph")
-include("completable-reactor-graph-kotlin")
-include("completable-reactor-graph-viewer")
-include("completable-reactor-graph-viewer-app")
-include("completable-reactor-model")
-include("completable-reactor-parser")
-include("completable-reactor-runtime")
-include("completable-reactor-spring")
-include("completable-reactor-test-utils")
+for (project in listOf(
+        "completable-reactor-example",
+        "completable-reactor-graph",
+        "completable-reactor-graph-kotlin",
+        "completable-reactor-graph-viewer",
+        "completable-reactor-graph-viewer-app",
+        "completable-reactor-model",
+        "completable-reactor-parser",
+        "completable-reactor-runtime",
+        "completable-reactor-spring",
+        "completable-reactor-test-utils")) {
+    include(project)
+}

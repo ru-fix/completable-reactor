@@ -1,18 +1,12 @@
 package ru.fix.completable.reactor.example;
 
-import ru.fix.completable.reactor.example.services.ServiceInfo;
-import ru.fix.completable.reactor.example.services.UserProfile;
-import ru.fix.completable.reactor.example.services.AccountInfo;
+import ru.fix.completable.reactor.graph.Submit
 import java.math.BigDecimal
 
 /**
  * Created by swarmshine on 16.10.2016.
  */
-data class SubscribePayload(val request: Request) {
-
-    val intermediateData = IntermediateData()
-    val response = Response()
-
+interface SubscribeSubmit: Submit<SubscribeSubmit.Request, SubscribeSubmit.Response> {
     data class Request(
             val userId: Long,
             val serviceId: Long
@@ -26,10 +20,4 @@ data class SubscribePayload(val request: Request) {
             var bonusPurchaseStatus: Enum<*>? = null,
             var remoteServiceNotificationResult: Boolean = false
     )
-
-    class IntermediateData {
-        lateinit var serviceInfo: ServiceInfo
-        lateinit var accountInfo: AccountInfo
-        lateinit var userInfo: UserProfile
-    }
 }
