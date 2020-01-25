@@ -1,5 +1,6 @@
 package ru.fix.completable.reactor.graph.runtime
 
+// TODO: Может разбить на 3 перехода?
 class RuntimeTransition(
 
         var mergeStatuses: Set<Enum<*>> = emptySet(),

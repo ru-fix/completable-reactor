@@ -58,7 +58,7 @@ class GraphBuilder {
 
         Validators.get().forEach {
             when (val result = it.validate(compileTimeModel)) {
-                is ValidationFailed -> throw GraphValidationException(
+                is ValidationFailed -> GraphValidationException(
                         result.message,
                         result.validatorClass)
                 is ValidationSucceed -> Unit

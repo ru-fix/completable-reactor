@@ -37,8 +37,8 @@ data class Transition(
         val transitionDocs: MutableList<TransitionDocumentation> = ArrayList(),
 
         var onAnySource: Source? = null,
-        var onStatusSource: MutableMap<String, Source> = hashMapOf()) {
-
+        var onStatusSource: MutableMap<String, Source> = hashMapOf()
+) {
     lateinit var target: Figure
 }
 

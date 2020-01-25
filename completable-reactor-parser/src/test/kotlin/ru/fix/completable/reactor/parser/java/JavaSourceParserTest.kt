@@ -9,6 +9,10 @@ import ru.fix.completable.reactor.model.Coordinates
 import ru.fix.completable.reactor.model.EndPoint
 import ru.fix.completable.reactor.model.Merger
 import ru.fix.completable.reactor.model.VertexFigure
+import ru.fix.completable.reactor.model.validation.GraphValidationException
+import ru.fix.completable.reactor.model.validation.ValidationFailed
+import ru.fix.completable.reactor.model.validation.ValidationSucceed
+import ru.fix.completable.reactor.model.validation.Validators
 import ru.fix.completable.reactor.test.utils.ProjectFileResolver
 import java.time.Duration
 import java.time.Instant
@@ -68,6 +72,17 @@ class JavaSourceParserTest {
         assertTrue(model.subgraphs.containsKey(BONUS_PURCHASE_SUBGRAPH))
         assertTrue(model.routers.containsKey(IS_PARTNER_SERVICE))
 
+        val list = model.transitionable[IS_PARTNER_SERVICE]
+
+
+        Validators.get().forEach {
+            when (val result = it.validate(model)) {
+                is ValidationFailed -> throw GraphValidationException(
+                        result.message,
+                        result.validatorClass)
+                is ValidationSucceed -> Unit
+            }
+        }
 
         assertEquals("PurchasePayload", model.startPoint.payloadType)
         assertEquals("PurchaseGraph", model.graphClass)
@@ -97,7 +112,7 @@ class JavaSourceParserTest {
                                 && !it.isComplete
                                 && !it.isOnAny
                                 && it.target.let {
-                            it is VertexFigure && it.name == SERVICE_INFO
+                            it is Merger && it.name == SERVICE_INFO
                         }
                     })
                 }

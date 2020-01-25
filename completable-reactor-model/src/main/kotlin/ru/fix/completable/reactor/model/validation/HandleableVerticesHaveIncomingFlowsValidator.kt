@@ -7,6 +7,12 @@ class HandleableVerticesHaveIncomingFlowsValidator : Validator {
 
     override fun validate(graph: CompileTimeGraph): ValidationResult {
 
+        val allTransitions = graph.transitionable.values.asSequence()
+                .flatMap { it.transitions.asSequence() }
+                .mapNotNull { it.target }
+//                .map { it.name }
+                .toList()
+
         val verticesWithIncomingTransitions = (graph.transitionable
                 //collect all transitions targets
                 .values
@@ -25,7 +31,7 @@ class HandleableVerticesHaveIncomingFlowsValidator : Validator {
                 .values
                 .asSequence()
                 .map { it.name }
-                .filter { verticesWithIncomingTransitions.contains(it) }
+                .filter { !verticesWithIncomingTransitions.contains(it) }
                 .toList()
 
         return if (verticesWithoutIncomingFlows.isNotEmpty()) {
