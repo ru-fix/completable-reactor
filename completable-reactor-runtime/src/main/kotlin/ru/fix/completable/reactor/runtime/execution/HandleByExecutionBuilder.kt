@@ -1,7 +1,9 @@
 package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
+import ru.fix.aggregating.profiler.Identity
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
+import ru.fix.completable.reactor.runtime.ProfilerIdentity
 import ru.fix.completable.reactor.runtime.ProfilerNames
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_TRANSITION_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.HandlePayloadContext
@@ -136,10 +138,8 @@ class HandleByExecutionBuilder<PayloadType>(
         val vx = pvx.vertex
         val payload = payloadContext.payload
 
-        val handleCall = builder.profiler.profiledCall("" +
-                ProfilerNames.HANDLE +
-                ".${payload?.javaClass?.simpleName}" +
-                ".${vx.name}")
+        val handleCall = builder.profiler
+                .profiledCall(ProfilerIdentity.handlerIdentity(payload?.javaClass?.name, vx.name))
                 .start()
 
         val isTraceablePayload = builder.tracer.isTraceable(payload)
