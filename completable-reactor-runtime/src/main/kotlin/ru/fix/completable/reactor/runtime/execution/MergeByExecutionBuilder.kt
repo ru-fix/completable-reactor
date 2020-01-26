@@ -1,11 +1,9 @@
 package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
-import ru.fix.aggregating.profiler.Identity
 import ru.fix.completable.reactor.graph.runtime.RuntimeTransition
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.ProfilerIdentity
-import ru.fix.completable.reactor.runtime.ProfilerNames
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_HANDLE_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.Companion.INVALID_MERGE_PAYLOAD_CONTEXT
 import ru.fix.completable.reactor.runtime.execution.ExecutionBuilder.HandlePayloadContext
@@ -266,20 +264,6 @@ class MergeByExecutionBuilder<PayloadType>(
         }
     }
 
-
-//    object ProfiledIdentity {
-//        fun mergeIdentity(payload: String?, vertexName: String?): Identity {
-//            return Identity(
-//                    "completable_reactor",
-//                    mapOf(
-//                            "payload" to payload,
-//                            "operation" to ProfilerNames.MERGE,
-//                            "vertex" to vertexName
-//                    )
-//            )
-//        }
-//    }
-
     /**
      * @param pvx
      * @param handlingResult       empty in case of detached merge point
@@ -294,7 +278,6 @@ class MergeByExecutionBuilder<PayloadType>(
             executionResultFuture: CompletableFuture<PayloadType>) {
 
         try {
-
 
             val mergeCall = builder.profiler
                     .profiledCall(ProfilerIdentity.mergeIdentity(payload?.javaClass?.name, pvx.vertex.name))

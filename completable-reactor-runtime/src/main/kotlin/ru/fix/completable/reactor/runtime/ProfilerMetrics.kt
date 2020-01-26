@@ -3,7 +3,7 @@ package ru.fix.completable.reactor.runtime
 import ru.fix.aggregating.profiler.Identity
 
 object Metrics {
-    const val PENDING_REQUEST = "pendingRequest"
+    const val PENDING_REQUEST = "pending_request"
 
     const val REACTOR_EXECUTION = "completable_reactor"
 
@@ -11,13 +11,13 @@ object Metrics {
 }
 
 object Tags {
-    const val MERGE = "merger"
+    const val MERGE = "merge"
 
-    const val HANDLE = "handler"
+    const val HANDLE = "handle"
 
-    const val PAYLOAD = "payload_execution"
+    const val REACHED_TERMINAL_STEP = "payload_reached_terminal_step"
 
-    const val EXECUTION = "execution"
+    const val FULLY_COMPLETED = "execution_graph_fully_completed"
 }
 
 object ProfilerIdentity {
@@ -45,20 +45,19 @@ object ProfilerIdentity {
     fun payloadIdentity(payload: String?) =
             Identity(
                     Metrics.REACTOR_EXECUTION,
-                    tags(payload, Tags.PAYLOAD)
+                    tags(payload, Tags.REACHED_TERMINAL_STEP)
             )
 
     @JvmStatic
-    fun executionIdentity(payload: String?): Identity {
-        return Identity(
-                Metrics.REACTOR_EXECUTION,
-                tags(payload, Tags.EXECUTION)
-        )
-    }
+    fun executionIdentity(payload: String?) =
+            Identity(
+                    Metrics.REACTOR_EXECUTION,
+                    tags(payload, Tags.FULLY_COMPLETED)
+            )
 
     private fun tags(payload: String?, operation: String) =
             mapOf(
                     "payload" to payload,
-                    "operation" to operation
+                    "execution_cycle" to operation
             )
 }

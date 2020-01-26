@@ -22,7 +22,7 @@ import java.util.stream.IntStream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -42,9 +42,6 @@ public class ProfilingTest {
             return this;
         }
     }
-
-    enum Status {OK}
-
 
     static class SimpleGraph extends Graph<TracablePayload> {
 
@@ -84,24 +81,27 @@ public class ProfilingTest {
 
         Profiler profiler = mock(Profiler.class);
         ProfiledCall profiledCall = mock(ProfiledCall.class);
+
+        doNothing().when(profiler).attachIndicator(eq(Metrics.PENDING_REQUEST), any());
+
         when(profiler.profiledCall(ArgumentMatchers.<String>any())).thenReturn(profiledCall);
         when(profiler.profiledCall(ArgumentMatchers.<Identity>any())).thenReturn(profiledCall);
 
         when(profiledCall.start()).thenReturn(profiledCall);
 
-        final CompletableReactor completableReactor = new CompletableReactor(profiler);
-
-
+        CompletableReactor completableReactor = new CompletableReactor(profiler);
         SimpleGraph graph = new SimpleGraph();
         completableReactor.registerGraph(graph);
-
         for (int num = 0; num < 10; num++) {
             completableReactor.submit(new TracablePayload().setNumber(num));
         }
         completableReactor.close();
 
-        ArgumentCaptor<Identity> identityCapture = ArgumentCaptor.forClass(Identity.class);
 
+
+        verify(profiler, times(1)).attachIndicator(eq(Metrics.PENDING_REQUEST), any());
+
+        ArgumentCaptor<Identity> identityCapture = ArgumentCaptor.forClass(Identity.class);
         verify(profiler, times(80)).profiledCall(identityCapture.capture());
 
         List<Identity> identities = identityCapture.getAllValues();
@@ -114,8 +114,8 @@ public class ProfilingTest {
         expected.addAll(vertexIdentities(Tags.MERGE, "processor1", 10));
         expected.addAll(vertexIdentities(Tags.MERGE,"processor2", 10));
         expected.addAll(vertexIdentities(Tags.MERGE,"processor3", 10));
-        expected.addAll(executionIdentity(Tags.PAYLOAD, 10));
-        expected.addAll(executionIdentity(Tags.EXECUTION, 10));
+        expected.addAll(executionIdentity(Tags.REACHED_TERMINAL_STEP, 10));
+        expected.addAll(executionIdentity(Tags.FULLY_COMPLETED, 10));
 
         assertThat(identities, containsInAnyOrder(expected.toArray()));
     }
@@ -137,7 +137,7 @@ public class ProfilingTest {
                 .mapToObj(i -> {
                     Map<String, String> tags = new HashMap<>();
                     tags.put("payload", TracablePayload.class.getName());
-                    tags.put("operation", operation);
+                    tags.put("execution_cycle", operation);
                     return new Identity(Metrics.REACTOR_EXECUTION, tags);
                 })
                 .collect(Collectors.toList());
