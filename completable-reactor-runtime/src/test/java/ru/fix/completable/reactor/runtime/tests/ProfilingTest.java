@@ -106,14 +106,14 @@ public class ProfilingTest {
         assertEquals(80, identities.size());
 
         List<Identity> expected = new ArrayList<>();
-        expected.addAll(vertexIdentities(Tags.HANDLER, "processor1", 10));
-        expected.addAll(vertexIdentities(Tags.HANDLER,"processor2", 10));
-        expected.addAll(vertexIdentities(Tags.HANDLER,"processor3", 10));
-        expected.addAll(vertexIdentities(Tags.MERGER, "processor1", 10));
-        expected.addAll(vertexIdentities(Tags.MERGER,"processor2", 10));
-        expected.addAll(vertexIdentities(Tags.MERGER,"processor3", 10));
-        expected.addAll(executionIdentity(Tags.SUBMIT, 10));
-        expected.addAll(executionIdentity(Tags.EXECUTION, 10));
+        expected.addAll(vertexIdentities(Tags.HANDLE, "processor1", 10));
+        expected.addAll(vertexIdentities(Tags.HANDLE,"processor2", 10));
+        expected.addAll(vertexIdentities(Tags.HANDLE,"processor3", 10));
+        expected.addAll(vertexIdentities(Tags.MERGE, "processor1", 10));
+        expected.addAll(vertexIdentities(Tags.MERGE,"processor2", 10));
+        expected.addAll(vertexIdentities(Tags.MERGE,"processor3", 10));
+        expected.addAll(executionIdentities(Tags.SUBMIT, 10));
+        expected.addAll(executionIdentities(Tags.EXECUTION, 10));
 
         assertThat(identities, containsInAnyOrder(expected.toArray()));
     }
@@ -130,12 +130,12 @@ public class ProfilingTest {
                 .collect(Collectors.toList());
     }
 
-    private static List<Identity> executionIdentity(String operation, int number) {
+    private static List<Identity> executionIdentities(String operation, int number) {
         return IntStream.range(0, number)
                 .mapToObj(i -> {
                     Map<String, String> tags = new HashMap<>();
                     tags.put("payload", TracablePayload.class.getName());
-                    tags.put("operation", operation);
+                    tags.put("method", operation);
                     return new Identity(Metrics.COMPLETABLE_REACTOR, tags);
                 })
                 .collect(Collectors.toList());

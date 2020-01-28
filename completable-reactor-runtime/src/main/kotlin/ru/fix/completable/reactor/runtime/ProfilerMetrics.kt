@@ -11,9 +11,9 @@ object Metrics {
 }
 
 object Tags {
-    const val MERGER = "merger"
+    const val MERGE = "merge"
 
-    const val HANDLER = "handler"
+    const val HANDLE = "handle"
 
     const val SUBMIT = "submit"
 
@@ -25,13 +25,13 @@ object ProfilerIdentity {
     fun mergeIdentity(payload: String?, vertexName: String?) =
             Identity(
                     Metrics.COMPLETABLE_REACTOR_GRAPH,
-                    tags(payload, Tags.MERGER, vertexName)
+                    tags(payload, Tags.MERGE, vertexName)
             )
 
-    fun handlerIdentity(payload: String?, vertexName: String?) =
+    fun handleIdentity(payload: String?, vertexName: String?) =
             Identity(
                     Metrics.COMPLETABLE_REACTOR_GRAPH,
-                    tags(payload, Tags.HANDLER, vertexName)
+                    tags(payload, Tags.HANDLE, vertexName)
             )
 
     private fun tags(payload: String?, operation: String, vertexName: String?) =
@@ -42,7 +42,7 @@ object ProfilerIdentity {
             )
 
     @JvmStatic
-    fun payloadIdentity(payload: String?) =
+    fun submitIdentity(payload: String?) =
             Identity(
                     Metrics.COMPLETABLE_REACTOR,
                     tags(payload, Tags.SUBMIT)
@@ -58,6 +58,6 @@ object ProfilerIdentity {
     private fun tags(payload: String?, operation: String) =
             mapOf(
                     "payload" to payload,
-                    "operation" to operation
+                    "method" to operation
             )
 }

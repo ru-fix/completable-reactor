@@ -2,7 +2,6 @@ package ru.fix.completable.reactor.runtime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.fix.aggregating.profiler.Identity;
 import ru.fix.aggregating.profiler.ProfiledCall;
 import ru.fix.aggregating.profiler.Profiler;
 import ru.fix.completable.reactor.graph.Graphable;
@@ -560,8 +559,8 @@ public class CompletableReactor implements AutoCloseable {
         }
 
 
-        ProfiledCall payloadCall = profiler
-                .profiledCall(ProfilerIdentity.payloadIdentity(payload.getClass().getName()))
+        ProfiledCall submitCall = profiler
+                .profiledCall(ProfilerIdentity.submitIdentity(payload.getClass().getName()))
                 .start();
 
         ProfiledCall executionCall = profiler
@@ -577,7 +576,7 @@ public class CompletableReactor implements AutoCloseable {
                     (CompletableFuture<PayloadType>) inlineGraphFunction.apply(payload);
 
             inlineGraphResult.whenCompleteAsync((payloadType, throwable) -> {
-                payloadCall.stop();
+                submitCall.stop();
                 executionCall.stop();
             });
 
@@ -671,7 +670,7 @@ public class CompletableReactor implements AutoCloseable {
         });
 
         execution.getResultFuture()
-                .whenCompleteAsync((payloadType, throwable) -> payloadCall.stop());
+                .whenCompleteAsync((payloadType, throwable) -> submitCall.stop());
         execution.getChainExecutionFuture()
                 .whenCompleteAsync((payloadType, throwable) -> executionCall.stop());
 

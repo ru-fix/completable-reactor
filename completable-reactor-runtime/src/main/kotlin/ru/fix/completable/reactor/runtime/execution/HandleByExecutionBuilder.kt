@@ -137,7 +137,7 @@ class HandleByExecutionBuilder<PayloadType>(
         val payload = payloadContext.payload
 
         val handleCall = builder.profiler
-                .profiledCall(ProfilerIdentity.handlerIdentity(payload?.javaClass?.name, vx.name))
+                .profiledCall(ProfilerIdentity.handleIdentity(payload?.javaClass?.name, vx.name))
                 .start()
 
         val isTraceablePayload = builder.tracer.isTraceable(payload)
