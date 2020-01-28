@@ -5,33 +5,33 @@ import ru.fix.aggregating.profiler.Identity
 object Metrics {
     const val PENDING_REQUEST = "pending_request"
 
-    const val REACTOR_EXECUTION = "completable_reactor"
+    const val COMPLETABLE_REACTOR = "completable_reactor"
 
-    const val REACTOR_VERTEX_EXECUTION = "completable_reactor_vertices"
+    const val COMPLETABLE_REACTOR_GRAPH = "completable_reactor_graph"
 }
 
 object Tags {
-    const val MERGE = "merge"
+    const val MERGER = "merger"
 
-    const val HANDLE = "handle"
+    const val HANDLER = "handler"
 
-    const val REACHED_TERMINAL_STEP = "payload_reached_terminal_step"
+    const val SUBMIT = "submit"
 
-    const val FULLY_COMPLETED = "execution_graph_fully_completed"
+    const val EXECUTION = "execution"
 }
 
 object ProfilerIdentity {
 
     fun mergeIdentity(payload: String?, vertexName: String?) =
             Identity(
-                    Metrics.REACTOR_VERTEX_EXECUTION,
-                    tags(payload, Tags.MERGE, vertexName)
+                    Metrics.COMPLETABLE_REACTOR_GRAPH,
+                    tags(payload, Tags.MERGER, vertexName)
             )
 
     fun handlerIdentity(payload: String?, vertexName: String?) =
             Identity(
-                    Metrics.REACTOR_VERTEX_EXECUTION,
-                    tags(payload, Tags.HANDLE, vertexName)
+                    Metrics.COMPLETABLE_REACTOR_GRAPH,
+                    tags(payload, Tags.HANDLER, vertexName)
             )
 
     private fun tags(payload: String?, operation: String, vertexName: String?) =
@@ -44,20 +44,20 @@ object ProfilerIdentity {
     @JvmStatic
     fun payloadIdentity(payload: String?) =
             Identity(
-                    Metrics.REACTOR_EXECUTION,
-                    tags(payload, Tags.REACHED_TERMINAL_STEP)
+                    Metrics.COMPLETABLE_REACTOR,
+                    tags(payload, Tags.SUBMIT)
             )
 
     @JvmStatic
     fun executionIdentity(payload: String?) =
             Identity(
-                    Metrics.REACTOR_EXECUTION,
-                    tags(payload, Tags.FULLY_COMPLETED)
+                    Metrics.COMPLETABLE_REACTOR,
+                    tags(payload, Tags.EXECUTION)
             )
 
     private fun tags(payload: String?, operation: String) =
             mapOf(
                     "payload" to payload,
-                    "execution_cycle" to operation
+                    "operation" to operation
             )
 }

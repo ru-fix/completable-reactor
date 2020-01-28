@@ -74,8 +74,6 @@ public class ProfilingTest {
 
     }
 
-
-
     @Test
     public void trace_payload_if_payload_contain_special_id() throws Exception {
 
@@ -108,14 +106,14 @@ public class ProfilingTest {
         assertEquals(80, identities.size());
 
         List<Identity> expected = new ArrayList<>();
-        expected.addAll(vertexIdentities(Tags.HANDLE, "processor1", 10));
-        expected.addAll(vertexIdentities(Tags.HANDLE,"processor2", 10));
-        expected.addAll(vertexIdentities(Tags.HANDLE,"processor3", 10));
-        expected.addAll(vertexIdentities(Tags.MERGE, "processor1", 10));
-        expected.addAll(vertexIdentities(Tags.MERGE,"processor2", 10));
-        expected.addAll(vertexIdentities(Tags.MERGE,"processor3", 10));
-        expected.addAll(executionIdentity(Tags.REACHED_TERMINAL_STEP, 10));
-        expected.addAll(executionIdentity(Tags.FULLY_COMPLETED, 10));
+        expected.addAll(vertexIdentities(Tags.HANDLER, "processor1", 10));
+        expected.addAll(vertexIdentities(Tags.HANDLER,"processor2", 10));
+        expected.addAll(vertexIdentities(Tags.HANDLER,"processor3", 10));
+        expected.addAll(vertexIdentities(Tags.MERGER, "processor1", 10));
+        expected.addAll(vertexIdentities(Tags.MERGER,"processor2", 10));
+        expected.addAll(vertexIdentities(Tags.MERGER,"processor3", 10));
+        expected.addAll(executionIdentity(Tags.SUBMIT, 10));
+        expected.addAll(executionIdentity(Tags.EXECUTION, 10));
 
         assertThat(identities, containsInAnyOrder(expected.toArray()));
     }
@@ -127,7 +125,7 @@ public class ProfilingTest {
                     tags.put("payload", TracablePayload.class.getName());
                     tags.put("operation", operation);
                     tags.put("vertex", vertex);
-                    return new Identity(Metrics.REACTOR_VERTEX_EXECUTION, tags);
+                    return new Identity(Metrics.COMPLETABLE_REACTOR_GRAPH, tags);
                 })
                 .collect(Collectors.toList());
     }
@@ -137,8 +135,8 @@ public class ProfilingTest {
                 .mapToObj(i -> {
                     Map<String, String> tags = new HashMap<>();
                     tags.put("payload", TracablePayload.class.getName());
-                    tags.put("execution_cycle", operation);
-                    return new Identity(Metrics.REACTOR_EXECUTION, tags);
+                    tags.put("operation", operation);
+                    return new Identity(Metrics.COMPLETABLE_REACTOR, tags);
                 })
                 .collect(Collectors.toList());
     }
