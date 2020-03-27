@@ -6,7 +6,7 @@ object Vers {
     
     val sl4j = "1.7.25"
     val dokka = "0.9.18"
-    val gradle_release_plugin = "1.3.9"
+    val gradle_release_plugin = "1.3.16"
     val junit = "5.2.0"
 
     val aggregating_profiler = "1.5.16"
