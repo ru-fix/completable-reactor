@@ -2,7 +2,6 @@ package ru.fix.completable.reactor.runtime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.fix.aggregating.profiler.PrefixedProfiler;
 import ru.fix.aggregating.profiler.ProfiledCall;
 import ru.fix.aggregating.profiler.Profiler;
 import ru.fix.completable.reactor.graph.Graphable;
@@ -310,9 +309,9 @@ public class CompletableReactor implements AutoCloseable {
     private final ReactorTracer reactorTracer = new ReactorTracer();
 
     public CompletableReactor(Profiler profiler) {
-        this.profiler = new PrefixedProfiler(profiler, ProfilerNames.PROFILER + ".");
+        this.profiler = profiler;
 
-        profiler.attachIndicator(ProfilerNames.PENDING_REQUEST, pendingRequestCount::get);
+        profiler.attachIndicator(Metrics.PENDING_REQUEST, pendingRequestCount::get);
 
         this.glExecutionBuilder = new ExecutionBuilder(
                 this.profiler,
@@ -559,14 +558,13 @@ public class CompletableReactor implements AutoCloseable {
                     "CompletableReactor on client side.");
         }
 
-        ProfiledCall payloadCall = profiler.profiledCall("" +
-                ProfilerNames.PAYLOAD +
-                "." + payload.getClass().getSimpleName())
+
+        ProfiledCall submitCall = profiler
+                .profiledCall(ProfilerIdentity.submitIdentity(payload.getClass().getName()))
                 .start();
 
-        ProfiledCall executionCall = profiler.profiledCall("" +
-                ProfilerNames.EXECUTION +
-                "." + payload.getClass().getSimpleName())
+        ProfiledCall executionCall = profiler
+                .profiledCall(ProfilerIdentity.executionIdentity(payload.getClass().getName()))
                 .start();
 
         /**
@@ -578,7 +576,7 @@ public class CompletableReactor implements AutoCloseable {
                     (CompletableFuture<PayloadType>) inlineGraphFunction.apply(payload);
 
             inlineGraphResult.whenCompleteAsync((payloadType, throwable) -> {
-                payloadCall.stop();
+                submitCall.stop();
                 executionCall.stop();
             });
 
@@ -672,7 +670,7 @@ public class CompletableReactor implements AutoCloseable {
         });
 
         execution.getResultFuture()
-                .whenCompleteAsync((payloadType, throwable) -> payloadCall.stop());
+                .whenCompleteAsync((payloadType, throwable) -> submitCall.stop());
         execution.getChainExecutionFuture()
                 .whenCompleteAsync((payloadType, throwable) -> executionCall.stop());
 
