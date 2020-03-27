@@ -4,6 +4,8 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.time.Duration.*
+import java.time.temporal.ChronoUnit
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -27,8 +29,8 @@ plugins {
     kotlin("jvm") version Vers.kotlin apply false
     signing
     `maven-publish`
-    id(Libs.nexus_publish_plugin) version "0.3.0" apply false
-    id(Libs.nexus_staging_plugin) version "0.21.0"
+    id(Libs.nexus_publish_plugin) version "0.4.0" apply false
+    id(Libs.nexus_staging_plugin) version "0.21.2"
     id("org.asciidoctor.convert") version Vers.asciidoctor
 }
 
@@ -110,6 +112,8 @@ subprojects {
                 stagingProfileId.set("1f0730098fd259")
             }
         }
+        clientTimeout.set(of(4, ChronoUnit.MINUTES))
+        connectTimeout.set(of(4, ChronoUnit.MINUTES))
     }
 
     project.afterEvaluate {
