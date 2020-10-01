@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>ru.fix.completable.reactor.plugin.idea</id>
   <name>Completable Reactor</name>
-  <version>1.4.4</version>
+  <version>1.4.5</version>
   <vendor email="kasfandiyarov@gmail.com" url="https://github.com/ru-fix">FIX</vendor>
 
   <description>
@@ -16,6 +16,7 @@
 
   <change-notes>
     <![CDATA[
+      1.4.5 Idea 2020.2 compatibility fix.
       1.4.4 Add onElse transition<br>
       1.4.1 Support method templates<br>
       1.3.1 Remove support for old graph format<br>
@@ -37,6 +38,10 @@
       1.0.0 Basic functionality of graph visualization and navigation.<br>
     ]]>
   </change-notes>
+
+  <!-- Starting with 2020.2 JavaFX is deprecated in favor of JCEF. -->
+  <!-- Dependency on "JavaFX Runtime for Plugins" is required to continue using JavaFX. -->
+  <depends>com.intellij.javafx</depends>
 
   <idea-version since-build="145.0"/>
 
