@@ -1,16 +1,16 @@
 object Vers {
     //Plugins
     val asciidoctor = "1.5.9.2"
-    val kotlin = "1.3.41"
-    val kotlin_coroutines = "1.2.2"
+    val kotlin = "1.3.72"
+    val kotlin_coroutines = "1.3.5"
     
     val sl4j = "1.7.25"
     val dokka = "0.9.18"
-    val gradle_release_plugin = "1.3.16"
+    val gradle_release_plugin = "1.3.17"
     val junit = "5.2.0"
 
-    val aggregating_profiler = "1.5.16"
-    val dynamic_property = "1.0.5"
+    val aggregating_profiler = "1.6.5"
+    val dynamic_property = "2.0.8"
 
     val spring = "5.1.9.RELEASE"
     

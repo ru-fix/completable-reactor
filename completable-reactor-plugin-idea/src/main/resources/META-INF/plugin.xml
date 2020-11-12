@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>ru.fix.completable.reactor.plugin.idea</id>
   <name>Completable Reactor</name>
-  <version>1.4.5</version>
+  <version>1.5-SNAPSHOT</version>
   <vendor email="kasfandiyarov@gmail.com" url="https://github.com/ru-fix">FIX</vendor>
 
   <description>
@@ -43,7 +43,7 @@
   <!-- Dependency on "JavaFX Runtime for Plugins" is required to continue using JavaFX. -->
   <depends>com.intellij.javafx</depends>
 
-  <idea-version since-build="145.0"/>
+  <idea-version since-build="202.6397"/>
 
   <actions>
     <action id="reactorGraphAction" class="ru.fix.completable.reactor.plugin.idea.ReactorGraphAction"

@@ -6,7 +6,7 @@ plugins {
     java
     kotlin("jvm")
     id("com.github.johnrengelman.shadow")
-    id("org.openjfx.javafxplugin") version "0.0.8"
+    id("org.openjfx.javafxplugin") version "0.0.9"
 }
 
 javafx {

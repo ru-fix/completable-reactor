@@ -9,7 +9,8 @@ for (project in listOf(
         "completable-reactor-parser",
         "completable-reactor-runtime",
         "completable-reactor-spring",
-        "completable-reactor-test-utils")) {
-    
+        "completable-reactor-test-utils",
+        "completable-reactor-plugin-idea")) {
+
     include(project)
 }
