@@ -4,12 +4,12 @@ object Vers {
     val kotlin = "1.3.72"
     val kotlin_coroutines = "1.3.5"
     
-    val sl4j = "1.7.25"
-    val dokka = "0.9.18"
+    val slf4j = "1.7.25"
+    val dokka = "0.10.1"
     val gradle_release_plugin = "1.3.17"
-    val junit = "5.2.0"
+    val junit = "5.7.1"
 
-    val aggregating_profiler = "1.6.5"
+    val aggregating_profiler = "1.6.6"
     val dynamic_property = "2.0.8"
 
     val spring = "5.1.9.RELEASE"
@@ -33,8 +33,7 @@ object Libs {
     val kotlin_coroutines_core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlin_coroutines}"
     val kotlin_coroutines_jdk = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Vers.kotlin_coroutines}"
 
-    val slf4j_api = "org.slf4j:slf4j-api:${Vers.sl4j}"
-    val slf4j_simple = "org.slf4j:slf4j-simple:${Vers.sl4j}"
+    val slf4j_simple = "org.slf4j:slf4j-simple:${Vers.slf4j}"
 
     val mockito_kotiln = "com.nhaarman:mockito-kotlin-kt1.1:1.6.0"
     val kotlin_logging = "io.github.microutils:kotlin-logging:1.5.9"

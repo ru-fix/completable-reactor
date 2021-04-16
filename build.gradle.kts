@@ -17,9 +17,7 @@ buildscript {
     dependencies {
         classpath(Libs.gradle_release_plugin)
         classpath(Libs.dokka_gradle_plugin)
-        classpath(Libs.kotlin_stdlib)
-        classpath(Libs.kotlin_jdk8)
-        classpath(Libs.kotlin_reflect)
+        classpath(kotlin("gradle-plugin", version = Vers.kotlin))
         classpath(Libs.shadowPlugin)
         classpath(Libs.asciidoctor)
     }
