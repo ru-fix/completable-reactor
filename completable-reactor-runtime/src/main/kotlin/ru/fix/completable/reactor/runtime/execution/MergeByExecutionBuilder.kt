@@ -1,7 +1,6 @@
 package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
-import ru.fix.completable.reactor.graph.internal.RuntimeEmptyMerger
 import ru.fix.completable.reactor.graph.runtime.RuntimeTransition
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.ProfilerIdentity
