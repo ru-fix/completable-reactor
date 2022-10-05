@@ -1,6 +1,7 @@
 package ru.fix.completable.reactor.runtime.execution
 
 import mu.KotlinLogging
+import ru.fix.completable.reactor.graph.internal.RuntimeEmptyMerger
 import ru.fix.completable.reactor.graph.runtime.RuntimeTransition
 import ru.fix.completable.reactor.graph.runtime.RuntimeVertex
 import ru.fix.completable.reactor.runtime.ProfilerIdentity
@@ -291,9 +292,11 @@ class MergeByExecutionBuilder<PayloadType>(
                         null
                     }
 
-            val mergeStatus = pvx.invokeMergingMethod(payload, handlingResult)
-
-            mergeCall.stop()
+            val mergeStatus = mergeCall.use {
+                pvx.invokeMergingMethod(payload, handlingResult).also {
+                    mergeCall.stop()
+                }
+            }
 
             if (isTraceablePayload) {
                 builder.tracer.afterMerger(mergeTracingMarker, pvx.vertex.name, payload)
