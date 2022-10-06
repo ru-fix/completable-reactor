@@ -291,9 +291,11 @@ class MergeByExecutionBuilder<PayloadType>(
                         null
                     }
 
-            val mergeStatus = pvx.invokeMergingMethod(payload, handlingResult)
-
-            mergeCall.stop()
+            val mergeStatus = mergeCall.use { profiledCall ->
+                pvx.invokeMergingMethod(payload, handlingResult).also {
+                    profiledCall.stop()
+                }
+            }
 
             if (isTraceablePayload) {
                 builder.tracer.afterMerger(mergeTracingMarker, pvx.vertex.name, payload)
