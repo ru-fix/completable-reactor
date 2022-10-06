@@ -291,9 +291,9 @@ class MergeByExecutionBuilder<PayloadType>(
                         null
                     }
 
-            val mergeStatus = mergeCall.use {
+            val mergeStatus = mergeCall.use { profiledCall ->
                 pvx.invokeMergingMethod(payload, handlingResult).also {
-                    mergeCall.stop()
+                    profiledCall.stop()
                 }
             }
 
