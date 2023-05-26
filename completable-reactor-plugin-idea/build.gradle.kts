@@ -8,8 +8,7 @@ plugins {
 
 javafx {
     version = "11"
-    modules("javafx.controls")
-    modules("javafx.swing")
+    modules("javafx.controls", "javafx.swing")
 }
 
 
