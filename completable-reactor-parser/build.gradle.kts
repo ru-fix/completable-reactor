@@ -1,6 +1,3 @@
-import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     java
     kotlin("jvm")
@@ -10,14 +7,14 @@ plugins {
 
 dependencies {
 
-    compile(project(":completable-reactor-model"))
+    implementation(project(":completable-reactor-model"))
 
-    compile(Libs.kotlin_jdk8)
-    compile(Libs.kotlin_stdlib)
-    compile(Libs.kotlin_reflect)
-    compile(Libs.kotlin_logging)
+    implementation(Libs.kotlin_jdk8)
+    implementation(Libs.kotlin_stdlib)
+    implementation(Libs.kotlin_reflect)
+    implementation(Libs.kotlin_logging)
 
-    compile(Libs.antlrRuntime)
+    implementation(Libs.antlrRuntime)
 
     antlr(Libs.antlrAll)
 
@@ -25,9 +22,9 @@ dependencies {
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
     testRuntimeOnly(Libs.slf4j_simple)
-    testCompile(project(":completable-reactor-test-utils"))
+    testImplementation(project(":completable-reactor-test-utils"))
 
-    testCompile(Libs.hamcrest)
+    testImplementation(Libs.hamcrest)
 }
 
 val antlrDestinationDir = "src/main/java/ru/fix/completable/reactor/parser/java/antlr"
