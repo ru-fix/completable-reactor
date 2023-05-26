@@ -2,7 +2,7 @@ plugins {
     java
     kotlin("jvm")
     id("org.jetbrains.intellij") version "1.13.3"
-    id("org.openjfx.javafxplugin") version "0.0.9"
+    id("org.openjfx.javafxplugin") version "0.0.14"
 }
 
 
