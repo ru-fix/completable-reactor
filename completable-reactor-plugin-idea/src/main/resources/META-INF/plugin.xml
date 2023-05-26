@@ -16,7 +16,8 @@
 
   <change-notes>
     <![CDATA[
-      1.4.5 Idea 2020.2 compatibility fix.
+      1.4.6 IDEA 2023.1 compatibility<br>
+      1.4.5 Idea 2020.2 compatibility fix.<br>
       1.4.4 Add onElse transition<br>
       1.4.1 Support method templates<br>
       1.3.1 Remove support for old graph format<br>

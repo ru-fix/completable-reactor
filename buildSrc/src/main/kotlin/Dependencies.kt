@@ -1,16 +1,17 @@
 object Vers {
     //Plugins
     val asciidoctor = "1.5.9.2"
-    val kotlin = "1.3.72"
-    val kotlin_coroutines = "1.3.5"
-    
-    val slf4j = "1.7.25"
-    val dokka = "0.10.1"
-    val gradle_release_plugin = "1.3.17"
-    val junit = "5.7.1"
+    val kotlin = "1.5.32"
+    val kotlin_coroutines = "1.5.2"
+    val kotlin_logging = "1.11.5"
+
+    val slf4j = "1.7.36"
+    val dokka = "1.5.31"
+    const val dokka_plugin = "1.5.31"
+    val gradle_release_plugin = "1.4.3"
+    val junit = "5.9.3"
 
     val aggregating_profiler = "1.6.6"
-    val dynamic_property = "2.0.8"
 
     val spring = "5.1.9.RELEASE"
     
@@ -20,10 +21,12 @@ object Vers {
 object Libs {
     //Plugins
     val gradle_release_plugin = "ru.fix:gradle-release-plugin:${Vers.gradle_release_plugin}"
+    const val dokka_plugin_id = "org.jetbrains.dokka"
     val dokka_gradle_plugin = "org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokka}"
     val nexus_staging_plugin = "io.codearte.nexus-staging"
     val nexus_publish_plugin = "de.marcphilipp.nexus-publish"
     val asciidoctor = "org.asciidoctor:asciidoctor-gradle-plugin:${Vers.asciidoctor}"
+    const val asciidoctor_plugin_id = "org.asciidoctor.convert"
     val shadowPlugin = "com.github.jengelman.gradle.plugins:shadow:2.0.4"
     
     //Dependencies
@@ -36,7 +39,7 @@ object Libs {
     val slf4j_simple = "org.slf4j:slf4j-simple:${Vers.slf4j}"
 
     val mockito_kotiln = "com.nhaarman:mockito-kotlin-kt1.1:1.6.0"
-    val kotlin_logging = "io.github.microutils:kotlin-logging:1.5.9"
+    val kotlin_logging = "io.github.microutils:kotlin-logging:${Vers.kotlin_logging}"
 
     val log4j = "org.apache.logging.log4j:log4j-core:2.11.1"
 
@@ -47,7 +50,6 @@ object Libs {
 
 
     val aggregating_profiler = "ru.fix:aggregating-profiler:${Vers.aggregating_profiler}"
-    val dynamic_property = "ru.fix:dynamic-property-api:${Vers.dynamic_property}"
 
     val spring_test = "org.springframework:spring-test:${Vers.spring}"
     val spring_beans = "org.springframework:spring-beans:${Vers.spring}"

@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.*
-
 plugins {
     java
     kotlin("jvm")
@@ -13,12 +11,12 @@ javafx {
 
 dependencies {
 
-    compile(project(":completable-reactor-model"))
+    implementation(project(":completable-reactor-model"))
 
-    compile(Libs.kotlin_jdk8)
-    compile(Libs.kotlin_stdlib)
-    compile(Libs.kotlin_reflect)
-    compile(Libs.kotlin_logging)
+    implementation(Libs.kotlin_jdk8)
+    implementation(Libs.kotlin_stdlib)
+    implementation(Libs.kotlin_reflect)
+    implementation(Libs.kotlin_logging)
 
 
     testImplementation(Libs.junit_api)

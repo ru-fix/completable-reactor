@@ -1,10 +1,7 @@
-import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     java
     kotlin("jvm")
-    id("org.jetbrains.intellij") version "0.6.3"
+    id("org.jetbrains.intellij") version "1.13.3"
     id("org.openjfx.javafxplugin") version "0.0.9"
 }
 
@@ -18,21 +15,21 @@ javafx {
 
 dependencies {
 
-    compile(project(":completable-reactor-graph-kotlin"))
-    compile(project(":completable-reactor-graph-viewer"))
-    compile(project(":completable-reactor-model"))
-    compile(project(":completable-reactor-parser"))
-    compile(project(":completable-reactor-model"))
+    implementation(project(":completable-reactor-graph-kotlin"))
+    implementation(project(":completable-reactor-graph-viewer"))
+    implementation(project(":completable-reactor-model"))
+    implementation(project(":completable-reactor-parser"))
+    implementation(project(":completable-reactor-model"))
 
-    compile(Libs.kotlin_reflect)
-    compile(Libs.kotlin_stdlib)
-    compile(Libs.kotlin_jdk8)
+    implementation(Libs.kotlin_reflect)
+    implementation(Libs.kotlin_stdlib)
+    implementation(Libs.kotlin_jdk8)
 }
 
 intellij {
-    version = "2020.2"
-    pluginName = "Completable Reactor"
-    updateSinceUntilBuild = false
+    version.set("2020.2")
+    pluginName.set("Completable Reactor")
+    updateSinceUntilBuild.set(false)
 }
 
 

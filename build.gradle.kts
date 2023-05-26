@@ -2,21 +2,17 @@ import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import org.asciidoctor.gradle.AsciidoctorTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.time.Duration.*
+import java.time.Duration
 import java.time.temporal.ChronoUnit
 import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
 
 buildscript {
     repositories {
-        jcenter()
         mavenCentral()
     }
     dependencies {
         classpath(Libs.gradle_release_plugin)
-        classpath(Libs.dokka_gradle_plugin)
         classpath(kotlin("gradle-plugin", version = Vers.kotlin))
         classpath(Libs.shadowPlugin)
         classpath(Libs.asciidoctor)
@@ -29,19 +25,19 @@ plugins {
     `maven-publish`
     id(Libs.nexus_publish_plugin) version "0.4.0" apply false
     id(Libs.nexus_staging_plugin) version "0.21.2"
-    id("org.asciidoctor.convert") version Vers.asciidoctor
+    id(Libs.asciidoctor_plugin_id) version Vers.asciidoctor
+    id(Libs.dokka_plugin_id) version Vers.dokka_plugin
 }
 
 /**
  * Project configuration by properties and environment
  */
-fun envConfig() = object : ReadOnlyProperty<Any?, String?> {
-    override fun getValue(thisRef: Any?, property: KProperty<*>): String? =
-            if (ext.has(property.name)) {
-                ext[property.name] as? String
-            } else {
-                System.getenv(property.name)
-            }
+fun envConfig() = ReadOnlyProperty<Any?, String?> { _, property ->
+    if (ext.has(property.name)) {
+        ext[property.name] as? String
+    } else {
+        System.getenv(property.name)
+    }
 }
 
 val repositoryUser by envConfig()
@@ -71,34 +67,32 @@ subprojects {
         plugin("maven-publish")
         plugin("signing")
         plugin("java")
-        plugin("org.jetbrains.dokka")
+        plugin(Libs.dokka_plugin_id)
         plugin(Libs.nexus_publish_plugin)
     }
 
     repositories {
-        jcenter()
         mavenCentral()
     }
 
     val sourcesJar by tasks.creating(Jar::class) {
-        classifier = "sources"
+        archiveClassifier.set("sources")
         from("src/main/java")
         from("src/main/kotlin")
     }
 
-    val dokkaTask by tasks.creating(DokkaTask::class) {
-        outputFormat = "javadoc"
-        outputDirectory = "$buildDir/dokka"
+    val dokkaJavadocJar by tasks.register<Jar>("dokkaJavadocJar") {
+        archiveClassifier.set("javadoc")
 
-        //TODO: wait dokka support JDK11 - https://github.com/Kotlin/dokka/issues/428
-        enabled = false
+        from(tasks.dokkaJavadoc.flatMap { it.outputDirectory })
+        dependsOn(tasks.dokkaJavadoc)
     }
 
-    val dokkaJar by tasks.creating(Jar::class) {
-        classifier = "javadoc"
+    val dokkaHtmlJar by tasks.register<Jar>("dokkaHtmlJar") {
+        archiveClassifier.set("html-doc")
 
-        from(dokkaTask.outputDirectory)
-        dependsOn(dokkaTask)
+        from(tasks.dokkaHtml.flatMap { it.outputDirectory })
+        dependsOn(tasks.dokkaHtml)
     }
 
     configure<NexusPublishExtension> {
@@ -110,8 +104,8 @@ subprojects {
                 stagingProfileId.set("1f0730098fd259")
             }
         }
-        clientTimeout.set(of(4, ChronoUnit.MINUTES))
-        connectTimeout.set(of(4, ChronoUnit.MINUTES))
+        clientTimeout.set(Duration.of(4, ChronoUnit.MINUTES))
+        connectTimeout.set(Duration.of(4, ChronoUnit.MINUTES))
     }
 
     project.afterEvaluate {
@@ -135,7 +129,8 @@ subprojects {
                     from(components["java"])
 
                     artifact(sourcesJar)
-                    artifact(dokkaJar)
+                    artifact(dokkaJavadocJar)
+                    artifact(dokkaHtmlJar)
 
                     pom {
                         name.set("${project.group}:${project.name}")
@@ -186,7 +181,7 @@ subprojects {
     tasks {
         withType<KotlinCompile> {
             kotlinOptions {
-                jvmTarget = "11"
+                jvmTarget = JavaVersion.VERSION_11.toString()
             }
         }
         withType<Test> {

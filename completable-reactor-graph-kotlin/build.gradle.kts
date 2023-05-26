@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.*
-
 plugins {
     java
     kotlin("jvm")
@@ -7,17 +5,20 @@ plugins {
 
 dependencies {
 
-    compile(project(":completable-reactor-graph"))
-    compile(project(":completable-reactor-runtime"))
+    api(project(":completable-reactor-graph"))
 
-    compile(Libs.kotlin_jdk8)
-    compile(Libs.kotlin_stdlib)
-    compile(Libs.kotlin_reflect)
-    compile(Libs.kotlin_coroutines_core)
-    compile(Libs.kotlin_coroutines_jdk)
+    implementation(Libs.kotlin_jdk8)
+    implementation(Libs.kotlin_stdlib)
+    implementation(Libs.kotlin_reflect)
+    api(Libs.kotlin_coroutines_core)
+    implementation(Libs.kotlin_coroutines_jdk)
 
-    testCompile(Libs.apacheCommonsLang)
+    implementation(Libs.kotlin_logging)
 
+    testImplementation(Libs.apacheCommonsLang)
+
+    testImplementation(project(":completable-reactor-runtime"))
+    testImplementation(Libs.aggregating_profiler)
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
     testRuntimeOnly(Libs.slf4j_simple)

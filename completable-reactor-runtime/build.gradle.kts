@@ -1,30 +1,25 @@
-import org.gradle.kotlin.dsl.*
-
 plugins {
     java
     kotlin("jvm")
 }
 
 dependencies {
-    compile(project(":completable-reactor-model"))
-    compile(project(":completable-reactor-graph"))
+    implementation(project(":completable-reactor-model"))
+    api(project(":completable-reactor-graph"))
+
+    api(Libs.aggregating_profiler)
+
+    implementation(Libs.kotlin_jdk8)
+    implementation(Libs.kotlin_stdlib)
+    implementation(Libs.kotlin_reflect)
+    implementation(Libs.kotlin_logging)
 
 
-
-    compile(Libs.dynamic_property)
-    compile(Libs.aggregating_profiler)
-
-    compile(Libs.kotlin_jdk8)
-    compile(Libs.kotlin_stdlib)
-    compile(Libs.kotlin_reflect)
-    compile(Libs.kotlin_logging)
-
-    testCompile(Libs.mockito)
-    testCompile(Libs.mockito_kotiln)
-
+    testImplementation(Libs.mockito)
+    testImplementation(Libs.mockito_kotiln)
 
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
     testRuntimeOnly(Libs.slf4j_simple)
-    testCompile(Libs.hamcrest)
+    testImplementation(Libs.hamcrest)
 }

@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.*
-
 plugins {
     java
     kotlin("jvm")
@@ -7,12 +5,12 @@ plugins {
 
 dependencies {
 
-    compile(Libs.kotlin_logging)
-    compile(Libs.kotlin_jdk8)
-    compile(Libs.kotlin_stdlib)
-    compile(Libs.kotlin_reflect)
+    implementation(Libs.kotlin_logging)
+    implementation(Libs.kotlin_jdk8)
+    implementation(Libs.kotlin_stdlib)
+    implementation(Libs.kotlin_reflect)
 
-    testCompile(Libs.kotlin_logging)
+    testImplementation(Libs.kotlin_logging)
 
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)

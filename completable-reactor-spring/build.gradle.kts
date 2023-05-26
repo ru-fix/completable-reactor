@@ -1,24 +1,21 @@
-import org.gradle.kotlin.dsl.*
-
 plugins {
     java
     kotlin("jvm")
 }
 
 dependencies {
-    compile(project(":completable-reactor-runtime"))
-    compile(Libs.aggregating_profiler)
+    implementation(project(":completable-reactor-runtime"))
 
-    compile(Libs.spring_beans)
-    compile(Libs.spring_context)
-    testCompile(Libs.spring_test)
+    implementation(Libs.spring_beans)
+    implementation(Libs.spring_context)
 
-    compile(Libs.kotlin_jdk8)
-    compile(Libs.kotlin_stdlib)
-    compile(Libs.kotlin_reflect)
+    implementation(Libs.kotlin_jdk8)
+    implementation(Libs.kotlin_stdlib)
+    implementation(Libs.kotlin_reflect)
 
-    compile(Libs.javax_annotations)
+    implementation(Libs.javax_annotations)
 
+    testImplementation(Libs.spring_test)
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
     testRuntimeOnly(Libs.slf4j_simple)
